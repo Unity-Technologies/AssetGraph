@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
- 
+
+まだコンセプトコードです。
+
 public class NodeEditor : EditorWindow {
    
 	Rect window1;

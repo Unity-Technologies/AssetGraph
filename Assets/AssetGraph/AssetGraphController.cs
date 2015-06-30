@@ -4,6 +4,8 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+
+using MiniJSONForAssetGraph;
  
 
 /**
@@ -16,7 +18,38 @@ public class AssetGraphController : EditorWindow {
 	List<Rect> nodeList;
 
 	public AssetGraphController () {
-		Debug.LogError("コントローラの初期化");
+		Debug.LogError("コントローラの初期化、保存されている形式データを読み込む。JSONでいいや。");
+		var dataSourceFilePath = "適当なAssetGraph以下のフォルダから読み込み";
+		var dataSourceStr = string.Empty;
+		using (var sr = new StreamReader(dataSourceFilePath)) {
+			dataSourceStr = sr.ReadToEnd();
+		}
+		var jsonData = Json.Deserialize(dataSourceStr) as Dictionary<string,object>;
+		んで、ここですべてのノードとその枝の情報が手に入るはず。
+		{
+			"nodes":[
+				{
+					"id": "ID0",
+					"kind": "source",// sourceはoutをもたないで良さそう。
+					"sourcePath": "なんかフォルダの位置とか一ファイルのパスとか。"
+				},
+				{
+					"id": "ID1",
+					"kind": "filter",
+					"outputs":[
+						{
+							"rabel": "ラベル2",
+							"to": "ID3"
+						}
+					]
+				},
+				{
+					"id": "ID2",
+					"kind": "importer",
+					""
+				}
+			]
+		}
 	}
 	
 	/**
