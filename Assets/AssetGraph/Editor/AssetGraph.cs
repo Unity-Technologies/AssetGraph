@@ -73,9 +73,9 @@ namespace AssetGraph {
 			// }
 
 			// ノードを増やす
-			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, new Rect(10, 10, 200, 60)));
-			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, new Rect(310, 110, 210, 60)));
-			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, new Rect(310, 210, 210, 60)));
+			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 10f, 10f));
+			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 110f));
+			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 210f));
 
 			// ポイントを増やす
 			nodes.ForEach(node => node.AddConnectionPoint(new InputPoint("in")));
@@ -116,6 +116,7 @@ namespace AssetGraph {
 		}
 
 		private void DrawStraightLineFromCurrentEventSourcePointTo (Vector2 to) {
+			if (currentEventSource == null) return;
 			var p = currentEventSource.eventSourceNode.GlobalConnectionPointPosition(currentEventSource.eventSourceConnectionPoint);
 			Handles.DrawLine(new Vector3(p.x, p.y, 0f), new Vector3(to.x, to.y, 0f));
 		}

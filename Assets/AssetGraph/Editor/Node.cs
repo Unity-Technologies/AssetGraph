@@ -17,17 +17,23 @@ namespace AssetGraph {
 		
 		public Rect baseRect;
 
-		public Node (Action<OnNodeEvent> emit, int id, string nodeNameText, Rect rect) {
+		public Node (Action<OnNodeEvent> emit, int id, string nodeNameText, float x, float y) {
 			this.nodeWindowId = id;
 			this.nodeNameText = nodeNameText;
-			this.baseRect = rect;
-
+			
 			this.Emit = emit;
+
+			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 		}
 
 		public void AddConnectionPoint (ConnectionPoint adding) {
 			connectionPoints.Add(adding);
 			
+			// update node size by number of connectionPoint.
+			if (3 < connectionPoints.Count) {
+				this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, NodeEditorSettings.NODE_BASE_HEIGHT + (20 * (connectionPoints.Count - 3)));
+			}
+
 			// update all connection point's index.
 
 			var inputPoints = connectionPoints.Where(p => p.isInput).ToList();
@@ -45,7 +51,7 @@ namespace AssetGraph {
 		}
 
 		/**
-			たぶん使わない。
+			たぶん使わない。 実際にはconnectionPointに付随する情報で引き出すはず。
 		*/
 		public ConnectionPoint ConnectionPointAtIndex (int index) {
 			return connectionPoints[index];
