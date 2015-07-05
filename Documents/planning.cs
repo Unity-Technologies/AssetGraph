@@ -2,7 +2,7 @@
 
 // Source -> A(split) -> B(flow) -> C(merge) -> D(merge) とかある場合、
 // 最後のmergeから逆を見て、処理を集計、集合させる必要がある。
-// 関数群として扱うことができると楽な感じだな。
+// 関数群の集合として扱うことができると楽な感じだな。
 
 // D -> C merge - mergeは即スタック
 // C -> B -> A -> Sourceをまず辿ることができる。これでAを通る物事の内容が予約される
@@ -24,13 +24,18 @@
 
 // ☆一個もmergeがない場合どうなるの？　→　走らないとかだと楽だなあ。。。例えばimportしかない場合、それが走るだけみたいな感じなのか、、？せめてExport先を指定してほしいな？
 
+// このへん楽しそうなので作り始めてしまおう。
+
+// ドライラン扱いで一度走らせる、っていうのさえできれば、Filterの「関数を収集する」っていう問題はやらないで良い方向で回避できそう。
+// もともと編集性がないので問題にはならないんだし。
+
 // 内部的には、以下の順番で要素を構築すると良さそう。
 
 // ・保存済みのデータを読み込む
 // ・データを元に、ScriptをGUI上に置く(ここまでがロード工程)
 // ・ロードが終わったら、Scriptのクラス情報を元に、各オブジェクトを初期化(idはノードのID)
-// ・メソッドのrefを収集
-// ・
+// ・Filterの場合、メソッドの実行結果を収集(ここはRef使わずに実行するほうが良い感じだった。)
+// ・Filter以外の場合、
 
 
 internal Source
@@ -56,22 +61,22 @@ public class A : FilterBase {
 
 /**
 	インポートを行う状況整理をするScript。
-	SingleInput, SingleOutput(モデルの場合だけそうでもない。)
+	SingleInput, SingleOutput(モデルの場合だけそうでもない。ここをどう収集するか。)
 
 	複数のファイルが走る場合、import時にどれかのハンドラが走る。
 	該当しない場合はスルーして通る。まあ通過するだけだな。
 */
 public class B : ImporterBase {
-	// いろんなハンドラがあるよね。
-	// public virtual void InputAssetGraphOnPostprocessAllAssets (string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {}
-	// public virtual void InputAssetGraphOnPostprocessGameObjectWithUserProperties (GameObject g, string[] propNames, object[] values) {}
-	// public virtual void InputAssetGraphOnPreprocessTexture () {}
-	// public virtual void InputAssetGraphOnPostprocessTexture (Texture2D texture) {}
-	// public virtual void InputAssetGraphOnPreprocessAudio () {}
-	// public virtual void InputAssetGraphOnPostprocessAudio (AudioClip clip) {}
-	// public virtual void InputAssetGraphOnPreprocessModel () {}
-	// public virtual void InputAssetGraphOnPostprocessModel (GameObject g) {}
-	// public virtual void InputAssetGraphOnAssignMaterialModel (Material material, Renderer renderer) {}
+	// baseにいろんなハンドラがあるよね。
+	public virtual void InputAssetGraphOnPostprocessAllAssets (string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {}
+	public virtual void InputAssetGraphOnPostprocessGameObjectWithUserProperties (GameObject g, string[] propNames, object[] values) {}
+	public virtual void InputAssetGraphOnPreprocessTexture () {}
+	public virtual void InputAssetGraphOnPostprocessTexture (Texture2D texture) {}
+	public virtual void InputAssetGraphOnPreprocessAudio () {}
+	public virtual void InputAssetGraphOnPostprocessAudio (AudioClip clip) {}
+	public virtual void InputAssetGraphOnPreprocessModel () {}
+	public virtual void InputAssetGraphOnPostprocessModel (GameObject g) {}
+	public virtual void InputAssetGraphOnAssignMaterialModel (Material material, Renderer renderer) {}
 	
 	/*
 		Texture読み込み直前に発生するやつ
@@ -102,7 +107,7 @@ public class C :  PrefabricatorBase {
 			var values = rabelsAndAssets[rabel];
 
 			// これで1チャンネル分のAssetsが来る感じになる。
-			// valuesには、 "Assets/Textures/texture.jpg" とかが入ってる。
+			// valuesには、 "Assets/Textures/texture.jpg" とかが入ってるのか？
 			var characterTexture = AssetDatabase.LoadAssetAtPath(values[0], Texture2D) as Texture2D;
 			
 			if (characterTexture) Debug.Log("Prefabricate:loaded:" + mainImageResourcePath);
@@ -114,7 +119,7 @@ public class C :  PrefabricatorBase {
 			var characterMaterial = new Material(Shader.Find ("Transparent/Diffuse"));
 			AssetDatabase.CreateAsset(characterMaterial, prefabBaseName + "_material.mat");"SOMEWHERE/example";
 			// ここで作ったやつを勝手に追跡する。差分で見ればいいんだと思う。
-			// 出力場所に関しては、なんらかヒントがいるんじゃないのかなあと思ったりしないでもない。
+			// prefabの出力場所に関しては、なんらかヒントがいるんじゃないのかなあと思ったりしないでもない。
 			// かならずAssets/以下に出すはめになった気がする。
 
 			// then set loaded texture to that material.
@@ -157,7 +162,7 @@ public class C :  PrefabricatorBase {
 }
 
 public class D : BundlizerBase {
-	public AssetBundleを構成する要素を返す型？ Inputs (Dictionary<AssetGraphLabel, List<string>> rabelsAndAssets) {
+	public AssetBundleSource Inputs (Dictionary<AssetGraphLabel, List<string>> rabelsAndAssets) {
 		
 		このへんまだAssetRailsのまんま。
 		var mainResourceTexture = Resources.Load(resNameAndResourceLoadablePathsDict["texture"]);
@@ -185,34 +190,10 @@ public class D : BundlizerBase {
 			}
 		}
 
-		こんな感じに書けるといいんだけどなんかいい手がないですかね。多値が返せる言語だったら楽だったんだけど。Tripleみたいなのを定義する、、、？
-		return (
+		return new AssetBundleSource(
 			"バンドル名",
 			mainResourceTexture,
 			subResources.ToArray()
 		);
-	}
-}
-
-
-// メソッドの参照を漁るコード。
-public void GetOutReferences () {
-	MethodBase methodBase = typeof(TestClass).GetMethod("Test");
-	var instructions = MethodBodyReader.GetInstructions(methodBase);
-
-	foreach (Instruction instruction in instructions) {
-		MethodInfo methodInfo = instruction.Operand as MethodInfo;
-
-		if(methodInfo != null) {
-			Type type = methodInfo.DeclaringType;
-			ParameterInfo[] parameters = methodInfo.GetParameters();
-
-			Console.WriteLine(
-				"{0}.{1}({2});",
-				type.FullName,
-				methodInfo.Name,
-				String.Join(", ", parameters.Select(p => p.ParameterType.FullName + " " + p.Name).ToArray())
-			);
-		}
 	}
 }

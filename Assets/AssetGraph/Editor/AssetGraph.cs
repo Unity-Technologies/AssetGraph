@@ -72,6 +72,8 @@ namespace AssetGraph {
 			// 	]
 			// }
 
+			// Source定義を特殊なノードとして読み込む
+
 			// ノードを増やす
 			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 10f, 10f));
 			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 110f));
@@ -84,7 +86,6 @@ namespace AssetGraph {
 			
 			// コネクションを増やす(仮に書いただけなので、実際にindexで扱うわけでは無い。)
 			AddConnection(nodes[0], nodes[0].ConnectionPointAtIndex(1), nodes[1], nodes[1].ConnectionPointAtIndex(0));
-
 		}
 
 		void OnGUI () {
