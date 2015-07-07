@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -29,48 +30,66 @@ namespace AssetGraph {
 		}
 		private ModifyMode modifyMode;
 
+		private DateTime lastLoaded = DateTime.MinValue;
+
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
+			var basePath = Path.Combine(Application.dataPath, "AssetGraph/Temp");
+			
+			// create Temp folder under Assets/AssetGraph
+			if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
+
+			var graphDataPath = Path.Combine(basePath, "AssetGraph.json");
+
+
+			var deserialized = new Dictionary<string, object>();
+			var lastModified = DateTime.Now;
+
+			if (File.Exists(graphDataPath)) {
+				// load
+				var dataStr = string.Empty;
+				
+				using (var sr = new StreamReader(graphDataPath)) {
+					dataStr = sr.ReadToEnd();
+				}
+
+				deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
+				var lastModifiedStr = deserialized["lastModified"] as string;
+				lastModified = Convert.ToDateTime(lastModifiedStr);
+			} else {
+				// renew
+				var graphData = new Dictionary<string, object>{
+					{"lastModified", lastModified.ToString()},
+					{"nodes", new List<Node>()},
+					{"connections", new List<Connection>()}
+				};
+
+				UpdateGraphData(graphData);
+			}
+
+			/*
+				do nothing if json does not modified after load.
+			*/
+			if (lastModified == lastLoaded) {
+				Debug.LogError("reload cancelled. lastLoaded:" + lastLoaded);
+				return;
+			}
+
+
+
+			lastLoaded = lastModified;
+
+			ResetGUI();
+
+
 			minSize = new Vector2(600f, 300f);
 			
 			wantsMouseMove = true;
 			modifyMode = ModifyMode.CONNECT_ENDED;
-
-			Debug.LogError("グラフの初期化処理を行う。保存されている形式データを読み込むのと、あとはコンパイル済みのデータからその更新を漁る。データ形式は一応JSONでいいや。");
-			// var dataSourceFilePath = "適当なAssetGraph以下のフォルダから読み込み";
-			// var dataSourceStr = string.Empty;
-			// using (var sr = new StreamReader(dataSourceFilePath)) {
-			// 	dataSourceStr = sr.ReadToEnd();
-			// }
-			// var jsonData = Json.Deserialize(dataSourceStr) as Dictionary<string,object>;
-			// んで、ここですべてのノードとその枝の情報が手に入るはず。
-			// {
-			// 	"nodes":[
-			// 		{
-			// 			"id": "ID0",
-			// 			"kind": "source",
-			// 			"sourcePath": "なんかフォルダの位置とか一ファイルのパスとか。"
-			// 		},
-			// 		{
-			// 			"id": "ID1",
-			// 			"kind": "filter",
-			// 			"outputs":[
-			// 				{
-			// 					"rabel": "ラベル2",
-			// 					"to": "ID3"
-			// 				}
-			// 			]
-			// 		},
-			// 		{
-			// 			"id": "ID2",
-			// 			"kind": "importer",
-			// 			"": 途中
-			// 		}
-			// 	]
-			// }
+			
 
 			// Source定義を特殊なノードとして読み込む
 
@@ -79,13 +98,21 @@ namespace AssetGraph {
 			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 110f));
 			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 210f));
 
-			// ポイントを増やす
+
+
+
+			// add default input.
 			nodes.ForEach(node => node.AddConnectionPoint(new InputPoint("in")));
-			nodes.ForEach(node => node.AddConnectionPoint(new OutputPoint("out0")));
-			nodes.ForEach(node => node.AddConnectionPoint(new OutputPoint("out1")));
+			nodes.ForEach(node => node.AddConnectionPoint(new OutputPoint("out")));
 			
+
 			// コネクションを増やす(仮に書いただけなので、実際にindexで扱うわけでは無い。)
-			AddConnection(nodes[0], nodes[0].ConnectionPointAtIndex(1), nodes[1], nodes[1].ConnectionPointAtIndex(0));
+			// AddConnection(nodes[0], nodes[0].ConnectionPointAtIndex(1), nodes[1], nodes[1].ConnectionPointAtIndex(0));
+		}
+
+		private void ResetGUI () {
+			nodes = new List<Node>();
+			connections = new List<Connection>();
 		}
 
 		void OnGUI () {
@@ -120,6 +147,16 @@ namespace AssetGraph {
 			if (currentEventSource == null) return;
 			var p = currentEventSource.eventSourceNode.GlobalConnectionPointPosition(currentEventSource.eventSourceConnectionPoint);
 			Handles.DrawLine(new Vector3(p.x, p.y, 0f), new Vector3(to.x, to.y, 0f));
+		}
+
+		private void UpdateGraphData (Dictionary<string, object> data) {
+			var dataStr = Json.Serialize(data);
+
+			var basePath = Path.Combine(Application.dataPath, "AssetGraph/Temp");
+			var graphDataPath = Path.Combine(basePath, "AssetGraph.json");
+			using (var sw = new StreamWriter(graphDataPath)) {
+				sw.Write(dataStr);
+			}
 		}
 
 		/**

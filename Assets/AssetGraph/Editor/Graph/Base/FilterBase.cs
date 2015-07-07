@@ -9,7 +9,7 @@ namespace AssetGraph {
 
 		public override void Setup (List<string> source, GraphStack stack) {
 			this.stack = stack;
-			In(source, _DryOut);
+			In(source, _PreOut);
 		}
 
 		/**
@@ -20,7 +20,8 @@ namespace AssetGraph {
 		}
 
 		/**
-			GraphStackから実行される、実際の動作時の処理。mergeとsplitで処理が異なる。
+			GraphStackから実行される、実際の動作時の処理。mergeとsplitで処理が異なるはず。
+			こいつはSplit。出力の内容が複数宛になる。
 		*/
 		public override void Run (SOMETHING relation) {
 			// run the root nodes of this node. then data will be located in for each results with label.
@@ -37,8 +38,8 @@ namespace AssetGraph {
 
 
 
-		public void _DryOut (string label, List<string> source) {
-			stack.AddOut(this, label, source);
+		public void _PreOut (string label, List<string> source) {
+			stack.CollectOutput(this, label, source);
 		}
 
 		public void _Out (string label, List<string> source) {
@@ -47,7 +48,7 @@ namespace AssetGraph {
 				results[label] = new List<string>();
 			}
 
-			Debug.Log("重複とか見ないとヤバそう");
+			Debug.LogError("重複とか見ないと、複数のoutに同じ内容がふくまれてそうで、ヤバそう。これは上位で蹴るか。");
 			results[label].AddRange(source);
 		}
 	}

@@ -1,0 +1,33 @@
+{
+    "lastModified":"07/07/2015 23:48:17",
+    "nodes": [
+        {
+            "id": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "kind": "source",
+            "sourcePath": "なんかフォルダの位置とか一ファイルのパスとか。",
+            "outputLabels": [
+                "ラベル0"
+            ]
+        },
+        {
+            "id": "35f5c15a-544f-4158-95a0-9c14367df42a",
+            "kind": "filter",
+            "scriptPath": "Scriptのパス",
+            "pos": {
+                "x": 100,
+                "y": 100
+            },
+            "outputLabels": [
+                "ラベル1"
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "id": "41766b88-3c3c-404d-986a-fccba454f1d4",
+            "fromNode": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "outputRabel": "ラベル2",
+            "toNode": "35f5c15a-544f-4158-95a0-9c14367df42a"
+        }
+    ]
+}

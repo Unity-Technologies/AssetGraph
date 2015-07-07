@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 public class SampleFilter : AssetGraph.FilterBase {
@@ -9,9 +8,20 @@ public class SampleFilter : AssetGraph.FilterBase {
 		中でOutメソッドを呼ぶと、アウトプット箇所が増える。
 	*/
 	public override void In (List<string> source, Action<string, List<string>> Out) {
+		var the1stList = new List<string>();
+		var the2ndList = new List<string>();
 
-		Out("LabelOf1st", source.Where(src => src.StartsWith("1st")).ToList());
-		Out("LabelOf2nd", source.Where(src => src.StartsWith("2nd")).ToList());
+		foreach (var src in source) {
+			if (src.StartsWith("1st")) {
+				the1stList.Add(src);
+			}
+			if (src.StartsWith("2nd")) {
+				the2ndList.Add(src);
+			}
+		}
+
+		Out("LabelOf1st", the1stList);
+		Out("LabelOf2nd", the2ndList);
 
 	}
 }
