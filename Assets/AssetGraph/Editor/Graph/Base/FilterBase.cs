@@ -13,7 +13,7 @@ namespace AssetGraph {
 		}
 
 		/**
-			フィルタに対して自動的に呼ばれる関数。中でOut関数を実行すると自動的に実行される。
+			フィルタに対して自動的に呼ばれる関数。
 		*/
 		public virtual void In (List<string> source, Action<string, List<string>> Out) {
 			Debug.LogError("オーバーライドしてね！っていうエラーを吐こう");
@@ -23,8 +23,6 @@ namespace AssetGraph {
 			GraphStackから実行される、実際の動作時の処理。mergeとsplitで処理が異なる。
 		*/
 		public override void Run (SOMETHING relation) {
-			results = new Dictionary<string, List<string>>();
-
 			// run the root nodes of this node. then data will be located in for each results with label.
 			var sourceNodes = relation.RootNodesOf(id);
 

@@ -34,9 +34,16 @@ namespace AssetGraph {
 			}
 
 		}
+
+		public void RunStackedGraph () {
+			// JSON経由で、グラフを起動する。
+			var connections = new List<Connection>();
+			Serialize(connections);
+			RunSerialized();
+		}
 		
 		/**
-			Connectionsから、接続要素の直列化を行う。
+			GUI上に展開されているConnectionsから、接続要素の直列化を行う。
 			末尾の数だけ列が作られる。
 		*/
 		public void Serialize (List<Connection> connections) {
@@ -44,7 +51,7 @@ namespace AssetGraph {
 			serializedRelation = new List<SOMETHING>();
 
 			Debug.Log("その中で、Sourceまで繋がっている = Lastがsourceなもの、のみを残す。");
-			
+
 			// foreach () {// unserializedなrelationを、末尾の数から直列化する。mergeがある場合も、上から順に要素に仕上げる。うん、いけるな。
 			// たとえばA,B,CがDに入っている場合、A,B,Cを関連親ノードとして纏めて保持できると良い。
 			// もっと複雑な場合はどうなんだろう。
@@ -58,6 +65,8 @@ namespace AssetGraph {
 		public void RunSerialized () {
 			Debug.LogError("not yet、relationの末尾から、relationを部分的に渡しながら遡上していく。元のrelationはconnection単位の辞書でいいのか。");
 			Debug.LogError("末尾のNodeを上から順に実行する。");
+			Debug.LogError("各ノードに溜まった出力結果のクリアリングも行う。");
+
 		}
 	}
 }

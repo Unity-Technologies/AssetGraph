@@ -10,8 +10,8 @@ public class SampleFilter : AssetGraph.FilterBase {
 	*/
 	public override void In (List<string> source, Action<string, List<string>> Out) {
 
-		Out("1stラベル", source.Where(src => src.StartsWith("1st")).ToList());
-		Out("2ndラベル", source.Where(src => src.StartsWith("2nd")).ToList());
+		Out("LabelOf1st", source.Where(src => src.StartsWith("1st")).ToList());
+		Out("LabelOf2nd", source.Where(src => src.StartsWith("2nd")).ToList());
 
 	}
 }

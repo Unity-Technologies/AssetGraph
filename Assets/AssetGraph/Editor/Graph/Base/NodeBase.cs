@@ -12,7 +12,7 @@ namespace AssetGraph {
 		
 		public GraphStack stack;
 
-		public Dictionary<string, List<string>> results;
+		public Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
 
 		public NodeBase (AssetGraphSettings.NodeKind kind) {
 			this.kind = kind;
@@ -20,7 +20,7 @@ namespace AssetGraph {
 		}
 
 		/**
-			起動前に走るメソッド
+			起動時に走るメソッド
 		*/
 		public virtual void Setup (List<string> source, GraphStack stack) {}
 
