@@ -1,3 +1,5 @@
+using System;
+
 namespace AssetGraph {
 	public class AssetGraphSettings {
 		
@@ -8,6 +10,10 @@ namespace AssetGraph {
 			PREFABRICATOR,
 			BUNDLIZER,
 			DESTINATION
+		}
+
+		public static NodeKind NodeKindFromString (string val) {
+			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
 		}
 	}
 }

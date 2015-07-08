@@ -49,6 +49,9 @@ namespace AssetGraph {
 			var lastModified = DateTime.Now;
 
 			if (File.Exists(graphDataPath)) {
+
+				Debug.LogError("起動時、表示前にこのへんでコンパイル結果のSetupを実行して、jsonの更新を行う。");
+
 				// load
 				var dataStr = string.Empty;
 				
@@ -74,7 +77,6 @@ namespace AssetGraph {
 				do nothing if json does not modified after load.
 			*/
 			if (lastModified == lastLoaded) {
-				Debug.LogError("reload cancelled. lastLoaded:" + lastLoaded);
 				return;
 			}
 
@@ -90,24 +92,73 @@ namespace AssetGraph {
 			wantsMouseMove = true;
 			modifyMode = ModifyMode.CONNECT_ENDED;
 			
+			Debug.LogError("JSONのキーを定義せねば");
 
-			// Source定義を特殊なノードとして読み込む
+			var nodesSource = deserialized["nodes"] as List<object>;
 
-			// ノードを増やす
-			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 10f, 10f));
-			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 110f));
-			nodes.Add(new Node(EmitEvent, nodes.Count, "node:" + nodes.Count, 310f, 210f));
+			foreach (var nodeDictSource in nodesSource) {
+				var nodeDict = nodeDictSource as Dictionary<string, object>;
+				var name = nodeDict["name"] as string;
+				var id = nodeDict["id"] as string;
+				var kindSource = nodeDict["kind"] as string;
+
+				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
+
+				switch (kind) {
+					case AssetGraphSettings.NodeKind.SOURCE: {
+						Debug.LogError("Source定義を特殊なノードとして読み込む必要がある");
+						break;
+					}
+					case AssetGraphSettings.NodeKind.FILTER:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR:
+					case AssetGraphSettings.NodeKind.BUNDLIZER: {
+						var posDict = nodeDict["pos"] as Dictionary<string, object>;
+						var scriptPath = nodeDict["scriptPath"] as string;
+						var x = (float)Convert.ToInt32(posDict["x"]);
+						var y = (float)Convert.ToInt32(posDict["y"]);
+						
+						var newNode = new Node(EmitEvent, nodes.Count, name, id, kind, x, y);
+
+						var outputLabelsList = nodeDict["outputLabels"] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.DESTINATION: {
+						Debug.LogError("Destination定義を特殊なノードとして読み込む必要がある");
+						break;
+					}
+				}
+			}
 
 
+			// add default input if node is not NodeKind.SOURCE.
+			foreach (var node in nodes) {
+				if (node.kind == AssetGraphSettings.NodeKind.SOURCE) continue;
+				node.AddConnectionPoint(new InputPoint("_"));
+			}
 
-
-			// add default input.
-			nodes.ForEach(node => node.AddConnectionPoint(new InputPoint("in")));
-			nodes.ForEach(node => node.AddConnectionPoint(new OutputPoint("out")));
 			
+			// load connections
+			var connectionsSource = deserialized["connections"] as List<object>;
+			foreach (var connectionSource in connectionsSource) {
+				var connectionDict = connectionSource as Dictionary<string, object>;
+				var id = connectionDict["id"] as string;
+				var fromNodeId = connectionDict["fromNode"] as string;
+				var outputRabel = connectionDict["outputRabel"] as string;
+				var toNodeId = connectionDict["toNode"] as string;
 
-			// コネクションを増やす(仮に書いただけなので、実際にindexで扱うわけでは無い。)
-			// AddConnection(nodes[0], nodes[0].ConnectionPointAtIndex(1), nodes[1], nodes[1].ConnectionPointAtIndex(0));
+				var startNode = nodes.Where(node => node.id == fromNodeId).ToList()[0];
+				var startPoint = startNode.ConnectionPointFromId(outputRabel);
+				var endNode = nodes.Where(node => node.id == toNodeId).ToList()[0];
+				var endPoint = endNode.ConnectionPointFromId("_");
+
+				AddConnection(id, startNode, startPoint, endNode, endPoint);
+			}
 		}
 
 		private void ResetGUI () {
@@ -243,8 +294,9 @@ namespace AssetGraph {
 									endConnectionPoint = currentEventSource.eventSourceConnectionPoint;
 								}
 
+								var newConnectionId = startConnectionPoint.id;// use startNode-startConnectionPoint's id for new Connection id. 
 								
-								AddConnection(startNode,startConnectionPoint, endNode, endConnectionPoint);
+								AddConnection(newConnectionId, startNode, startConnectionPoint, endNode, endConnectionPoint);
 							}
 							break;
 						}
@@ -315,9 +367,9 @@ namespace AssetGraph {
 		/**
 			create new connection if same relationship is not exist yet.
 		*/
-		private void AddConnection (Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
+		private void AddConnection (string id, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
 			if (!connections.ContainsConnection(startNode, startPoint, endNode, endPoint)) {
-				connections.Add(new Connection(Guid.NewGuid().ToString(), startNode, startPoint, endNode, endPoint));
+				connections.Add(new Connection(id, startNode, startPoint, endNode, endPoint));
 			}
 		}
 

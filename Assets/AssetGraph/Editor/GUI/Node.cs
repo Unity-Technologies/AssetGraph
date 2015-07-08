@@ -13,13 +13,19 @@ namespace AssetGraph {
 		private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
 		private readonly int nodeWindowId;
-		public readonly string nodeNameText;
+
+		public readonly string name;
+		public readonly string id;
+		public readonly AssetGraphSettings.NodeKind kind;
 		
 		public Rect baseRect;
 
-		public Node (Action<OnNodeEvent> emit, int id, string nodeNameText, float x, float y) {
-			this.nodeWindowId = id;
-			this.nodeNameText = nodeNameText;
+		public Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+			this.nodeWindowId = index;
+			this.name = name;
+			this.id = id;
+			this.kind = kind;
+			
 			
 			this.Emit = emit;
 
@@ -50,13 +56,11 @@ namespace AssetGraph {
 			}
 		}
 
-		/**
-			たぶん使わない。 実際にはconnectionPointに付随する情報で引き出すはず。
-		*/
-		public ConnectionPoint ConnectionPointAtIndex (int index) {
-			return connectionPoints[index];
+		public ConnectionPoint ConnectionPointFromId (string id) {
+			var targetPoints = connectionPoints.Where(con => con.id == id).ToList();
+			if (!targetPoints.Any()) throw new Exception("no connection id:" + id + " exists in node name:" + name);
+			return targetPoints[0];
 		}
-
 
 		public void UpdateNodeRect () {
 			baseRect = GUI.Window(nodeWindowId, baseRect, UpdateNodeEvent, string.Empty, "flow node 1");
@@ -154,20 +158,9 @@ namespace AssetGraph {
 			style.alignment = TextAnchor.MiddleCenter;
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width, baseRect.height);
-			GUI.Label(nodeTitleRect, nodeNameText, style);
+			GUI.Label(nodeTitleRect, name, style);
 
 			style.alignment = defaultAlignment;
-		}
-
-
-		public Vector2 GetAbsolutePosFromConnectionPoint (Vector2 p) {
-			// the mousePosition data is based on this node's Rect pos. not grobal position.
-			var globalMousePos = Event.current.mousePosition + new Vector2(baseRect.x, baseRect.y);
-
-			// adjust with connectionPoint's pos(this param is also node-relative.)
-			var onConnectionPointMousePos = globalMousePos + p;
-
-			return onConnectionPointMousePos;
 		}
 
 		public bool ConitainsGlobalPos (Vector2 globalPos) {

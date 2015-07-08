@@ -217,3 +217,8 @@ public class D : BundlizerBase {
 		);
 	}
 }
+
+たぶん発生する既知の制約
+	importしたのをimportするの無理なのでは
+
+

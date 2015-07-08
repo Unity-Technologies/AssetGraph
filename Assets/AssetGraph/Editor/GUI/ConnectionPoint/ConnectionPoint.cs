@@ -6,6 +6,7 @@ namespace AssetGraph {
 		public readonly string id;
 		public readonly bool isInput;
 		public readonly bool isOutput;
+		
 		public Rect buttonRect;
 		public string buttonStyle;
 
