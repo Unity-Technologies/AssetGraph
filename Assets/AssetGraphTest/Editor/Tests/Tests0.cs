@@ -82,6 +82,25 @@ public partial class Test {
 	}
 
 	public void _0_8_SerializeGraph () {
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_0_8_SerializeGraph.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+
+
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var stack = new GraphStack();
+		var serializedNodeTree = stack.SerializeNodeTree(graphDict);
+		if (serializedNodeTree.Keys.Contains("最後のFilter")) {
+			return;
+		}
+
 		Debug.LogError("not yet");
 	}
 
@@ -89,8 +108,46 @@ public partial class Test {
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_9_RunStackedGraph.json");
 		
+		// load
+		var dataStr = string.Empty;
 		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
+		var stack = new GraphStack();
+		// stack.RunStackedGraph(graphDict);このコードではなくSetup/Runから呼び出す、、のか？どうやってクラス決定するのがいいんだろう。
+		// 直感としては、クラスを文字列からnewする、っていうのが活躍しそう。んでデータの受け渡しにgraphStackを渡すスタイルはこのままで良さそう。
+
+		// 適当なGraphなので完遂してもうーんっていう感じだが。
+		// Filterだけだから出力する方向にもっていくのはできると思う。
+		Debug.LogError("Filterのコード、Script名からクラスを呼び出す仕掛けを作ろう。");
+
+		// // 終われば、resultsに入ってるはず。ファイルもでるけどそれは後。
+		// var results = stack.Results(routeIds[0]);
+		// if (results.Any()) {
+		// 	Debug.Log("やったぜ！");
+		// } else {
+		// 	Debug.LogError("no result found");
+		// }
+
+		Debug.LogError("not yet");
+	}
+
+	public void _0_10_SetupSource () {
+		Debug.LogError("not yet");
+	}
+
+	public void _0_11_RunSource () {
+		Debug.LogError("not yet");
+	}
+
+	public void _0_12_SetupDestination () {
+		Debug.LogError("not yet");
+	}
+
+	public void _0_13_RunDestination () {
 		Debug.LogError("not yet");
 	}
 

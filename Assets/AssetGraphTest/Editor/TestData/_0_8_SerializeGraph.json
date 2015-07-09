@@ -11,7 +11,7 @@
             ]
         },
         {
-            "name": "SampleFilter",
+            "name": "SampleFilter0",
             "id": "最初のFilter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",
@@ -24,7 +24,7 @@
             ]
         },
         {
-            "name": "SampleFilter",
+            "name": "SampleFilter1",
             "id": "最後のFilter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",

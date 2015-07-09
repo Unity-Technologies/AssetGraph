@@ -11,7 +11,7 @@ using MiniJSONForAssetGraph;
 
 namespace AssetGraph {
 	public class AssetGraph : EditorWindow {
-		[MenuItem("AssetGraph/Open...")]
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_OPEN)]
 		public static void Open() {
 			var window = GetWindow<AssetGraph>();
 			window.InitializeGraph();
@@ -37,12 +37,12 @@ namespace AssetGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			var basePath = Path.Combine(Application.dataPath, "AssetGraph/Temp");
+			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
 			
 			// create Temp folder under Assets/AssetGraph
 			if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
 
-			var graphDataPath = Path.Combine(basePath, "AssetGraph.json");
+			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 
 
 			var deserialized = new Dictionary<string, object>();
@@ -60,16 +60,17 @@ namespace AssetGraph {
 				}
 
 				deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
-				var lastModifiedStr = deserialized["lastModified"] as string;
+				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
 			} else {
 				// renew
 				var graphData = new Dictionary<string, object>{
-					{"lastModified", lastModified.ToString()},
-					{"nodes", new List<Node>()},
-					{"connections", new List<Connection>()}
+					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, lastModified.ToString()},
+					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<Node>()},
+					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<Connection>()}
 				};
 
+				// save new empty graph data.
 				UpdateGraphData(graphData);
 			}
 
@@ -92,15 +93,14 @@ namespace AssetGraph {
 			wantsMouseMove = true;
 			modifyMode = ModifyMode.CONNECT_ENDED;
 			
-			Debug.LogError("JSONのキーを定義せねば");
 
-			var nodesSource = deserialized["nodes"] as List<object>;
+			var nodesSource = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
 
 			foreach (var nodeDictSource in nodesSource) {
 				var nodeDict = nodeDictSource as Dictionary<string, object>;
-				var name = nodeDict["name"] as string;
-				var id = nodeDict["id"] as string;
-				var kindSource = nodeDict["kind"] as string;
+				var name = nodeDict[AssetGraphSettings.NODE_NAME] as string;
+				var id = nodeDict[AssetGraphSettings.NODE_ID] as string;
+				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
 
@@ -112,14 +112,15 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR:
 					case AssetGraphSettings.NodeKind.BUNDLIZER: {
-						var posDict = nodeDict["pos"] as Dictionary<string, object>;
-						var scriptPath = nodeDict["scriptPath"] as string;
-						var x = (float)Convert.ToInt32(posDict["x"]);
-						var y = (float)Convert.ToInt32(posDict["y"]);
-						
-						var newNode = new Node(EmitEvent, nodes.Count, name, id, kind, x, y);
+						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
 
-						var outputLabelsList = nodeDict["outputLabels"] as List<object>;
+						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
+						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
+						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
+						
+						var newNode = new Node(EmitEvent, nodes.Count, name, id, kind, scriptPath, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
 							var label = outputLabelSource as string;
 							newNode.AddConnectionPoint(new OutputPoint(label));
@@ -139,23 +140,22 @@ namespace AssetGraph {
 			// add default input if node is not NodeKind.SOURCE.
 			foreach (var node in nodes) {
 				if (node.kind == AssetGraphSettings.NodeKind.SOURCE) continue;
-				node.AddConnectionPoint(new InputPoint("_"));
+				node.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_ID));
 			}
 
 			
 			// load connections
-			var connectionsSource = deserialized["connections"] as List<object>;
+			var connectionsSource = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS] as List<object>;
 			foreach (var connectionSource in connectionsSource) {
 				var connectionDict = connectionSource as Dictionary<string, object>;
-				var id = connectionDict["id"] as string;
-				var fromNodeId = connectionDict["fromNode"] as string;
-				var outputRabel = connectionDict["outputRabel"] as string;
-				var toNodeId = connectionDict["toNode"] as string;
+				var id = connectionDict[AssetGraphSettings.CONNECTION_ID] as string;
+				var fromNodeId = connectionDict[AssetGraphSettings.CONNECTION_FROMNODE] as string;
+				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
 
 				var startNode = nodes.Where(node => node.id == fromNodeId).ToList()[0];
-				var startPoint = startNode.ConnectionPointFromId(outputRabel);
+				var startPoint = startNode.ConnectionPointFromId(id);
 				var endNode = nodes.Where(node => node.id == toNodeId).ToList()[0];
-				var endPoint = endNode.ConnectionPointFromId("_");
+				var endPoint = endNode.ConnectionPointFromId(AssetGraphSettings.DEFAULT_INPUTPOINT_ID);
 
 				AddConnection(id, startNode, startPoint, endNode, endPoint);
 			}
@@ -203,8 +203,8 @@ namespace AssetGraph {
 		private void UpdateGraphData (Dictionary<string, object> data) {
 			var dataStr = Json.Serialize(data);
 
-			var basePath = Path.Combine(Application.dataPath, "AssetGraph/Temp");
-			var graphDataPath = Path.Combine(basePath, "AssetGraph.json");
+			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			using (var sw = new StreamWriter(graphDataPath)) {
 				sw.Write(dataStr);
 			}

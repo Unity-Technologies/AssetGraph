@@ -17,15 +17,16 @@ namespace AssetGraph {
 		public readonly string name;
 		public readonly string id;
 		public readonly AssetGraphSettings.NodeKind kind;
+		public readonly string scriptPath;
 		
 		public Rect baseRect;
 
-		public Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+		public Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, float x, float y) {
 			this.nodeWindowId = index;
 			this.name = name;
 			this.id = id;
 			this.kind = kind;
-			
+			this.scriptPath = scriptPath;
 			
 			this.Emit = emit;
 
