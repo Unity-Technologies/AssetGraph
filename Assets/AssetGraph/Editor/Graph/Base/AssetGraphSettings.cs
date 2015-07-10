@@ -16,7 +16,7 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_DATA_CONNECTIONS = "connections";
 
 		// node const
-		public const string NODE_NAME = "name";
+		public const string NODE_CLASSNAME = "className";
 		public const string NODE_ID = "id";
 		public const string NODE_KIND = "kind";
 		public const string NODE_SCRIPT_PATH = "scriptPath";
@@ -26,13 +26,14 @@ namespace AssetGraph {
 		public const string NODE_OUTPUT_LABELS = "outputLabels";
 
 		// connection const
-		public const string CONNECTION_ID = "id";
+		public const string CONNECTION_LABEL = "label";
+		public const string CONNECTION_ID = "connectionId";
 		public const string CONNECTION_FROMNODE = "fromNode";
 		public const string CONNECTION_TONODE = "toNode";
 		
 		// by default, AssetGraph's node has only 1 InputPoint. and 
-		// there is one definition of it's id.
-		public const string DEFAULT_INPUTPOINT_ID = "_";
+		// this is only one definition of it's label.
+		public const string DEFAULT_INPUTPOINT_LABEL = "_";
 
 
 		public enum NodeKind : int {

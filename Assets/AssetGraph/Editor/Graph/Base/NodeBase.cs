@@ -10,7 +10,7 @@ namespace AssetGraph {
 		public readonly AssetGraphSettings.NodeKind kind;
 		public readonly string id;
 		
-		public GraphStack stack;
+		public Action<string, string, List<string>> Output;
 
 		public Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
 
@@ -22,11 +22,11 @@ namespace AssetGraph {
 		/**
 			起動時に走るメソッド
 		*/
-		public virtual void Setup (List<string> source, GraphStack stack) {}
+		public virtual void Setup (List<string> source, Action<string, string, List<string>> Output) {}
 
 		/**
 			実行時に走るメソッド
 		*/
-		public virtual void Run (SOMETHING relation) {}
+		public virtual void Run (List<string> dummy) {}
 	}
 }

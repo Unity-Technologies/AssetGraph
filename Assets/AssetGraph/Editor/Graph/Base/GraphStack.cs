@@ -2,33 +2,27 @@ using UnityEngine;
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 
 
 namespace AssetGraph {
 	public class GraphStack {
-		// Setup時に構成されるデータの樹、もちろんRun時に更新される。 Node > Connection > source x n 無くしたい。
-		Dictionary<string, Dictionary<string, List<string>>> node_con_sourcesDict = new Dictionary<string, Dictionary<string, List<string>>>();
 
-		/**
-			collect Out results per Connection.
-		*/
-		public void CollectOutput (NodeBase nodeBase, string label, List<string> source) {
-			
-			if (!node_con_sourcesDict.ContainsKey(nodeBase.id)) {
-				node_con_sourcesDict[nodeBase.id] = new Dictionary<string, List<string>>();
+		public struct EndpointNodeIdsAndRelations {
+			public List<string> endpointNodeIds;
+			public List<ConnectionData> relations;
+
+			public EndpointNodeIdsAndRelations (List<string> endpointNodeIds, List<ConnectionData> relations) {
+				this.endpointNodeIds = endpointNodeIds;
+				this.relations = relations;
 			}
-
-			// reject if same label is in the other output.
-			if (node_con_sourcesDict[nodeBase.id].ContainsKey(label)) new Exception("same label is already exist:" + label + " in:" + nodeBase + " please use other label.");
-
-			node_con_sourcesDict[nodeBase.id][label] = source;
 		}
 		
 
 		public List<string> RunStackedGraph (Dictionary<string, object> graphDataDict) {
-			var serializedTree = SerializeNodeTree(graphDataDict);
-			return RunSerializedTree(serializedTree);
+			var endpointNodeIdsAndRelations = SerializeNodeTree(graphDataDict);
+			return RunSerializedTree(endpointNodeIdsAndRelations);
 		}
 		
 		/**
@@ -38,7 +32,7 @@ namespace AssetGraph {
 				・ループチェックしてない
 				・不要なデータも入ってる
 		*/
-		public Dictionary<string, List<ConnectionData>> SerializeNodeTree (Dictionary<string, object> graphDataDict) {
+		public EndpointNodeIdsAndRelations SerializeNodeTree (Dictionary<string, object> graphDataDict) {
 			Debug.LogError("Endの条件を絞れば、不要な、たとえばExportではないNodeが末尾であれば無視する、とか警告だすとかができるはず。");
 			var nodeIds = new List<string>();
 			var nodesSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
@@ -53,7 +47,8 @@ namespace AssetGraph {
 
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
-				nodeDatas.Add(new ConnectionData(id, kind));
+				var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
+				nodeDatas.Add(new ConnectionData(id, kind, scriptType));
 			}
 
 			
@@ -81,48 +76,86 @@ namespace AssetGraph {
 				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
 
 				// collect parent Ids into child node.
-				var targetNodes = nodeDatas.Where(nodeData => nodeData.destNodeId == toNodeId).ToList();
+				var targetNodes = nodeDatas.Where(nodeData => nodeData.currentNodeId == toNodeId).ToList();
 				foreach (var targetNode in targetNodes) targetNode.AddParentNodeIdAndLabel(fromNodeId, connectionId);
 			}
 			
-			// ready endNodeId - ConnectionDatas dictionary.
-			var serializedRelationsTree = new Dictionary<string, List<ConnectionData>>();
-			foreach (var endNodeId in noChildNodeIds) {
-				serializedRelationsTree[endNodeId] = nodeDatas;
-			}
-
-			return serializedRelationsTree;
+			return new EndpointNodeIdsAndRelations(noChildNodeIds, nodeDatas);
 		}
 
-		public void RunUpToParent (string nodeId, List<ConnectionData> relations) {
-			var currentConnectionData = relations.Where(relation => relation.destNodeId == nodeId).ToList();
-			if (!currentConnectionData.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
+		public void RunUpToParent (string nodeId, List<ConnectionData> relations, Dictionary<string, List<string>> resultDict) {
+			var currentConnectionDatas = relations.Where(relation => relation.currentNodeId == nodeId).ToList();
+			if (!currentConnectionDatas.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
 
-			var parentNodeIdAndLabelDict = currentConnectionData[0].parentNodeIdAndLabelDict;
+			var currentConnectionData = currentConnectionDatas[0];
+
+			var parentNodeIdAndLabelDict = currentConnectionData.parentNodeIdAndLabelDict;
 			foreach (var parentNodeId in parentNodeIdAndLabelDict.Keys) {
-				RunUpToParent(parentNodeId, relations);
+				RunUpToParent(parentNodeId, relations, resultDict);
 			}
 
-			Debug.LogError("直前のノードの結果が、connectionのid名でnode_con_sourcesDictに溜まってるはず。うわあ。なので、ここで該当するデータを引き出してinputに叩き込む。");
+			Debug.LogError("直前のノードの結果が、connectionのid名で node_con_sourcesDict に溜まってるはず。うわあ。なので、ここで該当するデータを引き出してinputに叩き込む。");
+			var nodeScriptTypeStr = currentConnectionData.currentNodeClassStr;
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(nodeScriptTypeStr);
+
+			var nodeKind = currentConnectionData.currentNodeKind;
+			var result = new List<string>();
+
+			Action<string, string, List<string>> Output = (string dataSourceNodeId, string label, List<string> source) => {
+				// この時点での結果を、トップから巻き込んでる箱に入れることができる！
+				// resultDict
+			};
+
+			switch (nodeKind) {
+				case AssetGraphSettings.NodeKind.SOURCE: {
+					Debug.LogError("not yet");
+					break;
+				}
+				case AssetGraphSettings.NodeKind.FILTER: {
+					((FilterBase)nodeScriptInstance).Setup(result, Output);
+					break;
+				}
+				case AssetGraphSettings.NodeKind.IMPORTER: {
+					Debug.LogError("not yet");
+					break;
+				}
+				case AssetGraphSettings.NodeKind.PREFABRICATOR: {
+					Debug.LogError("not yet");
+					break;
+				}
+				case AssetGraphSettings.NodeKind.BUNDLIZER: {
+					Debug.LogError("not yet");
+					break;
+				}
+				case AssetGraphSettings.NodeKind.DESTINATION: {
+					Debug.LogError("not yet");
+					break;
+				}
+			}
+			
+			Debug.LogError("リザルトの解消,クリアを行って良い");
 			// Debug.LogError("runup nodeId:" + nodeId);このへんでSetup
 			// Debug.LogError("Execute of this node:" + nodeId);このへんでRun
 		}
 
+
 		/**
 			直列化された要素を実行する
 		*/
-		public List<string> RunSerializedTree (Dictionary<string, List<ConnectionData>> serializedRelationsTree) {
-			Debug.LogError("結果の受け渡しに関しては、最終出力の箱をルートごとに持っておく、とかかなあ。だな。このへんグローバルな動作のあとなんでメッチャ気持ちわるい");
-			
+		public List<string> RunSerializedTree (EndpointNodeIdsAndRelations endpointNodeIdsAndRelations) {
+			Debug.LogError("データが入る箱の初期化を行う");
+
+			var endpointNodeIds = endpointNodeIdsAndRelations.endpointNodeIds;
+			var relations = endpointNodeIdsAndRelations.relations;
+
+
 			// run up serialized node tree data from it's end to first.
-			foreach (var routeId in serializedRelationsTree.Keys) {
-				RunUpToParent(routeId, serializedRelationsTree[routeId]);
+			foreach (var routeId in endpointNodeIds) {
+				var resultDict = new Dictionary<string, List<string>>();
+				RunUpToParent(routeId, relations, resultDict);
 			}
 
 			Debug.LogError("各ノードに溜まった出力結果のクリアリングも行う。タイミングはこのへんな気がする。");
-
-			// clear data.
-			serializedRelationsTree.Clear();
 
 			Debug.LogError("まだ偽の返答");
 			return new List<string>();
@@ -132,24 +165,19 @@ namespace AssetGraph {
 			Debug.LogError("偽の返答");
 			return new List<string>();
 		}
-
-		public List<string> ConnectionResults (string nodeId, string label) {
-			if (!node_con_sourcesDict.ContainsKey(nodeId)) throw new Exception("nodeId:" + nodeId + " not found in:" + node_con_sourcesDict.Keys);
-			if (!node_con_sourcesDict[nodeId].ContainsKey(label)) throw new Exception("label:" + label + " not found in:" + node_con_sourcesDict.Keys);
-
-			return node_con_sourcesDict[nodeId][label];
-		}
 	}
 
 
 	public class ConnectionData {
-		public readonly string destNodeId;
-		public readonly AssetGraphSettings.NodeKind destNodeKind;
+		public readonly string currentNodeId;
+		public readonly AssetGraphSettings.NodeKind currentNodeKind;
+		public readonly string currentNodeClassStr;
 		public Dictionary<string, string> parentNodeIdAndLabelDict = new Dictionary<string, string>();
 
-		public ConnectionData (string destNodeId, AssetGraphSettings.NodeKind destNodeKind) {
-			this.destNodeId = destNodeId;
-			this.destNodeKind = destNodeKind;
+		public ConnectionData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr) {
+			this.currentNodeId = currentNodeId;
+			this.currentNodeKind = currentNodeKind;
+			this.currentNodeClassStr = currentNodeClassStr;
 		}
 
 		public void AddParentNodeIdAndLabel (string parentNodeId, string connectionLabel) {

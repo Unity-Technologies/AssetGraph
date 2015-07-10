@@ -19,7 +19,7 @@ public partial class Test {
 			// tests.Add(this._0_5_RunPrefabricator);
 			// tests.Add(this._0_6_SetupBundlizer);
 			// tests.Add(this._0_7_RunBundlizer);
-			// tests.Add(this._0_8_SerializeGraph);
+			tests.Add(this._0_8_SerializeGraph);
 			tests.Add(this._0_9_RunStackedGraph);
 			// tests.Add(this._0_10_SetupSource);
 			// tests.Add(this._0_11_RunSource);

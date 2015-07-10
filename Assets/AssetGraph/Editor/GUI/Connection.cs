@@ -27,8 +27,8 @@ namespace AssetGraph {
 			this.endNode = end;
 			this.inputPoint = input;
 
-			this.startPointInfo = start.name + ":" + output.id;
-			this.endPointInfo = end.name + ":" + input.id;
+			this.startPointInfo = start.name + ":" + output.label;
+			this.endPointInfo = end.name + ":" + input.label;
 		}
 
 		public void DrawConnection () {

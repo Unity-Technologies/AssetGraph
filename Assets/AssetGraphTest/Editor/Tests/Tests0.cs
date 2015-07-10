@@ -24,38 +24,38 @@ public partial class Test {
 		};
 
 		var sFilter = new SampleFilter();
-		sFilter.Setup(source, stack);
+		// sFilter.Setup(source, stack.Output);
 
-		var resultOf1st = stack.ConnectionResults(sFilter.id, "LabelOf1st");
-		var resultOf2nd = stack.ConnectionResults(sFilter.id, "LabelOf2nd");
+		// var resultOf1st = stack.ConnectionResults(sFilter.id, "LabelOf1st");
+		// var resultOf2nd = stack.ConnectionResults(sFilter.id, "LabelOf2nd");
 
-		if (resultOf1st.Contains("1st")) {
-			if (resultOf2nd.Contains("2nd")) {
-				return;
-			}
-		}
+		// if (resultOf1st.Contains("1st")) {
+		// 	if (resultOf2nd.Contains("2nd")) {
+		// 		return;
+		// 	}
+		// }
 
 		Debug.LogError("failed to split by filter");
 	}
 	public void _0_1_RunFilter () {
 		var sFilter = new SampleFilter();
-		var relations = new List<SOMETHING>();
+		// var relations = new List<SOMETHING>();あー偽造してテストしようとしてたのか。偽造できるかな。
 
-		if (!relations.Any()) {
-			Debug.LogError("empty relation");
-			return;
-		}
+		// if (!relations.Any()) {
+		// 	Debug.LogError("empty relation");
+		// 	return;
+		// }
 
-		sFilter.Run(relations[0]);
+		// sFilter.Run(relations[0]);
 
-		var resut1st = sFilter.results["LabelOf1st"];
-		var resut2nd = sFilter.results["LabelOf2nd"];
+		// var resut1st = sFilter.results["LabelOf1st"];
+		// var resut2nd = sFilter.results["LabelOf2nd"];
 
-		if (resut1st.Contains("1st")) {
-			if (resut2nd.Contains("2nd")) {
-				return;
-			}
-		}
+		// if (resut1st.Contains("1st")) {
+		// 	if (resut2nd.Contains("2nd")) {
+		// 		return;
+		// 	}
+		// }
 
 		Debug.LogError("failed to split by filter");
 	}
@@ -97,9 +97,9 @@ public partial class Test {
 		
 		var stack = new GraphStack();
 		var serializedNodeTree = stack.SerializeNodeTree(graphDict);
-		if (serializedNodeTree.Keys.Contains("最後のFilter")) {
-			return;
-		}
+		// if (serializedNodeTree.Keys.Contains("最後のFilter")) {
+		// 	return;
+		// }
 
 		Debug.LogError("not yet");
 	}
@@ -117,7 +117,7 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStack();
-		// stack.RunStackedGraph(graphDict);このコードではなくSetup/Runから呼び出す、、のか？どうやってクラス決定するのがいいんだろう。
+		stack.RunStackedGraph(graphDict);
 		// 直感としては、クラスを文字列からnewする、っていうのが活躍しそう。んでデータの受け渡しにgraphStackを渡すスタイルはこのままで良さそう。
 
 		// 適当なGraphなので完遂してもうーんっていう感じだが。

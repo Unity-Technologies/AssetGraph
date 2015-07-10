@@ -98,7 +98,7 @@ namespace AssetGraph {
 
 			foreach (var nodeDictSource in nodesSource) {
 				var nodeDict = nodeDictSource as Dictionary<string, object>;
-				var name = nodeDict[AssetGraphSettings.NODE_NAME] as string;
+				var name = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 				var id = nodeDict[AssetGraphSettings.NODE_ID] as string;
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 
@@ -140,24 +140,24 @@ namespace AssetGraph {
 			// add default input if node is not NodeKind.SOURCE.
 			foreach (var node in nodes) {
 				if (node.kind == AssetGraphSettings.NodeKind.SOURCE) continue;
-				node.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_ID));
+				node.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 			}
 
-			
+			Debug.LogError("ラベルとidの配置を修正、やはり別物として扱う。ラベルにユニークを求めるのと、接続性のidにユニークを求めるのは間違っていたと思うので。");
 			// load connections
 			var connectionsSource = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS] as List<object>;
 			foreach (var connectionSource in connectionsSource) {
 				var connectionDict = connectionSource as Dictionary<string, object>;
-				var id = connectionDict[AssetGraphSettings.CONNECTION_ID] as string;
+				var label = connectionDict[AssetGraphSettings.CONNECTION_LABEL] as string;
 				var fromNodeId = connectionDict[AssetGraphSettings.CONNECTION_FROMNODE] as string;
 				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
 
 				var startNode = nodes.Where(node => node.id == fromNodeId).ToList()[0];
-				var startPoint = startNode.ConnectionPointFromId(id);
+				var startPoint = startNode.ConnectionPointFromLabel(label);
 				var endNode = nodes.Where(node => node.id == toNodeId).ToList()[0];
-				var endPoint = endNode.ConnectionPointFromId(AssetGraphSettings.DEFAULT_INPUTPOINT_ID);
+				var endPoint = endNode.ConnectionPointFromLabel(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL);
 
-				AddConnection(id, startNode, startPoint, endNode, endPoint);
+				AddConnection(label, startNode, startPoint, endNode, endPoint);
 			}
 		}
 
@@ -294,9 +294,8 @@ namespace AssetGraph {
 									endConnectionPoint = currentEventSource.eventSourceConnectionPoint;
 								}
 
-								var newConnectionId = startConnectionPoint.id;// use startNode-startConnectionPoint's id for new Connection id. 
-								
-								AddConnection(newConnectionId, startNode, startConnectionPoint, endNode, endConnectionPoint);
+								var label = startConnectionPoint.label;
+								AddConnection(label, startNode, startConnectionPoint, endNode, endConnectionPoint);
 							}
 							break;
 						}
@@ -367,9 +366,9 @@ namespace AssetGraph {
 		/**
 			create new connection if same relationship is not exist yet.
 		*/
-		private void AddConnection (string id, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
+		private void AddConnection (string label, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
 			if (!connections.ContainsConnection(startNode, startPoint, endNode, endPoint)) {
-				connections.Add(new Connection(id, startNode, startPoint, endNode, endPoint));
+				connections.Add(new Connection(label, startNode, startPoint, endNode, endPoint));
 			}
 		}
 

@@ -2,7 +2,7 @@
     "lastModified":"07/09/2015 00:46:59",
     "nodes": [
         {
-            "name": "ソース1",
+            "className": "ソース1",
             "id": "原点",
             "kind": "SOURCE",
             "sourcePath": "なんかフォルダの位置とか1ファイルのパスとか。",
@@ -11,7 +11,7 @@
             ]
         },
         {
-            "name": "SampleFilter0",
+            "className": "SampleFilter0",
             "id": "最初のFilter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",
@@ -24,7 +24,7 @@
             ]
         },
         {
-            "name": "SampleFilter1",
+            "className": "SampleFilter1",
             "id": "最後のFilter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",
@@ -39,12 +39,14 @@
     ],
     "connections": [
         {
-            "id": "source0",
+            "label": "ラベル0",
+            "connectionId": "コネクション0",
             "fromNode": "原点",
             "toNode": "最初のFilter"
         },
         {
-            "id": "source1",
+            "label": "ラベル1",
+            "connectionId": "コネクション1",
             "fromNode": "最初のFilter",
             "toNode": "最後のFilter"
         }

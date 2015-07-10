@@ -3,15 +3,15 @@ using UnityEditor;
 
 namespace AssetGraph {
 	public class ConnectionPoint {
-		public readonly string id;
+		public readonly string label;
 		public readonly bool isInput;
 		public readonly bool isOutput;
 		
 		public Rect buttonRect;
 		public string buttonStyle;
 
-		public ConnectionPoint (string id, bool input, bool output) {
-			this.id = id;
+		public ConnectionPoint (string label, bool input, bool output) {
+			this.label = label;
 			this.isInput = input;
 			this.isOutput = output;
 		}

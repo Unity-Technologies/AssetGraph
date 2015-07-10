@@ -57,9 +57,9 @@ namespace AssetGraph {
 			}
 		}
 
-		public ConnectionPoint ConnectionPointFromId (string id) {
-			var targetPoints = connectionPoints.Where(con => con.id == id).ToList();
-			if (!targetPoints.Any()) throw new Exception("no connection id:" + id + " exists in node name:" + name);
+		public ConnectionPoint ConnectionPointFromLabel (string label) {
+			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
+			if (!targetPoints.Any()) throw new Exception("no connection label:" + label + " exists in node name:" + name);
 			return targetPoints[0];
 		}
 
