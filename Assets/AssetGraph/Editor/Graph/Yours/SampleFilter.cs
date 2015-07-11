@@ -12,16 +12,16 @@ public class SampleFilter : AssetGraph.FilterBase {
 		var the2ndList = new List<string>();
 
 		foreach (var src in source) {
-			if (src.StartsWith("1st")) {
+			if (src.StartsWith("SampleFilter_1st")) {
 				the1stList.Add(src);
 			}
-			if (src.StartsWith("2nd")) {
+			if (src.StartsWith("SampleFilter_2nd")) {
 				the2ndList.Add(src);
 			}
 		}
 
-		Out("LabelOf1st", the1stList);
-		Out("LabelOf2nd", the2ndList);
+		Out("SampleFilter_LabelOf1st", the1stList);
+		Out("SampleFilter_LabelOf2nd", the2ndList);
 
 	}
 }

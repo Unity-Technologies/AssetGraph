@@ -17,45 +17,68 @@ using SublimeSocketAsset;
 public partial class Test {
 
 	public void _0_0_SetupFilter () {
-		var stack = new GraphStack();
 		var source = new List<string>{
 			"1st",
 			"2nd"
 		};
 
+		var results = new Dictionary<string, List<string>>();
+
 		var sFilter = new SampleFilter();
-		// sFilter.Setup(source, stack.Output);
+		Action<string, string, List<string>> Out = (string nodeId, string connectionLabel, List<string> output) => {
+			/*
+				テスト用なのでラベルをidentityが担保されてる値かのように使っているが、
+				実際にデータを保持する際にはuniqueが保証されているconnectionIdを使用する。
+			*/
+			results[connectionLabel] = output;
+		};
 
-		// var resultOf1st = stack.ConnectionResults(sFilter.id, "LabelOf1st");
-		// var resultOf2nd = stack.ConnectionResults(sFilter.id, "LabelOf2nd");
+		sFilter.Setup("テストで使わないId", source, Out);
 
-		// if (resultOf1st.Contains("1st")) {
-		// 	if (resultOf2nd.Contains("2nd")) {
-		// 		return;
-		// 	}
-		// }
+		if (results.ContainsKey("LabelOf1st")) {
+			var result1 = results["LabelOf1st"];
+			if (result1.Contains("1st")) {
+				if (results.ContainsKey("LabelOf2nd")) {
+					var resut2 = results["LabelOf2nd"];
+					if (resut2.Contains("2nd")) {
+						return;
+					}
+				}	
+			}
+		}
 
 		Debug.LogError("failed to split by filter");
 	}
 	public void _0_1_RunFilter () {
+		var source = new List<string>{
+			"1st",
+			"2nd"
+		};
+
+		var results = new Dictionary<string, List<string>>();
+
 		var sFilter = new SampleFilter();
-		// var relations = new List<SOMETHING>();あー偽造してテストしようとしてたのか。偽造できるかな。
+		Action<string, string, List<string>> Out = (string nodeId, string connectionLabel, List<string> output) => {
+			/*
+				テスト用なのでラベルをidentityが担保されてる値かのように使っているが、
+				実際にデータを保持する際にはuniqueが保証されているconnectionIdを使用する。
+			*/
+			results[connectionLabel] = output;
+		};
 
-		// if (!relations.Any()) {
-		// 	Debug.LogError("empty relation");
-		// 	return;
-		// }
+		sFilter.Run("テストで使わないId", source, Out);
 
-		// sFilter.Run(relations[0]);
-
-		// var resut1st = sFilter.results["LabelOf1st"];
-		// var resut2nd = sFilter.results["LabelOf2nd"];
-
-		// if (resut1st.Contains("1st")) {
-		// 	if (resut2nd.Contains("2nd")) {
-		// 		return;
-		// 	}
-		// }
+		if (results.ContainsKey("LabelOf1st")) {
+			var result1 = results["LabelOf1st"];
+			if (result1.Contains("1st")) {
+				if (results.ContainsKey("LabelOf2nd")) {
+					var resut2 = results["LabelOf2nd"];
+					if (resut2.Contains("2nd")) {
+						return;
+					}
+				}	
+			}
+		}
 
 		Debug.LogError("failed to split by filter");
 	}
@@ -81,7 +104,7 @@ public partial class Test {
 		Debug.LogError("not yet");
 	}
 
-	public void _0_8_SerializeGraph () {
+	public void _0_8_0_SerializeGraph_hasValidEndpoint () {
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_8_SerializeGraph.json");
 		
@@ -96,12 +119,51 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStack();
-		var serializedNodeTree = stack.SerializeNodeTree(graphDict);
-		// if (serializedNodeTree.Keys.Contains("最後のFilter")) {
-		// 	return;
-		// }
+		var endpointNodeIdsAndRelations = stack.SerializeNodeTree(graphDict);
+		if (endpointNodeIdsAndRelations.endpointNodeIds.Contains("最後のFilter")) {
+			return;
+		}
 
 		Debug.LogError("not yet");
+	}
+
+	public void _0_8_1_SerializeGraph_hasValidOrder () {
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_0_8_SerializeGraph.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+
+
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var stack = new GraphStack();
+		var endpointNodeIdsAndRelations = stack.SerializeNodeTree(graphDict);
+
+		var endPoint0 = endpointNodeIdsAndRelations.endpointNodeIds[0];
+		var relations = endpointNodeIdsAndRelations.relations;
+		
+		var orders = stack.RunSerializedTree(endPoint0, relations);
+		foreach (var orderedNodeId in orders) {
+			Debug.LogError("orderedNodeId:" + orderedNodeId);
+		}
+
+		if (orders.Count == 0) {
+			Debug.LogError("list is empty");
+			return;
+		}
+
+		if (orders[0] == "原点" &&
+			orders[1] == "最初のFilter" &&
+			orders[2] == "最後のFilter") {
+			return;
+		}
+
+		Debug.LogError("failed to validate order");
 	}
 
 	public void _0_9_RunStackedGraph () {
@@ -122,7 +184,7 @@ public partial class Test {
 
 		// 適当なGraphなので完遂してもうーんっていう感じだが。
 		// Filterだけだから出力する方向にもっていくのはできると思う。
-		Debug.LogError("Filterのコード、Script名からクラスを呼び出す仕掛けを作ろう。");
+		Debug.LogWarning("Filterのコード、Script名からクラスを呼び出す仕掛けを作ろう。");
 
 		// // 終われば、resultsに入ってるはず。ファイルもでるけどそれは後。
 		// var results = stack.Results(routeIds[0]);

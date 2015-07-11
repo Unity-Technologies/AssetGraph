@@ -2,16 +2,16 @@
     "lastModified":"07/09/2015 00:46:59",
     "nodes": [
         {
-            "className": "ソース1",
+            "className": "SampleSource",
             "id": "原点",
             "kind": "SOURCE",
             "sourcePath": "なんかフォルダの位置とか1ファイルのパスとか。",
             "outputLabels": [
-                "source0"
+                "SampleFilter_LabelOf0"
             ]
         },
         {
-            "className": "SampleFilter0",
+            "className": "SampleFilter",
             "id": "最初のFilter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",
@@ -20,11 +20,12 @@
                 "y": 10
             },
             "outputLabels": [
-                "ラベル1"
+                "SampleFilter_LabelOf1st",
+                "SampleFilter_LabelOf2nd"
             ]
         },
         {
-            "className": "SampleFilter1",
+            "className": "SampleFilter",
             "id": "最後のFilter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",
@@ -33,19 +34,20 @@
                 "y": 10
             },
             "outputLabels": [
-                "ラベル2"
+                "SampleFilter_LabelOf1st",
+                "SampleFilter_LabelOf2nd"
             ]
         }
     ],
     "connections": [
         {
-            "label": "ラベル0",
+            "label": "SampleFilter_LabelOf0",
             "connectionId": "コネクション0",
             "fromNode": "原点",
             "toNode": "最初のFilter"
         },
         {
-            "label": "ラベル1",
+            "label": "SampleFilter_LabelOf1st",
             "connectionId": "コネクション1",
             "fromNode": "最初のFilter",
             "toNode": "最後のFilter"

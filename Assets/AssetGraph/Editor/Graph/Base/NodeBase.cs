@@ -8,25 +8,19 @@ namespace AssetGraph {
 	public class NodeBase {
 
 		public readonly AssetGraphSettings.NodeKind kind;
-		public readonly string id;
-		
-		public Action<string, string, List<string>> Output;
-
-		public Dictionary<string, List<string>> results = new Dictionary<string, List<string>>();
 
 		public NodeBase (AssetGraphSettings.NodeKind kind) {
 			this.kind = kind;
-			this.id = Guid.NewGuid().ToString();
 		}
 
 		/**
 			起動時に走るメソッド
 		*/
-		public virtual void Setup (List<string> source, Action<string, string, List<string>> Output) {}
+		public virtual void Setup (string id, List<string> source, Action<string, string, List<string>> Output) {}
 
 		/**
 			実行時に走るメソッド
 		*/
-		public virtual void Run (List<string> dummy) {}
+		public virtual void Run (string id, List<string> source, Action<string, string, List<string>> Output) {}
 	}
 }
