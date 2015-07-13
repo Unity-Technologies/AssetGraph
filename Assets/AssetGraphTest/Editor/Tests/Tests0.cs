@@ -16,31 +16,35 @@ using SublimeSocketAsset;
 
 public partial class Test {
 
+	public void _0_0_0_SetupLoader () {
+		Debug.LogError("not yet");
+	}
+
+	public void _0_0_1_RunLoader () {
+		Debug.LogError("not yet");
+	}
+
 	public void _0_0_SetupFilter () {
-		var source = new List<string>{
-			"1st",
-			"2nd"
+		var source = new List<AssetData>{
+			new AssetData("A/1st", "A"),
+			new AssetData("A/2nd", "A")
 		};
 
-		var results = new Dictionary<string, List<string>>();
+		var results = new Dictionary<string, List<AssetData>>();
 
-		var sFilter = new SampleFilter();
-		Action<string, string, List<string>> Out = (string nodeId, string connectionLabel, List<string> output) => {
-			/*
-				テスト用なのでラベルをidentityが担保されてる値かのように使っているが、
-				実際にデータを保持する際にはuniqueが保証されているconnectionIdを使用する。
-			*/
+		var sFilter = new SampleFilter_0();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
 			results[connectionLabel] = output;
 		};
 
-		sFilter.Setup("テストで使わないId", source, Out);
+		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, Out);
 
-		if (results.ContainsKey("LabelOf1st")) {
-			var result1 = results["LabelOf1st"];
-			if (result1.Contains("1st")) {
-				if (results.ContainsKey("LabelOf2nd")) {
-					var resut2 = results["LabelOf2nd"];
-					if (resut2.Contains("2nd")) {
+		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
+			var result1 = results["SampleFilter_0_LabelOf1st"];
+			if (result1[0].absoluteSourcePath == "A/1st") {
+				if (results.ContainsKey("SampleFilter_0_LabelOf2nd")) {
+					var resut2 = results["SampleFilter_0_LabelOf2nd"];
+					if (resut2[0].absoluteSourcePath == "A/2nd") {
 						return;
 					}
 				}	
@@ -50,15 +54,15 @@ public partial class Test {
 		Debug.LogError("failed to split by filter");
 	}
 	public void _0_1_RunFilter () {
-		var source = new List<string>{
-			"1st",
-			"2nd"
+		var source = new List<AssetData>{
+			new AssetData("A/1st", "A"),
+			new AssetData("A/2nd", "A")
 		};
 
-		var results = new Dictionary<string, List<string>>();
+		var results = new Dictionary<string, List<AssetData>>();
 
-		var sFilter = new SampleFilter();
-		Action<string, string, List<string>> Out = (string nodeId, string connectionLabel, List<string> output) => {
+		var sFilter = new SampleFilter_0();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
 			/*
 				テスト用なのでラベルをidentityが担保されてる値かのように使っているが、
 				実際にデータを保持する際にはuniqueが保証されているconnectionIdを使用する。
@@ -66,14 +70,14 @@ public partial class Test {
 			results[connectionLabel] = output;
 		};
 
-		sFilter.Run("テストで使わないId", source, Out);
+		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, Out);
 
-		if (results.ContainsKey("LabelOf1st")) {
-			var result1 = results["LabelOf1st"];
-			if (result1.Contains("1st")) {
-				if (results.ContainsKey("LabelOf2nd")) {
-					var resut2 = results["LabelOf2nd"];
-					if (resut2.Contains("2nd")) {
+		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
+			var result1 = results["SampleFilter_0_LabelOf1st"];
+			if (result1[0].absoluteSourcePath == "A/1st") {
+				if (results.ContainsKey("SampleFilter_0_LabelOf2nd")) {
+					var resut2 = results["SampleFilter_0_LabelOf2nd"];
+					if (resut2[0].absoluteSourcePath == "A/2nd") {
 						return;
 					}
 				}	
@@ -84,10 +88,45 @@ public partial class Test {
 	}
 
 	public void _0_2_SetupImporter () {
+		var definedSourcePath = "/Users/runnershigh/Desktop/AssetGraph/TestResources/";
+		var source = new List<AssetData>{
+			new AssetData(definedSourcePath + "dummy.png", definedSourcePath),
+			new AssetData(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
+		};
+
+		var results = new Dictionary<string, List<AssetData>>();
+
+		var sImporter = new SampleImporter_0();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
+			results[connectionLabel] = output;
+		};
+
+		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, Out);
 		Debug.LogError("not yet");
+
 	}
 	public void _0_3_RunImporter () {
-		Debug.LogError("not yet");
+		var definedSourcePath = "/Users/runnershigh/Desktop/AssetGraph/TestResources/";
+		var source = new List<AssetData>{
+			new AssetData(definedSourcePath + "dummy.png", definedSourcePath),
+			new AssetData(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
+		};
+
+		var results = new Dictionary<string, List<AssetData>>();
+
+		var sImporter = new SampleImporter_0();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
+			results[connectionLabel] = output;
+		};
+
+		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, Out);
+
+		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
+		if (currentOutputs.Count == 5) {
+			return;
+		}
+
+		Debug.LogError("failed to collect importerd resource");
 	}
 
 	public void _0_4_SetupPrefabricator () {
@@ -119,8 +158,8 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStack();
-		var endpointNodeIdsAndRelations = stack.SerializeNodeTree(graphDict);
-		if (endpointNodeIdsAndRelations.endpointNodeIds.Contains("最後のFilter")) {
+		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeTree(graphDict);
+		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("最後のFilter")) {
 			return;
 		}
 
@@ -142,12 +181,12 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStack();
-		var endpointNodeIdsAndRelations = stack.SerializeNodeTree(graphDict);
+		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeTree(graphDict);
 
-		var endPoint0 = endpointNodeIdsAndRelations.endpointNodeIds[0];
-		var relations = endpointNodeIdsAndRelations.relations;
+		var endPoint0 = endpointNodeIdsAndNodeDatas.endpointNodeIds[0];
+		var nodeDatas = endpointNodeIdsAndNodeDatas.nodeDatas;
 		
-		var orders = stack.RunSerializedTree(endPoint0, relations);
+		var orders = stack.RunSerializedTree(endPoint0, nodeDatas);
 		foreach (var orderedNodeId in orders) {
 			Debug.LogError("orderedNodeId:" + orderedNodeId);
 		}
@@ -180,12 +219,7 @@ public partial class Test {
 		
 		var stack = new GraphStack();
 		stack.RunStackedGraph(graphDict);
-		// 直感としては、クラスを文字列からnewする、っていうのが活躍しそう。んでデータの受け渡しにgraphStackを渡すスタイルはこのままで良さそう。
-
-		// 適当なGraphなので完遂してもうーんっていう感じだが。
-		// Filterだけだから出力する方向にもっていくのはできると思う。
-		Debug.LogWarning("Filterのコード、Script名からクラスを呼び出す仕掛けを作ろう。");
-
+		
 		// // 終われば、resultsに入ってるはず。ファイルもでるけどそれは後。
 		// var results = stack.Results(routeIds[0]);
 		// if (results.Any()) {

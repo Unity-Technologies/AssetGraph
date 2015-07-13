@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class SampleFilter : AssetGraph.FilterBase {
+public class SampleFilter_1 : AssetGraph.FilterBase {
 
 	/**
 		実行時/Pre実行時に呼ばれ、オーバーライドすべき感じになる。
@@ -20,8 +20,8 @@ public class SampleFilter : AssetGraph.FilterBase {
 			}
 		}
 
-		Out("SampleFilter_LabelOf1st", the1stList);
-		Out("SampleFilter_LabelOf2nd", the2ndList);
+		Out("SampleFilter_1_LabelOf1st", the1stList);
+		Out("SampleFilter_1_LabelOf2nd", the2ndList);
 
 	}
 }

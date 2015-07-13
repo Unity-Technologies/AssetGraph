@@ -7,7 +7,9 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/Temp";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
-
+		public const string UNITY_METAFILE_EXTENSION = ".meta";
+		public const string UNITY_FOLDER_SEPARATER = "/";
+		
 		/*
 			data key for AssetGraph.json
 		*/
@@ -34,15 +36,16 @@ namespace AssetGraph {
 		// by default, AssetGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "_";
+		public const string DUMMY_IMPORTER_LABELTONEXT = "importer_dummy_label";
 
 
 		public enum NodeKind : int {
-			SOURCE,
+			LOADER,
 			FILTER,
 			IMPORTER,
 			PREFABRICATOR,
 			BUNDLIZER,
-			DESTINATION
+			EXPORTER
 		}
 
 		public static NodeKind NodeKindFromString (string val) {

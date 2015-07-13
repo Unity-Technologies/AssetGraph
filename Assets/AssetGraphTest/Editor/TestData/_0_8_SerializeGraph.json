@@ -2,17 +2,17 @@
     "lastModified":"07/09/2015 00:46:59",
     "nodes": [
         {
-            "className": "SampleSource",
-            "id": "原点",
-            "kind": "SOURCE",
+            "className": "AssetGraph.IntegratedLoader",
+            "id": "原点ソース",
+            "kind": "LOADER",
             "sourcePath": "なんかフォルダの位置とか1ファイルのパスとか。",
             "outputLabels": [
-                "SampleFilter_LabelOf0"
+                "_"
             ]
         },
         {
-            "className": "SampleFilter",
-            "id": "最初のFilter",
+            "className": "SampleFilter_1",
+            "id": "1st_Filter",
             "kind": "FILTER",
             "scriptPath": "Scriptのパス",
             "pos": {
@@ -25,32 +25,31 @@
             ]
         },
         {
-            "className": "SampleFilter",
-            "id": "最後のFilter",
-            "kind": "FILTER",
+            "className": "SampleImporter_1",
+            "id": "2nd_Importer",
+            "kind": "IMPORTER",
             "scriptPath": "Scriptのパス",
             "pos": {
                 "x": 10,
                 "y": 10
             },
             "outputLabels": [
-                "SampleFilter_LabelOf1st",
-                "SampleFilter_LabelOf2nd"
+                "SampleImporter"
             ]
         }
     ],
     "connections": [
         {
-            "label": "SampleFilter_LabelOf0",
-            "connectionId": "コネクション0",
-            "fromNode": "原点",
-            "toNode": "最初のFilter"
+            "label": "_",
+            "connectionId": "ソースからフィルタへ",
+            "fromNode": "原点ソース",
+            "toNode": "1st_Filter"
         },
         {
             "label": "SampleFilter_LabelOf1st",
-            "connectionId": "コネクション1",
-            "fromNode": "最初のFilter",
-            "toNode": "最後のFilter"
+            "connectionId": "フィルタからインポータへ",
+            "fromNode": "1st_Filter",
+            "toNode": "2nd_Importer"
         }
     ]
 }

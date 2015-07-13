@@ -105,7 +105,7 @@ namespace AssetGraph {
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
 
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.SOURCE: {
+					case AssetGraphSettings.NodeKind.LOADER: {
 						Debug.LogError("Source定義を特殊なノードとして読み込む必要がある");
 						break;
 					}
@@ -129,8 +129,8 @@ namespace AssetGraph {
 						nodes.Add(newNode);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.DESTINATION: {
-						Debug.LogError("Destination定義を特殊なノードとして読み込む必要がある");
+					case AssetGraphSettings.NodeKind.EXPORTER: {
+						Debug.LogError("EXPORTER定義を特殊なノードとして読み込む必要がある");
 						break;
 					}
 				}
@@ -139,11 +139,10 @@ namespace AssetGraph {
 
 			// add default input if node is not NodeKind.SOURCE.
 			foreach (var node in nodes) {
-				if (node.kind == AssetGraphSettings.NodeKind.SOURCE) continue;
+				if (node.kind == AssetGraphSettings.NodeKind.LOADER) continue;
 				node.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 			}
 
-			Debug.LogError("ラベルとidの配置を修正、やはり別物として扱う。ラベルにユニークを求めるのと、接続性のidにユニークを求めるのは間違っていたと思うので。");
 			// load connections
 			var connectionsSource = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS] as List<object>;
 			foreach (var connectionSource in connectionsSource) {

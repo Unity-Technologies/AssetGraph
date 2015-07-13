@@ -116,6 +116,8 @@ public class B : ImporterBase {
 		importer.filterMode				= FilterMode.Bilinear;
 		importer.textureFormat 			= TextureImporterFormat.ARGB16;
 	}
+
+	対象のファイルがすでに存在している場合、消す。っていう動作がある。
 }
 
 public class C : PrefabricatorBase {
