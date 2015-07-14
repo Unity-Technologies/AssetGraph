@@ -7,7 +7,6 @@ using System.Collections.Generic;
 public class SampleImporter_1 : AssetGraph.ImporterBase {
 
 	public override void AssetGraphOnPreprocessTexture () {
-		Debug.LogError("SampleImporter_1 これ使ってないのでは");
 		Debug.Log("SampleImporter_1 AssetGraphOnPreprocessTexture started.");
 		
 		UnityEditor.TextureImporter importer = assetImporter as UnityEditor.TextureImporter;
