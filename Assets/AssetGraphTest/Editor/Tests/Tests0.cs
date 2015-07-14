@@ -268,19 +268,12 @@ public partial class Test {
 		Debug.LogError("not yet");
 	}
 
-	public void _0_10_SetupSource () {
+
+	public void _0_10_SetupExport () {
 		Debug.LogError("not yet");
 	}
 
-	public void _0_11_RunSource () {
-		Debug.LogError("not yet");
-	}
-
-	public void _0_12_SetupDestination () {
-		Debug.LogError("not yet");
-	}
-
-	public void _0_13_RunDestination () {
+	public void _0_11_RunExport () {
 		Debug.LogError("not yet");
 	}
 

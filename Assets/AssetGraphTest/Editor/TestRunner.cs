@@ -23,11 +23,9 @@ public partial class Test {
 			// tests.Add(this._0_7_RunBundlizer);
 			tests.Add(this._0_8_0_SerializeGraph_hasValidEndpoint);
 			tests.Add(this._0_8_1_SerializeGraph_hasValidOrder);
-			// tests.Add(this._0_9_RunStackedGraph);
-			// tests.Add(this._0_10_SetupSource);
-			// tests.Add(this._0_11_RunSource);
-			// tests.Add(this._0_12_SetupDestination);
-			// tests.Add(this._0_13_RunDestination);
+			tests.Add(this._0_9_RunStackedGraph);
+			tests.Add(this._0_10_SetupExport);
+			tests.Add(this._0_11_RunExport);
 		}
 
 		// graph
