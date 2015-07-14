@@ -3,5 +3,4 @@ Assets/SublimeSocketAsset/*
 Library/*
 Temp/*
 
-
-Assets/AssetGraph/Temp/AssetGraph.json
+Assets/AssetGraph/Temp/Imported/*

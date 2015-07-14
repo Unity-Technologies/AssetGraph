@@ -1,0 +1,67 @@
+{
+	"lastModified":"07/09/2015 01:46:59",
+    "nodes": [
+        {
+        	"className": "AssetGraph.IntegratedLoader",
+            "id": "35f5c15a-544f-4158-95a0-9c14367df42a",
+            "kind": "LOADER",
+            "sourcePath": "なんかフォルダの位置とか1ファイルのパスとか。",
+            "outputLabels": [
+                "ラベル0"
+            ]
+        },
+        {
+        	"className": "SampleFilter",
+            "id": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "kind": "FILTER",
+            "scriptPath": "Scriptのパス",
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
+            "outputLabels": [
+                "ラベル1"
+            ]
+        },
+        {
+        	"className": "SampleFilter",
+            "id": "35f5c15a-544f-4158-95a0-9c14367df42b",
+            "kind": "FILTER",
+            "scriptPath": "Scriptのパス",
+            "pos": {
+                "x": 310,
+                "y": 110
+            },
+            "outputLabels": [
+                "ラベル2"
+            ]
+        },
+        {
+        	"className": "SampleFilter",
+            "id": "35f5c15a-544f-4158-95a0-9c14367df42c",
+            "kind": "FILTER",
+            "scriptPath": "Scriptのパス",
+            "pos": {
+                "x": 310,
+                "y": 210
+            },
+            "outputLabels": [
+                "ラベル3"
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "label": "ラベル1",
+            "connectionId": "2f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "fromNode": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "toNode": "35f5c15a-544f-4158-95a0-9c14367df42b"
+        },
+        {
+            "label": "ラベル1",
+            "connectionId": "3f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "fromNode": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "toNode": "35f5c15a-544f-4158-95a0-9c14367df42c"
+        }
+    ]
+}
