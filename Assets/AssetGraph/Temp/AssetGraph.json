@@ -5,7 +5,7 @@
         	"className": "AssetGraph.IntegratedLoader",
             "id": "35f5c15a-544f-4158-95a0-9c14367df42a",
             "kind": "LOADER",
-            "sourcePath": "なんかフォルダの位置とか1ファイルのパスとか。",
+            "loadPath": "なんかフォルダの位置とか1ファイルのパスとか。",
             "outputLabels": [
                 "ラベル0"
             ]

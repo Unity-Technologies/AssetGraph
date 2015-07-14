@@ -26,6 +26,7 @@ public partial class Test {
 			tests.Add(this._0_9_RunStackedGraph);
 			tests.Add(this._0_10_SetupExport);
 			tests.Add(this._0_11_RunExport);
+			// tests.Add(this._0_12_RunStackedGraph_FullStacked);// 総合的な感じなのでもうちょっと先
 		}
 
 		// graph

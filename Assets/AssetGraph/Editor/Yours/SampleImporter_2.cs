@@ -4,11 +4,12 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-public class SampleImporter_1 : AssetGraph.ImporterBase {
+public class SampleImporter_2 : AssetGraph.ImporterBase {
 
 	public override void AssetGraphOnPreprocessTexture () {
-		Debug.LogError("SampleImporter_1 これ使ってないのでは");
-		Debug.Log("SampleImporter_1 AssetGraphOnPreprocessTexture started.");
+		Debug.LogError("SampleImporter_2 画像をモデルに貼れるように調整しよう、モデルの方の調整もしてみたい。");
+
+		Debug.Log("SampleImporter_2 AssetGraphOnPreprocessTexture started.");
 		
 		UnityEditor.TextureImporter importer = assetImporter as UnityEditor.TextureImporter;
 		importer.textureType			= UnityEditor.TextureImporterType.Advanced;
@@ -20,7 +21,7 @@ public class SampleImporter_1 : AssetGraph.ImporterBase {
 		importer.filterMode				= FilterMode.Bilinear;
 		importer.textureFormat 			= TextureImporterFormat.ARGB16;
 
-		Debug.Log("SampleImporter_1 AssetGraphOnPreprocessTexture completed.");
+		Debug.Log("SampleImporter_2 AssetGraphOnPreprocessTexture completed.");
 	}
 	
 }

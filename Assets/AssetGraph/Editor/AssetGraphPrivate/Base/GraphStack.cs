@@ -71,8 +71,13 @@ namespace AssetGraph {
 
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER: {
-						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_FILE_PATH] as string;
+						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
+						break;
+					}
+					case AssetGraphSettings.NodeKind.EXPORTER: {
+						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
+						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
 						break;
 					}
 					default: {
@@ -206,7 +211,9 @@ namespace AssetGraph {
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER: {
-					Debug.LogError("not yet applied node kind, Exporter");
+					var executor = Executor<IntegratedExporter>(classStr);
+					executor.exportFilePath = currentNodeData.exportFilePath;
+					executor.Run(nodeId, labelToChild, inputParentResults, Output);
 					break;
 				}
 			}
@@ -230,29 +237,38 @@ namespace AssetGraph {
 		// for Loader
 		public readonly string loadFilePath;
 
-		/**
-			constructor for Loader
-		*/
-		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr, string loadFilePath) {
-			this.currentNodeId = currentNodeId;
-			this.currentNodeKind = currentNodeKind;
-			this.currentNodeClassStr = currentNodeClassStr;
-			this.loadFilePath = loadFilePath;
-		}
+		// for Exporter
+		public readonly string exportFilePath;
 
-		/**
-			constructor for Filter, Importer
-		*/
-		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr) {
+		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr, string loaderOrExporterPath=null) {
 			this.currentNodeId = currentNodeId;
 			this.currentNodeKind = currentNodeKind;
+
 			this.currentNodeClassStr = currentNodeClassStr;
-			this.loadFilePath = null;
+			
+			switch (currentNodeKind) {
+				case AssetGraphSettings.NodeKind.LOADER: {
+					this.loadFilePath = loaderOrExporterPath;
+					this.exportFilePath = null;
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER: {
+					this.loadFilePath = null;
+					this.exportFilePath = loaderOrExporterPath;
+					break;
+				}
+				default: {
+					this.loadFilePath = null;
+					this.exportFilePath = null;
+					break;
+				}
+			}
 		}
 
 		public void AddConnectionData (ConnectionData connection) {
 			connectionDataOfParents.Add(new ConnectionData(connection));
 		}
+		
 	}
 
 	public class ConnectionData {

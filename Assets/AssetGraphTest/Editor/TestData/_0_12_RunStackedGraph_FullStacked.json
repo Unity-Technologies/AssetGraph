@@ -5,7 +5,7 @@
             "className": "AssetGraph.IntegratedLoader",
             "id": "0_Loader",
             "kind": "LOADER",
-            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_9_SerializedGraphJSON",
+            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_12_SerializedGraphJSON",
             "outputLabels": [
                 "_"
             ]
@@ -38,8 +38,34 @@
             ]
         },
         {
+            "className": "SamplePrefabricator_2",
+            "id": "3rd_Prefabricator",
+            "kind": "PREFABRICATOR",
+            "scriptPath": "Scriptのパス",
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
+            "className": "SampleBundlizer_2",
+            "id": "4th_Bundlizer",
+            "kind": "BUNDLIZER",
+            "scriptPath": "Scriptのパス",
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
             "className": "AssetGraph.IntegratedExporter",
-            "id": "3rd_Exporter",
+            "id": "5th_Exporter",
             "kind": "EXPORTER",
             "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportFor_0_9_SerializedGraphJSON",
             "pos": {
@@ -65,9 +91,21 @@
         },
         {
             "label": "_",
-            "connectionId": "インポータからエクスポータへ",
+            "connectionId": "インポータからプレファブリケータへ",
             "fromNode": "2nd_Importer",
-            "toNode": "3rd_Exporter"
+            "toNode": "3rd_Prefabricator"
+        },
+        {
+            "label": "_",
+            "connectionId": "プレファブリケータからバンドライザへ",
+            "fromNode": "3rd_Prefabricator",
+            "toNode": "4th_Bundlizer"
+        },
+        {
+            "label": "_",
+            "connectionId": "バンドライザからエクスポータへ",
+            "fromNode": "4th_Bundlizer",
+            "toNode": "5th_Exporter"
         }
     ]
 }

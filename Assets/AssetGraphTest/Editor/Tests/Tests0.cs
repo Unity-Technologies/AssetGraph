@@ -257,13 +257,7 @@ public partial class Test {
 		var stack = new GraphStack();
 		stack.RunStackedGraph(graphDict);
 		
-		// // 終われば、resultsに入ってるはず。ファイルもでるけどそれは後。
-		// var results = stack.Results(routeIds[0]);
-		// if (results.Any()) {
-		// 	Debug.Log("やったぜ！");
-		// } else {
-		// 	Debug.LogError("no result found");
-		// }
+		Debug.LogError("成功してればExporterがファイル吐いてる");
 
 		Debug.LogError("not yet");
 	}
@@ -277,4 +271,7 @@ public partial class Test {
 		Debug.LogError("not yet");
 	}
 
+	public void _0_12_RunStackedGraph_FullStacked () {
+		Debug.LogError("not yet");
+	}
 }
