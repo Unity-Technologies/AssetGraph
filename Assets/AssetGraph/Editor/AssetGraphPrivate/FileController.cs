@@ -23,7 +23,10 @@ namespace AssetGraph {
 		public static List<string> FilePathsInFolderWithoutMeta (string localFolderPath) {
 			var filePaths = new List<string>();
 			GetFilePathsRecursive(localFolderPath, filePaths);
-			return filePaths.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)).ToList();
+			return filePaths
+				.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION))
+				.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
+				.ToList();
 		}
 
 		private static void GetFilePathsRecursive (string localFolderPath, List<string> filePaths) {

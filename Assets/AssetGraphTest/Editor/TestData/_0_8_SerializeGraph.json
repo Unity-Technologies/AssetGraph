@@ -3,9 +3,9 @@
     "nodes": [
         {
             "className": "AssetGraph.IntegratedLoader",
-            "id": "原点ソース",
+            "id": "0_Loader",
             "kind": "LOADER",
-            "sourcePath": "なんかフォルダの位置とか1ファイルのパスとか。",
+            "filePath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_8_SerializedGraphJSON",
             "outputLabels": [
                 "_"
             ]
@@ -20,8 +20,8 @@
                 "y": 10
             },
             "outputLabels": [
-                "SampleFilter_LabelOf1st",
-                "SampleFilter_LabelOf2nd"
+                "SampleFilter_1_LabelOf1st",
+                "SampleFilter_2_LabelOf2nd"
             ]
         },
         {
@@ -41,12 +41,12 @@
     "connections": [
         {
             "label": "_",
-            "connectionId": "ソースからフィルタへ",
-            "fromNode": "原点ソース",
+            "connectionId": "ローダーからフィルタへ",
+            "fromNode": "0_Loader",
             "toNode": "1st_Filter"
         },
         {
-            "label": "SampleFilter_LabelOf1st",
+            "label": "SampleFilter_1_LabelOf1st",
             "connectionId": "フィルタからインポータへ",
             "fromNode": "1st_Filter",
             "toNode": "2nd_Importer"

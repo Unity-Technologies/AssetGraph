@@ -24,6 +24,5 @@ public class SampleFilter_0 : AssetGraph.FilterBase {
 
 		Out("SampleFilter_0_LabelOf1st", the1stList);
 		Out("SampleFilter_0_LabelOf2nd", the2ndList);
-
 	}
 }

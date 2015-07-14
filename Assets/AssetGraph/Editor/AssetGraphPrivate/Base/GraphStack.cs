@@ -9,44 +9,28 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class GraphStack {
 
-		public struct EndpointNodeIdsAndNodeDatas {
+		public struct EndpointNodeIdsAndNodeDatasAndConnectionDatas {
 			public List<string> endpointNodeIds;
 			public List<NodeData> nodeDatas;
+			public List<ConnectionData> connectionDatas;
 
-			public EndpointNodeIdsAndNodeDatas (List<string> endpointNodeIds, List<NodeData> nodeDatas) {
+			public EndpointNodeIdsAndNodeDatasAndConnectionDatas (List<string> endpointNodeIds, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas) {
 				this.endpointNodeIds = endpointNodeIds;
 				this.nodeDatas = nodeDatas;
+				this.connectionDatas = connectionDatas;
 			}
 		}
 		
 
-		public Dictionary<string, List<string>> RunStackedGraph (Dictionary<string, object> graphDataDict) {
-			var endpointNodeIdsAndNodeDatas = SerializeNodeTree(graphDataDict);
+		public void RunStackedGraph (Dictionary<string, object> graphDataDict) {
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
-			var endpointNodeIds = endpointNodeIdsAndNodeDatas.endpointNodeIds;
-			var nodeDatas = endpointNodeIdsAndNodeDatas.nodeDatas;
-
-			var routeIdsListDicts = new Dictionary<string, List<string>>();
+			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
+			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
+			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
 			foreach (var endNodeId in endpointNodeIds) {
-				var orderedResultNodeIds = RunSerializedTree(endNodeId, nodeDatas);
-				routeIdsListDicts[endNodeId] = orderedResultNodeIds;
-			}
-
-			return routeIdsListDicts;
-		}
-
-		private class ConnectionDict {
-			public readonly string connectionId;
-			public readonly string connectionLabel;
-			public readonly string fromNodeId;
-			public readonly string toNodeId;
-
-			public ConnectionDict (string connectionId, string connectionLabel, string fromNodeId, string toNodeId) {
-				this.connectionId = connectionId;
-				this.connectionLabel = connectionLabel;
-				this.fromNodeId = fromNodeId;
-				this.toNodeId = toNodeId;
+				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas);
 			}
 		}
 		
@@ -57,13 +41,13 @@ namespace AssetGraph {
 				・ループチェックしてない
 				・不要なデータも入ってる
 		*/
-		public EndpointNodeIdsAndNodeDatas SerializeNodeTree (Dictionary<string, object> graphDataDict) {
+		public EndpointNodeIdsAndNodeDatasAndConnectionDatas SerializeNodeRoute (Dictionary<string, object> graphDataDict) {
 			Debug.LogWarning("Endの条件を絞れば、不要な、たとえばExportではないNodeが末尾であれば無視する、とか警告だすとかができるはず。");
 			var nodeIds = new List<string>();
 			var nodesSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
 			
 			var connectionsSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS] as List<object>;
-			var connections = new List<ConnectionDict>();
+			var connections = new List<ConnectionData>();
 			foreach (var connectionSource in connectionsSource) {
 				var connectionDict = connectionSource as Dictionary<string, object>;
 				
@@ -71,7 +55,7 @@ namespace AssetGraph {
 				var connectionLabel = connectionDict[AssetGraphSettings.CONNECTION_LABEL] as string;
 				var fromNodeId = connectionDict[AssetGraphSettings.CONNECTION_FROMNODE] as string;
 				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
-				connections.Add(new ConnectionDict(connectionId, connectionLabel, fromNodeId, toNodeId));
+				connections.Add(new ConnectionData(connectionId, connectionLabel, fromNodeId, toNodeId));
 			}
 
 			var nodeDatas = new List<NodeData>();
@@ -85,21 +69,18 @@ namespace AssetGraph {
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
 				var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 
-				/*
-					get the label of a connection which is connecting from this node to the next node.
-					if node's kind is FILTER, it will generate labels by themselves in Setup and Run.
-					set single dummy label.
-				*/
-				var labelToNextCandidates = connections.Where(con => con.fromNodeId == nodeId).Select(con => con.connectionLabel).ToList();
-				if (labelToNextCandidates.Any()) {
-					var labelToNext = labelToNextCandidates[0];
-					if (kind == AssetGraphSettings.NodeKind.FILTER) labelToNext = AssetGraphSettings.DUMMY_IMPORTER_LABELTONEXT;
-					nodeDatas.Add(new NodeData(nodeId, labelToNext, kind, scriptType));
-				} else {
-					nodeDatas.Add(new NodeData(nodeId, null, kind, scriptType));
+				switch (kind) {
+					case AssetGraphSettings.NodeKind.LOADER: {
+						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_FILE_PATH] as string;
+						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
+						break;
+					}
+					default: {
+						nodeDatas.Add(new NodeData(nodeId, kind, scriptType));
+						break;
+					}
 				}
 			}
-
 			
 			/*
 				collect node's child. for detecting endpoint of relationship.
@@ -117,81 +98,103 @@ namespace AssetGraph {
 			foreach (var connection in connections) {
 				// collect parent Ids into child node.
 				var targetNodes = nodeDatas.Where(nodeData => nodeData.currentNodeId == connection.toNodeId).ToList();
-				foreach (var targetNode in targetNodes) targetNode.AddConnectionData(connection.fromNodeId, connection.connectionLabel, connection.connectionId);
+				foreach (var targetNode in targetNodes) targetNode.AddConnectionData(connection);
 			}
 			
-			return new EndpointNodeIdsAndNodeDatas(noChildNodeIds, nodeDatas);
+			return new EndpointNodeIdsAndNodeDatasAndConnectionDatas(noChildNodeIds, nodeDatas, connections);
 		}
 
 		/**
 			直列化された要素を実行する
 		*/
-		public List<string> RunSerializedTree (string endNodeId, List<NodeData> nodeDatas) {
+		public List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections) {
 			var resultDict = new Dictionary<string, List<AssetData>>();
-			RunUpToParent(endNodeId, nodeDatas, resultDict);
-			// foreach (var resultKey in resultDict.Keys) {
-			// 	Debug.LogError("resultKey:" + resultKey);
-			// 	Debug.LogError("val:" + resultDict[resultKey].Count);
-			// 	foreach (var src in resultDict[resultKey]) {
-			// 		Debug.LogError("src:" + src);
-			// 	}
-			// }
-			Debug.LogWarning("まだ偽の返答");
-			return new List<string>();
+			RunUpToParent(endNodeId, nodeDatas, connections, resultDict);
+
+			return resultDict.Keys.ToList();
 		}
 
-		private void RunUpToParent (string nodeId, List<NodeData> nodeDatas, Dictionary<string, List<AssetData>> resultDict) {
+		/**
+			ノードの親を辿り実行、ConnectionIdごとの結果を収集する	
+		*/
+		private void RunUpToParent (string nodeId, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas, Dictionary<string, List<AssetData>> resultDict) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.currentNodeId == nodeId).ToList();
 			if (!currentNodeDatas.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
 
 			var currentNodeData = currentNodeDatas[0];
 
-			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.nodeId).ToList();
+			/*
+				run parent nodes of this node.
+			*/
+			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
-				RunUpToParent(parentNodeId, nodeDatas, resultDict);
+				RunUpToParent(parentNodeId, nodeDatas, connectionDatas, resultDict);
 			}
 
-			// var nodeId = currentNodeData.currentNodeId;
-			var labelToNext = currentNodeData.labelToNext;
+			var connectionLabelsFromThisNodeToChildNode = connectionDatas
+				.Where(con => con.fromNodeId == nodeId)
+				.Select(con => con.connectionLabel)
+				.ToList();
+
+			/*
+				this is label of connection.
+
+				will be ignored in Filter node,
+				because the Filter node will generate new label of connection by itself.
+			*/
+			var labelToChild = string.Empty;
+			if (connectionLabelsFromThisNodeToChildNode.Any()) {
+				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
+			} else {
+				Debug.LogWarning("this node is endpoint. no next node and no next result,,,ちょっと整理が必要");
+			}
+
 			var classStr = currentNodeData.currentNodeClassStr;
 			var nodeKind = currentNodeData.currentNodeKind;
 			
 			var inputParentResults = new List<AssetData>();
+			
+			var receivingConnectionIds = connectionDatas
+				.Where(con => con.toNodeId == nodeId)
+				.Select(con => con.connectionId)
+				.ToList();
 
+			foreach (var connecionId in receivingConnectionIds) {
+				var result = resultDict[connecionId];
+				inputParentResults.AddRange(result);
+			}
 
-			Action<string, string, List<AssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<AssetData> source) => {
-				// たとえばOutが2つあったら、ここ2回まわるわな、
-				// あってる。んで、Nodeの特定と、ラベルからコネクションのIDの選定ができるはず。
-				// あーできるな、データが出てるってことは誰かの親なので、親のリストとConnectionIDの辞書があるんで、、なんだけど、
-				// うーーん、、親が持ってるのを、コネクションのIDだけじゃなくて、コネクションとラベルとその出元のId、っていうふうにしたほうがよさげ。
-				// ・ラベルと親のIdからコネクションIdを割り出す
-				// ・そのために必要なのは、親のId > ラベル > コネクションId、っていう3つをくくりつけること。
-				foreach (var nodeData in nodeDatas) {
-					var connectionDataOfParents = nodeData.connectionDataOfParents;
-					foreach (var connectionDataOfParent in connectionDataOfParents) {
-						if (connectionDataOfParent.nodeId == dataSourceNodeId
-							&& connectionDataOfParent.connectionLabel == connectionLabel
-						) {
-							var connectionId = connectionDataOfParent.connectionId;
-							resultDict[connectionId] = source;
-						}
-					}
+			Action<string, string, List<AssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<AssetData> source) => {				
+				var targetConnectionIds = connectionDatas
+					.Where(con => con.fromNodeId == dataSourceNodeId) // from this node
+					.Where(con => con.connectionLabel == connectionLabel) // from this label
+					.Select(con => con.connectionId)
+					.ToList();
+				
+				if (!targetConnectionIds.Any()) {
+					Debug.LogWarning("this dataSourceNodeId:" + dataSourceNodeId + " is endpointint");
+					return;
 				}
+
+				var targetConnectionId = targetConnectionIds[0];
+				resultDict[targetConnectionId] = source;
 			};
 
-			// Debug.LogError("runup nodeId:" + nodeId);このへんでSetup
-			// Debug.LogError("Execute of this node:" + nodeId);このへんでRun
 			switch (nodeKind) {
 				case AssetGraphSettings.NodeKind.LOADER: {
-					Execute<IntegratedLoader>(nodeId, labelToNext, classStr, inputParentResults, Output);
+					var executor = Executor<IntegratedLoader>(classStr);
+					executor.loadFilePath = currentNodeData.loadFilePath;
+					executor.Run(nodeId, labelToChild, inputParentResults, Output);
 					break;
 				}
 				case AssetGraphSettings.NodeKind.FILTER: {
-					Execute<FilterBase>(nodeId, labelToNext, classStr, inputParentResults, Output);
+					var executor = Executor<FilterBase>(classStr);
+					executor.Run(nodeId, labelToChild, inputParentResults, Output);
 					break;
 				}
 				case AssetGraphSettings.NodeKind.IMPORTER: {
-					Execute<ImporterBase>(nodeId, labelToNext, classStr, inputParentResults, Output);
+					var executor = Executor<ImporterBase>(classStr);
+					executor.Run(nodeId, labelToChild, inputParentResults, Output);
 					break;
 				}
 				case AssetGraphSettings.NodeKind.PREFABRICATOR: {
@@ -209,46 +212,67 @@ namespace AssetGraph {
 			}
 		}
 
-		public void Execute<T> (string nodeId, string labelToNext, string classStr, List<AssetData> inputParentResults, Action<string, string, List<AssetData>> Output) where T : INodeBase {
+		public T Executor<T> (string classStr) where T : INodeBase {
 			var nodeScriptTypeStr = classStr;
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(nodeScriptTypeStr);
 			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + nodeScriptTypeStr);
-
-			((T)nodeScriptInstance).Run(nodeId, labelToNext, inputParentResults, Output);
+			return ((T)nodeScriptInstance);
 		}
 	}
 
 
 	public class NodeData {
 		public readonly string currentNodeId;
-		public readonly string labelToNext;
 		public readonly AssetGraphSettings.NodeKind currentNodeKind;
 		public readonly string currentNodeClassStr;
 		public List<ConnectionData> connectionDataOfParents = new List<ConnectionData>();
 
-		public NodeData (string currentNodeId, string labelToNext, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr) {
+		// for Loader
+		public readonly string loadFilePath;
+
+		/**
+			constructor for Loader
+		*/
+		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr, string loadFilePath) {
 			this.currentNodeId = currentNodeId;
-			this.labelToNext = labelToNext;
 			this.currentNodeKind = currentNodeKind;
 			this.currentNodeClassStr = currentNodeClassStr;
+			this.loadFilePath = loadFilePath;
 		}
 
-		public void AddConnectionData (string parentNodeId, string connectionLabel, string connectionId) {
-			connectionDataOfParents.Add(new ConnectionData(parentNodeId, connectionLabel, connectionId));
+		/**
+			constructor for Filter, Importer
+		*/
+		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr) {
+			this.currentNodeId = currentNodeId;
+			this.currentNodeKind = currentNodeKind;
+			this.currentNodeClassStr = currentNodeClassStr;
+			this.loadFilePath = null;
+		}
+
+		public void AddConnectionData (ConnectionData connection) {
+			connectionDataOfParents.Add(new ConnectionData(connection));
 		}
 	}
 
 	public class ConnectionData {
-		public readonly string nodeId;
-		public readonly string connectionLabel;
 		public readonly string connectionId;
+		public readonly string connectionLabel;
+		public readonly string fromNodeId;
+		public readonly string toNodeId;
 
-		public ConnectionData (string nodeId, string connectionLabel, string connectionId) {
-			this.nodeId = nodeId;
-			this.connectionLabel = connectionLabel;
+		public ConnectionData (string connectionId, string connectionLabel, string fromNodeId, string toNodeId) {
 			this.connectionId = connectionId;
+			this.connectionLabel = connectionLabel;
+			this.fromNodeId = fromNodeId;
+			this.toNodeId = toNodeId;
+		}
+
+		public ConnectionData (ConnectionData connection) {
+			this.connectionId = connection.connectionId;
+			this.connectionLabel = connection.connectionLabel;
+			this.fromNodeId = connection.fromNodeId;
+			this.toNodeId = connection.toNodeId;
 		}
 	}
-
-
 }

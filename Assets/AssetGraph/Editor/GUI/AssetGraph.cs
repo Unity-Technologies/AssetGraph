@@ -13,8 +13,11 @@ namespace AssetGraph {
 	public class AssetGraph : EditorWindow {
 		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_OPEN)]
 		public static void Open() {
-			var window = GetWindow<AssetGraph>();
-			window.InitializeGraph();
+			GetWindow<AssetGraph>();
+		}
+
+		public void OnEnable () {
+			InitializeGraph();
 		}
 
 		List<Node> nodes = new List<Node>();
@@ -50,7 +53,7 @@ namespace AssetGraph {
 
 			if (File.Exists(graphDataPath)) {
 
-				Debug.LogError("起動時、表示前にこのへんでコンパイル結果のSetupを実行して、jsonの更新を行う。");
+				Debug.LogWarning("起動時、表示前にこのへんでコンパイル結果のSetupを実行して、jsonの更新を行う。");
 
 				// load
 				var dataStr = string.Empty;
@@ -106,7 +109,7 @@ namespace AssetGraph {
 
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER: {
-						Debug.LogError("Source定義を特殊なノードとして読み込む必要がある");
+						Debug.LogWarning("Source定義を特殊なノードとして読み込む必要がある");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER:

@@ -17,11 +17,53 @@ using SublimeSocketAsset;
 public partial class Test {
 
 	public void _0_0_0_SetupLoader () {
-		Debug.LogError("not yet");
+		// contains 2 resources.
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+
+		var emptySource = new List<AssetData>();
+
+		var results = new Dictionary<string, List<AssetData>>();
+
+		var integratedLoader = new IntegratedLoader();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
+		};
+
+		integratedLoader.loadFilePath = definedSourcePath;
+		integratedLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, Out);
+
+		var outputs = results["CONNECTION_0_0_0_SetupLoader"];
+		if (outputs.Count == 2) {
+			return;
+		}
+
+		Debug.LogError("not match 2, actual:" + outputs.Count);
 	}
 
 	public void _0_0_1_RunLoader () {
-		Debug.LogError("not yet");
+		// contains 2 resources.
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+
+		var emptySource = new List<AssetData>();
+
+		var results = new Dictionary<string, List<AssetData>>();
+
+		var integratedLoader = new IntegratedLoader();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
+		};
+
+		integratedLoader.loadFilePath = definedSourcePath;
+		integratedLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, Out);
+
+		var outputs = results["CONNECTION_0_0_1_RunLoader"];
+		if (outputs.Count == 2) {
+			return;
+		}
+
+		Debug.LogError("not match 2, actual:" + outputs.Count);
 	}
 
 	public void _0_0_SetupFilter () {
@@ -33,8 +75,8 @@ public partial class Test {
 		var results = new Dictionary<string, List<AssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
-			results[connectionLabel] = output;
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
 		};
 
 		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, Out);
@@ -62,12 +104,8 @@ public partial class Test {
 		var results = new Dictionary<string, List<AssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
-			/*
-				テスト用なのでラベルをidentityが担保されてる値かのように使っているが、
-				実際にデータを保持する際にはuniqueが保証されているconnectionIdを使用する。
-			*/
-			results[connectionLabel] = output;
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
 		};
 
 		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, Out);
@@ -88,7 +126,9 @@ public partial class Test {
 	}
 
 	public void _0_2_SetupImporter () {
-		var definedSourcePath = "/Users/runnershigh/Desktop/AssetGraph/TestResources/";
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+
 		var source = new List<AssetData>{
 			new AssetData(definedSourcePath + "dummy.png", definedSourcePath),
 			new AssetData(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
@@ -97,16 +137,17 @@ public partial class Test {
 		var results = new Dictionary<string, List<AssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
-			results[connectionLabel] = output;
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
 		};
 
 		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, Out);
-		Debug.LogError("not yet");
-
+		// do nothing in this test yet.
 	}
 	public void _0_3_RunImporter () {
-		var definedSourcePath = "/Users/runnershigh/Desktop/AssetGraph/TestResources/";
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		
 		var source = new List<AssetData>{
 			new AssetData(definedSourcePath + "dummy.png", definedSourcePath),
 			new AssetData(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
@@ -115,8 +156,8 @@ public partial class Test {
 		var results = new Dictionary<string, List<AssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionLabel, List<AssetData> output) => {
-			results[connectionLabel] = output;
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
 		};
 
 		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, Out);
@@ -154,16 +195,15 @@ public partial class Test {
 			dataStr = sr.ReadToEnd();
 		}
 
-
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStack();
-		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeTree(graphDict);
-		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("最後のFilter")) {
+		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeRoute(graphDict);
+		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
 			return;
 		}
 
-		Debug.LogError("not yet");
+		Debug.LogError("not valid endpoint");
 	}
 
 	public void _0_8_1_SerializeGraph_hasValidOrder () {
@@ -181,24 +221,21 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStack();
-		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeTree(graphDict);
+		var endpointNodeIdsAndNodeDatasAndConnectionDatas = stack.SerializeNodeRoute(graphDict);
 
-		var endPoint0 = endpointNodeIdsAndNodeDatas.endpointNodeIds[0];
-		var nodeDatas = endpointNodeIdsAndNodeDatas.nodeDatas;
+		var endPoint0 = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds[0];
+		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
+		var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
+
+		var orderedConnectionIds = stack.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas);
 		
-		var orders = stack.RunSerializedTree(endPoint0, nodeDatas);
-		foreach (var orderedNodeId in orders) {
-			Debug.LogError("orderedNodeId:" + orderedNodeId);
-		}
-
-		if (orders.Count == 0) {
+		if (orderedConnectionIds.Count == 0) {
 			Debug.LogError("list is empty");
 			return;
 		}
 
-		if (orders[0] == "原点" &&
-			orders[1] == "最初のFilter" &&
-			orders[2] == "最後のFilter") {
+		if (orderedConnectionIds[0] == "ローダーからフィルタへ" &&
+			orderedConnectionIds[1] == "フィルタからインポータへ") {
 			return;
 		}
 

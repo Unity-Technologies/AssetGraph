@@ -12,15 +12,13 @@ namespace AssetGraph {
 		public UnityEditor.AssetImporter assetImporter;
 		public string assetPath;
 		
-		const string IMPORTER_TEMP_PLACE = "Assets/AssetGraph/Temp/TestImportPlace/";
-
 		public void Setup (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
-			Debug.LogError("importedを扱う Setup。");
+			// do nothing.
 		}
 		
 		public void Run (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
 			// import specific place / node's id folder.
-			var targetDirectoryPath = Path.Combine(IMPORTER_TEMP_PLACE, nodeId);
+			var targetDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(targetDirectoryPath);
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
@@ -67,8 +65,7 @@ namespace AssetGraph {
 							inputtedSourceCandidate.fileNameAndExtension,// A.png
 							inputtedSourceCandidate.pathUnderSourceBase,// (Temp/nodeId/)~
 							localFilePathWithTargetDirectoryPath,// Assets/~
-							AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath),
-							nodeId
+							AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath)
 						);
 						outputSources.Add(newAssetData);
 					}
@@ -93,8 +90,6 @@ namespace AssetGraph {
 
 			Output(nodeId, labelToNext, outputSources);
 		}
-
-		
 
 		/*
 			handled import events.

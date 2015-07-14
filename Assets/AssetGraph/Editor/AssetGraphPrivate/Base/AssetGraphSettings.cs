@@ -7,7 +7,10 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/Temp";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
+		public const string IMPORTER_TEMP_PLACE = "Assets/AssetGraph/Temp/Imported/";
+
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
+		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
 		public const string UNITY_FOLDER_SEPARATER = "/";
 		
 		/*
@@ -21,6 +24,7 @@ namespace AssetGraph {
 		public const string NODE_CLASSNAME = "className";
 		public const string NODE_ID = "id";
 		public const string NODE_KIND = "kind";
+		public const string LOADERNODE_FILE_PATH = "filePath";
 		public const string NODE_SCRIPT_PATH = "scriptPath";
 		public const string NODE_POS = "pos";
 		public const string NODE_POS_X = "x";

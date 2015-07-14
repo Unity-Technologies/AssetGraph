@@ -5,18 +5,28 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class IntegratedLoader : INodeBase {
-		public void Setup (string id, string labelToNext, List<AssetData> inputSource, Action<string, string, List<AssetData>> Output) {
+		public string loadFilePath;
+		
+		public void Setup (string nodeId, string labelToNext, List<AssetData> inputSource, Action<string, string, List<AssetData>> Output) {
 			var outputSource = new List<AssetData>();
+			var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
 			
-			Debug.LogError("setup loaderの内容がまだダミー");
-			Output(id, AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL, outputSource);
+			foreach (var targetFilePath in targetFilePaths) {
+				outputSource.Add(new AssetData(targetFilePath, loadFilePath));
+			}
+
+			Output(nodeId, labelToNext, outputSource);
 		}
 		
-		public void Run (string id, string labelToNext, List<AssetData> inputSource, Action<string, string, List<AssetData>> Output) {
+		public void Run (string nodeId, string labelToNext, List<AssetData> inputSource, Action<string, string, List<AssetData>> Output) {
 			var outputSource = new List<AssetData>();
+			var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
 			
-			Debug.LogError("run loaderの内容がまだダミー");
-			Output(id, AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL, outputSource);
+			foreach (var targetFilePath in targetFilePaths) {
+				outputSource.Add(new AssetData(targetFilePath, loadFilePath));
+			}
+
+			Output(nodeId, labelToNext, outputSource);
 		}
 	}
 }
