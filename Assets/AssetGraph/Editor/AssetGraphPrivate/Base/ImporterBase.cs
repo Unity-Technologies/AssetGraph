@@ -13,7 +13,8 @@ namespace AssetGraph {
 		public string assetPath;
 		
 		public void Setup (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
-			// do nothing.
+			Debug.LogWarning("importerのsetup、読み込んだファイルのパスをimported扱いにするくらいはすべきかもしれない。");
+			Output(nodeId, labelToNext, inputSources);
 		}
 		
 		public void Run (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
@@ -65,7 +66,8 @@ namespace AssetGraph {
 							inputtedSourceCandidate.fileNameAndExtension,// A.png
 							inputtedSourceCandidate.pathUnderSourceBase,// (Temp/nodeId/)~
 							localFilePathWithTargetDirectoryPath,// Assets/~
-							AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath)
+							AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath),
+							AssetGraphInternalFunctions.GetAssetType(localFilePathWithTargetDirectoryPath)
 						);
 						outputSources.Add(newAssetData);
 					}
@@ -81,7 +83,8 @@ namespace AssetGraph {
 				var basePathWithNewAssetPath = AssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
 				var newAssetData = AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
 					basePathWithNewAssetPath,
-					AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath)
+					AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
+					AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath)
 				);
 				outputSources.Add(newAssetData);
 			}

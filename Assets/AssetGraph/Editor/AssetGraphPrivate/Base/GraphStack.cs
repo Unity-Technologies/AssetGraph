@@ -151,7 +151,8 @@ namespace AssetGraph {
 			if (connectionLabelsFromThisNodeToChildNode.Any()) {
 				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
 			} else {
-				Debug.LogWarning("this node is endpoint. no next node and no next result,,,ちょっと整理が必要");
+				Debug.LogWarning("this node is endpoint. no next node and no next result,,,次が無い時なんだけど、ちょっと整理が必要な気がする");
+				return;
 			}
 
 			var classStr = currentNodeData.currentNodeClassStr;
@@ -169,6 +170,13 @@ namespace AssetGraph {
 				inputParentResults.AddRange(result);
 			}
 
+			/*
+				run if inputParentResults is empty. but alert that.
+			*/
+			if (!inputParentResults.Any()) {
+				Debug.LogWarning("no input source found at node:" + classStr + " label:" + labelToChild);
+			}
+
 			Action<string, string, List<AssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<AssetData> source) => {				
 				var targetConnectionIds = connectionDatas
 					.Where(con => con.fromNodeId == dataSourceNodeId) // from this node
@@ -177,7 +185,7 @@ namespace AssetGraph {
 					.ToList();
 				
 				if (!targetConnectionIds.Any()) {
-					Debug.LogWarning("this dataSourceNodeId:" + dataSourceNodeId + " is endpointint");
+					Debug.LogWarning("this dataSourceNodeId:" + dataSourceNodeId + " is endpointint このログの代わりに何か出したいところ。");
 					return;
 				}
 

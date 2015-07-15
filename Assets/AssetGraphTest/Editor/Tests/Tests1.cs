@@ -10,8 +10,6 @@ using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
 
-using SublimeSocketAsset;
-
 // save-loadに関するテスト。Scriptの更新による変化も見てみたい。
 
 public partial class Test {

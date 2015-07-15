@@ -10,8 +10,6 @@ using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
 
-using SublimeSocketAsset;
-
 // Test
 
 public partial class Test {
@@ -130,8 +128,8 @@ public partial class Test {
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
 		var source = new List<AssetData>{
-			AssetData.AssetDataByLoader(definedSourcePath + "dummy.png", definedSourcePath),
-			AssetData.AssetDataByLoader(definedSourcePath + "model/sample.fbx", definedSourcePath)
+			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
+			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -149,8 +147,8 @@ public partial class Test {
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 		
 		var source = new List<AssetData>{
-			AssetData.AssetDataByLoader(definedSourcePath + "dummy.png", definedSourcePath),
-			AssetData.AssetDataByLoader(definedSourcePath + "model/sample.fbx", definedSourcePath)
+			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
+			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -171,10 +169,65 @@ public partial class Test {
 	}
 
 	public void _0_4_SetupPrefabricator () {
-		Debug.LogError("not yet");
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+
+		var source = new List<AssetData>{
+			AssetData.AssetDataByImporter(
+				"traceId_0_4_SetupPrefabricator",
+				Path.Combine(Application.dataPath, importedPath),
+				Application.dataPath,
+				Path.GetFileName(importedPath),
+				string.Empty,
+				importedPath,
+				AssetDatabase.AssetPathToGUID(importedPath),
+				AssetGraphInternalFunctions.GetAssetType(importedPath)
+			)
+		};
+
+		var results = new Dictionary<string, List<AssetData>>();
+
+		var sPrefabricator = new SamplePrefabricator_0();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
+		};
+
+		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, Out);
+		// do nothing in this test yet.
 	}
 	public void _0_5_RunPrefabricator () {
-		Debug.LogError("not yet");
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+
+		var source = new List<AssetData>{
+			AssetData.AssetDataByImporter(
+				"traceId_0_5_RunPrefabricator",
+				Path.Combine(Application.dataPath, importedPath),
+				Application.dataPath,
+				Path.GetFileName(importedPath),
+				string.Empty,
+				importedPath,
+				AssetDatabase.AssetPathToGUID(importedPath),
+				AssetGraphInternalFunctions.GetAssetType(importedPath)
+			)
+		};
+
+		var results = new Dictionary<string, List<AssetData>>();
+
+		var sPrefabricator = new SamplePrefabricator_0();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			results[connectionId] = output;
+		};
+
+		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, Out);
+
+		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"];
+		if (currentOutputs.Count == 3) {
+			// a.png
+			// material.mat
+			// prefab.prefab
+			return;
+		}
+		
+		Debug.LogError("failed to prefabricate");
 	}
 
 	public void _0_6_SetupBundlizer () {
@@ -284,9 +337,10 @@ public partial class Test {
 
 		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
+		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 
 		var exportTargets = new List<AssetData>{
-			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId),
+			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
 		};
 		
 		var integratedExporter = new IntegratedExporter();
@@ -312,9 +366,10 @@ public partial class Test {
 
 		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
+		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 		
 		var exportTargets = new List<AssetData>{
-			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId),
+			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
 		};
 		
 		var integratedExporter = new IntegratedExporter();
@@ -335,6 +390,24 @@ public partial class Test {
 	}
 
 	public void _0_12_RunStackedGraph_FullStacked () {
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_0_12_RunStackedGraph_FullStacked.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var stack = new GraphStack();
+		stack.RunStackedGraph(graphDict);
+		
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_12_RunStackedGraph_FullStacked");
+
 		Debug.LogError("not yet");
+
 	}
 }

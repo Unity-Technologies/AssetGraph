@@ -38,7 +38,7 @@
             ]
         },
         {
-            "className": "SamplePrefabricator_2",
+            "className": "SamplePrefabricator_1",
             "id": "3rd_Prefabricator",
             "kind": "PREFABRICATOR",
             "scriptPath": "Scriptのパス",
@@ -51,7 +51,7 @@
             ]
         },
         {
-            "className": "SampleBundlizer_2",
+            "className": "SampleBundlizer_1",
             "id": "4th_Bundlizer",
             "kind": "BUNDLIZER",
             "scriptPath": "Scriptのパス",

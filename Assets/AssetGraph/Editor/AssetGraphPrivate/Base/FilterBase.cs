@@ -49,7 +49,7 @@ namespace AssetGraph {
 			フィルタに対して自動的に呼ばれる関数。
 		*/
 		public virtual void In (List<string> source, Action<string, List<string>> Out) {
-			Debug.LogError("オーバーライドしてね！っていうエラーを吐こう");
+			Debug.LogError("should implement \"public override void In (List<string> source, Action<string, List<string>> Out)\" in class:" + this);
 		}
 	}
 }

@@ -8,6 +8,7 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
 		public const string IMPORTER_TEMP_PLACE = "Assets/AssetGraph/Temp/Imported/";
+		public const string PREFABRICATOR_TEMP_PLACE = "Assets/AssetGraph/Temp/Prefabricated/";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
