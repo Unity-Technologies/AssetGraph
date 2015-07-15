@@ -9,8 +9,11 @@ public class SampleFilter_2 : AssetGraph.FilterBase {
 		Inに対して複数のOutを出したいな！
 	*/
 	public override void In (List<string> source, Action<string, List<string>> Out) {
+		foreach (var s in source) {
+			Debug.LogError("s:" + s);
+		}
+
 		var the2ndList = new List<string>();
-		Debug.LogError("SampleFilter_2 複数のOutを出したい");
 		
 		foreach (var src in source) {
 			if (src.StartsWith("SampleFilter_2nd")) {

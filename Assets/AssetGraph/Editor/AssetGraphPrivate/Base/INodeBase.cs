@@ -10,11 +10,11 @@ namespace AssetGraph {
 		/**
 			起動時に走るメソッド
 		*/
-		void Setup (string nodeId, string labelToNext, List<AssetData> source, Action<string, string, List<AssetData>> Output);
+		void Setup (string nodeId, string labelToNext, List<InternalAssetData> source, Action<string, string, List<InternalAssetData>> Output);
 
 		/**
 			実行時に走るメソッド
 		*/
-		void Run (string nodeId, string labelToNext, List<AssetData> source, Action<string, string, List<AssetData>> Output);
+		void Run (string nodeId, string labelToNext, List<InternalAssetData> source, Action<string, string, List<InternalAssetData>> Output);
 	}
 }

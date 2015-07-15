@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class FilterBase : INodeBase {
-		public void Setup (string nodeId, string noUseLabel, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
+		public void Setup (string nodeId, string noUseLabel, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
 			
 			Action<string, List<string>> _PreOutput = (string label, List<string> outputSources) => {
-				var outputs = new List<AssetData>();
+				var outputs = new List<InternalAssetData>();
 				foreach (var outputSource in outputSources) {
 					foreach (var inputSource in inputSources) {
 						if (outputSource == inputSource.absoluteSourcePath) {
@@ -25,11 +25,11 @@ namespace AssetGraph {
 			In(absoluteSourcePaths, _PreOutput);
 		}
 		
-		public void Run (string nodeId, string noUseLabel, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
+		public void Run (string nodeId, string noUseLabel, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
 			
 			Action<string, List<string>> _Output = (string label, List<string> outputSources) => {
-				var outputs = new List<AssetData>();
+				var outputs = new List<InternalAssetData>();
 				foreach (var outputSource in outputSources) {
 					foreach (var inputSource in inputSources) {
 						if (outputSource == inputSource.absoluteSourcePath) {

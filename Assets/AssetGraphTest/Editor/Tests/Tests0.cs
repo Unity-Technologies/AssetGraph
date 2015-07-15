@@ -19,12 +19,12 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
-		var emptySource = new List<AssetData>();
+		var emptySource = new List<InternalAssetData>();
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var integratedLoader = new IntegratedLoader();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -44,12 +44,12 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
-		var emptySource = new List<AssetData>();
+		var emptySource = new List<InternalAssetData>();
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var integratedLoader = new IntegratedLoader();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -65,15 +65,15 @@ public partial class Test {
 	}
 
 	public void _0_0_SetupFilter () {
-		var source = new List<AssetData>{
-			AssetData.AssetDataByLoader("A/1st", "A"),
-			AssetData.AssetDataByLoader("A/2nd", "A")
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByLoader("A/1st", "A"),
+			InternalAssetData.InternalAssetDataByLoader("A/2nd", "A")
 		};
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -94,15 +94,15 @@ public partial class Test {
 		Debug.LogError("failed to split by filter");
 	}
 	public void _0_1_RunFilter () {
-		var source = new List<AssetData>{
-			AssetData.AssetDataByLoader("A/1st", "A"),
-			AssetData.AssetDataByLoader("A/2nd", "A")
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByLoader("A/1st", "A"),
+			InternalAssetData.InternalAssetDataByLoader("A/2nd", "A")
 		};
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -127,15 +127,15 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
-		var source = new List<AssetData>{
-			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
-			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
+			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
 		};
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -146,15 +146,15 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 		
-		var source = new List<AssetData>{
-			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
-			AssetData.AssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
+			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
 		};
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -171,8 +171,8 @@ public partial class Test {
 	public void _0_4_SetupPrefabricator () {
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
 
-		var source = new List<AssetData>{
-			AssetData.AssetDataByImporter(
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByImporter(
 				"traceId_0_4_SetupPrefabricator",
 				Path.Combine(Application.dataPath, importedPath),
 				Application.dataPath,
@@ -184,10 +184,10 @@ public partial class Test {
 			)
 		};
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -197,8 +197,8 @@ public partial class Test {
 	public void _0_5_RunPrefabricator () {
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
 
-		var source = new List<AssetData>{
-			AssetData.AssetDataByImporter(
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByImporter(
 				"traceId_0_5_RunPrefabricator",
 				Path.Combine(Application.dataPath, importedPath),
 				Application.dataPath,
@@ -210,10 +210,10 @@ public partial class Test {
 			)
 		};
 
-		var results = new Dictionary<string, List<AssetData>>();
+		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
@@ -226,15 +226,68 @@ public partial class Test {
 			// prefab.prefab
 			return;
 		}
-		
+
 		Debug.LogError("failed to prefabricate");
 	}
 
 	public void _0_6_SetupBundlizer () {
-		Debug.LogError("not yet");
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByImporter(
+				"traceId_0_6_SetupBundlizer",
+				Path.Combine(Application.dataPath, importedPath),
+				Application.dataPath,
+				Path.GetFileName(importedPath),
+				string.Empty,
+				importedPath,
+				AssetDatabase.AssetPathToGUID(importedPath),
+				AssetGraphInternalFunctions.GetAssetType(importedPath)
+			)
+		};
+
+		var results = new Dictionary<string, List<InternalAssetData>>();
+
+		var sBundlizer = new SampleBundlizer_0();
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
+			results[connectionId] = output;
+		};
+
+		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, Out);
+		// do nothing in this test yet.
 	}
 	public void _0_7_RunBundlizer () {
-		Debug.LogError("not yet");
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+
+		var source = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataByImporter(
+				"traceId_0_7_RunBundlizer",
+				Path.Combine(Application.dataPath, importedPath),
+				Application.dataPath,
+				Path.GetFileName(importedPath),
+				string.Empty,
+				importedPath,
+				AssetDatabase.AssetPathToGUID(importedPath),
+				AssetGraphInternalFunctions.GetAssetType(importedPath)
+			)
+		};
+
+		var results = new Dictionary<string, List<InternalAssetData>>();
+
+		var sBundlizer = new SampleBundlizer_0();
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
+			results[connectionId] = output;
+		};
+
+		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, Out);
+
+		var currentOutputs = results["CONNECTION_0_7_RunBundlizer"];
+		if (currentOutputs.Count == 1) {
+			// a.bundle
+			return;
+		}
+		
+		Debug.LogError("failed to bundlize");
 	}
 
 	public void _0_8_0_SerializeGraph_hasValidEndpoint () {
@@ -339,12 +392,12 @@ public partial class Test {
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
 		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 
-		var exportTargets = new List<AssetData>{
-			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
+		var exportTargets = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
 		};
 		
 		var integratedExporter = new IntegratedExporter();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			
 		};
 
@@ -368,12 +421,12 @@ public partial class Test {
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
 		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 		
-		var exportTargets = new List<AssetData>{
-			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
+		var exportTargets = new List<InternalAssetData>{
+			InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
 		};
 		
 		var integratedExporter = new IntegratedExporter();
-		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			
 		};
 
@@ -407,6 +460,25 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_12_RunStackedGraph_FullStacked");
 
+		Debug.LogError("not yet");
+
+	}
+
+	public void _0_13_SetupStackedGraph_FullStacked () {
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_0_12_RunStackedGraph_FullStacked.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var stack = new GraphStack();
+		stack.SetupStackedGraph(graphDict);
+		
 		Debug.LogError("not yet");
 
 	}

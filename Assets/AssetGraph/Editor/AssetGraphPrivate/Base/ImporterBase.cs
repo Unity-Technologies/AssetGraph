@@ -12,12 +12,12 @@ namespace AssetGraph {
 		public UnityEditor.AssetImporter assetImporter;
 		public string assetPath;
 		
-		public void Setup (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
+		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			Debug.LogWarning("importerのsetup、読み込んだファイルのパスをimported扱いにするくらいはすべきかもしれない。");
 			Output(nodeId, labelToNext, inputSources);
 		}
 		
-		public void Run (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
+		public void Run (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			// import specific place / node's id folder.
 			var targetDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(targetDirectoryPath);
@@ -47,9 +47,9 @@ namespace AssetGraph {
 			// get files, which are already assets.
 			var localFilePathsAfterImport = FileController.FilePathsInFolderWithoutMeta(targetDirectoryPath);
 
-			var localFilePathsWithoutTargetDirectoryPath = localFilePathsAfterImport.Select(path => AssetData.GetPathWithoutBasePath(path, targetDirectoryPath)).ToList();
+			var localFilePathsWithoutTargetDirectoryPath = localFilePathsAfterImport.Select(path => InternalAssetData.GetPathWithoutBasePath(path, targetDirectoryPath)).ToList();
 			
-			var outputSources = new List<AssetData>();
+			var outputSources = new List<InternalAssetData>();
 
 			// generate matching between source and imported assets.
 			foreach (var localFilePathWithoutTargetDirectoryPath in localFilePathsWithoutTargetDirectoryPath) {
@@ -57,9 +57,9 @@ namespace AssetGraph {
 					var pathsUnderSourceBase = inputtedSourceCandidate.pathUnderSourceBase;
 
 					if (localFilePathWithoutTargetDirectoryPath == pathsUnderSourceBase) {
-						var localFilePathWithTargetDirectoryPath = AssetData.GetPathWithBasePath(localFilePathWithoutTargetDirectoryPath, targetDirectoryPath);
+						var localFilePathWithTargetDirectoryPath = InternalAssetData.GetPathWithBasePath(localFilePathWithoutTargetDirectoryPath, targetDirectoryPath);
 
-						var newAssetData = AssetData.AssetDataByImporter(
+						var newInternalAssetData = InternalAssetData.InternalAssetDataByImporter(
 							inputtedSourceCandidate.traceId,
 							inputtedSourceCandidate.absoluteSourcePath,// /SOMEWHERE_OUTSIDE_OF_UNITY/~
 							inputtedSourceCandidate.sourceBasePath,// /SOMEWHERE_OUTSIDE_OF_UNITY/
@@ -69,7 +69,7 @@ namespace AssetGraph {
 							AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath),
 							AssetGraphInternalFunctions.GetAssetType(localFilePathWithTargetDirectoryPath)
 						);
-						outputSources.Add(newAssetData);
+						outputSources.Add(newInternalAssetData);
 					}
 				}
 			}
@@ -80,13 +80,13 @@ namespace AssetGraph {
 			var assetPathsWhichAreAlreadyTraced = outputSources.Select(path => path.pathUnderSourceBase).ToList();
 			var assetPathsWhichAreNotTraced = localFilePathsWithoutTargetDirectoryPath.Except(assetPathsWhichAreAlreadyTraced);
 			foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
-				var basePathWithNewAssetPath = AssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
-				var newAssetData = AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
+				var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
+				var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
 					basePathWithNewAssetPath,
 					AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
 					AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath)
 				);
-				outputSources.Add(newAssetData);
+				outputSources.Add(newInternalAssetData);
 			}
 
 			Output(nodeId, labelToNext, outputSources);

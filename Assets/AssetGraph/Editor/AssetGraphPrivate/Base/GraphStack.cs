@@ -21,6 +21,17 @@ namespace AssetGraph {
 			}
 		}
 		
+		public void SetupStackedGraph (Dictionary<string, object> graphDataDict) {
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
+			
+			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
+			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
+			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
+
+			foreach (var endNodeId in endpointNodeIds) {
+				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas);
+			}
+		}
 
 		public void RunStackedGraph (Dictionary<string, object> graphDataDict) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
@@ -110,19 +121,31 @@ namespace AssetGraph {
 		}
 
 		/**
-			直列化された要素を実行する
+			setup all serialized nodes in order.
+			returns orderd connectionIds
 		*/
-		public List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections) {
-			var resultDict = new Dictionary<string, List<AssetData>>();
-			RunUpToParent(endNodeId, nodeDatas, connections, resultDict);
+		public List<string> SetupSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections) {
+			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, false);
 
 			return resultDict.Keys.ToList();
 		}
 
 		/**
-			ノードの親を辿り実行、ConnectionIdごとの結果を収集する	
+			run all serialized nodes in order.
+			returns orderd connectionIds
 		*/
-		private void RunUpToParent (string nodeId, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas, Dictionary<string, List<AssetData>> resultDict) {
+		public List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections) {
+			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true);
+
+			return resultDict.Keys.ToList();
+		}
+
+		/**
+			execute Run or Setup for each nodes in order.
+		*/
+		private void ExecuteParent (string nodeId, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas, Dictionary<string, List<InternalAssetData>> resultDict, bool isActualRun) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.currentNodeId == nodeId).ToList();
 			if (!currentNodeDatas.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
 
@@ -133,7 +156,7 @@ namespace AssetGraph {
 			*/
 			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
-				RunUpToParent(parentNodeId, nodeDatas, connectionDatas, resultDict);
+				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun);
 			}
 
 			var connectionLabelsFromThisNodeToChildNode = connectionDatas
@@ -158,7 +181,7 @@ namespace AssetGraph {
 			var classStr = currentNodeData.currentNodeClassStr;
 			var nodeKind = currentNodeData.currentNodeKind;
 			
-			var inputParentResults = new List<AssetData>();
+			var inputParentResults = new List<InternalAssetData>();
 			
 			var receivingConnectionIds = connectionDatas
 				.Where(con => con.toNodeId == nodeId)
@@ -177,7 +200,7 @@ namespace AssetGraph {
 				Debug.LogWarning("no input source found at node:" + classStr + " label:" + labelToChild);
 			}
 
-			Action<string, string, List<AssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<AssetData> source) => {				
+			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {				
 				var targetConnectionIds = connectionDatas
 					.Where(con => con.fromNodeId == dataSourceNodeId) // from this node
 					.Where(con => con.connectionLabel == connectionLabel) // from this label
@@ -193,36 +216,75 @@ namespace AssetGraph {
 				resultDict[targetConnectionId] = source;
 			};
 
-			switch (nodeKind) {
-				case AssetGraphSettings.NodeKind.LOADER: {
-					var executor = Executor<IntegratedLoader>(classStr);
-					executor.loadFilePath = currentNodeData.loadFilePath;
-					executor.Run(nodeId, labelToChild, inputParentResults, Output);
-					break;
+			if (isActualRun) {
+				switch (nodeKind) {
+					case AssetGraphSettings.NodeKind.LOADER: {
+						var executor = Executor<IntegratedLoader>(classStr);
+						executor.loadFilePath = currentNodeData.loadFilePath;
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.FILTER: {
+						var executor = Executor<FilterBase>(classStr);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.IMPORTER: {
+						var executor = Executor<ImporterBase>(classStr);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.PREFABRICATOR: {
+						var executor = Executor<PrefabricatorBase>(classStr);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.BUNDLIZER: {
+						var executor = Executor<BundlizerBase>(classStr);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.EXPORTER: {
+						var executor = Executor<IntegratedExporter>(classStr);
+						executor.exportFilePath = currentNodeData.exportFilePath;
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
 				}
-				case AssetGraphSettings.NodeKind.FILTER: {
-					var executor = Executor<FilterBase>(classStr);
-					executor.Run(nodeId, labelToChild, inputParentResults, Output);
-					break;
-				}
-				case AssetGraphSettings.NodeKind.IMPORTER: {
-					var executor = Executor<ImporterBase>(classStr);
-					executor.Run(nodeId, labelToChild, inputParentResults, Output);
-					break;
-				}
-				case AssetGraphSettings.NodeKind.PREFABRICATOR: {
-					Debug.LogError("not yet applied node kind, Prefabricator");
-					break;
-				}
-				case AssetGraphSettings.NodeKind.BUNDLIZER: {
-					Debug.LogError("not yet applied node kind, Bundlizer");
-					break;
-				}
-				case AssetGraphSettings.NodeKind.EXPORTER: {
-					var executor = Executor<IntegratedExporter>(classStr);
-					executor.exportFilePath = currentNodeData.exportFilePath;
-					executor.Run(nodeId, labelToChild, inputParentResults, Output);
-					break;
+			} else {
+				switch (nodeKind) {
+					case AssetGraphSettings.NodeKind.LOADER: {
+						var executor = Executor<IntegratedLoader>(classStr);
+						executor.loadFilePath = currentNodeData.loadFilePath;
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.FILTER: {
+						var executor = Executor<FilterBase>(classStr);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.IMPORTER: {
+						var executor = Executor<ImporterBase>(classStr);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.PREFABRICATOR: {
+						var executor = Executor<PrefabricatorBase>(classStr);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.BUNDLIZER: {
+						var executor = Executor<BundlizerBase>(classStr);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.EXPORTER: {
+						var executor = Executor<IntegratedExporter>(classStr);
+						executor.exportFilePath = currentNodeData.exportFilePath;
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
 				}
 			}
 		}

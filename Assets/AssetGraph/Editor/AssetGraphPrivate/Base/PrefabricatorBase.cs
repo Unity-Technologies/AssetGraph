@@ -8,18 +8,18 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
+		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			Output(nodeId, labelToNext, inputSources);
 		}
 
-		public void Run (string nodeId, string labelToNext, List<AssetData> inputSources, Action<string, string, List<AssetData>> Output) {
-			var assets = new List<Asset>();
+		public void Run (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
+			var assets = new List<AssetInfo>();
 			foreach (var assetData in inputSources) {
 				var assetName = assetData.fileNameAndExtension;
 				var assetType = assetData.assetType;
 				var assetPath = assetData.importedPath;
 				var assetId = assetData.assetId;
-				assets.Add(new Asset(assetName, assetType, assetPath, assetId));
+				assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
 			}
 
 			var recommendedPrefabOutputDir = Path.Combine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
@@ -40,10 +40,10 @@ namespace AssetGraph {
 			/*
 				collect outputs.
 			*/
-			var outputSources = new List<AssetData>();
+			var outputSources = new List<InternalAssetData>();
 
 			foreach (var assetData in inputSources) {
-				var inheritedAssetData = AssetData.AssetDataByImporter(
+				var inheritedInternalAssetData = InternalAssetData.InternalAssetDataByImporter(
 					assetData.traceId,
 					assetData.absoluteSourcePath,
 					assetData.sourceBasePath,
@@ -53,7 +53,7 @@ namespace AssetGraph {
 					assetData.assetId,
 					assetData.assetType
 				);
-				outputSources.Add(inheritedAssetData);
+				outputSources.Add(inheritedInternalAssetData);
 			}
 
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
@@ -69,19 +69,19 @@ namespace AssetGraph {
 			*/
 			var assetPathsWhichAreNotTraced = localFilePathsAfterPrefabricate.Except(localFilePathsBeforePrefabricate);
 			foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
-				var newAssetData = AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
+				var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
 					newAssetPath,
 					AssetDatabase.AssetPathToGUID(newAssetPath),
 					AssetGraphInternalFunctions.GetAssetType(newAssetPath)
 				);
-				outputSources.Add(newAssetData);
+				outputSources.Add(newInternalAssetData);
 			}
 
 			Output(nodeId, labelToNext, outputSources);
 		}
 
-		public virtual void In (List<Asset> source, string recommendedPrefabOutputDir) {
-			Debug.LogError("should implement \"public override void In (List<Asset> source, string recommendedPrefabOutputDir)\" in class:" + this);
+		public virtual void In (List<AssetInfo> source, string recommendedPrefabOutputDir) {
+			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
 	}
 }

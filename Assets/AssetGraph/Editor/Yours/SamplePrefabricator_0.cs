@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class SamplePrefabricator_0 : AssetGraph.PrefabricatorBase {
-	public override void In (List<AssetGraph.Asset> source, string recommendedPrefabOutputDir) {
+	public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
 		
 		var textureAssetPath = source[0].assetPath;
 		var textureAssetType = source[0].assetType;

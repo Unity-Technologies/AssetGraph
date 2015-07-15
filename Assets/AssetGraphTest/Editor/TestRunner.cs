@@ -19,14 +19,15 @@ public partial class Test {
 			tests.Add(this._0_3_RunImporter);
 			tests.Add(this._0_4_SetupPrefabricator);
 			tests.Add(this._0_5_RunPrefabricator);
-			// tests.Add(this._0_6_SetupBundlizer);
-			// tests.Add(this._0_7_RunBundlizer);
+			tests.Add(this._0_6_SetupBundlizer);
+			tests.Add(this._0_7_RunBundlizer);
 			tests.Add(this._0_8_0_SerializeGraph_hasValidEndpoint);
 			tests.Add(this._0_8_1_SerializeGraph_hasValidOrder);
 			tests.Add(this._0_9_RunStackedGraph);
 			tests.Add(this._0_10_SetupExport);
 			tests.Add(this._0_11_RunExport);
-			// tests.Add(this._0_12_RunStackedGraph_FullStacked);
+			tests.Add(this._0_12_RunStackedGraph_FullStacked);
+			tests.Add(this._0_13_SetupStackedGraph_FullStacked);
 		}
 
 		// graph
