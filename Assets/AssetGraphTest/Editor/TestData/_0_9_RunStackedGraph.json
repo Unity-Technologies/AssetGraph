@@ -41,7 +41,7 @@
             "className": "AssetGraph.IntegratedExporter",
             "id": "3rd_Exporter",
             "kind": "EXPORTER",
-            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportFor_0_9_SerializedGraphJSON",
+            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportPlace/For_0_9_SerializedGraphJSONByExporter",
             "pos": {
                 "x": 10,
                 "y": 10

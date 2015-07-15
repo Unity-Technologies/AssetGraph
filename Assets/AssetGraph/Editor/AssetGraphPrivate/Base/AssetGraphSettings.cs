@@ -50,11 +50,12 @@ namespace AssetGraph {
 			IMPORTER,
 			PREFABRICATOR,
 			BUNDLIZER,
-			EXPORTER
+			EXPORTER,
 		}
 
 		public static NodeKind NodeKindFromString (string val) {
 			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
 		}
+
 	}
 }

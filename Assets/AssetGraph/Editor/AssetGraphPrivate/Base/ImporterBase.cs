@@ -58,7 +58,7 @@ namespace AssetGraph {
 					if (localFilePathWithoutTargetDirectoryPath == pathsUnderSourceBase) {
 						var localFilePathWithTargetDirectoryPath = AssetData.GetPathWithBasePath(localFilePathWithoutTargetDirectoryPath, targetDirectoryPath);
 
-						var newAssetData = new AssetData(
+						var newAssetData = AssetData.AssetDataByImporter(
 							inputtedSourceCandidate.traceId,
 							inputtedSourceCandidate.absoluteSourcePath,// /SOMEWHERE_OUTSIDE_OF_UNITY/~
 							inputtedSourceCandidate.sourceBasePath,// /SOMEWHERE_OUTSIDE_OF_UNITY/
@@ -79,11 +79,9 @@ namespace AssetGraph {
 			var assetPathsWhichAreNotTraced = localFilePathsWithoutTargetDirectoryPath.Except(assetPathsWhichAreAlreadyTraced);
 			foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
 				var basePathWithNewAssetPath = AssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
-
-				var newAssetData = new AssetData(
+				var newAssetData = AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
 					basePathWithNewAssetPath,
-					AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
-					nodeId
+					AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath)
 				);
 				outputSources.Add(newAssetData);
 			}

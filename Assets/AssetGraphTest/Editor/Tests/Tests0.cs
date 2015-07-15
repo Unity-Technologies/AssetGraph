@@ -68,8 +68,8 @@ public partial class Test {
 
 	public void _0_0_SetupFilter () {
 		var source = new List<AssetData>{
-			new AssetData("A/1st", "A"),
-			new AssetData("A/2nd", "A")
+			AssetData.AssetDataByLoader("A/1st", "A"),
+			AssetData.AssetDataByLoader("A/2nd", "A")
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -97,8 +97,8 @@ public partial class Test {
 	}
 	public void _0_1_RunFilter () {
 		var source = new List<AssetData>{
-			new AssetData("A/1st", "A"),
-			new AssetData("A/2nd", "A")
+			AssetData.AssetDataByLoader("A/1st", "A"),
+			AssetData.AssetDataByLoader("A/2nd", "A")
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -130,8 +130,8 @@ public partial class Test {
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
 		var source = new List<AssetData>{
-			new AssetData(definedSourcePath + "dummy.png", definedSourcePath),
-			new AssetData(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
+			AssetData.AssetDataByLoader(definedSourcePath + "dummy.png", definedSourcePath),
+			AssetData.AssetDataByLoader(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -149,8 +149,8 @@ public partial class Test {
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 		
 		var source = new List<AssetData>{
-			new AssetData(definedSourcePath + "dummy.png", definedSourcePath),
-			new AssetData(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
+			AssetData.AssetDataByLoader(definedSourcePath + "dummy.png", definedSourcePath),
+			AssetData.AssetDataByLoader(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -257,18 +257,73 @@ public partial class Test {
 		var stack = new GraphStack();
 		stack.RunStackedGraph(graphDict);
 		
-		Debug.LogError("成功してればExporterがファイル吐いてる");
+		// if () return;
 
 		Debug.LogError("not yet");
 	}
 
 
 	public void _0_10_SetupExport () {
-		Debug.LogError("not yet");
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_10_SetupExport");
+
+		// delete all if exist
+		if (Directory.Exists(exportFilePath)) {
+			Directory.Delete(exportFilePath, true);
+		}
+
+		Directory.CreateDirectory(exportFilePath);
+
+		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
+		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
+
+		var exportTargets = new List<AssetData>{
+			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId),
+		};
+		
+		var integratedExporter = new IntegratedExporter();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			
+		};
+
+		integratedExporter.exportFilePath = exportFilePath;
+		integratedExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, Out);
+		// nothing for check yet.
 	}
 
 	public void _0_11_RunExport () {
-		Debug.LogError("not yet");
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_11_RunExport");
+
+		// delete all if exist
+		if (Directory.Exists(exportFilePath)) {
+			Directory.Delete(exportFilePath, true);
+		}
+
+		Directory.CreateDirectory(exportFilePath);
+
+		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
+		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
+		Debug.LogError("assetId:" + assetId);
+		var exportTargets = new List<AssetData>{
+			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId),
+		};
+		
+		var integratedExporter = new IntegratedExporter();
+		Action<string, string, List<AssetData>> Out = (string nodeId, string connectionId, List<AssetData> output) => {
+			
+		};
+
+		integratedExporter.exportFilePath = exportFilePath;
+		integratedExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, Out);
+
+		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
+
+		if (File.Exists(assumeedExportedFilePath)) {
+			return;
+		}
+
+		Debug.LogError("failed to export");
 	}
 
 	public void _0_12_RunStackedGraph_FullStacked () {

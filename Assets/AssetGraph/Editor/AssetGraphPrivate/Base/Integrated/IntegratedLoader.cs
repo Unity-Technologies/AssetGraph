@@ -12,7 +12,12 @@ namespace AssetGraph {
 			var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
 			
 			foreach (var targetFilePath in targetFilePaths) {
-				outputSource.Add(new AssetData(targetFilePath, loadFilePath));
+				outputSource.Add(
+					AssetData.AssetDataByLoader(
+						targetFilePath, 
+						loadFilePath
+					)
+				);
 			}
 
 			Output(nodeId, labelToNext, outputSource);
@@ -23,7 +28,12 @@ namespace AssetGraph {
 			var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
 			
 			foreach (var targetFilePath in targetFilePaths) {
-				outputSource.Add(new AssetData(targetFilePath, loadFilePath));
+				outputSource.Add(
+					AssetData.AssetDataByLoader(
+						targetFilePath, 
+						loadFilePath
+					)
+				);
 			}
 
 			Output(nodeId, labelToNext, outputSource);
