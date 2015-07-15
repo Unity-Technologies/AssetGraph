@@ -131,7 +131,7 @@ public partial class Test {
 
 		var source = new List<AssetData>{
 			AssetData.AssetDataByLoader(definedSourcePath + "dummy.png", definedSourcePath),
-			AssetData.AssetDataByLoader(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
+			AssetData.AssetDataByLoader(definedSourcePath + "model/sample.fbx", definedSourcePath)
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -150,7 +150,7 @@ public partial class Test {
 		
 		var source = new List<AssetData>{
 			AssetData.AssetDataByLoader(definedSourcePath + "dummy.png", definedSourcePath),
-			AssetData.AssetDataByLoader(definedSourcePath + "model/FBX_Biker.fbx", definedSourcePath)
+			AssetData.AssetDataByLoader(definedSourcePath + "model/sample.fbx", definedSourcePath)
 		};
 
 		var results = new Dictionary<string, List<AssetData>>();
@@ -163,7 +163,7 @@ public partial class Test {
 		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, Out);
 
 		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
-		if (currentOutputs.Count == 5) {
+		if (currentOutputs.Count == 3) {
 			return;
 		}
 
@@ -257,7 +257,15 @@ public partial class Test {
 		var stack = new GraphStack();
 		stack.RunStackedGraph(graphDict);
 		
-		// if () return;
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
+
+		if (File.Exists(Path.Combine(expectedExportDestPath, "kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "sample.fbx")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
+		) {
+			return;
+		}
 
 		Debug.LogError("not yet");
 	}
@@ -304,7 +312,7 @@ public partial class Test {
 
 		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
-		Debug.LogError("assetId:" + assetId);
+		
 		var exportTargets = new List<AssetData>{
 			AssetData.AssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId),
 		};
