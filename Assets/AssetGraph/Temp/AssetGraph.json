@@ -1,67 +1,127 @@
 {
-	"lastModified":"07/09/2015 01:46:59",
+	"lastModified":"07/10/2015 01:46:59",
     "nodes": [
         {
         	"className": "AssetGraph.IntegratedLoader",
-            "id": "35f5c15a-544f-4158-95a0-9c14367df42a",
+            "id": "リソースの呼び込み",
             "kind": "LOADER",
-            "loadPath": "なんかフォルダの位置とか1ファイルのパスとか。",
+            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/AssetGraphResources",
             "outputLabels": [
-                "ラベル0"
+                "_"
             ]
         },
         {
         	"className": "SampleFilter",
-            "id": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
+            "id": "リソースの仕分け",
             "kind": "FILTER",
-            "scriptPath": "Scriptのパス",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter.cs",
             "pos": {
                 "x": 10,
                 "y": 10
             },
             "outputLabels": [
-                "ラベル1"
+                "画像",
+                "モデル",
+                "BGM",
+                "SE"
             ]
         },
         {
-        	"className": "SampleFilter",
-            "id": "35f5c15a-544f-4158-95a0-9c14367df42b",
+            "className": "SampleImporterForImage",
+            "id": "画像を読み込む",
             "kind": "FILTER",
-            "scriptPath": "Scriptのパス",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage.cs",
+            "pos": {
+                "x": 10,
+                "y": 100
+            },
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
+            "className": "SampleImporterForModel",
+            "id": "モデルを読み込む",
+            "kind": "FILTER",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel.cs",
+            "pos": {
+                "x": 10,
+                "y": 200
+            },
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
+            "className": "SampleImporterForBGM",
+            "id": "BGMを読み込む",
+            "kind": "FILTER",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM.cs",
+            "pos": {
+                "x": 10,
+                "y": 300
+            },
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
+            "className": "SampleImporterForSE",
+            "id": "SEを読み込む",
+            "kind": "FILTER",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE.cs",
+            "pos": {
+                "x": 10,
+                "y": 400
+            },
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
+        	"className": "SamplePrefabricator",
+            "id": "画像とモデルを合わせてPrefabつくる",
+            "kind": "PREFABRICATOR",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs",
             "pos": {
                 "x": 310,
                 "y": 110
             },
             "outputLabels": [
-                "ラベル2"
+                "_"
             ]
         },
         {
-        	"className": "SampleFilter",
-            "id": "35f5c15a-544f-4158-95a0-9c14367df42c",
-            "kind": "FILTER",
+        	"className": "SampleBundlizer",
+            "id": "バンドルにする",
+            "kind": "BUNDLIZER",
             "scriptPath": "Scriptのパス",
             "pos": {
                 "x": 310,
                 "y": 210
             },
             "outputLabels": [
-                "ラベル3"
+                "_"
             ]
+        },
+        {
+            "className": "AssetGraph.IntegratedExporter",
+            "id": "バンドルをフォルダに出力",
+            "kind": "EXPORTER",
+            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/AssetGraphResourcesExported",
+            "pos": {
+                "x": 310,
+                "y": 210
+            },
+            "outputLabels": []
         }
     ],
     "connections": [
         {
-            "label": "ラベル1",
-            "connectionId": "2f1ca050-40f4-45cb-8f8b-91c026f4e264",
-            "fromNode": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
-            "toNode": "35f5c15a-544f-4158-95a0-9c14367df42b"
-        },
-        {
-            "label": "ラベル1",
-            "connectionId": "3f1ca050-40f4-45cb-8f8b-91c026f4e264",
-            "fromNode": "1f1ca050-40f4-45cb-8f8b-91c026f4e264",
-            "toNode": "35f5c15a-544f-4158-95a0-9c14367df42c"
+            "label": "画像",
+            "connectionId": "画像をインポータに",
+            "fromNode": "リソースの仕分け",
+            "toNode": "画像を読み込む"
         }
     ]
 }
