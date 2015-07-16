@@ -1,11 +1,15 @@
 {
-	"lastModified":"07/10/2015 01:46:59",
+	"lastModified":"07/11/2015 01:46:59",
     "nodes": [
         {
         	"className": "AssetGraph.IntegratedLoader",
             "id": "リソースの呼び込み",
             "kind": "LOADER",
             "loadPath": "/Users/runnershigh/Desktop/AssetGraph/AssetGraphResources",
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
             "outputLabels": [
                 "_"
             ]

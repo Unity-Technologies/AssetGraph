@@ -18,18 +18,66 @@ namespace AssetGraph {
 		public readonly string id;
 		public readonly AssetGraphSettings.NodeKind kind;
 		public readonly string scriptPath;
+		public readonly string loadPath;
+		public readonly string exportPath;
+
 		
 		public Rect baseRect;
+		
+		public static Node LoaderNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				loadPath, 
+				null, 
+				x,
+				y
+			);
+		}
 
-		public Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, float x, float y) {
+		public static Node ExporterNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string exportPath, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null, 
+				exportPath, 
+				x,
+				y
+			);
+		}
+
+		public static Node DefaultNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				scriptPath,
+				null, 
+				null, 
+				x,
+				y
+			);
+		}
+
+		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, string loadPath, string exportPath, float x, float y) {
+			this.Emit = emit;
 			this.nodeWindowId = index;
 			this.name = name;
 			this.id = id;
 			this.kind = kind;
 			this.scriptPath = scriptPath;
-			
-			this.Emit = emit;
-
+			this.loadPath = loadPath;
+			this.exportPath = exportPath;
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 		}
 

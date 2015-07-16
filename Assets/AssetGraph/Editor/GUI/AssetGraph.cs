@@ -109,7 +109,21 @@ namespace AssetGraph {
 
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER: {
-						Debug.LogWarning("Source定義を特殊なノードとして読み込む必要がある");
+						var loadPath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
+
+						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
+						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
+						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
+						
+						var newNode = Node.LoaderNode(EmitEvent, nodes.Count, name, id, kind, loadPath, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER:
@@ -121,7 +135,7 @@ namespace AssetGraph {
 						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
 						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
 						
-						var newNode = new Node(EmitEvent, nodes.Count, name, id, kind, scriptPath, x, y);
+						var newNode = Node.DefaultNode(EmitEvent, nodes.Count, name, id, kind, scriptPath, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -133,7 +147,15 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER: {
-						Debug.LogError("EXPORTER定義を特殊なノードとして読み込む必要がある");
+						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
+						
+						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
+						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
+						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
+						
+						var newNode = Node.ExporterNode(EmitEvent, nodes.Count, name, id, kind, exportPath, x, y);
+
+						nodes.Add(newNode);
 						break;
 					}
 				}
