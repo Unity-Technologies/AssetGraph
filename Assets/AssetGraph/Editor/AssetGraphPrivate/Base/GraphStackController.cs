@@ -158,7 +158,6 @@ namespace AssetGraph {
 			*/
 			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
-				Debug.LogError("parent:" + parentNodeId);
 				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun);
 			}
 
@@ -173,13 +172,9 @@ namespace AssetGraph {
 				will be ignored in Filter node,
 				because the Filter node will generate new label of connection by itself.
 			*/
-			
 			var labelToChild = string.Empty;
 			if (connectionLabelsFromThisNodeToChildNode.Any()) {
 				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
-			} else {
-				Debug.LogWarning("this node:" + nodeId + " is endpoint. no next node and no next result,,,次が無いんだけど、走らせたい時がある。というか実行はされるべき。で、ラベルをどうするかっていう感じ。アウトは用意できちゃうので、それをResultに入れない理由がない。既存のノード名とかぶってもいやだし、、乱数か、、ノードごとにバラバラだと積む感じがするし、、結果を入れない、っていうのもあり。");
-				return;
 			}
 
 			/*
@@ -201,7 +196,7 @@ namespace AssetGraph {
 				inputParentResults.AddRange(result);
 			}
 
-			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {				
+			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
 				var targetConnectionIds = connectionDatas
 					.Where(con => con.fromNodeId == dataSourceNodeId) // from this node
 					.Where(con => con.connectionLabel == connectionLabel) // from this label

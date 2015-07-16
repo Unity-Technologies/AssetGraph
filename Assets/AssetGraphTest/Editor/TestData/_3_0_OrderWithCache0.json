@@ -32,7 +32,7 @@
         },
         {
             "className": "SampleImporterForImage_1",
-            "id": "SampleImporterForImage_1_画像を読み込む",
+            "id": "画像を読み込む",
             "kind": "IMPORTER",
             "outputLabels": [
                 "+"
@@ -45,7 +45,7 @@
         },
         {
             "className": "SampleImporterForModel_1",
-            "id": "SampleImporterForModel_1_モデルを読み込む",
+            "id": "モデルを読み込む",
             "kind": "IMPORTER",
             "outputLabels": [
                 "+"
@@ -58,7 +58,7 @@
         },
         {
             "className": "SampleImporterForBGM_1",
-            "id": "SampleImporterForBGM_1_BGMを読み込む",
+            "id": "BGMを読み込む",
             "kind": "IMPORTER",
             "outputLabels": [
                 "+"
@@ -71,7 +71,7 @@
         },
         {
             "className": "SampleImporterForSE_1",
-            "id": "SampleImporterForSE_1_SEを読み込む",
+            "id": "SEを読み込む",
             "kind": "IMPORTER",
             "outputLabels": [
                 "+"
@@ -81,6 +81,19 @@
                 "y": 261
             },
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE_1.cs"
+        },
+        {
+            "className": "SamplePrefabricator_2",
+            "id": "仮の終端PREFABRICATOR",
+            "kind": "PREFABRICATOR",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 347,
+                "y": 261
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator_2.cs"
         }
     ],
     "connections": [
@@ -113,6 +126,30 @@
             "connectionId": "894b8528-6e04-4233-b17b-6227cdfa6449",
             "fromNode": "リソースの仕分け",
             "toNode": "SEを読み込む"
+        },
+        {
+            "label": "+",
+            "connectionId": "1b04f904-2315-4ba9-ad1d-c838f6a9d2b1a",
+            "fromNode": "画像を読み込む",
+            "toNode": "仮の終端PREFABRICATOR"
+        },
+        {
+            "label": "+",
+            "connectionId": "a6d6297f-5559-4478-9d64-119736c4fa3da",
+            "fromNode": "モデルを読み込む",
+            "toNode": "仮の終端PREFABRICATOR"
+        },
+        {
+            "label": "+",
+            "connectionId": "c3b9fe4f-32da-4792-a3d1-488f65f6cb79a",
+            "fromNode": "BGMを読み込む",
+            "toNode": "仮の終端PREFABRICATOR"
+        },
+        {
+            "label": "+",
+            "connectionId": "894b8528-6e04-4233-b17b-6227cdfa6449a",
+            "fromNode": "SEを読み込む",
+            "toNode": "仮の終端PREFABRICATOR"
         }
     ]
 }
