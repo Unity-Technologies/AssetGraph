@@ -31,6 +31,8 @@ namespace AssetGraph {
 			
 			In(assets, recommendedBundleOutputDir);
 
+			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+			AssetDatabase.SaveAssets();
 
 			var localFilePathsAfterBundlize = FileController.FilePathsInFolderWithoutMeta("Assets");
 			

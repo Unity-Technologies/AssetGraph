@@ -30,12 +30,28 @@ public partial class Test {
 			tests.Add(this._0_13_SetupStackedGraph_FullStacked);
 		}
 
-		// graph
+
+		// GUI
 		{
-			// tests.Add(this._1_0_SaveAndLoadGraphData);
+			// tests.Add(this._1_0_AddNode);
+			// tests.Add(this._1_1_DeleteNode);
+			// tests.Add(this._1_2_AddConnection);
+			// tests.Add(this._1_3_DeleteConnection);
 		}
 
-		// 
+		// prefabricator
+		{
+			// tests.Add(this._2_0_PrefabricatorFromOutside);
+			// tests.Add(this._2_1_PrefabricatorFromOutsideWithMeta);
+		}
+
+		// order & cache
+		{
+			tests.Add(this._3_0_OrderWithCache0);
+			// tests.Add(this._3_1_OrderWithCache1);
+			// tests.Add(this._3_2_OrderWithCache2);
+			// tests.Add(this._3_3_OrderWithCache3);
+		}
 
 
 		

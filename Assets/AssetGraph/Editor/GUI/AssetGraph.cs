@@ -398,6 +398,15 @@ namespace AssetGraph {
 				}
 				case ModifyMode.CONNECT_ENDED: {
 					switch (e.eventType) {
+						case OnNodeEvent.EventType.EVENT_NODE_TAPPED: {
+							var tappedNodeId = e.eventSourceNode.id;
+							foreach (var node in nodes) {
+								if (node.id == tappedNodeId) node.SetActive();
+								else node.SetInactive();
+							}
+							break;
+						}
+
 						/*
 							start connection handling.
 						*/

@@ -1,0 +1,143 @@
+{
+    "lastModified": "07/16/2015 21:46:54",
+    "nodes": [
+        {
+            "className": "AssetGraph.IntegratedLoader",
+            "id": "リソースの呼び込み",
+            "kind": "LOADER",
+            "outputLabels": [
+                "_"
+            ],
+            "pos": {
+                "x": 13,
+                "y": 11
+            },
+            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/AssetGraphResources"
+        },
+        {
+            "className": "SampleFilter",
+            "id": "リソースの仕分け",
+            "kind": "FILTER",
+            "outputLabels": [
+                "画像",
+                "モデル",
+                "BGM",
+                "SE"
+            ],
+            "pos": {
+                "x": 67,
+                "y": 110
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter.cs"
+        },
+        {
+            "className": "SampleImporterForImage",
+            "id": "画像を読み込む",
+            "kind": "FILTER",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 345,
+                "y": 24
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage.cs"
+        },
+        {
+            "className": "SampleImporterForModel",
+            "id": "モデルを読み込む",
+            "kind": "FILTER",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 346,
+                "y": 103
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel.cs"
+        },
+        {
+            "className": "SampleImporterForBGM",
+            "id": "BGMを読み込む",
+            "kind": "FILTER",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 351,
+                "y": 179
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM.cs"
+        },
+        {
+            "className": "SampleImporterForSE",
+            "id": "SEを読み込む",
+            "kind": "FILTER",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 347,
+                "y": 261
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE.cs"
+        },
+        {
+            "className": "SamplePrefabricator",
+            "id": "画像とモデルを合わせてPrefabつくる",
+            "kind": "PREFABRICATOR",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 588,
+                "y": 24
+            },
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
+        },
+        {
+            "className": "SampleBundlizer",
+            "id": "バンドルにする",
+            "kind": "BUNDLIZER",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 594,
+                "y": 112
+            },
+            "scriptPath": "Scriptのパス"
+        },
+        {
+            "className": "AssetGraph.IntegratedExporter",
+            "id": "バンドルをフォルダに出力",
+            "kind": "EXPORTER",
+            "outputLabels": [],
+            "pos": {
+                "x": 1035,
+                "y": 219
+            },
+            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/AssetGraphResourcesExported"
+        }
+    ],
+    "connections": [
+        {
+            "label": "画像",
+            "connectionId": "1b04f904-2315-4ba9-ad1d-c838f6a9d2b1",
+            "fromNode": "リソースの仕分け",
+            "toNode": "画像を読み込む"
+        },
+        {
+            "label": "モデル",
+            "connectionId": "a6d6297f-5559-4478-9d64-119736c4fa3d",
+            "fromNode": "リソースの仕分け",
+            "toNode": "モデルを読み込む"
+        },
+        {
+            "label": "_",
+            "connectionId": "fdc6d8bc-b903-44c9-bf7c-be7c89c7e6d0",
+            "fromNode": "リソースの呼び込み",
+            "toNode": "リソースの仕分け"
+        }
+    ]
+}

@@ -21,6 +21,7 @@ namespace AssetGraph {
 		public readonly string loadPath;
 		public readonly string exportPath;
 
+		private string nodeInterfaceTypeStr;
 		
 		public Rect baseRect;
 		
@@ -79,7 +80,58 @@ namespace AssetGraph {
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
+
+			
+			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.LOADER: {
+					this.nodeInterfaceTypeStr = "flow node 0";
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER: {
+					this.nodeInterfaceTypeStr = "flow node 0";
+					break;
+				}
+				default: {
+					this.nodeInterfaceTypeStr = "flow node 1";
+					break;
+				}
+			}
 		}
+
+		public void SetActive () {
+			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.LOADER: {
+					this.nodeInterfaceTypeStr = "flow node 0 on";
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER: {
+					this.nodeInterfaceTypeStr = "flow node 0 on";
+					break;
+				}
+				default: {
+					this.nodeInterfaceTypeStr = "flow node 1 on";
+					break;
+				}
+			}
+		}
+
+		public void SetInactive () {
+			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.LOADER: {
+					this.nodeInterfaceTypeStr = "flow node 0";
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER: {
+					this.nodeInterfaceTypeStr = "flow node 0";
+					break;
+				}
+				default: {
+					this.nodeInterfaceTypeStr = "flow node 1";
+					break;
+				}
+			}
+		}
+
 
 		public void AddConnectionPoint (ConnectionPoint adding) {
 			connectionPoints.Add(adding);
@@ -119,7 +171,7 @@ namespace AssetGraph {
 		}
 
 		public void UpdateNodeRect () {
-			baseRect = GUI.Window(nodeWindowId, baseRect, UpdateNodeEvent, string.Empty, "flow node 1");
+			baseRect = GUI.Window(nodeWindowId, baseRect, UpdateNodeEvent, string.Empty, nodeInterfaceTypeStr);
 		}
 
 		/**
@@ -162,6 +214,7 @@ namespace AssetGraph {
 				case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 					if (result != null) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_HANDLE_STARTED, this, Event.current.mousePosition, result));
+					else Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TAPPED, this, Event.current.mousePosition, null));
 					break;
 				}
 				
