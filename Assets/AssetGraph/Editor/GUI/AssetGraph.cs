@@ -69,8 +69,8 @@ namespace AssetGraph {
 				// renew
 				var graphData = new Dictionary<string, object>{
 					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, lastModified.ToString()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<Node>()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<Connection>()}
+					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<string>()},
+					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<string>()}
 				};
 
 				// save new empty graph data.
@@ -173,6 +173,7 @@ namespace AssetGraph {
 			foreach (var connectionSource in connectionsSource) {
 				var connectionDict = connectionSource as Dictionary<string, object>;
 				var label = connectionDict[AssetGraphSettings.CONNECTION_LABEL] as string;
+				var connectionId = connectionDict[AssetGraphSettings.CONNECTION_ID] as string;
 				var fromNodeId = connectionDict[AssetGraphSettings.CONNECTION_FROMNODE] as string;
 				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
 
@@ -181,16 +182,75 @@ namespace AssetGraph {
 				var endNode = nodes.Where(node => node.id == toNodeId).ToList()[0];
 				var endPoint = endNode.ConnectionPointFromLabel(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL);
 
-				AddConnection(label, startNode, startPoint, endNode, endPoint);
+				connections.Add(Connection.LoadConnection(label, connectionId, startNode, startPoint, endNode, endPoint));
 			}
+		}
+
+		private void SaveGraph () {
+			var nodeList = new List<Dictionary<string, object>>();
+			foreach (var node in nodes) {
+				var nodeDict = new Dictionary<string, object>();
+
+				nodeDict[AssetGraphSettings.NODE_CLASSNAME] = node.name;
+				nodeDict[AssetGraphSettings.NODE_ID] = node.id;
+				nodeDict[AssetGraphSettings.NODE_KIND] = node.kind;
+
+				var outputLabels = node.OutputPointLabels();
+				nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = outputLabels;
+
+				var posDict = new Dictionary<string, int>();
+				posDict[AssetGraphSettings.NODE_POS_X] = (int)node.baseRect.x;
+				posDict[AssetGraphSettings.NODE_POS_Y] = (int)node.baseRect.y;
+
+				nodeDict[AssetGraphSettings.NODE_POS] = posDict;
+
+				switch (node.kind) {
+					case AssetGraphSettings.NodeKind.LOADER: {
+						nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] = node.loadPath;
+						break;
+					}
+					case AssetGraphSettings.NodeKind.EXPORTER: {
+						nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] = node.exportPath;
+						break;
+					}
+					default: {
+						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
+						break;
+					}
+				}
+				nodeList.Add(nodeDict);
+			}
+
+			var connectionList = new List<Dictionary<string, string>>();
+			foreach (var connection in connections) {
+				var connectionDict = new Dictionary<string, string>{
+					{AssetGraphSettings.CONNECTION_LABEL, connection.label},
+					{AssetGraphSettings.CONNECTION_ID, connection.connectionId},
+					{AssetGraphSettings.CONNECTION_FROMNODE, connection.startNode.id},
+					{AssetGraphSettings.CONNECTION_TONODE, connection.endNode.id}
+				};
+				connectionList.Add(connectionDict);
+			}
+
+			var graphData = new Dictionary<string, object>{
+				{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_NODES, nodeList},
+				{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, connectionList}
+			};
+
+			UpdateGraphData(graphData);
 		}
 
 		private void ResetGUI () {
 			nodes = new List<Node>();
 			connections = new List<Connection>();
 		}
+		
+		private bool shouldSave;
 
 		void OnGUI () {
+			shouldSave = false;
+
 			// update node window x N
 			{
 				BeginWindows();
@@ -216,6 +276,10 @@ namespace AssetGraph {
 					break;
 				}
 			}
+
+			if (shouldSave) {
+				SaveGraph();
+			}
 		}
 
 		private void DrawStraightLineFromCurrentEventSourcePointTo (Vector2 to) {
@@ -226,7 +290,6 @@ namespace AssetGraph {
 
 		private void UpdateGraphData (Dictionary<string, object> data) {
 			var dataStr = Json.Serialize(data);
-
 			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
 			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			using (var sw = new StreamWriter(graphDataPath)) {
@@ -320,6 +383,7 @@ namespace AssetGraph {
 
 								var label = startConnectionPoint.label;
 								AddConnection(label, startNode, startConnectionPoint, endNode, endConnectionPoint);
+								shouldSave = true;
 							}
 							break;
 						}
@@ -370,10 +434,22 @@ namespace AssetGraph {
 								menu.AddItem(
 									new GUIContent("delete connection:" + con.label + " " + message), 
 									false, 
-									() => DeleteConnectionById(conId)
+									() => {
+										DeleteConnectionById(conId);
+										SaveGraph();
+									}
 								);
 							}
 							menu.ShowAsContext();
+							break;
+						}
+
+						/*
+							releasse detected.
+								node moved.
+						*/
+						case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_RELEASED: {
+							shouldSave = true;
 							break;
 						}
 
@@ -392,7 +468,7 @@ namespace AssetGraph {
 		*/
 		private void AddConnection (string label, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
 			if (!connections.ContainsConnection(startNode, startPoint, endNode, endPoint)) {
-				connections.Add(new Connection(label, startNode, startPoint, endNode, endPoint));
+				connections.Add(Connection.NewConnection(label, startNode, startPoint, endNode, endPoint));
 			}
 		}
 

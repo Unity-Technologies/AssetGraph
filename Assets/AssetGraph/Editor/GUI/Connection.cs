@@ -18,9 +18,32 @@ namespace AssetGraph {
 		public readonly Node endNode;
 		public readonly ConnectionPoint inputPoint;
 
-		public Connection (string label, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+
+		public static Connection LoadConnection (string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+			return new Connection(
+				label,
+				connectionId,
+				start,
+				output,
+				end,
+				input
+			);
+		}
+
+		public static Connection NewConnection (string label, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+			return new Connection(
+				label,
+				Guid.NewGuid().ToString(),
+				start,
+				output,
+				end,
+				input
+			);
+		}
+
+		private Connection (string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			this.label = label;
-			this.connectionId = Guid.NewGuid().ToString();
+			this.connectionId = connectionId;
 
 			this.startNode = start;
 			this.outputPoint = output;
