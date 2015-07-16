@@ -3,6 +3,7 @@ Assets/SublimeSocketAsset/*
 Library/*
 Temp/*
 
-Assets/AssetGraph/Temp/Imported/*
 
 TestExportPlace/*
+
+Assets/AssetGraph/Temp/*
