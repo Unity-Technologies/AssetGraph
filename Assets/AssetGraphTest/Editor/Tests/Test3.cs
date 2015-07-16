@@ -26,25 +26,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStack();
+		var stack = new GraphStackController();
 		stack.RunStackedGraph(graphDict);
-		
-		Debug.LogError("not yet");
 	}
-
-	public void _3_1_OrderWithCache1 () {
-		// 端っこ
-		Debug.LogError("not yet");
-	}
-
-	public void _3_2_OrderWithCache2 () {
-		// 根っこと端っこ
-		Debug.LogError("not yet");
-	}
-
-	public void _3_3_OrderWithCache3 () {
-		// カオス
-		Debug.LogError("not yet");
-	}
-
 }

@@ -303,7 +303,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStack();
+		var stack = new GraphStackController();
 		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeRoute(graphDict);
 		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
 			return;
@@ -326,7 +326,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStack();
+		var stack = new GraphStackController();
 		var endpointNodeIdsAndNodeDatasAndConnectionDatas = stack.SerializeNodeRoute(graphDict);
 
 		var endPoint0 = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds[0];
@@ -360,7 +360,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStack();
+		var stack = new GraphStackController();
 		stack.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
@@ -454,7 +454,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStack();
+		var stack = new GraphStackController();
 		stack.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
@@ -476,7 +476,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStack();
+		var stack = new GraphStackController();
 		stack.SetupStackedGraph(graphDict);
 		
 		Debug.LogError("not yet");

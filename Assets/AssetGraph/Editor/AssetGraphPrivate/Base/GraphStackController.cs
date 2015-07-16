@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 
 namespace AssetGraph {
-	public class GraphStack {
+	public class GraphStackController {
 
 		public struct EndpointNodeIdsAndNodeDatasAndConnectionDatas {
 			public List<string> endpointNodeIds;
@@ -151,11 +151,14 @@ namespace AssetGraph {
 
 			var currentNodeData = currentNodeDatas[0];
 
+			if (currentNodeData.IsAlreadyDone()) return;
+
 			/*
 				run parent nodes of this node.
 			*/
 			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
+				Debug.LogError("parent:" + parentNodeId);
 				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun);
 			}
 
@@ -170,13 +173,18 @@ namespace AssetGraph {
 				will be ignored in Filter node,
 				because the Filter node will generate new label of connection by itself.
 			*/
+			
 			var labelToChild = string.Empty;
 			if (connectionLabelsFromThisNodeToChildNode.Any()) {
 				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
 			} else {
-				Debug.LogWarning("this node is endpoint. no next node and no next result,,,次が無い時なんだけど、ちょっと整理が必要な気がする");
+				Debug.LogWarning("this node:" + nodeId + " is endpoint. no next node and no next result,,,次が無いんだけど、走らせたい時がある。というか実行はされるべき。で、ラベルをどうするかっていう感じ。アウトは用意できちゃうので、それをResultに入れない理由がない。既存のノード名とかぶってもいやだし、、乱数か、、ノードごとにバラバラだと積む感じがするし、、結果を入れない、っていうのもあり。");
 				return;
 			}
+
+			/*
+				has next node, run first time.
+			*/
 
 			var classStr = currentNodeData.currentNodeClassStr;
 			var nodeKind = currentNodeData.currentNodeKind;
@@ -191,13 +199,6 @@ namespace AssetGraph {
 			foreach (var connecionId in receivingConnectionIds) {
 				var result = resultDict[connecionId];
 				inputParentResults.AddRange(result);
-			}
-
-			/*
-				run if inputParentResults is empty. but alert that.
-			*/
-			if (!inputParentResults.Any()) {
-				Debug.LogWarning("no input source found at node:" + classStr + " label:" + labelToChild);
 			}
 
 			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {				
@@ -287,6 +288,8 @@ namespace AssetGraph {
 					}
 				}
 			}
+
+			currentNodeData.Done();
 		}
 
 		public T Executor<T> (string classStr) where T : INodeBase {
@@ -309,6 +312,8 @@ namespace AssetGraph {
 
 		// for Exporter
 		public readonly string exportFilePath;
+
+		private bool done;
 
 		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr, string loaderOrExporterPath=null) {
 			this.currentNodeId = currentNodeId;
@@ -338,7 +343,14 @@ namespace AssetGraph {
 		public void AddConnectionData (ConnectionData connection) {
 			connectionDataOfParents.Add(new ConnectionData(connection));
 		}
-		
+
+		public void Done () {
+			done = true;
+		}
+
+		public bool IsAlreadyDone () {
+			return done;
+		}
 	}
 
 	public class ConnectionData {
