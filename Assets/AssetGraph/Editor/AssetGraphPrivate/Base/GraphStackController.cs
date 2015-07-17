@@ -40,8 +40,10 @@ namespace AssetGraph {
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
+			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+
 			foreach (var endNodeId in endpointNodeIds) {
-				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas);
+				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 			}
 		}
 		
@@ -135,8 +137,7 @@ namespace AssetGraph {
 			run all serialized nodes in order.
 			returns orderd connectionIds
 		*/
-		public List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections) {
-			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+		public List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true);
 
 			return resultDict.Keys.ToList();
@@ -175,6 +176,8 @@ namespace AssetGraph {
 			var labelToChild = string.Empty;
 			if (connectionLabelsFromThisNodeToChildNode.Any()) {
 				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
+			} else {
+				Debug.LogError("次が無い nodeId:" + nodeId);
 			}
 
 			/*
@@ -192,6 +195,11 @@ namespace AssetGraph {
 				.ToList();
 
 			foreach (var connecionId in receivingConnectionIds) {
+				Debug.LogError("このノード nodeId:" + nodeId + " が受け取るconnecionId:" + connecionId);
+				if (!resultDict.ContainsKey(connecionId)) {
+					Debug.LogError("受け取るコネクションがあるんだけど、それが結果に入っていない nodeId:" + nodeId);
+					continue;
+				}
 				var result = resultDict[connecionId];
 				inputParentResults.AddRange(result);
 			}
@@ -207,8 +215,10 @@ namespace AssetGraph {
 					Debug.LogWarning("this dataSourceNodeId:" + dataSourceNodeId + " is endpointint このログの代わりに何か出したいところ。");
 					return;
 				}
-
+				
 				var targetConnectionId = targetConnectionIds[0];
+				Debug.LogError("このノードnodeId:" + nodeId + " でのRunの結果、そのoutputをこのconnectionに吐き出す targetConnectionId:" + targetConnectionId);
+
 				resultDict[targetConnectionId] = source;
 			};
 

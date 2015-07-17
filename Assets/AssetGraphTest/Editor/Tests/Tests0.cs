@@ -333,7 +333,8 @@ public partial class Test {
 		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 		var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-		var orderedConnectionIds = stack.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas);
+		var resultDict = new Dictionary<string, List<InternalAssetData>>();
+		var orderedConnectionIds = stack.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict);
 		
 		if (orderedConnectionIds.Count == 0) {
 			Debug.LogError("list is empty");
