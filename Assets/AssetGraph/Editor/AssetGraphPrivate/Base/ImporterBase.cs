@@ -42,7 +42,7 @@ namespace AssetGraph {
 				FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
 			}
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
-			InternalImporter.Detach(this);
+			InternalImporter.Detach();
 			
 			// get files, which are already assets.
 			var localFilePathsAfterImport = FileController.FilePathsInFolderWithoutMeta(targetDirectoryPath);

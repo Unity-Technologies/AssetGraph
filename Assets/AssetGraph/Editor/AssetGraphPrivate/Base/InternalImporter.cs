@@ -13,7 +13,7 @@ namespace AssetGraph {
 		public static void Attach (ImporterBase newImporter) {
 			importer = newImporter;
 		}
-		public static void Detach (ImporterBase newImporter) {
+		public static void Detach () {
 			importer = null;
 		}
 
