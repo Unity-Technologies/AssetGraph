@@ -27,6 +27,19 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStackController();
-		stack.RunStackedGraph(graphDict);
+		var EndpointNodeIdsAndNodeDatasAndConnectionDatas = stack.SerializeNodeRoute(graphDict);
+		
+		var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
+		var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
+		var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
+
+		var resultDict = new Dictionary<string, List<InternalAssetData>>();
+
+		foreach (var endNodeId in endpointNodeIds) {
+			stack.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
+		}
+
+		// resultDictのチェックをすればよさげ
+		Debug.LogError("not yet");
 	}
 }

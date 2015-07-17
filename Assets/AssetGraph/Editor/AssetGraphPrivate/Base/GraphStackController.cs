@@ -176,9 +176,8 @@ namespace AssetGraph {
 			var labelToChild = string.Empty;
 			if (connectionLabelsFromThisNodeToChildNode.Any()) {
 				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
-			} else {
-				Debug.LogError("次が無い nodeId:" + nodeId);
 			}
+
 
 			/*
 				has next node, run first time.
@@ -195,10 +194,8 @@ namespace AssetGraph {
 				.ToList();
 
 			foreach (var connecionId in receivingConnectionIds) {
-				Debug.LogError("このノード nodeId:" + nodeId + " が受け取るconnecionId:" + connecionId);
 				if (!resultDict.ContainsKey(connecionId)) {
-					Debug.LogError("受け取るコネクションがあるんだけど、それが結果に入っていない nodeId:" + nodeId);
-					continue;
+					throw new Exception("failed to detect parentNode's result. searching connectionId:" + connecionId);
 				}
 				var result = resultDict[connecionId];
 				inputParentResults.AddRange(result);
@@ -217,8 +214,6 @@ namespace AssetGraph {
 				}
 				
 				var targetConnectionId = targetConnectionIds[0];
-				Debug.LogError("このノードnodeId:" + nodeId + " でのRunの結果、そのoutputをこのconnectionに吐き出す targetConnectionId:" + targetConnectionId);
-
 				resultDict[targetConnectionId] = source;
 			};
 
