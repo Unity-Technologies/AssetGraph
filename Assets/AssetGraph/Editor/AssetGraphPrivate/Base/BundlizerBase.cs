@@ -28,8 +28,11 @@ namespace AssetGraph {
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta("Assets");
-			
-			In(assets, recommendedBundleOutputDir);
+			try {
+				In(assets, recommendedBundleOutputDir);
+			} catch (Exception e) {
+				Debug.LogError("Bundlizer:" + this + " error:" + e);
+			}
 
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 			AssetDatabase.SaveAssets();

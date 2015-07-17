@@ -127,6 +127,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER:
+					case AssetGraphSettings.NodeKind.IMPORTER:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR:
 					case AssetGraphSettings.NodeKind.BUNDLIZER: {
 						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;

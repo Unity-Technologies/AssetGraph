@@ -37,9 +37,12 @@ namespace AssetGraph {
 					Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。");
 					throw new Exception("すでに同じファイルがある:" + targetFilePath);
 				}
-
-				// copy files into local.
-				FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
+				try {
+					// copy files into local.
+					FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
+				} catch (Exception e) {
+					Debug.LogError("Importer:" + this + " error:" + e);
+				}
 			}
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 			InternalImporter.Detach();

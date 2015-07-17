@@ -21,8 +21,11 @@ namespace AssetGraph {
 
 				Output(nodeId, label, outputs);
 			};
-
-			In(absoluteSourcePaths, _PreOutput);
+			try {
+				In(absoluteSourcePaths, _PreOutput);
+			} catch (Exception e) {
+				Debug.LogError("Filter:" + this + " error:" + e);
+			}
 		}
 		
 		public void Run (string nodeId, string noUseLabel, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
@@ -40,8 +43,11 @@ namespace AssetGraph {
 
 				Output(nodeId, label, outputs);
 			};
-
-			In(absoluteSourcePaths, _Output);
+			try {
+				In(absoluteSourcePaths, _Output);
+			} catch (Exception e) {
+				Debug.LogError("Filter:" + this + " error:" + e);
+			}
 		}
 
 

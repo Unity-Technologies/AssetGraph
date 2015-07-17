@@ -39,7 +39,6 @@ public partial class Test {
 			stack.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 		}
 
-		// resultDictのチェックをすればよさげ
-		Debug.LogError("not yet");
+		// resultDictのチェックをすればよさげなのだが、記録が残しにくい、、
 	}
 }

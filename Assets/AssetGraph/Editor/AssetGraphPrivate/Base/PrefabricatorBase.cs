@@ -33,7 +33,11 @@ namespace AssetGraph {
 			/*
 				execute inheritee's input method.
 			*/
-			In(assets, recommendedPrefabOutputDir);
+			try {
+				In(assets, recommendedPrefabOutputDir);
+			} catch (Exception e) {
+				Debug.LogError("Prefabricator:" + this + " error:" + e);
+			}
 
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
