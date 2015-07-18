@@ -21,7 +21,7 @@ namespace AssetGraph {
 			}
 		}
 		
-		public void SetupStackedGraph (Dictionary<string, object> graphDataDict) {
+		public Dictionary<string, List<string>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -33,9 +33,18 @@ namespace AssetGraph {
 			foreach (var endNodeId in endpointNodeIds) {
 				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 			}
+
+			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
+
+			foreach (var key in resultDict.Keys) {
+				var assetDataList = resultDict[key];
+				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataList);
+			}
+
+			return resultConnectionSourcesDict;
 		}
 
-		public void RunStackedGraph (Dictionary<string, object> graphDataDict) {
+		public Dictionary<string, List<string>> RunStackedGraph (Dictionary<string, object> graphDataDict) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -47,6 +56,29 @@ namespace AssetGraph {
 			foreach (var endNodeId in endpointNodeIds) {
 				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 			}
+
+			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
+
+			foreach (var key in resultDict.Keys) {
+				var assetDataList = resultDict[key];
+				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataList);
+			}
+
+			return resultConnectionSourcesDict;
+		}
+
+		private List<string> GetResourcePathList (List<InternalAssetData> assetDatas) {
+			var sourcePathList = new List<string>();
+
+			foreach (var assetData in assetDatas) {
+				if (assetData.absoluteSourcePath != null) {
+					sourcePathList.Add(assetData.absoluteSourcePath);
+				} else {
+					sourcePathList.Add(assetData.pathUnderConnectionId);
+				}
+			}
+
+			return sourcePathList;
 		}
 		
 		/**

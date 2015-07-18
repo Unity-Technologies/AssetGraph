@@ -466,7 +466,7 @@ public partial class Test {
 		if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
 			return;
 		}
-		
+
 		Debug.LogError("failed to generate");
 	}
 
@@ -483,9 +483,19 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var stack = new GraphStackController();
-		stack.SetupStackedGraph(graphDict);
+		var resultDict = stack.SetupStackedGraph(graphDict);
 		
-		Debug.LogError("not yet");
+		// foreach (var connectionId in resultDict.Keys) {
+		// 	var sourceArray = resultDict[connectionId].ToArray();
+		// 	var str = string.Join("\n	source:", sourceArray);
+		// 	Debug.LogError("connectionId:" + connectionId + "\n	source:" + str);
+		// }
+
+		if (resultDict.Count == 11) {
+			return;
+		}
+
+		Debug.LogError("shortage of connections");
 
 	}
 }

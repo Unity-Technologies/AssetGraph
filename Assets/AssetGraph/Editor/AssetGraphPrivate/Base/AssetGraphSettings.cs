@@ -15,7 +15,7 @@ namespace AssetGraph {
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
-		public const string UNITY_FOLDER_SEPARATER = "/";
+		public const char UNITY_FOLDER_SEPARATOR = '/';
 		
 		/*
 			data key for AssetGraph.json

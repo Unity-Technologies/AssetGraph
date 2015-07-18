@@ -88,17 +88,17 @@ namespace AssetGraph {
 		}
 
 		private static string The2LevelLowerPath (string assetsTemp_ConnectionId_ResourcePath) {
-			var splitted = assetsTemp_ConnectionId_ResourcePath.Split('/');
-			var depthCount = AssetGraphSettings.APPLICATIONDATAPATH_TEMP_PATH.Split('/').Length + 1;// last +1 is connectionId's count
+			var splitted = assetsTemp_ConnectionId_ResourcePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+			var depthCount = AssetGraphSettings.APPLICATIONDATAPATH_TEMP_PATH.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;// last +1 is connectionId's count
 			var concatenated = new string[splitted.Length - depthCount];
 			Array.Copy(splitted, depthCount, concatenated, 0, concatenated.Length);
-			var resultPath = string.Join("/", concatenated);
+			var resultPath = string.Join(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), concatenated);
 			return resultPath;
 		}
 
 		public static string GetPathWithoutBasePath (string localPathWithBasePath, string basePath) {
 			var replaced = localPathWithBasePath.Replace(basePath, string.Empty);
-			if (replaced.StartsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATER)) return replaced.Substring(1);
+			if (replaced.StartsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) return replaced.Substring(1);
 			return replaced;
 		}
 		

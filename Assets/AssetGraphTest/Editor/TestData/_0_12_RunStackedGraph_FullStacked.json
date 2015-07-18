@@ -123,67 +123,67 @@
     "connections": [
         {
             "label": "画像",
-            "connectionId": "1b04f904-2315-4ba9-ad1d-c838f6a9d2b1",
+            "connectionId": "ImageFilterToImporter",
             "fromNode": "リソースの仕分け",
             "toNode": "画像を読み込む"
         },
         {
             "label": "モデル",
-            "connectionId": "a6d6297f-5559-4478-9d64-119736c4fa3d",
+            "connectionId": "ModelFilterToImporter",
             "fromNode": "リソースの仕分け",
             "toNode": "モデルを読み込む"
         },
         {
             "label": "+",
-            "connectionId": "fdc6d8bc-b903-44c9-bf7c-be7c89c7e6d0",
+            "connectionId": "LoaderToFilter",
             "fromNode": "リソースの呼び込み",
             "toNode": "リソースの仕分け"
         },
         {
             "label": "BGM",
-            "connectionId": "c3b9fe4f-32da-4792-a3d1-488f65f6cb79",
+            "connectionId": "BGMFilterToImporter",
             "fromNode": "リソースの仕分け",
             "toNode": "BGMを読み込む"
         },
         {
             "label": "SE",
-            "connectionId": "894b8528-6e04-4233-b17b-6227cdfa6449",
+            "connectionId": "SEFilterToImporter",
             "fromNode": "リソースの仕分け",
             "toNode": "SEを読み込む"
         },
         {
             "label": "+",
-            "connectionId": "05f6b811-2686-4c3a-a3fd-065162dd5f88",
+            "connectionId": "ImageImporterToPrefab",
             "fromNode": "画像を読み込む",
             "toNode": "画像とモデルを合わせてPrefabつくる"
         },
         {
             "label": "+",
-            "connectionId": "5993f870-bc90-4b1c-ab85-d867b0a6dbd7",
+            "connectionId": "ModelImporterToPrefab",
             "fromNode": "モデルを読み込む",
             "toNode": "画像とモデルを合わせてPrefabつくる"
         },
         {
             "label": "+",
-            "connectionId": "44b813d0-333e-4bbd-b035-732cc07589ba",
+            "connectionId": "BGMImporterToBundle",
             "fromNode": "BGMを読み込む",
             "toNode": "バンドルにする"
         },
         {
             "label": "+",
-            "connectionId": "9801242d-057d-4f44-9d97-911f4193374f",
+            "connectionId": "SEImporterToBundle",
             "fromNode": "SEを読み込む",
             "toNode": "バンドルにする"
         },
         {
             "label": "+",
-            "connectionId": "b2063dc4-c2b4-475b-8fb7-1532c2d9aece",
+            "connectionId": "PrefabToBundlize",
             "fromNode": "画像とモデルを合わせてPrefabつくる",
             "toNode": "バンドルにする"
         },
         {
             "label": "+",
-            "connectionId": "6545f204-5535-46fa-bf8e-cd51f2b8261f",
+            "connectionId": "BundlizeToExporter",
             "fromNode": "バンドルにする",
             "toNode": "バンドルをフォルダに出力"
         }
