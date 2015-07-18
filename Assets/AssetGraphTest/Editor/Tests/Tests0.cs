@@ -169,7 +169,7 @@ public partial class Test {
 	}
 
 	public void _0_4_SetupPrefabricator () {
-		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new List<InternalAssetData>{
 			InternalAssetData.InternalAssetDataByImporter(
@@ -195,7 +195,7 @@ public partial class Test {
 		// do nothing in this test yet.
 	}
 	public void _0_5_RunPrefabricator () {
-		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new List<InternalAssetData>{
 			InternalAssetData.InternalAssetDataByImporter(
@@ -231,7 +231,7 @@ public partial class Test {
 	}
 
 	public void _0_6_SetupBundlizer () {
-		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new List<InternalAssetData>{
 			InternalAssetData.InternalAssetDataByImporter(
@@ -257,7 +257,7 @@ public partial class Test {
 		// do nothing in this test yet.
 	}
 	public void _0_7_RunBundlizer () {
-		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/a.png";
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new List<InternalAssetData>{
 			InternalAssetData.InternalAssetDataByImporter(
@@ -378,7 +378,7 @@ public partial class Test {
 	}
 
 
-	public void _0_10_SetupExport () {
+	public void _0_10_SetupExporter () {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_10_SetupExport");
 
@@ -389,7 +389,7 @@ public partial class Test {
 
 		Directory.CreateDirectory(exportFilePath);
 
-		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
+		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/SpanTempPath/SpanPath/a.png";
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
 		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 
@@ -407,7 +407,7 @@ public partial class Test {
 		// nothing for check yet.
 	}
 
-	public void _0_11_RunExport () {
+	public void _0_11_RunExporter () {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_11_RunExport");
 
@@ -418,7 +418,7 @@ public partial class Test {
 
 		Directory.CreateDirectory(exportFilePath);
 
-		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/a.png";
+		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/SpanTempPath/SpanPath/a.png";
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
 		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 		
@@ -459,10 +459,15 @@ public partial class Test {
 		stack.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_12_RunStackedGraph_FullStacked");
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_12_SerializedGraphJSON");
 
-		Debug.LogError("not yet");
-
+		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara0/chara0.assetbundle");
+		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara1/chara1.assetbundle");
+		if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
+			return;
+		}
+		
+		Debug.LogError("failed to generate");
 	}
 
 	public void _0_13_SetupStackedGraph_FullStacked () {

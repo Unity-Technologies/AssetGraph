@@ -7,9 +7,11 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/Temp";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
-		public const string IMPORTER_TEMP_PLACE = "Assets/AssetGraph/Temp/Imported/";
-		public const string PREFABRICATOR_TEMP_PLACE = "Assets/AssetGraph/Temp/Prefabricated/";
-		public const string BUNDLIZER_TEMP_PLACE = "Assets/AssetGraph/Temp/Bundlized/";
+		public const string APPLICATIONDATAPATH_TEMP_PATH = "Assets/AssetGraph/Temp/";
+		
+		public const string IMPORTER_TEMP_PLACE = APPLICATIONDATAPATH_TEMP_PATH + "Imported/";
+		public const string PREFABRICATOR_TEMP_PLACE = APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated/";
+		public const string BUNDLIZER_TEMP_PLACE = APPLICATIONDATAPATH_TEMP_PATH + "Bundlized/";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";

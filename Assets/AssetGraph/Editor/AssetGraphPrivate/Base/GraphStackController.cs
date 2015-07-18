@@ -28,8 +28,10 @@ namespace AssetGraph {
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
+			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+
 			foreach (var endNodeId in endpointNodeIds) {
-				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas);
+				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 			}
 		}
 
@@ -126,8 +128,7 @@ namespace AssetGraph {
 			setup all serialized nodes in order.
 			returns orderd connectionIds
 		*/
-		public List<string> SetupSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections) {
-			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+		public List<string> SetupSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, false);
 
 			return resultDict.Keys.ToList();

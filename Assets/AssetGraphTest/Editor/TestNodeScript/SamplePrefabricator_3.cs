@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 	public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
-		Debug.LogError("SamplePrefabricator_3");
+		Debug.Log("SamplePrefabricator_3");
 
 		// 複数のセットを作りたい場合、その流入自体は全体の素材が一気に来るので、グルーピングするための情報が必要になる。
 		// 「こんな素材が来るはずなのでそれのなかで、この素材一式を1セットとして扱う」っていうのを自動化する術が無い。人間がやるしか無い。
@@ -68,7 +68,7 @@ public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 			// create "recommendedPrefabOutputDir"/charaN/ folder before creating prefab.
 			Directory.CreateDirectory(newPrefabOutputBasePath);
 			
-			var newPrefabOutputPath = Path.Combine(newPrefabOutputBasePath, "prefab.prefab");
+			var newPrefabOutputPath = Path.Combine(newPrefabOutputBasePath, "chara" + i + "_prefab.prefab");
 			UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
 			
 			// export prefab data.
