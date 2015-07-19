@@ -485,17 +485,69 @@ public partial class Test {
 		var stack = new GraphStackController();
 		var resultDict = stack.SetupStackedGraph(graphDict);
 		
-		// foreach (var connectionId in resultDict.Keys) {
-		// 	var sourceArray = resultDict[connectionId].ToArray();
-		// 	var str = string.Join("\n	source:", sourceArray);
-		// 	Debug.LogError("connectionId:" + connectionId + "\n	source:" + str);
-		// }
+		foreach (var connectionId in resultDict.Keys) {
+			var sourceArray = resultDict[connectionId].ToArray();
+			var str = string.Join("\n	source:", sourceArray);
+			Debug.Log("connectionId:" + connectionId + "\n	source:" + str);
+		}
 
 		if (resultDict.Count == 11) {
 			return;
 		}
 
 		Debug.LogError("shortage of connections");
+	}
 
+	public void _0_14_SetupStackedGraph_Sample () {
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_0_14_RunStackedGraph_Sample.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var stack = new GraphStackController();
+		var setupResultDict = stack.SetupStackedGraph(graphDict);
+		
+		foreach (var connectionId in setupResultDict.Keys) {
+			var sourceArray = setupResultDict[connectionId].ToArray();
+			if (0 < sourceArray.Length) {
+				var str = string.Join("\n	source:", sourceArray);
+				Debug.LogError("connectionId:" + connectionId + "\n	source:" + str);	
+			} else {
+				Debug.LogError("connectionId:" + connectionId + " is empty.");
+			}
+		}
+	}
+
+	public void _0_15_RunStackedGraph_Sample () {
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_0_14_RunStackedGraph_Sample.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var stack = new GraphStackController();
+		stack.RunStackedGraph(graphDict);
+		
+		// var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		// var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample");
+
+		// var the1stBundlePath = Path.Combine(expectedExportDestPath, "0/chara.assetbundle");
+		// var the2ndBundlePath = Path.Combine(expectedExportDestPath, "1/chara.assetbundle");
+		// if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
+		// 	return;
+		// }
+
+		Debug.LogError("failed to generate");
 	}
 }

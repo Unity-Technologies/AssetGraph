@@ -13,8 +13,30 @@ namespace AssetGraph {
 		public string assetPath;
 		
 		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
-			Debug.LogWarning("importerのsetup、読み込んだファイルのパスをimported扱いにするくらいはすべきかもしれない。");
-			Output(nodeId, labelToNext, inputSources);
+			var assumedImportedAssetDatas = new List<InternalAssetData>();
+			
+			Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、");
+				
+			foreach (var inputData in inputSources) {
+				var assumedImportedBasePath = inputData.absoluteSourcePath.Replace(inputData.sourceBasePath, AssetGraphSettings.IMPORTER_TEMP_PLACE);
+				var assumedImportedPath = Path.Combine(assumedImportedBasePath, nodeId);
+
+				var assumedType = AssumeTypeFromExtension();
+
+				var newData = InternalAssetData.InternalAssetDataByImporter(
+					inputData.traceId,
+					inputData.absoluteSourcePath,
+					inputData.sourceBasePath,
+					inputData.fileNameAndExtension,
+					inputData.pathUnderSourceBase,
+					assumedImportedPath,
+					null,
+					assumedType
+				);
+				assumedImportedAssetDatas.Add(newData);
+			}
+
+			Output(nodeId, labelToNext, assumedImportedAssetDatas);
 		}
 		
 		public void Run (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
@@ -67,7 +89,7 @@ namespace AssetGraph {
 							inputtedSourceCandidate.absoluteSourcePath,// /SOMEWHERE_OUTSIDE_OF_UNITY/~
 							inputtedSourceCandidate.sourceBasePath,// /SOMEWHERE_OUTSIDE_OF_UNITY/
 							inputtedSourceCandidate.fileNameAndExtension,// A.png
-							inputtedSourceCandidate.pathUnderSourceBase,// (Temp/nodeId/)~
+							inputtedSourceCandidate.pathUnderSourceBase,// (Temp/Imported/nodeId/)~
 							localFilePathWithTargetDirectoryPath,// Assets/~
 							AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath),
 							AssetGraphInternalFunctions.GetAssetType(localFilePathWithTargetDirectoryPath)
@@ -107,5 +129,9 @@ namespace AssetGraph {
 		public virtual void AssetGraphOnPreprocessModel () {}
 		public virtual void AssetGraphOnPostprocessModel (GameObject g) {}
 		public virtual void AssetGraphOnAssignMaterialModel (Material material, Renderer renderer) {}
+
+		public Type AssumeTypeFromExtension () {
+			return typeof(UnityEngine.Object);
+		}
 	}
 }

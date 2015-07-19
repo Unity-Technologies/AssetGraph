@@ -52,9 +52,7 @@ namespace AssetGraph {
 			var lastModified = DateTime.Now;
 
 			if (File.Exists(graphDataPath)) {
-
-				Debug.LogWarning("起動時、表示前にこのへんでコンパイル結果のSetupを実行して、jsonの更新を行う。");
-
+				
 				// load
 				var dataStr = string.Empty;
 				
@@ -65,6 +63,27 @@ namespace AssetGraph {
 				deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
+
+				var graphStackCont = new GraphStackController();
+				var validatedDataDict = graphStackCont.ValidateStackedGraph(deserialized);
+
+				var validatedDate = validatedDataDict[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
+				if (lastModifiedStr != validatedDate) {
+					// save validated graph data.
+					UpdateGraphData(validatedDataDict);
+
+					// reload
+					var dataStr2 = string.Empty;
+					using (var sr = new StreamReader(graphDataPath)) {
+						dataStr2 = sr.ReadToEnd();
+					}
+
+					deserialized = Json.Deserialize(dataStr2) as Dictionary<string, object>;
+
+					var lastModifiedStr2 = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
+					lastModified = Convert.ToDateTime(lastModifiedStr2);
+				}
+
 			} else {
 				// renew
 				var graphData = new Dictionary<string, object>{
@@ -91,6 +110,10 @@ namespace AssetGraph {
 			ResetGUI();
 
 
+			/*
+				generate GUI
+			*/
+
 			minSize = new Vector2(600f, 300f);
 			
 			wantsMouseMove = true;
@@ -98,7 +121,6 @@ namespace AssetGraph {
 			
 
 			var nodesSource = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
-
 			foreach (var nodeDictSource in nodesSource) {
 				var nodeDict = nodeDictSource as Dictionary<string, object>;
 				var name = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
@@ -178,9 +200,14 @@ namespace AssetGraph {
 				var fromNodeId = connectionDict[AssetGraphSettings.CONNECTION_FROMNODE] as string;
 				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
 
-				var startNode = nodes.Where(node => node.id == fromNodeId).ToList()[0];
+				var startNodeCandidates = nodes.Where(node => node.id == fromNodeId).ToList();
+				if (!startNodeCandidates.Any()) continue;
+				var startNode = startNodeCandidates[0];
 				var startPoint = startNode.ConnectionPointFromLabel(label);
-				var endNode = nodes.Where(node => node.id == toNodeId).ToList()[0];
+
+				var endNodeCandidates = nodes.Where(node => node.id == toNodeId).ToList();
+				if (!endNodeCandidates.Any()) continue;
+				var endNode = endNodeCandidates[0];
 				var endPoint = endNode.ConnectionPointFromLabel(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL);
 
 				connections.Add(Connection.LoadConnection(label, connectionId, startNode, startPoint, endNode, endPoint));

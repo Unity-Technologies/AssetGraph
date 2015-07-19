@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 
 
@@ -19,6 +20,142 @@ namespace AssetGraph {
 				this.nodeDatas = nodeDatas;
 				this.connectionDatas = connectionDatas;
 			}
+		}
+
+		public Dictionary<string, object> ValidateStackedGraph (Dictionary<string, object> graphDataDict) {
+			var changed = false;
+
+
+			var nodesSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
+			var newNodes = new List<Dictionary<string, object>>();
+
+			/*
+				delete undetectable node.
+			*/
+			foreach (var nodeSource in nodesSource) {
+				var nodeDict = nodeSource as Dictionary<string, object>;
+				
+				var nodeId = nodeDict[AssetGraphSettings.NODE_ID] as string;
+
+				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
+				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
+
+				var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
+				
+				var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+				
+				// delete if already gone.
+				if (nodeScriptInstance == null) {
+					changed = true;
+					Debug.LogWarning("no class found:" + scriptType + " kind:" + kind + ", rebuildfing AssetGraph...");
+					continue;
+				}
+
+				// copy all key and value to new Node data dictionary.
+				var newNodeDict = new Dictionary<string, object>();
+				foreach (var key in nodeDict.Keys) {
+					newNodeDict[key] = nodeDict[key];
+				}
+
+				// rewrite data if need.
+				switch (kind) {
+					case AssetGraphSettings.NodeKind.FILTER: {
+						var outoutLabelsSource = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						var outoutLabelsSet = new HashSet<string>();
+						foreach (var source in outoutLabelsSource) {
+							outoutLabelsSet.Add(source.ToString());
+						}
+
+						var latestLabels = new HashSet<string>();
+						Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
+							latestLabels.Add(connectionLabel);
+						};
+
+						((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, new List<InternalAssetData>(), Output);
+
+						if (!outoutLabelsSet.SetEquals(latestLabels)) {
+							changed = true;
+							newNodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = latestLabels.ToList();
+						}
+						break;
+					}
+					default: {
+						// nothing to do.
+						break;
+					}
+				}
+
+				newNodes.Add(newNodeDict);
+			}
+
+			/*
+				delete undetectable connection.
+					erase no start node connection.
+					erase no end node connection.
+					erase connection which label does exists in the start node.
+			*/
+			
+			var connectionsSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS] as List<object>;
+			var newConnections = new List<Dictionary<string, object>>();
+			foreach (var connectionSource in connectionsSource) {
+				var connectionDict = connectionSource as Dictionary<string, object>;
+
+				var connectionLabel = connectionDict[AssetGraphSettings.CONNECTION_LABEL] as string;
+				var fromNodeId = connectionDict[AssetGraphSettings.CONNECTION_FROMNODE] as string;
+				var toNodeId = connectionDict[AssetGraphSettings.CONNECTION_TONODE] as string;
+				
+				// detect start node.
+				var fromNodeCandidates = newNodes.Where(
+					node => {
+						var nodeId = node[AssetGraphSettings.NODE_ID] as string;
+						return nodeId == fromNodeId;
+					}
+					).ToList();
+				if (!fromNodeCandidates.Any()) {
+					changed = true;
+					continue;
+				}
+
+				// detect end node.
+				var toNodeCandidates = newNodes.Where(
+					node => {
+						var nodeId = node[AssetGraphSettings.NODE_ID] as string;
+						return nodeId == toNodeId;
+					}
+					).ToList();
+				if (!toNodeCandidates.Any()) {
+					changed = true;
+					continue;
+				}
+
+				// this connection has start node & end node.
+				// detect connectionLabel.
+				var fromNode = fromNodeCandidates[0];
+				var connectionLabelsSource = fromNode[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+				var connectionLabels = new List<string>();
+				foreach (var connectionLabelSource in connectionLabelsSource) {
+					connectionLabels.Add(connectionLabelSource as string);
+				}
+
+				if (!connectionLabels.Contains(connectionLabel)) {
+					changed = true;
+					continue;
+				}
+
+				newConnections.Add(connectionDict);
+			}
+
+
+			if (changed) {
+				var validatedResultDict = new Dictionary<string, object>{
+					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now},
+					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, newNodes},
+					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, newConnections}
+				};
+				return validatedResultDict;
+			}
+
+			return graphDataDict;
 		}
 		
 		public Dictionary<string, List<string>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
@@ -228,7 +365,8 @@ namespace AssetGraph {
 
 			foreach (var connecionId in receivingConnectionIds) {
 				if (!resultDict.ContainsKey(connecionId)) {
-					throw new Exception("failed to detect parentNode's result. searching connectionId:" + connecionId);
+					Debug.LogWarning("failed to detect parentNode's result. searching connectionId:" + connecionId);
+					continue;
 				}
 				var result = resultDict[connecionId];
 				inputParentResults.AddRange(result);
@@ -328,7 +466,7 @@ namespace AssetGraph {
 		public T Executor<T> (string classStr) where T : INodeBase {
 			var nodeScriptTypeStr = classStr;
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(nodeScriptTypeStr);
-			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + nodeScriptTypeStr);
+			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + nodeScriptTypeStr + " which is based on Type:" + typeof(T));
 			return ((T)nodeScriptInstance);
 		}
 	}
