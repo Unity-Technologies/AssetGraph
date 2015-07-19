@@ -21,7 +21,11 @@ namespace AssetGraph {
 		public readonly string loadPath;
 		public readonly string exportPath;
 
+		private readonly string nodeLabel;
+
 		private string nodeInterfaceTypeStr;
+
+
 		
 		public Rect baseRect;
 		
@@ -81,18 +85,26 @@ namespace AssetGraph {
 			this.exportPath = exportPath;
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 
+			this.nodeLabel = string.Empty;
 			
 			switch (this.kind) {
 				case AssetGraphSettings.NodeKind.LOADER: {
 					this.nodeInterfaceTypeStr = "flow node 0";
+					var height = loadPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length;
+					this.nodeLabel = this.loadPath.Replace("/", "\n/");
+					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, height * 16f);
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER: {
 					this.nodeInterfaceTypeStr = "flow node 0";
+					var height = exportPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length;
+					this.nodeLabel = this.exportPath.Replace("/", "\n/");
+					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, height * 16f);
 					break;
 				}
 				default: {
 					this.nodeInterfaceTypeStr = "flow node 1";
+					this.nodeLabel = name;
 					break;
 				}
 			}
@@ -267,7 +279,7 @@ namespace AssetGraph {
 			style.alignment = TextAnchor.MiddleCenter;
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width, baseRect.height);
-			GUI.Label(nodeTitleRect, name, style);
+			GUI.Label(nodeTitleRect, nodeLabel, style);
 
 			style.alignment = defaultAlignment;
 		}

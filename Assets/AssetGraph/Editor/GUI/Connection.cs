@@ -61,6 +61,9 @@ namespace AssetGraph {
 			var end = endNode.GlobalConnectionPointPosition(inputPoint);
 			var endV3 = new Vector3(end.x, end.y, 0f);
 			
+			var centerPoint = start + ((end - start) / 2);
+			var centerPointV3 = new Vector3(centerPoint.x, centerPoint.y, 0f);
+
 			var pointDistance = (end.x - start.x) / 2f;
 			if (pointDistance < 20f) pointDistance = 20f;
 
@@ -68,6 +71,14 @@ namespace AssetGraph {
 			var endTan = new Vector3(end.x - pointDistance, end.y, 0f);
 
 			Handles.DrawBezier(startV3, endV3, startTan, endTan, Color.gray, null, 4f);
+
+			
+
+			// draw label
+			if (1 < label.Length) {
+				var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 10f, 0f) ;
+				Handles.Label(labelPointV3, label);
+			}
 		}
 
 		public bool IsStartAtConnectionPoint (ConnectionPoint p) {

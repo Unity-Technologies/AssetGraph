@@ -113,7 +113,7 @@ public class BuiltInResourcesWindow : EditorWindow
  
                         GUILayout.BeginHorizontal();
                         GUILayout.Toggle( false, inactiveText, thisStyle, GUILayout.Width( width / 2 ) );
-                        GUILayout.Toggle( false, activeText, thisStyle, GUILayout.Width( width / 2 ) );
+                        GUILayout.Toggle( true, activeText, thisStyle, GUILayout.Width( width / 2 ) );
                         GUILayout.EndHorizontal();
                     };
  

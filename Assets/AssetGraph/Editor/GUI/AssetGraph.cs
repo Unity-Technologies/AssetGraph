@@ -35,11 +35,39 @@ namespace AssetGraph {
 
 		private DateTime lastLoaded = DateTime.MinValue;
 
+
+		private List<PlatformButtonData> platformButtonDatas;
+		public struct PlatformButtonData {
+			public readonly string name;
+			public readonly Texture2D texture;
+			public PlatformButtonData (string name, Texture2D tex) {
+				this.name = name;
+				this.texture = tex;
+			}
+		}
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
+			if (platformButtonDatas == null) {
+				platformButtonDatas = new List<PlatformButtonData>();
+				var platformButtonTextureResources = Resources
+					.FindObjectsOfTypeAll(typeof(Texture2D))
+					.Where(data => data.ToString().StartsWith("d_BuildSettings"))
+					.Where(data => data.ToString().Contains("Small"))
+					.ToList();
+
+				foreach (var textureResource in platformButtonTextureResources) {
+					// d_BuildSettings.Tizen.Small
+					var platfornName = textureResource.ToString().Split('.')[1];
+					platformButtonDatas.Add(
+						new PlatformButtonData(platfornName, textureResource as Texture2D)
+					);
+				}
+			}
+
+
 			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
 			
 			// create Temp folder under Assets/AssetGraph
@@ -52,7 +80,7 @@ namespace AssetGraph {
 			var lastModified = DateTime.Now;
 
 			if (File.Exists(graphDataPath)) {
-				
+
 				// load
 				var dataStr = string.Empty;
 				
@@ -277,6 +305,29 @@ namespace AssetGraph {
 		private bool shouldSave;
 
 		void OnGUI () {
+			EditorGUILayout.BeginHorizontal(GUI.skin.box);
+			{
+				if (GUILayout.Button("Run")) {
+					Debug.Log("Run開始");
+				}
+
+				int i = 0;
+				foreach (var platformButtonData in platformButtonDatas) {
+					var platformButtonTexture = platformButtonData.texture;
+					var platfornName = platformButtonData.name;
+
+					var onOff = false;
+					if (i == 1) onOff = true;
+
+					if (GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton")) {
+						Debug.Log("platfornName:" + platfornName);
+					}
+					i++;
+				}
+			}
+			EditorGUILayout.EndHorizontal();
+
+
 			shouldSave = false;
 
 			// update node window x N
@@ -429,7 +480,10 @@ namespace AssetGraph {
 						case OnNodeEvent.EventType.EVENT_NODE_TAPPED: {
 							var tappedNodeId = e.eventSourceNode.id;
 							foreach (var node in nodes) {
-								if (node.id == tappedNodeId) node.SetActive();
+								if (node.id == tappedNodeId) {
+									node.SetActive();
+									Debug.LogError("nodeを選択したらInspectorに出すとかそのへん");
+								}
 								else node.SetInactive();
 							}
 							break;
