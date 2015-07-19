@@ -303,12 +303,55 @@ namespace AssetGraph {
 		}
 		
 		private bool shouldSave;
+		
+		private void Reload () {
+			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			if (!File.Exists(graphDataPath)) {
+				Debug.LogError("no data found、初期化してもいいかもしれない。");
+				return;
+			}
+			
+			// reload
+			var dataStr = string.Empty;
+			using (var sr = new StreamReader(graphDataPath)) {
+				dataStr = sr.ReadToEnd();
+			}
+
+			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
+
+			// ready datas.
+			var graphStackCont = new GraphStackController();
+			graphStackCont.SetupStackedGraph(reloadedData);
+
+			Debug.LogError("リロード、図を書き直す");
+		}
+
+		private void Run () {
+			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			if (!File.Exists(graphDataPath)) {
+				Debug.LogError("no data found、初期化してもいいかもしれない。");
+				return;
+			}
+
+			var dataStr = string.Empty;
+			using (var sr = new StreamReader(graphDataPath)) {
+				dataStr = sr.ReadToEnd();
+			}
+
+			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
+
+			var graphStackCont = new GraphStackController();
+			graphStackCont.RunStackedGraph(loadedData);
+		}
+
 
 		void OnGUI () {
 			EditorGUILayout.BeginHorizontal(GUI.skin.box);
 			{
 				if (GUILayout.Button("Run")) {
-					Debug.Log("Run開始");
+					Run();
 				}
 
 				int i = 0;
@@ -320,7 +363,7 @@ namespace AssetGraph {
 					if (i == 1) onOff = true;
 
 					if (GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton")) {
-						Debug.Log("platfornName:" + platfornName);
+						// 、、、？？毎フレームよばれてしまうっぽいな？
 					}
 					i++;
 				}

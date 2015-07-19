@@ -25,8 +25,8 @@ public class FilterAllResources : AssetGraph.FilterBase {
 		}
 
 		Out("images", images);
-		Out("models", images);
-		Out("bgms", images);
-		Out("ses", images);
+		Out("models", models);
+		Out("bgms", bgms);
+		Out("ses", ses);
 	}
 }

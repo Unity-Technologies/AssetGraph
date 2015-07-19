@@ -75,7 +75,7 @@ namespace AssetGraph {
 			
 
 			// draw label
-			if (1 < label.Length) {
+			if (1 < label.Length) {// ignore "+"
 				var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 10f, 0f) ;
 				Handles.Label(labelPointV3, label);
 			}
