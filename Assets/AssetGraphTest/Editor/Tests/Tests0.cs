@@ -517,9 +517,9 @@ public partial class Test {
 			var sourceArray = setupResultDict[connectionId].ToArray();
 			if (0 < sourceArray.Length) {
 				var str = string.Join("\n	source:", sourceArray);
-				Debug.LogError("connectionId:" + connectionId + "\n	source:" + str);	
+				Debug.Log("connectionId:" + connectionId + "\n	source:" + str);	
 			} else {
-				Debug.LogError("connectionId:" + connectionId + " is empty.");
+				Debug.Log("connectionId:" + connectionId + " is empty.");
 			}
 		}
 	}
@@ -539,14 +539,18 @@ public partial class Test {
 		var stack = new GraphStackController();
 		stack.RunStackedGraph(graphDict);
 		
-		// var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		// var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample");
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample");
 
-		// var the1stBundlePath = Path.Combine(expectedExportDestPath, "0/chara.assetbundle");
-		// var the2ndBundlePath = Path.Combine(expectedExportDestPath, "1/chara.assetbundle");
-		// if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
-		// 	return;
-		// }
+		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara_0.assetbundle");
+		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara_1.assetbundle");
+		var soundBundlePath = Path.Combine(expectedExportDestPath, "sounds.assetbundle");
+		if (
+			File.Exists(the1stBundlePath) && 
+			File.Exists(the2ndBundlePath) &&
+			File.Exists(soundBundlePath)) {
+			return;
+		}
 
 		Debug.LogError("failed to generate");
 	}
