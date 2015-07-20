@@ -45,6 +45,11 @@ namespace AssetGraph {
 				this.texture = tex;
 			}
 		}
+
+		private Texture2D reloadButtonTexture;
+
+		private Dictionary<string, List<string>> connectionThroughputs = new Dictionary<string, List<string>>();
+
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
@@ -65,6 +70,12 @@ namespace AssetGraph {
 						new PlatformButtonData(platfornName, textureResource as Texture2D)
 					);
 				}
+
+				var reloadTextureSources = Resources
+					.FindObjectsOfTypeAll(typeof(Texture2D))
+					.Where(data => data.ToString().Contains("d_RotateTool"))
+					.ToList();
+				reloadButtonTexture = reloadTextureSources[0] as Texture2D;
 			}
 
 
@@ -311,7 +322,7 @@ namespace AssetGraph {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
 			}
-			
+
 			// reload
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
@@ -322,9 +333,9 @@ namespace AssetGraph {
 
 			// ready datas.
 			var graphStackCont = new GraphStackController();
-			graphStackCont.SetupStackedGraph(reloadedData);
+			connectionThroughputs = graphStackCont.SetupStackedGraph(reloadedData);
 
-			Debug.LogError("リロード、図を書き直す");
+			Debug.Log("GUI上のConnection上を通るリソースの情報が更新できた。さてどうやってGUIにボタン乗っけようかな。");
 		}
 
 		private void Run () {
@@ -350,6 +361,10 @@ namespace AssetGraph {
 		void OnGUI () {
 			EditorGUILayout.BeginHorizontal(GUI.skin.box);
 			{
+				if (GUILayout.Button(reloadButtonTexture)) {
+					Reload();
+				}
+
 				if (GUILayout.Button("Run")) {
 					Run();
 				}
