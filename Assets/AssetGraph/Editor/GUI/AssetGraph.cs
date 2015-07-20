@@ -414,9 +414,107 @@ namespace AssetGraph {
 				}
 			}
 
+			if (Event.current.type == EventType.DragUpdated) {
+				var refs = DragAndDrop.objectReferences;
+
+				foreach (var refe in refs) {
+					if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
+						var type = ((MonoScript)refe).GetClass();
+						
+						var inherited = IsAcceptableType(type);
+
+						if (inherited != null) {
+							DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+							// at least one asset is script.
+							break;
+						}
+					}
+				}
+			}
+
+			if (Event.current.type == EventType.DragPerform) {
+				var pathAndRefs = new Dictionary<string, object>();
+				for (var i = 0; i < DragAndDrop.paths.Length; i++) {
+					var path = DragAndDrop.paths[i];
+					var refe = DragAndDrop.objectReferences[i];
+					pathAndRefs[path] = refe;
+				}
+
+				foreach (var item in pathAndRefs) {
+					var path = item.Key;
+					var refe = (MonoScript)item.Value;
+					if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
+						var type = refe.GetClass();
+						var inherited = IsAcceptableType(type);
+
+						if (inherited != null) {
+							var dropPos = Event.current.mousePosition;
+							var scriptName = refe.name;
+							var scriptPath = path;
+							GenerateNode(scriptName, scriptPath, inherited, dropPos.x, dropPos.y);
+						}
+					}
+				}
+			}
+
 			if (shouldSave) {
 				SaveGraph();
 			}
+		}
+
+		private Type IsAcceptableType (Type type) {
+			if (typeof(FilterBase).IsAssignableFrom(type)) return typeof(FilterBase);
+			if (typeof(ImporterBase).IsAssignableFrom(type)) return typeof(ImporterBase);
+			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) return typeof(PrefabricatorBase);
+			if (typeof(BundlizerBase).IsAssignableFrom(type)) return typeof(BundlizerBase);
+			return null;
+		}
+
+		private void GenerateNode (string scriptName, string scriptPath, Type scriptBaseType, float x, float y) {
+			Node newNode = null;
+
+			var kind = AssetGraphSettings.NodeKind.FILTER;
+			if (scriptBaseType == typeof(FilterBase)) {
+				kind = AssetGraphSettings.NodeKind.FILTER;
+				newNode = Node.DefaultNode(EmitEvent, nodes.Count, scriptName, Guid.NewGuid().ToString(), kind, scriptPath, x, y);
+				
+				// add output point to this node.
+				// setup this filter then add output point by result of setup.
+				var outputPointLabels = GraphStackController.GetLabelsFromSetupFilter(scriptName);
+
+				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				foreach (var outputPointLabel in outputPointLabels) {
+					newNode.AddConnectionPoint(new OutputPoint(outputPointLabel));
+				}
+			}
+			if (scriptBaseType == typeof(ImporterBase)) {
+				kind = AssetGraphSettings.NodeKind.IMPORTER;
+				newNode = Node.DefaultNode(EmitEvent, nodes.Count, scriptName, Guid.NewGuid().ToString(), kind, scriptPath, x, y);
+				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+			}
+			if (scriptBaseType == typeof(PrefabricatorBase)) {
+				kind = AssetGraphSettings.NodeKind.PREFABRICATOR;
+				newNode = Node.DefaultNode(EmitEvent, nodes.Count, scriptName, Guid.NewGuid().ToString(), kind, scriptPath, x, y);
+				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+			}
+			if (scriptBaseType == typeof(BundlizerBase)) {
+				kind = AssetGraphSettings.NodeKind.BUNDLIZER;
+				newNode = Node.DefaultNode(EmitEvent, nodes.Count, scriptName, Guid.NewGuid().ToString(), kind, scriptPath, x, y);
+				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+			}
+			
+			if (newNode == null) {
+				Debug.LogError("failed to add node. no type found, scriptName:" + scriptName + " scriptPath:" + scriptPath + " scriptBaseType:" + scriptBaseType);
+				return;
+			}
+
+			nodes.Add(newNode);
+
+			// save data.
+			SaveGraph();
 		}
 
 		private void DrawStraightLineFromCurrentEventSourcePointTo (Vector2 to) {

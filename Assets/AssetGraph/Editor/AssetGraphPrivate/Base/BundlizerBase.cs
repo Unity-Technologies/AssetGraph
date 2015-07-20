@@ -27,7 +27,7 @@ namespace AssetGraph {
 			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
-			var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta("Assets");
+			var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 			try {
 				In(assets, recommendedBundleOutputDir);
 			} catch (Exception e) {
@@ -37,7 +37,7 @@ namespace AssetGraph {
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 			AssetDatabase.SaveAssets();
 
-			var localFilePathsAfterBundlize = FileController.FilePathsInFolderWithoutMeta("Assets");
+			var localFilePathsAfterBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 			
 			var outputSources = new List<InternalAssetData>();
 

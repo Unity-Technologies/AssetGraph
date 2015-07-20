@@ -22,6 +22,22 @@ namespace AssetGraph {
 			}
 		}
 
+		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+			if (nodeScriptInstance == null) {
+				throw new Exception("no class found:" + scriptType);
+			}
+
+			var labels = new List<string>();
+			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
+				labels.Add(connectionLabel);
+			};
+
+			((FilterBase)nodeScriptInstance).Setup("GetLabelsFromSetupFilter_dummy_nodeId", string.Empty, new List<InternalAssetData>(), Output);
+			return labels;
+
+		}
+
 		public Dictionary<string, object> ValidateStackedGraph (Dictionary<string, object> graphDataDict) {
 			var changed = false;
 

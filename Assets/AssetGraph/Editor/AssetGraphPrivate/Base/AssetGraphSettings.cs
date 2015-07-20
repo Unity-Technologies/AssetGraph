@@ -14,6 +14,7 @@ namespace AssetGraph {
 		public const string BUNDLIZER_TEMP_PLACE = APPLICATIONDATAPATH_TEMP_PATH + "Bundlized/";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
+		public const string UNITY_LOCAL_DATAPATH = "Assets";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
 		public const char UNITY_FOLDER_SEPARATOR = '/';
 		
