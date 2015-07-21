@@ -103,8 +103,7 @@ namespace AssetGraph {
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
 
-				var graphStackCont = new GraphStackController();
-				var validatedDataDict = graphStackCont.ValidateStackedGraph(deserialized);
+				var validatedDataDict = GraphStackController.ValidateStackedGraph(deserialized);
 
 				var validatedDate = validatedDataDict[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				if (lastModifiedStr != validatedDate) {
@@ -332,8 +331,7 @@ namespace AssetGraph {
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
 			// ready datas.
-			var graphStackCont = new GraphStackController();
-			connectionThroughputs = graphStackCont.SetupStackedGraph(reloadedData);
+			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
 
 			Debug.Log("GUI上のConnection上を通るリソースの情報が更新できた。さてどうやってGUIにボタン乗っけようかな。");
 		}
@@ -352,9 +350,7 @@ namespace AssetGraph {
 			}
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
-
-			var graphStackCont = new GraphStackController();
-			graphStackCont.RunStackedGraph(loadedData);
+			GraphStackController.RunStackedGraph(loadedData);
 		}
 
 
@@ -688,6 +684,21 @@ namespace AssetGraph {
 								);
 							}
 							menu.ShowAsContext();
+							break;
+						}
+
+						case OnNodeEvent.EventType.EVENT_CLOSE_TAPPED: {
+							var deletingNodeId = e.eventSourceNode.id;
+							for (int i = 0; i < nodes.Count; i++) {
+								var node = nodes[i];
+								if (node.id == deletingNodeId) {
+									nodes.Remove(node);
+									shouldSave = true;
+								}
+							}
+							SaveGraph();
+							InitializeGraph();
+
 							break;
 						}
 

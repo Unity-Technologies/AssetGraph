@@ -303,8 +303,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		var endpointNodeIdsAndNodeDatas = stack.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict);
 		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
 			return;
 		}
@@ -326,15 +325,14 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		var endpointNodeIdsAndNodeDatasAndConnectionDatas = stack.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
 
 		var endPoint0 = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds[0];
 		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 		var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
 		var resultDict = new Dictionary<string, List<InternalAssetData>>();
-		var orderedConnectionIds = stack.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict);
+		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict);
 		
 		if (orderedConnectionIds.Count == 0) {
 			Debug.LogError("list is empty");
@@ -361,8 +359,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		stack.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
@@ -455,8 +452,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		stack.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_12_SerializedGraphJSON");
@@ -482,8 +478,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		var resultDict = stack.SetupStackedGraph(graphDict);
+		var resultDict = GraphStackController.SetupStackedGraph(graphDict);
 		
 		foreach (var connectionId in resultDict.Keys) {
 			var sourceArray = resultDict[connectionId].ToArray();
@@ -510,8 +505,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		var setupResultDict = stack.SetupStackedGraph(graphDict);
+		var setupResultDict = GraphStackController.SetupStackedGraph(graphDict);
 		
 		foreach (var connectionId in setupResultDict.Keys) {
 			var sourceArray = setupResultDict[connectionId].ToArray();
@@ -536,8 +530,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var stack = new GraphStackController();
-		stack.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample");

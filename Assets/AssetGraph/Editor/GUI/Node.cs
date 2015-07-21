@@ -28,6 +28,7 @@ namespace AssetGraph {
 
 		
 		public Rect baseRect;
+		private Rect closeButtonRect;
 		
 		public static Node LoaderNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
 			return new Node(
@@ -83,8 +84,10 @@ namespace AssetGraph {
 			this.scriptPath = scriptPath;
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;
+			
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
-
+			this.closeButtonRect = new Rect(0f, 0f, 18f, 18f);
+			
 			this.nodeLabel = string.Empty;
 			
 			switch (this.kind) {
@@ -247,6 +250,11 @@ namespace AssetGraph {
 				*/
 				var upInButtonRect = GUI.Button(point.buttonRect, string.Empty, point.buttonStyle);
 				if (upInButtonRect) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_RECEIVE_TAPPED, this, Event.current.mousePosition, point));
+			}
+
+			// draw & update close button interface.
+			if (GUI.Button(closeButtonRect, string.Empty, "OL Minus")) {
+				Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Event.current.mousePosition, null));
 			}
 
 

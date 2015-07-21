@@ -38,7 +38,7 @@ namespace AssetGraph {
 
 		}
 
-		public Dictionary<string, object> ValidateStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, object> ValidateStackedGraph (Dictionary<string, object> graphDataDict) {
 			var changed = false;
 
 
@@ -174,7 +174,7 @@ namespace AssetGraph {
 			return graphDataDict;
 		}
 		
-		public Dictionary<string, List<string>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, List<string>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -197,7 +197,7 @@ namespace AssetGraph {
 			return resultConnectionSourcesDict;
 		}
 
-		public Dictionary<string, List<string>> RunStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, List<string>> RunStackedGraph (Dictionary<string, object> graphDataDict) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -220,7 +220,7 @@ namespace AssetGraph {
 			return resultConnectionSourcesDict;
 		}
 
-		private List<string> GetResourcePathList (List<InternalAssetData> assetDatas) {
+		private static List<string> GetResourcePathList (List<InternalAssetData> assetDatas) {
 			var sourcePathList = new List<string>();
 
 			foreach (var assetData in assetDatas) {
@@ -241,7 +241,7 @@ namespace AssetGraph {
 				・ループチェックしてない
 				・不要なデータも入ってる
 		*/
-		public EndpointNodeIdsAndNodeDatasAndConnectionDatas SerializeNodeRoute (Dictionary<string, object> graphDataDict) {
+		public static EndpointNodeIdsAndNodeDatasAndConnectionDatas SerializeNodeRoute (Dictionary<string, object> graphDataDict) {
 			Debug.LogWarning("Endの条件を絞れば、不要な、たとえばExportではないNodeが末尾であれば無視する、とか警告だすとかができるはず。");
 			var nodeIds = new List<string>();
 			var nodesSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
@@ -313,7 +313,7 @@ namespace AssetGraph {
 			setup all serialized nodes in order.
 			returns orderd connectionIds
 		*/
-		public List<string> SetupSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
+		public static List<string> SetupSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, false);
 
 			return resultDict.Keys.ToList();
@@ -323,7 +323,7 @@ namespace AssetGraph {
 			run all serialized nodes in order.
 			returns orderd connectionIds
 		*/
-		public List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
+		public static List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true);
 
 			return resultDict.Keys.ToList();
@@ -332,7 +332,7 @@ namespace AssetGraph {
 		/**
 			execute Run or Setup for each nodes in order.
 		*/
-		private void ExecuteParent (string nodeId, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas, Dictionary<string, List<InternalAssetData>> resultDict, bool isActualRun) {
+		private static void ExecuteParent (string nodeId, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas, Dictionary<string, List<InternalAssetData>> resultDict, bool isActualRun) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.currentNodeId == nodeId).ToList();
 			if (!currentNodeDatas.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
 
@@ -479,7 +479,7 @@ namespace AssetGraph {
 			currentNodeData.Done();
 		}
 
-		public T Executor<T> (string classStr) where T : INodeBase {
+		public static T Executor<T> (string classStr) where T : INodeBase {
 			var nodeScriptTypeStr = classStr;
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(nodeScriptTypeStr);
 			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + nodeScriptTypeStr + " which is based on Type:" + typeof(T));
