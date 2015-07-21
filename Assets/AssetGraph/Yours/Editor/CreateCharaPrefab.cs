@@ -63,7 +63,7 @@ public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
 			// export prefab data.
 			PrefabUtility.ReplacePrefab(modelObj, prefabFile);
 
-			// delete unnecessary cube model from hierarchy.
+			// delete unnecessary chara model from hierarchy.
 			GameObject.DestroyImmediate(modelObj);
 			Debug.Log("succeeded to create prefab:" + prefabFile);
 		}
