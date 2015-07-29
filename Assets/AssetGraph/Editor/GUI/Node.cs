@@ -26,7 +26,9 @@ namespace AssetGraph {
 		private string nodeInterfaceTypeStr;
 
 
-		
+		public NodeInspector nodeInsp;
+
+
 		public Rect baseRect;
 		private Rect closeButtonRect;
 		
@@ -75,7 +77,20 @@ namespace AssetGraph {
 			);
 		}
 
+		
+
+
+		[CustomEditor(typeof(NodeInspector))]
+		public class NodeObj : Editor {
+			public override void OnInspectorGUI () {
+				var node = ((NodeInspector)target).node;
+				if (node == null) return;
+				GUILayout.Label ("ufufufuf stom Editor:" + node.name);
+			}
+		}
+		
 		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, string loadPath, string exportPath, float x, float y) {
+			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			this.Emit = emit;
 			this.nodeWindowId = index;
 			this.name = name;
@@ -114,6 +129,9 @@ namespace AssetGraph {
 		}
 
 		public void SetActive () {
+			nodeInsp.UpdateNode(this);
+			Selection.activeObject = nodeInsp;
+
 			switch (this.kind) {
 				case AssetGraphSettings.NodeKind.LOADER: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";

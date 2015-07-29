@@ -634,7 +634,6 @@ namespace AssetGraph {
 							foreach (var node in nodes) {
 								if (node.id == tappedNodeId) {
 									node.SetActive();
-									Debug.LogError("nodeを選択したらInspectorに出すとかそのへん");
 								}
 								else node.SetInactive();
 							}
