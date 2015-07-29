@@ -17,6 +17,16 @@ namespace AssetGraph {
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
 		public const char UNITY_FOLDER_SEPARATOR = '/';
+
+		/*
+			node generation from GUI
+		*/
+		public const string PRESET_LOADER_NAME = "Loader";
+		public const string PRESET_FILTER_NAME = "Filter";
+		public const string PRESET_IMPORTER_NAME = "Importer";
+		public const string PRESET_PREFABRICATOR_NAME = "Prefabricator";
+		public const string PRESET_BUNDLIZER_NAME = "Bundlizer";
+		public const string PRESET_EXPORTER_NAME = "Exporter";
 		
 		/*
 			data key for AssetGraph.json
@@ -51,12 +61,19 @@ namespace AssetGraph {
 
 
 		public enum NodeKind : int {
-			LOADER,
-			FILTER,
-			IMPORTER,
-			PREFABRICATOR,
-			BUNDLIZER,
-			EXPORTER,
+			LOADER_SCRIPT,
+			FILTER_SCRIPT,
+			IMPORTER_SCRIPT,
+			PREFABRICATOR_SCRIPT,
+			BUNDLIZER_SCRIPT,
+			EXPORTER_SCRIPT,
+
+			LOADER_GUI,
+			FILTER_GUI,
+			IMPORTER_GUI,
+			PREFABRICATOR_GUI,
+			BUNDLIZER_GUI,
+			EXPORTER_GUI
 		}
 
 		public static NodeKind NodeKindFromString (string val) {

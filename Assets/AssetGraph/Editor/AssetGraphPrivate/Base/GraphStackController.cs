@@ -75,7 +75,7 @@ namespace AssetGraph {
 
 				// rewrite data if need.
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.FILTER: {
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var outoutLabelsSource = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						var outoutLabelsSet = new HashSet<string>();
 						foreach (var source in outoutLabelsSource) {
@@ -270,12 +270,12 @@ namespace AssetGraph {
 				var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER: {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER: {
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
 						break;
@@ -406,71 +406,79 @@ namespace AssetGraph {
 
 			if (isActualRun) {
 				switch (nodeKind) {
-					case AssetGraphSettings.NodeKind.LOADER: {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var executor = Executor<IntegratedLoader>(classStr);
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.FILTER: {
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var executor = Executor<FilterBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.IMPORTER: {
+					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						var executor = Executor<ImporterBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.PREFABRICATOR: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var executor = Executor<PrefabricatorBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.BUNDLIZER: {
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var executor = Executor<BundlizerBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER: {
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var executor = Executor<IntegratedExporter>(classStr);
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					default: {
+						Debug.LogError("kind not found:" + nodeKind);
 						break;
 					}
 				}
 			} else {
 				switch (nodeKind) {
-					case AssetGraphSettings.NodeKind.LOADER: {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var executor = Executor<IntegratedLoader>(classStr);
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.FILTER: {
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var executor = Executor<FilterBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.IMPORTER: {
+					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						var executor = Executor<ImporterBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.PREFABRICATOR: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var executor = Executor<PrefabricatorBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.BUNDLIZER: {
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var executor = Executor<BundlizerBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER: {
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var executor = Executor<IntegratedExporter>(classStr);
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+					default: {
+						Debug.LogError("kind not found:" + nodeKind);
 						break;
 					}
 				}
@@ -509,12 +517,12 @@ namespace AssetGraph {
 			this.currentNodeClassStr = currentNodeClassStr;
 			
 			switch (currentNodeKind) {
-				case AssetGraphSettings.NodeKind.LOADER: {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 					this.loadFilePath = loaderOrExporterPath;
 					this.exportFilePath = null;
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER: {
+				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.loadFilePath = null;
 					this.exportFilePath = loaderOrExporterPath;
 					break;

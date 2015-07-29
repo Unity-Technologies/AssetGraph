@@ -62,7 +62,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node DefaultNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, float x, float y) {
+		public static Node ScriptNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, float x, float y) {
 			return new Node(
 				emit,
 				index,
@@ -79,15 +79,19 @@ namespace AssetGraph {
 
 		
 
-
+		/**
+			Inspector GUI
+		*/
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
 			public override void OnInspectorGUI () {
 				var node = ((NodeInspector)target).node;
 				if (node == null) return;
-				GUILayout.Label ("ufufufuf stom Editor:" + node.name);
+
+				
 			}
 		}
+
 		
 		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, string loadPath, string exportPath, float x, float y) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
@@ -106,14 +110,14 @@ namespace AssetGraph {
 			this.nodeLabel = string.Empty;
 			
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER: {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					var height = loadPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length;
 					this.nodeLabel = this.loadPath.Replace("/", "\n/");
 					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, height * 16f);
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER: {
+				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					var height = exportPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length;
 					this.nodeLabel = this.exportPath.Replace("/", "\n/");
@@ -133,11 +137,11 @@ namespace AssetGraph {
 			Selection.activeObject = nodeInsp;
 
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER: {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER: {
+				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
@@ -150,11 +154,11 @@ namespace AssetGraph {
 
 		public void SetInactive () {
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER: {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER: {
+				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
