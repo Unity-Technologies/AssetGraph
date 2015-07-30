@@ -55,44 +55,74 @@ namespace AssetGraph {
 
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
-
-				var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 				
-				var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
-				
-				// delete if already gone.
-				if (nodeScriptInstance == null) {
-					changed = true;
-					Debug.LogWarning("no class found:" + scriptType + " kind:" + kind + ", rebuildfing AssetGraph...");
-					continue;
-				}
-
 				// copy all key and value to new Node data dictionary.
 				var newNodeDict = new Dictionary<string, object>();
 				foreach (var key in nodeDict.Keys) {
 					newNodeDict[key] = nodeDict[key];
 				}
 
+				switch (kind) {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
+				
+						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+						
+						// delete if already gone.
+						if (nodeScriptInstance == null) {
+							changed = true;
+							Debug.LogWarning("no class found:" + scriptType + " kind:" + kind + ", rebuildfing AssetGraph...");
+							continue;
+						}
+
+						if (kind == AssetGraphSettings.NodeKind.FILTER_SCRIPT) {
+							var outoutLabelsSource = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+							var outoutLabelsSet = new HashSet<string>();
+							foreach (var source in outoutLabelsSource) {
+								outoutLabelsSet.Add(source.ToString());
+							}
+
+							var latestLabels = new HashSet<string>();
+							Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
+								latestLabels.Add(connectionLabel);
+							};
+
+							((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, new List<InternalAssetData>(), Output);
+
+							if (!outoutLabelsSet.SetEquals(latestLabels)) {
+								changed = true;
+								newNodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = latestLabels.ToList();
+							}
+						}
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.LOADER_GUI:
+					case AssetGraphSettings.NodeKind.FILTER_GUI:
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+					case AssetGraphSettings.NodeKind.GROUPING_GUI:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						break;
+					}
+
+					default: {
+						Debug.LogError("not match kind:" + kind);
+						break;
+					}
+				}
+
 				// rewrite data if need.
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						var outoutLabelsSource = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						var outoutLabelsSet = new HashSet<string>();
-						foreach (var source in outoutLabelsSource) {
-							outoutLabelsSet.Add(source.ToString());
-						}
-
-						var latestLabels = new HashSet<string>();
-						Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
-							latestLabels.Add(connectionLabel);
-						};
-
-						((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, new List<InternalAssetData>(), Output);
-
-						if (!outoutLabelsSet.SetEquals(latestLabels)) {
-							changed = true;
-							newNodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = latestLabels.ToList();
-						}
+						
 						break;
 					}
 
@@ -164,6 +194,7 @@ namespace AssetGraph {
 
 
 			if (changed) {
+				Debug.LogError("changed!");
 				var validatedResultDict = new Dictionary<string, object>{
 					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now},
 					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, newNodes},
@@ -296,24 +327,25 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.FILTER_GUI:
-					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
-					case AssetGraphSettings.NodeKind.GROUPING_GUI:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
-						nodeDatas.Add(new NodeData(nodeId, kind, scriptType));
-						break;
-					}
-
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
+						nodeDatas.Add(new NodeData(nodeId, kind, scriptType));
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.FILTER_GUI:
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+					case AssetGraphSettings.NodeKind.GROUPING_GUI:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						Debug.LogError("考え中:" + kind);
 						break;
 					}
+
 
 					default: {
 						Debug.LogError("failed to match:" + kind);

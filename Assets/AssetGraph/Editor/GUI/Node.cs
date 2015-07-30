@@ -103,7 +103,21 @@ namespace AssetGraph {
 				var node = ((NodeInspector)target).node;
 				if (node == null) return;
 
+				EditorGUILayout.LabelField("name", node.name);
+				EditorGUILayout.LabelField("kind", node.kind.ToString());
 				
+				switch (node.kind) {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						EditorGUILayout.LabelField("kind", node.loadPath);
+						break;
+					}
+
+					default: {
+						Debug.LogError("failed to match:" + node.kind);
+						break;
+					}
+				}
 			}
 		}
 
@@ -332,8 +346,10 @@ namespace AssetGraph {
 				*/
 				case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
+
 					if (result != null) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_HANDLE_STARTED, this, Event.current.mousePosition, result));
 					else Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TAPPED, this, Event.current.mousePosition, null));
+					
 					break;
 				}
 				

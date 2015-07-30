@@ -22,22 +22,22 @@ namespace AssetGraph {
 		/*
 			node generation from GUI
 		*/
-		public const string PRESET_LOADER_NAME = "Loader";
-		public const string PRESET_FILTER_NAME = "Filter";
-		public const string PRESET_IMPORTER_NAME = "Importer";
-		public const string PRESET_GROUPING_NAME = "Grouping";
-		public const string PRESET_PREFABRICATOR_NAME = "Prefabricator";
-		public const string PRESET_BUNDLIZER_NAME = "Bundlizer";
-		public const string PRESET_EXPORTER_NAME = "Exporter";
+		public const string MENU_LOADER_NAME = "Loader";
+		public const string MENU_FILTER_NAME = "Filter";
+		public const string MENU_IMPORTER_NAME = "Importer";
+		public const string MENU_GROUPING_NAME = "Grouping";
+		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
+		public const string MENU_BUNDLIZER_NAME = "Bundlizer";
+		public const string MENU_EXPORTER_NAME = "Exporter";
 
-		public static Dictionary<string, string> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, string>{
-			{"add " + PRESET_LOADER_NAME + " node", PRESET_LOADER_NAME},
-			{"add " + PRESET_FILTER_NAME + " node", PRESET_FILTER_NAME},
-			{"add " + PRESET_IMPORTER_NAME + " node", PRESET_IMPORTER_NAME},
-			{"add " + PRESET_GROUPING_NAME + " node", PRESET_GROUPING_NAME},
-			{"add " + PRESET_PREFABRICATOR_NAME + " node", PRESET_PREFABRICATOR_NAME},
-			{"add " + PRESET_BUNDLIZER_NAME + " node", PRESET_BUNDLIZER_NAME},
-			{"add " + PRESET_EXPORTER_NAME + " node", PRESET_EXPORTER_NAME}
+		public static Dictionary<string, NodeKind> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, NodeKind>{
+			{"add " + MENU_LOADER_NAME + " node", NodeKind.LOADER_GUI},
+			{"add " + MENU_FILTER_NAME + " node", NodeKind.FILTER_GUI},
+			{"add " + MENU_IMPORTER_NAME + " node", NodeKind.IMPORTER_GUI},
+			{"add " + MENU_GROUPING_NAME + " node", NodeKind.GROUPING_GUI},
+			{"add " + MENU_PREFABRICATOR_NAME + " node", NodeKind.PREFABRICATOR_GUI},
+			{"add " + MENU_BUNDLIZER_NAME + " node", NodeKind.BUNDLIZER_GUI},
+			{"add " + MENU_EXPORTER_NAME + " node", NodeKind.EXPORTER_GUI}
 		};
 
 		/*
