@@ -204,7 +204,8 @@ namespace AssetGraph {
 						nodes.Add(newNode);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
 						
 						var newNode = Node.ExporterNode(EmitEvent, nodes.Count, name, id, kind, exportPath, x, y);
@@ -563,6 +564,25 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
 					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					break;
+				}
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {

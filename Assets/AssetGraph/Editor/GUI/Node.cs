@@ -119,6 +119,53 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
+						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						Debug.LogError("既存のポイントの情報を表示しよう。");
+						break;
+					}
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						Debug.LogError("ポイントを追加できるGUIを表示しよう。");
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
+						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						Debug.LogError("画像の〜とか、なんか仮で作る");
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT: {
+						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+						Debug.LogError("グルーピングはありそうだな〜");
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						var newExportPath = EditorGUILayout.TextArea(node.exportPath, GUILayout.MaxHeight(75));
+						if (newExportPath != node.exportPath) {
+							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
+							node.exportPath = newExportPath;
+							node.Save();
+						}
+						break;
+					}
+
 					default: {
 						Debug.LogError("failed to match:" + node.kind);
 						break;
