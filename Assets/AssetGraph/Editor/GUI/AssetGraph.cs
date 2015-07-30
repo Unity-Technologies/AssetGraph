@@ -438,7 +438,7 @@ namespace AssetGraph {
 					if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
 						var type = ((MonoScript)refe).GetClass();
 						
-						var inherited = IsAcceptableType(type);
+						var inherited = IsAcceptableScriptType(type);
 
 						if (inherited != null) {
 							// at least one asset is script. change interface.
@@ -465,7 +465,7 @@ namespace AssetGraph {
 					var refe = (MonoScript)item.Value;
 					if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
 						var type = refe.GetClass();
-						var inherited = IsAcceptableType(type);
+						var inherited = IsAcceptableScriptType(type);
 
 						if (inherited != null) {
 							var dropPos = Event.current.mousePosition;
@@ -501,13 +501,13 @@ namespace AssetGraph {
 			}
 		}
 
-		private Type IsAcceptableType (Type type) {
-			if (typeof(IntegratedLoader).IsAssignableFrom(type)) return typeof(IntegratedLoader);
+		private Type IsAcceptableScriptType (Type type) {
+			if (typeof(IntegratedScriptLoader).IsAssignableFrom(type)) return typeof(IntegratedScriptLoader);
 			if (typeof(FilterBase).IsAssignableFrom(type)) return typeof(FilterBase);
 			if (typeof(ImporterBase).IsAssignableFrom(type)) return typeof(ImporterBase);
 			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) return typeof(PrefabricatorBase);
 			if (typeof(BundlizerBase).IsAssignableFrom(type)) return typeof(BundlizerBase);
-			if (typeof(IntegratedExporter).IsAssignableFrom(type)) return typeof(IntegratedExporter);
+			if (typeof(IntegratedScriptExporter).IsAssignableFrom(type)) return typeof(IntegratedScriptExporter);
 			Debug.LogError("failed to accept:" + type);
 			return null;
 		}

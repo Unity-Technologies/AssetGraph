@@ -301,6 +301,7 @@ namespace AssetGraph {
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
 				
 				switch (kind) {
+					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
@@ -314,12 +315,6 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						Debug.LogError("考え中:" + kind);
-						// var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
-						// nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
-						break;
-					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						Debug.LogError("考え中:" + kind);
 						// var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
@@ -474,7 +469,7 @@ namespace AssetGraph {
 			if (isActualRun) {
 				switch (nodeKind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = Executor<IntegratedLoader>(classStr);
+						var executor = Executor<IntegratedScriptLoader>(classStr);
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
@@ -500,7 +495,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = Executor<IntegratedExporter>(classStr);
+						var executor = Executor<IntegratedScriptExporter>(classStr);
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
@@ -512,8 +507,11 @@ namespace AssetGraph {
 				}
 			} else {
 				switch (nodeKind) {
+					/*
+						Script version
+					*/
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = Executor<IntegratedLoader>(classStr);
+						var executor = Executor<IntegratedScriptLoader>(classStr);
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
@@ -539,11 +537,22 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = Executor<IntegratedExporter>(classStr);
+						var executor = Executor<IntegratedScriptExporter>(classStr);
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
+
+					/*
+						GUI version
+					*/
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						var executor = Executor<IntegratedGUILoader>(classStr);
+						executor.loadFilePath = currentNodeData.loadFilePath;
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
 					default: {
 						Debug.LogError("kind not found:" + nodeKind);
 						break;

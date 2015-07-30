@@ -5,7 +5,7 @@ using System.IO;
 using System.Collections.Generic;
 
 namespace AssetGraph {
-	public class IntegratedExporter : INodeBase {
+	public class IntegratedScriptExporter : INodeBase {
 		public string exportFilePath;
 		
 		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSource, Action<string, string, List<InternalAssetData>> Output) {

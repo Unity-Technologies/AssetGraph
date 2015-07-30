@@ -2,9 +2,9 @@
     "lastModified": "07/17/2015 12:56:16",
     "nodes": [
         {
-            "className": "AssetGraph.IntegratedLoader",
+            "className": "AssetGraph.IntegratedScriptLoader",
             "id": "リソースの呼び込み",
-            "kind": "LOADER",
+            "kind": "LOADER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -17,7 +17,7 @@
         {
             "className": "SampleFilter_4",
             "id": "リソースの仕分け",
-            "kind": "FILTER",
+            "kind": "FILTER_SCRIPT",
             "outputLabels": [
                 "画像",
                 "モデル",
@@ -33,7 +33,7 @@
         {
             "className": "SampleImporterForImage",
             "id": "画像を読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -46,7 +46,7 @@
         {
             "className": "SampleImporterForModel",
             "id": "モデルを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -59,7 +59,7 @@
         {
             "className": "SampleImporterForBGM",
             "id": "BGMを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -72,7 +72,7 @@
         {
             "className": "SampleImporterForSE",
             "id": "SEを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -85,7 +85,7 @@
         {
             "className": "SamplePrefabricator_3",
             "id": "画像とモデルを合わせてPrefabつくる",
-            "kind": "PREFABRICATOR",
+            "kind": "PREFABRICATOR_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -98,7 +98,7 @@
         {
             "className": "SampleBundlizer_2",
             "id": "バンドルにする",
-            "kind": "BUNDLIZER",
+            "kind": "BUNDLIZER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -109,9 +109,9 @@
             "scriptPath": "Scriptのパス"
         },
         {
-            "className": "AssetGraph.IntegratedExporter",
+            "className": "AssetGraph.IntegratedScriptExporter",
             "id": "バンドルをフォルダに出力",
-            "kind": "EXPORTER",
+            "kind": "EXPORTER_SCRIPT",
             "outputLabels": [],
             "pos": {
                 "x": 1035,

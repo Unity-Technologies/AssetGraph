@@ -4,7 +4,7 @@
         {
             "className": "AssetGraph.IntegratedLoader",
             "id": "リソースの呼び込み",
-            "kind": "LOADER",
+            "kind": "LOADER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -17,7 +17,7 @@
         {
             "className": "FilterAllResources",
             "id": "リソースの仕分け",
-            "kind": "FILTER",
+            "kind": "FILTER_SCRIPT",
             "outputLabels": [
                 "images",
                 "models",
@@ -33,7 +33,7 @@
         {
             "className": "ImportCharaImage",
             "id": "画像を読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -46,7 +46,7 @@
         {
             "className": "ImportCharaModel",
             "id": "モデルを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -59,7 +59,7 @@
         {
             "className": "ImportBGM",
             "id": "BGMを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -72,7 +72,7 @@
         {
             "className": "ImportSE",
             "id": "SEを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -85,7 +85,7 @@
         {
             "className": "CreateCharaPrefab",
             "id": "画像とモデルを合わせてPrefabつくる",
-            "kind": "PREFABRICATOR",
+            "kind": "PREFABRICATOR_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -98,7 +98,7 @@
         {
             "className": "CreateCharaBundle",
             "id": "キャラ用素材をバンドルにする",
-            "kind": "BUNDLIZER",
+            "kind": "BUNDLIZER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -111,7 +111,7 @@
         {
             "className": "CreateSoundBundle",
             "id": "サウンド素材をバンドルにする",
-            "kind": "BUNDLIZER",
+            "kind": "BUNDLIZER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -122,9 +122,9 @@
             "scriptPath": "Scriptのパス"
         },
         {
-            "className": "AssetGraph.IntegratedExporter",
+            "className": "AssetGraph.IntegratedScriptExporter",
             "id": "バンドルをフォルダに出力",
-            "kind": "EXPORTER",
+            "kind": "EXPORTER_SCRIPT",
             "outputLabels": [],
             "pos": {
                 "x": 1043,

@@ -23,13 +23,13 @@ public partial class Test {
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedLoader = new IntegratedLoader();
+		var integratedScriptLoader = new IntegratedScriptLoader();
 		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
-		integratedLoader.loadFilePath = definedSourcePath;
-		integratedLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, Out);
+		integratedScriptLoader.loadFilePath = definedSourcePath;
+		integratedScriptLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, Out);
 
 		var outputs = results["CONNECTION_0_0_0_SetupLoader"];
 		if (outputs.Count == 2) {
@@ -48,13 +48,13 @@ public partial class Test {
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedLoader = new IntegratedLoader();
+		var integratedScriptLoader = new IntegratedScriptLoader();
 		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			results[connectionId] = output;
 		};
 
-		integratedLoader.loadFilePath = definedSourcePath;
-		integratedLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, Out);
+		integratedScriptLoader.loadFilePath = definedSourcePath;
+		integratedScriptLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, Out);
 
 		var outputs = results["CONNECTION_0_0_1_RunLoader"];
 		if (outputs.Count == 2) {
@@ -394,13 +394,13 @@ public partial class Test {
 			InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
 		};
 		
-		var integratedExporter = new IntegratedExporter();
+		var integratedScriptExporter = new IntegratedScriptExporter();
 		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			
 		};
 
-		integratedExporter.exportFilePath = exportFilePath;
-		integratedExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, Out);
+		integratedScriptExporter.exportFilePath = exportFilePath;
+		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, Out);
 		// nothing for check yet.
 	}
 
@@ -423,13 +423,13 @@ public partial class Test {
 			InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
 		};
 		
-		var integratedExporter = new IntegratedExporter();
+		var integratedScriptExporter = new IntegratedScriptExporter();
 		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
 			
 		};
 
-		integratedExporter.exportFilePath = exportFilePath;
-		integratedExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, Out);
+		integratedScriptExporter.exportFilePath = exportFilePath;
+		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, Out);
 
 		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
 

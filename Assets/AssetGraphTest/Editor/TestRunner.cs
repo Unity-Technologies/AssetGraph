@@ -29,28 +29,13 @@ public partial class Test {
 			tests.Add(this._0_11_RunExporter);
 			tests.Add(this._0_12_RunStackedGraph_FullStacked);
 			tests.Add(this._0_13_SetupStackedGraph_FullStacked);
-			tests.Add(this._0_14_SetupStackedGraph_Sample);
-			tests.Add(this._0_15_RunStackedGraph_Sample);
-		}
-
-
-		// GUI
-		{
-			// tests.Add(this._1_0_AddNode);
-			// tests.Add(this._1_1_DeleteNode);
-			// tests.Add(this._1_2_AddConnection);
-			// tests.Add(this._1_3_DeleteConnection);
-		}
-
-		// prefabricator
-		{
-			// tests.Add(this._2_0_PrefabricatorFromOutside);
-			// tests.Add(this._2_1_PrefabricatorFromOutsideWithMeta);
+			// tests.Add(this._0_14_SetupStackedGraph_Sample);
+			// tests.Add(this._0_15_RunStackedGraph_Sample);
 		}
 
 		// only 1 time run, use cache.
 		{
-			tests.Add(this._3_0_OrderWithCache0);
+			// tests.Add(this._3_0_OrderWithCache0);
 		}
 
 
