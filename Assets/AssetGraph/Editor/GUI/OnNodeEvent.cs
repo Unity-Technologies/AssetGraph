@@ -13,6 +13,8 @@ namespace AssetGraph {
 
 			EVENT_CONNECTIONPOINT_RECEIVE_TAPPED,
 			EVENT_CLOSE_TAPPED,
+
+			EVENT_SAVE,
 		}
 
 		public readonly EventType eventType;

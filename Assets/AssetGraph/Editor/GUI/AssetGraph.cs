@@ -166,15 +166,16 @@ namespace AssetGraph {
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
+				
+				var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
+				var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
+				var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);		
 
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 
-						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
-						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
-						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
-						
 						var newNode = Node.LoaderNode(EmitEvent, nodes.Count, name, id, kind, loadPath, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -192,10 +193,6 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
 
-						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
-						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
-						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
-						
 						var newNode = Node.ScriptNode(EmitEvent, nodes.Count, name, id, kind, scriptPath, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -209,23 +206,10 @@ namespace AssetGraph {
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						Debug.LogError("あとでまとめたいですね、位置とNode作り。");
-						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
-						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
-						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
 						
 						var newNode = Node.ExporterNode(EmitEvent, nodes.Count, name, id, kind, exportPath, x, y);
 
 						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
-						var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
-						var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);
-						
-						AddNodeFromGUI(name, AssetGraphSettings.NodeKind.LOADER_GUI, id, x, y);
 						break;
 					}
 
@@ -804,6 +788,10 @@ namespace AssetGraph {
 					}
 					break;
 				}
+			}
+
+			if (e.eventType == OnNodeEvent.EventType.EVENT_SAVE) {
+				SaveGraph();
 			}
 		}
 

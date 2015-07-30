@@ -14,12 +14,12 @@ namespace AssetGraph {
 
 		private readonly int nodeWindowId;
 
-		public readonly string name;
-		public readonly string id;
-		public readonly AssetGraphSettings.NodeKind kind;
-		public readonly string scriptPath;
-		public readonly string loadPath;
-		public readonly string exportPath;
+		public string name;
+		public string id;
+		public AssetGraphSettings.NodeKind kind;
+		public string scriptPath;
+		public string loadPath;
+		public string exportPath;
 
 		private readonly string nodeLabel;
 
@@ -99,6 +99,7 @@ namespace AssetGraph {
 		*/
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
+			
 			public override void OnInspectorGUI () {
 				var node = ((NodeInspector)target).node;
 				if (node == null) return;
@@ -109,7 +110,12 @@ namespace AssetGraph {
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						EditorGUILayout.LabelField("kind", node.loadPath);
+						var newLoadPath = EditorGUILayout.TextArea(node.loadPath, GUILayout.MaxHeight(75));
+						if (newLoadPath != node.loadPath) {
+							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
+							node.loadPath = newLoadPath;
+							node.Save();
+						}
 						break;
 					}
 
@@ -121,6 +127,9 @@ namespace AssetGraph {
 			}
 		}
 
+		public void Save () {
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
+		}
 		
 		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, string loadPath, string exportPath, float x, float y) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
