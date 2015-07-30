@@ -469,41 +469,17 @@ namespace AssetGraph {
 			if (Event.current.type == EventType.MouseUp && Event.current.button == 1) {
 				var rightClickPos = Event.current.mousePosition;
 				var menu = new GenericMenu();
-				menu.AddItem(
-					new GUIContent("add Loader node"),
-					false, 
-					() => {
-						AddNodeFromGUI(AssetGraphSettings.PRESET_LOADER_NAME, rightClickPos.x, rightClickPos.y);
-					}
-				);
-				menu.AddItem(
-					new GUIContent("add Import node"),
-					false, 
-					() => {
-						Debug.LogError("import");
-					}
-				);
-				menu.AddItem(
-					new GUIContent("add Grouping node"),
-					false, 
-					() => {
-						Debug.LogError("Grouping");
-					}
-				);
-				menu.AddItem(
-					new GUIContent("add Prefabricator node"),
-					false, 
-					() => {
-						Debug.LogError("Prefabricator");
-					}
-				);
-				menu.AddItem(
-					new GUIContent("add Bundlizer node"),
-					false, 
-					() => {
-						Debug.LogError("Prefabricator");
-					}
-				);
+				foreach (var menuItemStr in AssetGraphSettings.GUI_Menu_Item_TargetGUINodeDict.Keys) {
+					var targetGUINodeNameStr = AssetGraphSettings.GUI_Menu_Item_TargetGUINodeDict[menuItemStr];
+					menu.AddItem(
+						new GUIContent(menuItemStr),
+						false, 
+						() => {
+							AddNodeFromGUI(targetGUINodeNameStr, rightClickPos.x, rightClickPos.y);
+							SaveGraph();
+						}
+					);
+				}
 				menu.ShowAsContext();
 			}
 		}
@@ -560,12 +536,16 @@ namespace AssetGraph {
 			nodes.Add(newNode);
 		}
 
-		private void AddNodeFromGUI (string scriptName, float x, float y) {
+		private void AddNodeFromGUI (string nodeType, float x, float y) {
 			Node newNode = null;
 
-			switch (scriptName) {
+			var defaultNodeName = nodeType;
+			
+			switch (nodeType) {
 				case AssetGraphSettings.PRESET_LOADER_NAME: {
-
+					var kind = AssetGraphSettings.NodeKind.LOADER_GUI;
+					newNode = Node.GUINode(EmitEvent, nodes.Count, defaultNodeName, Guid.NewGuid().ToString(), kind, x, y);
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				case AssetGraphSettings.PRESET_FILTER_NAME: {
@@ -581,6 +561,10 @@ namespace AssetGraph {
 					break;
 				}
 				case AssetGraphSettings.PRESET_EXPORTER_NAME: {
+					break;
+				}
+				default: {
+					Debug.LogError("no nodeType match:" + nodeType);
 					break;
 				}
 			}

@@ -95,6 +95,7 @@ namespace AssetGraph {
 						}
 						break;
 					}
+
 					default: {
 						// nothing to do.
 						break;
@@ -267,21 +268,55 @@ namespace AssetGraph {
 
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
-				var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
-
+				
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
+						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
+						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
 						break;
 					}
-					default: {
+
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						Debug.LogError("考え中:" + kind);
+						// var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
+						// nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
+						break;
+					}
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						Debug.LogError("考え中:" + kind);
+						// var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
+						// nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.FILTER_GUI:
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+					case AssetGraphSettings.NodeKind.GROUPING_GUI:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType));
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						Debug.LogError("考え中:" + kind);
+						break;
+					}
+
+					default: {
+						Debug.LogError("failed to match:" + kind);
 						break;
 					}
 				}

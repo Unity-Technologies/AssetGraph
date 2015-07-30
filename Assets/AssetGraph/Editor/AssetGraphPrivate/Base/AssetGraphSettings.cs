@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class AssetGraphSettings {
@@ -24,10 +25,21 @@ namespace AssetGraph {
 		public const string PRESET_LOADER_NAME = "Loader";
 		public const string PRESET_FILTER_NAME = "Filter";
 		public const string PRESET_IMPORTER_NAME = "Importer";
+		public const string PRESET_GROUPING_NAME = "Grouping";
 		public const string PRESET_PREFABRICATOR_NAME = "Prefabricator";
 		public const string PRESET_BUNDLIZER_NAME = "Bundlizer";
 		public const string PRESET_EXPORTER_NAME = "Exporter";
-		
+
+		public static Dictionary<string, string> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, string>{
+			{"add " + PRESET_LOADER_NAME + " node", PRESET_LOADER_NAME},
+			{"add " + PRESET_FILTER_NAME + " node", PRESET_FILTER_NAME},
+			{"add " + PRESET_IMPORTER_NAME + " node", PRESET_IMPORTER_NAME},
+			{"add " + PRESET_GROUPING_NAME + " node", PRESET_GROUPING_NAME},
+			{"add " + PRESET_PREFABRICATOR_NAME + " node", PRESET_PREFABRICATOR_NAME},
+			{"add " + PRESET_BUNDLIZER_NAME + " node", PRESET_BUNDLIZER_NAME},
+			{"add " + PRESET_EXPORTER_NAME + " node", PRESET_EXPORTER_NAME}
+		};
+
 		/*
 			data key for AssetGraph.json
 		*/
@@ -64,6 +76,7 @@ namespace AssetGraph {
 			LOADER_SCRIPT,
 			FILTER_SCRIPT,
 			IMPORTER_SCRIPT,
+			GROUPING_SCRIPT,
 			PREFABRICATOR_SCRIPT,
 			BUNDLIZER_SCRIPT,
 			EXPORTER_SCRIPT,
@@ -71,6 +84,7 @@ namespace AssetGraph {
 			LOADER_GUI,
 			FILTER_GUI,
 			IMPORTER_GUI,
+			GROUPING_GUI,
 			PREFABRICATOR_GUI,
 			BUNDLIZER_GUI,
 			EXPORTER_GUI

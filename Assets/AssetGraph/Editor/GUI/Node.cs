@@ -77,6 +77,21 @@ namespace AssetGraph {
 			);
 		}
 
+		public static Node GUINode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null, 
+				null, 
+				x,
+				y
+			);
+		}
+
 		
 
 		/**
@@ -124,9 +139,35 @@ namespace AssetGraph {
 					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, height * 16f);
 					break;
 				}
-				default: {
+				
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 0";
+					this.nodeLabel = name;
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 0";
+					this.nodeLabel = name;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 1";
 					this.nodeLabel = name;
+					break;
+				}
+
+				default: {
+					Debug.LogError("failed to match:" + this.kind);
 					break;
 				}
 			}
@@ -145,8 +186,32 @@ namespace AssetGraph {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
-				default: {
+
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 0 on";
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 0 on";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 1 on";
+					break;
+				}
+
+				default: {
+					Debug.LogError("failed to match:" + this.kind);
 					break;
 				}
 			}
@@ -154,16 +219,33 @@ namespace AssetGraph {
 
 		public void SetInactive () {
 			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.LOADER_GUI:
 				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
-				default: {
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 1";
+					break;
+				}
+
+				default: {
+					Debug.LogError("failed to match:" + this.kind);
 					break;
 				}
 			}
