@@ -110,24 +110,12 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						// nothing to do.
 						break;
 					}
 
 					default: {
 						Debug.LogError("not match kind:" + kind);
-						break;
-					}
-				}
-
-				// rewrite data if need.
-				switch (kind) {
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						
-						break;
-					}
-
-					default: {
-						// nothing to do.
 						break;
 					}
 				}
@@ -308,17 +296,11 @@ namespace AssetGraph {
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
 						break;
 					}
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
 						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
 						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						Debug.LogError("考え中:" + kind);
-						// var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						// nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
 						break;
 					}
 
@@ -431,7 +413,7 @@ namespace AssetGraph {
 				has next node, run first time.
 			*/
 
-			var classStr = currentNodeData.currentNodeClassStr;
+			var nodeName = currentNodeData.currentNodeName;
 			var nodeKind = currentNodeData.currentNodeKind;
 			
 			var inputParentResults = new List<InternalAssetData>();
@@ -469,37 +451,61 @@ namespace AssetGraph {
 			if (isActualRun) {
 				switch (nodeKind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<IntegratedScriptLoader>(classStr);
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<FilterBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<ImporterBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<PrefabricatorBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<BundlizerBase>(classStr);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<IntegratedScriptExporter>(classStr);
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
+
+					/*
+						GUI version
+					*/
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						var executor = new IntegratedGUILoader();
+						executor.loadFilePath = currentNodeData.loadFilePath;
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						var executor = new IntegratedGUIExporter();
+						executor.exportFilePath = currentNodeData.exportFilePath;
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
 					default: {
 						Debug.LogError("kind not found:" + nodeKind);
 						break;
@@ -511,32 +517,38 @@ namespace AssetGraph {
 						Script version
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<IntegratedScriptLoader>(classStr);
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<FilterBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<ImporterBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<PrefabricatorBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<BundlizerBase>(classStr);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+						var classStr = nodeName;
 						var executor = Executor<IntegratedScriptExporter>(classStr);
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
@@ -547,8 +559,15 @@ namespace AssetGraph {
 						GUI version
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var executor = Executor<IntegratedGUILoader>(classStr);
+						var executor = new IntegratedGUILoader();
 						executor.loadFilePath = currentNodeData.loadFilePath;
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						var executor = new IntegratedGUIExporter();
+						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -575,7 +594,7 @@ namespace AssetGraph {
 	public class NodeData {
 		public readonly string currentNodeId;
 		public readonly AssetGraphSettings.NodeKind currentNodeKind;
-		public readonly string currentNodeClassStr;
+		public readonly string currentNodeName;
 		public List<ConnectionData> connectionDataOfParents = new List<ConnectionData>();
 
 		// for Loader
@@ -586,19 +605,21 @@ namespace AssetGraph {
 
 		private bool done;
 
-		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeClassStr, string loaderOrExporterPath=null) {
+		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeName, string loaderOrExporterPath=null) {
 			this.currentNodeId = currentNodeId;
 			this.currentNodeKind = currentNodeKind;
 
-			this.currentNodeClassStr = currentNodeClassStr;
+			this.currentNodeName = currentNodeName;
 			
 			switch (currentNodeKind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
 					this.loadFilePath = loaderOrExporterPath;
 					this.exportFilePath = null;
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.loadFilePath = null;
 					this.exportFilePath = loaderOrExporterPath;
 					break;

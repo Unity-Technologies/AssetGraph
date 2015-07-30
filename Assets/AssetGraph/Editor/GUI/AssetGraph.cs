@@ -355,6 +355,13 @@ namespace AssetGraph {
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
 
 			Debug.Log("GUI上のConnection上を通るリソースの情報が更新できた。さてどうやってGUIにボタン乗っけようかな。");
+			foreach (var connectionLabel in connectionThroughputs.Keys) {
+				Debug.Log("connectionLabel:" + connectionLabel);
+				var sources = connectionThroughputs[connectionLabel];
+				foreach (var source in sources) {
+					Debug.Log("	source:" + source);
+				}
+			}
 		}
 
 		private void Run () {
