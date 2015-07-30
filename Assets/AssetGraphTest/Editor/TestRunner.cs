@@ -35,7 +35,7 @@ public partial class Test {
 
 		// only 1 time run, use cache.
 		{
-			// tests.Add(this._3_0_OrderWithCache0);
+			tests.Add(this._3_0_OrderWithCache0);
 		}
 
 

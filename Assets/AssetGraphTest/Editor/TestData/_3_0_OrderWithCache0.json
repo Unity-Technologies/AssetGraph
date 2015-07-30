@@ -2,9 +2,9 @@
     "lastModified": "07/16/2015 23:44:42",
     "nodes": [
         {
-            "className": "AssetGraph.IntegratedLoader",
+            "className": "AssetGraph.IntegratedScriptLoader",
             "id": "リソースの呼び込み",
-            "kind": "LOADER",
+            "kind": "LOADER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -17,7 +17,7 @@
         {
             "className": "SampleFilter_3",
             "id": "リソースの仕分け",
-            "kind": "FILTER",
+            "kind": "FILTER_SCRIPT",
             "outputLabels": [
                 "画像",
                 "モデル",
@@ -33,7 +33,7 @@
         {
             "className": "SampleImporterForImage_1",
             "id": "画像を読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -46,7 +46,7 @@
         {
             "className": "SampleImporterForModel_1",
             "id": "モデルを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -59,7 +59,7 @@
         {
             "className": "SampleImporterForBGM_1",
             "id": "BGMを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
@@ -72,7 +72,7 @@
         {
             "className": "SampleImporterForSE_1",
             "id": "SEを読み込む",
-            "kind": "IMPORTER",
+            "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
                 "+"
             ],
