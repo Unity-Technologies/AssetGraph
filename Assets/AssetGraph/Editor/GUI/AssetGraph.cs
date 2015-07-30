@@ -272,23 +272,14 @@ namespace AssetGraph {
 				nodeDict[AssetGraphSettings.NODE_POS] = posDict;
 
 				switch (node.kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] = node.loadPath;
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] = node.exportPath;
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						Debug.LogError("gui用のセーブ　LOADER_GUI");
-						// nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] = node.loadPath;
-						break;
-					}
+					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						Debug.LogError("gui用のセーブ　EXPORTER_GUI");
-						// nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] = node.exportPath;
+						nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] = node.exportPath;
 						break;
 					}
 					
