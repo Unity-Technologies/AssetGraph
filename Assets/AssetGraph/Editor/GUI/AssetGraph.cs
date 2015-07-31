@@ -102,7 +102,7 @@ namespace AssetGraph {
 				try {
 					deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
 				} catch (Exception e) {
-					Debug.LogError("load error:" + e);// からっぽだった場合どうなるかっていうとエラーが、、か。
+					Debug.LogError("data load error:" + e + " at path:" + graphDataPath);// からっぽだった場合どうなるかっていうとエラーが、、か。
 					return;
 				}
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
@@ -194,26 +194,12 @@ namespace AssetGraph {
 					}
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
-						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 
-						var newNode = Node.ScriptNode(EmitEvent, nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-						Debug.LogError("prefabricator、scriptが無い場合に困るのでエラーの話を考えないとな");
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
 
@@ -333,6 +319,7 @@ namespace AssetGraph {
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
 						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 						break;
 					}

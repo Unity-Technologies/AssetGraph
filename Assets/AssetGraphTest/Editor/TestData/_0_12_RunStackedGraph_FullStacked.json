@@ -2,7 +2,7 @@
     "lastModified": "07/17/2015 12:56:16",
     "nodes": [
         {
-            "className": "AssetGraph.IntegratedScriptLoader",
+            "name": "AssetGraph.IntegratedScriptLoader",
             "id": "リソースの呼び込み",
             "kind": "LOADER_SCRIPT",
             "outputLabels": [
@@ -15,7 +15,7 @@
             "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_12_SerializedGraphJSON"
         },
         {
-            "className": "SampleFilter_4",
+            "name": "SampleFilter_4",
             "id": "リソースの仕分け",
             "kind": "FILTER_SCRIPT",
             "outputLabels": [
@@ -32,7 +32,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter.cs"
         },
         {
-            "className": "SampleImporterForImage",
+            "name": "SampleImporterForImage",
             "id": "画像を読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -46,7 +46,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage.cs"
         },
         {
-            "className": "SampleImporterForModel",
+            "name": "SampleImporterForModel",
             "id": "モデルを読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -60,7 +60,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel.cs"
         },
         {
-            "className": "SampleImporterForBGM",
+            "name": "SampleImporterForBGM",
             "id": "BGMを読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -74,7 +74,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM.cs"
         },
         {
-            "className": "SampleImporterForSE",
+            "name": "SampleImporterForSE",
             "id": "SEを読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -88,7 +88,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE.cs"
         },
         {
-            "className": "SamplePrefabricator_3",
+            "name": "SamplePrefabricator_3",
             "id": "画像とモデルを合わせてPrefabつくる",
             "kind": "PREFABRICATOR_SCRIPT",
             "outputLabels": [
@@ -102,7 +102,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
         },
         {
-            "className": "SampleBundlizer_2",
+            "name": "SampleBundlizer_2",
             "id": "バンドルにする",
             "kind": "BUNDLIZER_SCRIPT",
             "outputLabels": [
@@ -116,7 +116,7 @@
             "scriptPath": "Scriptのパス"
         },
         {
-            "className": "AssetGraph.IntegratedScriptExporter",
+            "name": "AssetGraph.IntegratedScriptExporter",
             "id": "バンドルをフォルダに出力",
             "kind": "EXPORTER_SCRIPT",
             "outputLabels": [],

@@ -2,7 +2,7 @@
     "lastModified":"07/09/2015 00:46:59",
     "nodes": [
         {
-            "className": "AssetGraph.IntegratedScriptLoader",
+            "name": "AssetGraph.IntegratedScriptLoader",
             "id": "0_Loader",
             "kind": "LOADER_SCRIPT",
             "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_9_SerializedGraphJSON",
@@ -11,7 +11,7 @@
             ]
         },
         {
-            "className": "SampleFilter_2",
+            "name": "SampleFilter_2",
             "id": "1st_Filter",
             "kind": "FILTER_SCRIPT",
             "scriptType": "SampleFilter_2",
@@ -26,7 +26,7 @@
             ]
         },
         {
-            "className": "SampleImporter_2",
+            "name": "SampleImporter_2",
             "id": "2nd_Importer",
             "kind": "IMPORTER_SCRIPT",
             "scriptType": "SampleImporter_2",
@@ -40,7 +40,7 @@
             ]
         },
         {
-            "className": "AssetGraph.IntegratedScriptExporter",
+            "name": "AssetGraph.IntegratedScriptExporter",
             "id": "3rd_Exporter",
             "kind": "EXPORTER_SCRIPT",
             "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportPlace/For_0_9_SerializedGraphJSONByExporter",

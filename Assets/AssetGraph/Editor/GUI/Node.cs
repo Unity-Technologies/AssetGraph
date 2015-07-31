@@ -100,7 +100,7 @@ namespace AssetGraph {
 		
 
 		/**
-			Inspector GUI
+			Inspector GUI for this node.
 		*/
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
@@ -109,8 +109,14 @@ namespace AssetGraph {
 				var node = ((NodeInspector)target).node;
 				if (node == null) return;
 
-				EditorGUILayout.LabelField("name", node.name);
+				var newName = EditorGUILayout.TextField("name", node.name);
+				if (newName != node.name) {
+					node.name = newName;
+					node.Save();
+				}
+
 				EditorGUILayout.LabelField("kind", node.kind.ToString());
+
 				
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
@@ -152,16 +158,26 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						var newScriptType = EditorGUILayout.TextField("scriptType", node.scriptType);
+						if (newScriptType != node.scriptType) {
+							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
+							node.scriptType = newScriptType;
+							node.Save();
+						}
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+
 						var newExportPath = EditorGUILayout.TextArea(node.exportPath, GUILayout.MaxHeight(20));
 						if (newExportPath != node.exportPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");

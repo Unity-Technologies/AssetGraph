@@ -2,7 +2,7 @@
     "lastModified": "07/16/2015 23:44:42",
     "nodes": [
         {
-            "className": "AssetGraph.IntegratedScriptLoader",
+            "name": "AssetGraph.IntegratedScriptLoader",
             "id": "リソースの呼び込み",
             "kind": "LOADER_SCRIPT",
             "outputLabels": [
@@ -15,7 +15,7 @@
             "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_3_0_OrderWithCache0"
         },
         {
-            "className": "SampleFilter_3",
+            "name": "SampleFilter_3",
             "id": "リソースの仕分け",
             "kind": "FILTER_SCRIPT",
             "outputLabels": [
@@ -32,7 +32,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter_3.cs"
         },
         {
-            "className": "SampleImporterForImage_1",
+            "name": "SampleImporterForImage_1",
             "id": "画像を読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -46,7 +46,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage_1.cs"
         },
         {
-            "className": "SampleImporterForModel_1",
+            "name": "SampleImporterForModel_1",
             "id": "モデルを読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -60,7 +60,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel_1.cs"
         },
         {
-            "className": "SampleImporterForBGM_1",
+            "name": "SampleImporterForBGM_1",
             "id": "BGMを読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
@@ -74,7 +74,7 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM_1.cs"
         },
         {
-            "className": "SampleImporterForSE_1",
+            "name": "SampleImporterForSE_1",
             "id": "SEを読み込む",
             "kind": "IMPORTER_SCRIPT",
             "outputLabels": [
