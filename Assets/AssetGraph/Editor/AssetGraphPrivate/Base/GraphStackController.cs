@@ -70,12 +70,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
+						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 				
 						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
 						
 						// delete if already gone.
 						if (nodeScriptInstance == null) {
+							Debug.LogError("c1");
 							changed = true;
 							Debug.LogWarning("no class found:" + scriptType + " kind:" + kind + ", rebuildfing AssetGraph...");
 							continue;
@@ -96,6 +97,7 @@ namespace AssetGraph {
 							((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, new List<InternalAssetData>(), Output);
 
 							if (!outoutLabelsSet.SetEquals(latestLabels)) {
+								Debug.LogError("c2");
 								changed = true;
 								newNodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = latestLabels.ToList();
 							}
@@ -107,10 +109,14 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_GUI:
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 					case AssetGraphSettings.NodeKind.GROUPING_GUI:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						// nothing to do.
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						Debug.LogError("GUIでScriptが必要な奴の場合は、なんかエラーを吐かないとな。うーーーんん、、、実行できない状態にはしたくないので、Errorくらいかな。 Script");
 						break;
 					}
 
@@ -147,6 +153,7 @@ namespace AssetGraph {
 					}
 					).ToList();
 				if (!fromNodeCandidates.Any()) {
+					Debug.LogError("c3");
 					changed = true;
 					continue;
 				}
@@ -159,6 +166,7 @@ namespace AssetGraph {
 					}
 					).ToList();
 				if (!toNodeCandidates.Any()) {
+					Debug.LogError("c4");
 					changed = true;
 					continue;
 				}
@@ -173,6 +181,7 @@ namespace AssetGraph {
 				}
 
 				if (!connectionLabels.Contains(connectionLabel)) {
+					Debug.LogError("c5");
 					changed = true;
 					continue;
 				}
@@ -292,15 +301,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
-						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
-						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, loadFilePath));
+						nodeDatas.Add(new NodeData(nodeId, kind, null, loadFilePath, null));
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
-						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, exportFilePath));
+						nodeDatas.Add(new NodeData(nodeId, kind, null, null, exportFilePath));
 						break;
 					}
 
@@ -308,18 +315,10 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var scriptType = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
-						nodeDatas.Add(new NodeData(nodeId, kind, scriptType));
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.FILTER_GUI:
-					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
-					case AssetGraphSettings.NodeKind.GROUPING_GUI:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						Debug.LogError("考え中:" + kind);
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
+						nodeDatas.Add(new NodeData(nodeId, kind, scriptType, null, null));
 						break;
 					}
 
@@ -412,8 +411,6 @@ namespace AssetGraph {
 			/*
 				has next node, run first time.
 			*/
-
-			var nodeName = currentNodeData.currentNodeName;
 			var nodeKind = currentNodeData.currentNodeKind;
 			
 			var inputParentResults = new List<InternalAssetData>();
@@ -451,46 +448,44 @@ namespace AssetGraph {
 			if (isActualRun) {
 				switch (nodeKind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<IntegratedScriptLoader>(classStr);
+						var executor = new IntegratedScriptLoader();
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<FilterBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<FilterBase>(className);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<ImporterBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<ImporterBase>(className);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<PrefabricatorBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<PrefabricatorBase>(className);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<BundlizerBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<BundlizerBase>(className);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<IntegratedScriptExporter>(classStr);
+						var executor = new IntegratedScriptExporter();
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 
 					/*
-						GUI version
+						GUIs
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var executor = new IntegratedGUILoader();
@@ -517,50 +512,56 @@ namespace AssetGraph {
 						Script version
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<IntegratedScriptLoader>(classStr);
+						var executor = new IntegratedScriptLoader();
 						executor.loadFilePath = currentNodeData.loadFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<FilterBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<FilterBase>(className);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<ImporterBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<ImporterBase>(className);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<PrefabricatorBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<PrefabricatorBase>(className);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<BundlizerBase>(classStr);
+						var className = currentNodeData.className;
+						var executor = Executor<BundlizerBase>(className);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var classStr = nodeName;
-						var executor = Executor<IntegratedScriptExporter>(classStr);
+						var executor = new IntegratedScriptExporter();
 						executor.exportFilePath = currentNodeData.exportFilePath;
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
 
 					/*
-						GUI version
+						GUIs
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var executor = new IntegratedGUILoader();
 						executor.loadFilePath = currentNodeData.loadFilePath;
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+						var className = currentNodeData.className;
+						Debug.LogError("class名をセットするまで走らせられないな classStr:" + className);
+						var executor = Executor<PrefabricatorBase>(className);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -582,10 +583,9 @@ namespace AssetGraph {
 			currentNodeData.Done();
 		}
 
-		public static T Executor<T> (string classStr) where T : INodeBase {
-			var nodeScriptTypeStr = classStr;
-			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(nodeScriptTypeStr);
-			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + nodeScriptTypeStr + " which is based on Type:" + typeof(T));
+		public static T Executor<T> (string typeStr) where T : INodeBase {
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
 			return ((T)nodeScriptInstance);
 		}
 	}
@@ -594,39 +594,60 @@ namespace AssetGraph {
 	public class NodeData {
 		public readonly string currentNodeId;
 		public readonly AssetGraphSettings.NodeKind currentNodeKind;
-		public readonly string currentNodeName;
+		
 		public List<ConnectionData> connectionDataOfParents = new List<ConnectionData>();
 
-		// for Loader
+		// for All script nodes & prefabricator, bundlizer GUI.
+		public readonly string className;
+
+		// for Loader Script
 		public readonly string loadFilePath;
 
-		// for Exporter
+		// for Exporter Script
 		public readonly string exportFilePath;
+
 
 		private bool done;
 
-		public NodeData (string currentNodeId, AssetGraphSettings.NodeKind currentNodeKind, string currentNodeName, string loaderOrExporterPath=null) {
+		public NodeData (
+			string currentNodeId, 
+			AssetGraphSettings.NodeKind currentNodeKind, 
+			string className,
+			string loadPath,
+			string exportPath
+		) {
 			this.currentNodeId = currentNodeId;
 			this.currentNodeKind = currentNodeKind;
-
-			this.currentNodeName = currentNodeName;
 			
 			switch (currentNodeKind) {
 				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					this.loadFilePath = loaderOrExporterPath;
+					this.className = null;
+					this.loadFilePath = loadPath;
 					this.exportFilePath = null;
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					this.className = null;
 					this.loadFilePath = null;
-					this.exportFilePath = loaderOrExporterPath;
+					this.exportFilePath = exportPath;
 					break;
 				}
-				default: {
+
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+					this.className = className;
 					this.loadFilePath = null;
 					this.exportFilePath = null;
+					break;
+				}
+
+				default: {
+					Debug.LogError("failed to match kind:" + currentNodeKind);
 					break;
 				}
 			}

@@ -2,18 +2,20 @@
     "lastModified":"07/09/2015 00:46:59",
     "nodes": [
         {
-            "className": "AssetGraph.IntegratedScriptLoader",
+            "name": "AssetGraph.IntegratedScriptLoader",
             "id": "0_Loader",
             "kind": "LOADER_SCRIPT",
             "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_8_SerializedGraphJSON",
             "outputLabels": [
                 "_"
-            ]
+            ],
+            "scriptType": "AssetGraph.IntegratedScriptLoader"
         },
         {
-            "className": "SampleFilter_1",
+            "name": "SampleFilter_1",
             "id": "1st_Filter",
             "kind": "FILTER_SCRIPT",
+            "scriptType": "SampleFilter_1",
             "scriptPath": "Scriptのパス",
             "pos": {
                 "x": 10,
@@ -25,9 +27,10 @@
             ]
         },
         {
-            "className": "SampleImporter_1",
+            "name": "SampleImporter_1",
             "id": "2nd_Importer",
             "kind": "IMPORTER_SCRIPT",
+            "scriptType": "SampleImporter_1",
             "scriptPath": "Scriptのパス",
             "pos": {
                 "x": 10,

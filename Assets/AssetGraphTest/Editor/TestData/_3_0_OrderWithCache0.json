@@ -28,6 +28,7 @@
                 "x": 63,
                 "y": 123
             },
+            "scriptType": "SampleFilter_3",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter_3.cs"
         },
         {
@@ -41,6 +42,7 @@
                 "x": 345,
                 "y": 24
             },
+            "scriptType": "SampleImporterForImage_1",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage_1.cs"
         },
         {
@@ -54,6 +56,7 @@
                 "x": 346,
                 "y": 103
             },
+            "scriptType": "SampleImporterForModel_1",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel_1.cs"
         },
         {
@@ -67,6 +70,7 @@
                 "x": 351,
                 "y": 179
             },
+            "scriptType": "SampleImporterForBGM_1",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM_1.cs"
         },
         {
@@ -80,6 +84,7 @@
                 "x": 347,
                 "y": 261
             },
+            "scriptType": "SampleImporterForSE_1",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE_1.cs"
         }
     ],

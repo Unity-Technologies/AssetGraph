@@ -99,7 +99,12 @@ namespace AssetGraph {
 					dataStr = sr.ReadToEnd();
 				}
 
-				deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
+				try {
+					deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
+				} catch (Exception e) {
+					Debug.LogError("load error:" + e);// からっぽだった場合どうなるかっていうとエラーが、、か。
+					return;
+				}
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
 
@@ -161,7 +166,7 @@ namespace AssetGraph {
 			var nodesSource = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
 			foreach (var nodeDictSource in nodesSource) {
 				var nodeDict = nodeDictSource as Dictionary<string, object>;
-				var name = nodeDict[AssetGraphSettings.NODE_CLASSNAME] as string;
+				var name = nodeDict[AssetGraphSettings.NODE_NAME] as string;
 				var id = nodeDict[AssetGraphSettings.NODE_ID] as string;
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 
@@ -191,9 +196,10 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
 
-						var newNode = Node.ScriptNode(EmitEvent, nodes.Count, name, id, kind, scriptPath, x, y);
+						var newNode = Node.ScriptNode(EmitEvent, nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -204,6 +210,25 @@ namespace AssetGraph {
 						nodes.Add(newNode);
 						break;
 					}
+
+
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
+						Debug.LogError("prefabricator、scriptが無い場合に困るのでエラーの話を考えないとな");
+						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
+						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
+
+						var newNode = Node.ScriptNode(EmitEvent, nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
@@ -259,7 +284,7 @@ namespace AssetGraph {
 			foreach (var node in nodes) {
 				var nodeDict = new Dictionary<string, object>();
 
-				nodeDict[AssetGraphSettings.NODE_CLASSNAME] = node.name;
+				nodeDict[AssetGraphSettings.NODE_NAME] = node.name;
 				nodeDict[AssetGraphSettings.NODE_ID] = node.id;
 				nodeDict[AssetGraphSettings.NODE_KIND] = node.kind;
 
@@ -289,16 +314,26 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
 						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.FILTER_GUI:
-					case AssetGraphSettings.NodeKind.IMPORTER_GUI:
-					case AssetGraphSettings.NodeKind.GROUPING_GUI:
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						Debug.LogError("Filterの保存時の処理、フィルタのContains x Nだね。リストか。");
+						break;
+					}
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
+						Debug.LogError("Importerの保存時の処理、一番でかそう。いろんな種類とかあるよな");
+						break;
+					}
+					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+						Debug.LogError("Groupingの保存時の処理、グループ条件を書き込む、、かなあ、、不鮮明");
+						break;
+					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						Debug.LogError("gui用のセーブ:" + node.kind);
+						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 						break;
 					}
 
@@ -478,8 +513,9 @@ namespace AssetGraph {
 						if (inherited != null) {
 							var dropPos = Event.current.mousePosition;
 							var scriptName = refe.name;
+							var scriptType = scriptName;// name = type.
 							var scriptPath = path;
-							AddNodeFromCode(scriptName, scriptPath, inherited, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
+							AddNodeFromCode(scriptName, scriptType, scriptPath, inherited, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
 							shouldSave = true;
 						}
 					}
@@ -520,11 +556,11 @@ namespace AssetGraph {
 			return null;
 		}
 
-		private void AddNodeFromCode (string scriptName, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
+		private void AddNodeFromCode (string scriptName, string scriptType, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
 			Node newNode = null;
 			if (scriptBaseType == typeof(FilterBase)) {
 				var kind = AssetGraphSettings.NodeKind.FILTER_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				
 				// add output point to this node.
 				// setup this filter then add output point by result of setup.
@@ -537,19 +573,19 @@ namespace AssetGraph {
 			}
 			if (scriptBaseType == typeof(ImporterBase)) {
 				var kind = AssetGraphSettings.NodeKind.IMPORTER_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			if (scriptBaseType == typeof(BundlizerBase)) {
 				var kind = AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}

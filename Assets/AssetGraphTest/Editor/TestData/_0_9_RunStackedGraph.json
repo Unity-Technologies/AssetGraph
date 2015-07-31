@@ -14,6 +14,7 @@
             "className": "SampleFilter_2",
             "id": "1st_Filter",
             "kind": "FILTER_SCRIPT",
+            "scriptType": "SampleFilter_2",
             "scriptPath": "Scriptのパス",
             "pos": {
                 "x": 10,
@@ -28,6 +29,7 @@
             "className": "SampleImporter_2",
             "id": "2nd_Importer",
             "kind": "IMPORTER_SCRIPT",
+            "scriptType": "SampleImporter_2",
             "scriptPath": "Scriptのパス",
             "pos": {
                 "x": 10,

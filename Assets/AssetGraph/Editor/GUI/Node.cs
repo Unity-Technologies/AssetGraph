@@ -17,6 +17,7 @@ namespace AssetGraph {
 		public string name;
 		public string id;
 		public AssetGraphSettings.NodeKind kind;
+		public string scriptType;
 		public string scriptPath;
 		public string loadPath;
 		public string exportPath;
@@ -40,6 +41,7 @@ namespace AssetGraph {
 				id,
 				kind,
 				null,
+				null,
 				loadPath, 
 				null, 
 				x,
@@ -55,6 +57,7 @@ namespace AssetGraph {
 				id,
 				kind,
 				null,
+				null,
 				null, 
 				exportPath, 
 				x,
@@ -62,13 +65,14 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node ScriptNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, float x, float y) {
+		public static Node ScriptNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
 			return new Node(
 				emit,
 				index,
 				name,
 				id,
 				kind,
+				scriptType,
 				scriptPath,
 				null, 
 				null, 
@@ -84,6 +88,7 @@ namespace AssetGraph {
 				name,
 				id,
 				kind,
+				null,
 				null,
 				null, 
 				null, 
@@ -110,7 +115,7 @@ namespace AssetGraph {
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var newLoadPath = EditorGUILayout.TextArea(node.loadPath, GUILayout.MaxHeight(75));
+						var newLoadPath = EditorGUILayout.TextArea(node.loadPath, GUILayout.MaxHeight(20));
 						if (newLoadPath != node.loadPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 							node.loadPath = newLoadPath;
@@ -157,7 +162,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var newExportPath = EditorGUILayout.TextArea(node.exportPath, GUILayout.MaxHeight(75));
+						var newExportPath = EditorGUILayout.TextArea(node.exportPath, GUILayout.MaxHeight(20));
 						if (newExportPath != node.exportPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 							node.exportPath = newExportPath;
@@ -178,13 +183,14 @@ namespace AssetGraph {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
 		
-		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptPath, string loadPath, string exportPath, float x, float y) {
+		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, string loadPath, string exportPath, float x, float y) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			this.Emit = emit;
 			this.nodeWindowId = index;
 			this.name = name;
 			this.id = id;
 			this.kind = kind;
+			this.scriptType = scriptType;
 			this.scriptPath = scriptPath;
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;

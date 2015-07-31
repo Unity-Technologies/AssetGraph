@@ -29,8 +29,8 @@ public partial class Test {
 			tests.Add(this._0_11_RunExporter);
 			tests.Add(this._0_12_RunStackedGraph_FullStacked);
 			tests.Add(this._0_13_SetupStackedGraph_FullStacked);
-			// tests.Add(this._0_14_SetupStackedGraph_Sample);
-			// tests.Add(this._0_15_RunStackedGraph_Sample);
+			tests.Add(this._0_14_SetupStackedGraph_Sample);
+			tests.Add(this._0_15_RunStackedGraph_Sample);
 		}
 
 		// only 1 time run, use cache.

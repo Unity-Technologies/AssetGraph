@@ -48,11 +48,12 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_DATA_CONNECTIONS = "connections";
 
 		// node const
-		public const string NODE_CLASSNAME = "className";
+		public const string NODE_NAME = "name";
 		public const string NODE_ID = "id";
 		public const string NODE_KIND = "kind";
 		public const string LOADERNODE_LOAD_PATH = "loadPath";
 		public const string EXPORTERNODE_EXPORT_PATH = "exportPath";
+		public const string NODE_SCRIPT_TYPE = "scriptType";
 		public const string NODE_SCRIPT_PATH = "scriptPath";
 		public const string NODE_POS = "pos";
 		public const string NODE_POS_X = "x";

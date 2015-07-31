@@ -28,6 +28,7 @@
                 "x": 59,
                 "y": 133
             },
+            "scriptType": "SampleFilter_4",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter.cs"
         },
         {
@@ -41,6 +42,7 @@
                 "x": 345,
                 "y": 24
             },
+            "scriptType": "SampleImporterForImage",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage.cs"
         },
         {
@@ -54,6 +56,7 @@
                 "x": 346,
                 "y": 103
             },
+            "scriptType": "SampleImporterForModel",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel.cs"
         },
         {
@@ -67,6 +70,7 @@
                 "x": 351,
                 "y": 179
             },
+            "scriptType": "SampleImporterForBGM",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM.cs"
         },
         {
@@ -80,6 +84,7 @@
                 "x": 347,
                 "y": 261
             },
+            "scriptType": "SampleImporterForSE",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE.cs"
         },
         {
@@ -93,6 +98,7 @@
                 "x": 586,
                 "y": 59
             },
+            "scriptType": "SamplePrefabricator_3",
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
         },
         {
@@ -106,6 +112,7 @@
                 "x": 814,
                 "y": 160
             },
+            "scriptType": "SampleBundlizer_2",
             "scriptPath": "Scriptのパス"
         },
         {
