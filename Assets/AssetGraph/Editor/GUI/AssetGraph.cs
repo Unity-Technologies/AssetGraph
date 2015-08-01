@@ -20,8 +20,8 @@ namespace AssetGraph {
 			InitializeGraph();
 		}
 
-		List<Node> nodes = new List<Node>();
-		List<Connection> connections = new List<Connection>();
+		private List<Node> nodes = new List<Node>();
+		private List<Connection> connections = new List<Connection>();
 
 		private OnNodeEvent currentEventSource;
 
@@ -869,8 +869,29 @@ namespace AssetGraph {
 				}
 			}
 
-			if (e.eventType == OnNodeEvent.EventType.EVENT_SAVE) {
-				SaveGraph();
+			switch (e.eventType) {
+				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_UPDATED: {
+					var targetNode = e.eventSourceNode;
+
+					var connectionsFromThisNode = connections.Where(con => con.startNode.id == targetNode.id).ToList();
+					var connectionsToThisNode = connections.Where(con => con.endNode.id == targetNode.id).ToList();
+					
+					// remove connections from this node.
+					foreach (var con in connectionsFromThisNode) {
+						connections.Remove(con);						
+					}
+
+					// remove connections to this node.
+					foreach (var con in connectionsToThisNode) {
+						connections.Remove(con);						
+					}
+
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_SAVE: {
+					SaveGraph();
+					break;
+				}
 			}
 		}
 

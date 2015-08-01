@@ -149,11 +149,13 @@ namespace AssetGraph {
 							{
 								if (GUILayout.Button("-")) {
 									node.filterContainsKeywords.RemoveAt(i);
+									node.UpdateOutputPoints();
 									node.Save();
 								} else {
 									var newContainsKeyword = EditorGUILayout.TextField("contains", node.filterContainsKeywords[i]);
 									if (newContainsKeyword != node.filterContainsKeywords[i]) {
 										node.filterContainsKeywords[i] = newContainsKeyword;
+										node.UpdateOutputPoints();
 										node.Save();
 									}
 								}
@@ -220,6 +222,20 @@ namespace AssetGraph {
 					}
 				}
 			}
+		}
+
+		public void UpdateOutputPoints () {
+			connectionPoints = new List<ConnectionPoint>();
+
+			foreach (var keyword in filterContainsKeywords) {
+				var newPoint = new OutputPoint(keyword);
+				AddConnectionPoint(newPoint);
+			}
+
+			// add input point
+			AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_UPDATED, this, Vector2.zero, null));
 		}
 
 		public void Save () {
@@ -487,9 +503,23 @@ namespace AssetGraph {
 				}
 			}
 
-
 			// draw & update connectionPoint button interface.
 			foreach (var point in connectionPoints) {
+				switch (this.kind) {
+					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						var label = point.label;
+						var labelRect = new Rect(point.buttonRect.x - baseRect.width + 5, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
+
+						var style = EditorStyles.label;
+						var defaultAlignment = style.alignment;
+						style.alignment = TextAnchor.MiddleRight;
+						GUI.Label(labelRect, label, style);
+						style.alignment = defaultAlignment;
+						break;
+					}
+				}
+
 				/*
 					detect button-up event.
 				*/
