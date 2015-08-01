@@ -421,10 +421,7 @@ namespace AssetGraph {
 				dataStr = sr.ReadToEnd();
 			}
 
-			Debug.LogError("ーうーん、nodeの情報をなんとかしたいな、ハンドラ渡すか。");
-
 			Action<string, float>  updateHandler = (nodeId, progress) => {
-				Debug.LogError("うん、updateが来るな。nodeId:" + nodeId + " progress:" + progress);
 				var targetNodes = nodes.Where(node => node.id == nodeId).ToList();
 				if (targetNodes.Any()) {
 					targetNodes.ForEach(
