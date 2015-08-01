@@ -215,6 +215,25 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						var filterContainsKeywordsSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
+						var filterContainsKeywords = new List<string>();
+						foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
+							filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
+						}
+
+						var newNode = Node.GUINode(EmitEvent, nodes.Count, name, id, kind, filterContainsKeywords, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
@@ -306,17 +325,20 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						Debug.LogError("Filterの保存時の処理、フィルタのContains x Nだね。リストか。");
+						nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
 						Debug.LogError("Importerの保存時の処理、一番でかそう。いろんな種類とかあるよな");
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						Debug.LogError("Groupingの保存時の処理、グループ条件を書き込む、、かなあ、、不鮮明");
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
@@ -399,8 +421,24 @@ namespace AssetGraph {
 				dataStr = sr.ReadToEnd();
 			}
 
+			Debug.LogError("ーうーん、nodeの情報をなんとかしたいな、ハンドラ渡すか。");
+
+			Action<string, float>  updateHandler = (nodeId, progress) => {
+				Debug.LogError("うん、updateが来るな。nodeId:" + nodeId + " progress:" + progress);
+				var targetNodes = nodes.Where(node => node.id == nodeId).ToList();
+				if (targetNodes.Any()) {
+					targetNodes.ForEach(
+						node => {
+							Debug.LogWarning("うーーん、動作中はGUI止まっちゃうので、非同期にするとかyield挟むとかしないとダメっぽいな。AssetRailsのWebSocketで云々のアプローチはあれはあれでよかった。");
+							// if (progress == 0f) node.ShowProgress();
+							// node.SetProgress(progress);
+						}
+					);
+				}
+			};
+
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			GraphStackController.RunStackedGraph(loadedData);
+			GraphStackController.RunStackedGraph(loadedData, updateHandler);
 		}
 
 
@@ -592,12 +630,12 @@ namespace AssetGraph {
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -605,13 +643,13 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.GROUPING_GUI:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}

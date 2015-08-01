@@ -56,6 +56,8 @@ namespace AssetGraph {
 				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
 				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
 				
+				var nodeName = nodeDict[AssetGraphSettings.NODE_NAME] as string;
+
 				// copy all key and value to new Node data dictionary.
 				var newNodeDict = new Dictionary<string, object>();
 				foreach (var key in nodeDict.Keys) {
@@ -74,9 +76,8 @@ namespace AssetGraph {
 				
 						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
 						
-						// delete if already gone.
+						// warn if no class found.
 						if (nodeScriptInstance == null) {
-							Debug.LogError("c1");
 							changed = true;
 							Debug.LogWarning("no class found:" + scriptType + " kind:" + kind + ", rebuildfing AssetGraph...");
 							continue;
@@ -97,7 +98,6 @@ namespace AssetGraph {
 							((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, new List<InternalAssetData>(), Output);
 
 							if (!outoutLabelsSet.SetEquals(latestLabels)) {
-								Debug.LogError("c2");
 								changed = true;
 								newNodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = latestLabels.ToList();
 							}
@@ -114,9 +114,17 @@ namespace AssetGraph {
 						break;
 					}
 
+					/*
+						GUI node with script.
+					*/
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						Debug.LogError("GUIでScriptが必要な奴の場合は、なんかエラーを吐かないとな。うーーーんん、、、実行できない状態にはしたくないので、Errorくらいかな。 Script");
+						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
+				
+						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+						
+						// warn if no class found.
+						if (nodeScriptInstance == null) Debug.LogWarning("no class found:" + scriptType + ", please set prefer script to node:" + nodeName);
 						break;
 					}
 
@@ -226,7 +234,10 @@ namespace AssetGraph {
 			return resultConnectionSourcesDict;
 		}
 
-		public static Dictionary<string, List<string>> RunStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, List<string>> RunStackedGraph (
+			Dictionary<string, object> graphDataDict, 
+			Action<string, float> updateHandler=null
+		) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -236,7 +247,7 @@ namespace AssetGraph {
 			var resultDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
+				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, updateHandler);
 			}
 
 			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
@@ -303,13 +314,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null));
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null));
 						break;
 					}
 
@@ -323,10 +334,19 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null));
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						var containsKeywordsSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
+						var containsKeywords = new List<string>();
+						foreach (var containsKeywordSource in containsKeywordsSource) {
+							containsKeywords.Add(containsKeywordSource.ToString());
+						}
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords));
+						break;
+					}
 
 					default: {
 						Debug.LogError("failed to match:" + nodeKind);
@@ -361,7 +381,13 @@ namespace AssetGraph {
 			setup all serialized nodes in order.
 			returns orderd connectionIds
 		*/
-		public static List<string> SetupSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
+		public static List<string> SetupSerializedRoute (
+			string endNodeId, 
+			List<NodeData> nodeDatas, 
+			List<ConnectionData> connections, 
+			Dictionary<string, 
+			List<InternalAssetData>> resultDict
+		) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, false);
 
 			return resultDict.Keys.ToList();
@@ -371,8 +397,15 @@ namespace AssetGraph {
 			run all serialized nodes in order.
 			returns orderd connectionIds
 		*/
-		public static List<string> RunSerializedRoute (string endNodeId, List<NodeData> nodeDatas, List<ConnectionData> connections, Dictionary<string, List<InternalAssetData>> resultDict) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true);
+		public static List<string> RunSerializedRoute (
+			string endNodeId, 
+			List<NodeData> nodeDatas, 
+			List<ConnectionData> connections, 
+			Dictionary<string, 
+			List<InternalAssetData>> resultDict,
+			Action<string, float> updateHandler=null
+		) {
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true, updateHandler);
 
 			return resultDict.Keys.ToList();
 		}
@@ -380,7 +413,15 @@ namespace AssetGraph {
 		/**
 			execute Run or Setup for each nodes in order.
 		*/
-		private static void ExecuteParent (string nodeId, List<NodeData> nodeDatas, List<ConnectionData> connectionDatas, Dictionary<string, List<InternalAssetData>> resultDict, bool isActualRun) {
+		private static void ExecuteParent (
+			string nodeId, 
+			List<NodeData> nodeDatas, 
+			List<ConnectionData> connectionDatas, 
+			Dictionary<string, 
+			List<InternalAssetData>> resultDict, 
+			bool isActualRun,
+			Action<string, float> updateHandler=null
+		) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.nodeId == nodeId).ToList();
 			if (!currentNodeDatas.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
 
@@ -393,7 +434,7 @@ namespace AssetGraph {
 			*/
 			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
-				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun);
+				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun, updateHandler);
 			}
 
 			var connectionLabelsFromThisNodeToChildNode = connectionDatas
@@ -412,6 +453,7 @@ namespace AssetGraph {
 				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
 			}
 
+			if (updateHandler != null) updateHandler(nodeId, 0f);
 
 			/*
 				has next node, run first time.
@@ -500,6 +542,12 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						var executor = new IngegreatedGUIFilter(currentNodeData.containsKeywords);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = currentNodeData.scriptType;
 						if (string.IsNullOrEmpty(scriptType)) {
@@ -584,6 +632,12 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						var executor = new IngegreatedGUIFilter(currentNodeData.containsKeywords);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = currentNodeData.scriptType;
 						if (string.IsNullOrEmpty(scriptType)) {
@@ -619,6 +673,7 @@ namespace AssetGraph {
 			}
 
 			currentNodeData.Done();
+			if (updateHandler != null) updateHandler(nodeId, 1f);
 		}
 
 		public static T Executor<T> (string typeStr) where T : INodeBase {
@@ -645,6 +700,9 @@ namespace AssetGraph {
 		// for Exporter Script
 		public readonly string exportFilePath;
 
+		// for filter GUI data
+		public readonly List<string> containsKeywords;
+
 
 		private bool done;
 
@@ -654,7 +712,8 @@ namespace AssetGraph {
 			string nodeName,
 			string scriptType,
 			string loadPath,
-			string exportPath
+			string exportPath,
+			List<string> filterContainsList
 		) {
 			this.nodeId = currentNodeId;
 			this.nodeKind = currentNodeKind;
@@ -666,6 +725,7 @@ namespace AssetGraph {
 					this.scriptType = null;
 					this.loadFilePath = loadPath;
 					this.exportFilePath = null;
+					this.containsKeywords = null;
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
@@ -673,6 +733,7 @@ namespace AssetGraph {
 					this.scriptType = null;
 					this.loadFilePath = null;
 					this.exportFilePath = exportPath;
+					this.containsKeywords = null;
 					break;
 				}
 
@@ -687,6 +748,15 @@ namespace AssetGraph {
 					this.scriptType = scriptType;
 					this.loadFilePath = null;
 					this.exportFilePath = null;
+					this.containsKeywords = null;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					this.scriptType = null;
+					this.loadFilePath = null;
+					this.exportFilePath = null;
+					this.containsKeywords = filterContainsList;
 					break;
 				}
 

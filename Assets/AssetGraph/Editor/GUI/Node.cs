@@ -21,8 +21,7 @@ namespace AssetGraph {
 		public string scriptPath;
 		public string loadPath;
 		public string exportPath;
-
-		private readonly string nodeLabel;
+		public List<string> filterContainsKeywords;
 
 		private string nodeInterfaceTypeStr;
 
@@ -32,6 +31,11 @@ namespace AssetGraph {
 
 		public Rect baseRect;
 		private Rect closeButtonRect;
+
+
+		private float progress;
+		private bool running;
+
 		
 		public static Node LoaderNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
 			return new Node(
@@ -44,6 +48,7 @@ namespace AssetGraph {
 				null,
 				loadPath, 
 				null, 
+				null,
 				x,
 				y
 			);
@@ -59,7 +64,8 @@ namespace AssetGraph {
 				null,
 				null,
 				null, 
-				exportPath, 
+				exportPath,
+				null, 
 				x,
 				y
 			);
@@ -74,6 +80,7 @@ namespace AssetGraph {
 				kind,
 				scriptType,
 				scriptPath,
+				null,
 				null, 
 				null, 
 				x,
@@ -81,7 +88,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+		public static Node GUINode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, float x, float y) {
 			return new Node(
 				emit,
 				index,
@@ -92,6 +99,7 @@ namespace AssetGraph {
 				null,
 				null, 
 				null, 
+				filterContainsKeywords,
 				x,
 				y
 			);
@@ -121,7 +129,7 @@ namespace AssetGraph {
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var newLoadPath = EditorGUILayout.TextArea(node.loadPath, GUILayout.MaxHeight(20));
+						var newLoadPath = EditorGUILayout.TextField("loadPath", node.loadPath);
 						if (newLoadPath != node.loadPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 							node.loadPath = newLoadPath;
@@ -136,7 +144,26 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						Debug.LogError("ポイントを追加できるGUIを表示しよう。");
+						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
+							GUILayout.BeginHorizontal();
+							{
+								if (GUILayout.Button("-")) {
+									node.filterContainsKeywords.RemoveAt(i);
+									node.Save();
+								} else {
+									var newContainsKeyword = EditorGUILayout.TextField("contains", node.filterContainsKeywords[i]);
+									if (newContainsKeyword != node.filterContainsKeywords[i]) {
+										node.filterContainsKeywords[i] = newContainsKeyword;
+										node.Save();
+									}
+								}
+							}
+							GUILayout.EndHorizontal();
+						}
+
+						// add contains keyword interface.
+						if (GUILayout.Button("+")) node.filterContainsKeywords.Add(string.Empty);
+
 						break;
 					}
 
@@ -178,7 +205,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 
-						var newExportPath = EditorGUILayout.TextArea(node.exportPath, GUILayout.MaxHeight(20));
+						var newExportPath = EditorGUILayout.TextField("exportPath", node.exportPath);
 						if (newExportPath != node.exportPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 							node.exportPath = newExportPath;
@@ -198,8 +225,8 @@ namespace AssetGraph {
 		public void Save () {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
-		
-		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, string loadPath, string exportPath, float x, float y) {
+
+		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, string loadPath, string exportPath, List<string> filterContainsKeywords, float x, float y) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			this.Emit = emit;
 			this.nodeWindowId = index;
@@ -210,51 +237,49 @@ namespace AssetGraph {
 			this.scriptPath = scriptPath;
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;
+			this.filterContainsKeywords = filterContainsKeywords;
 			
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 			this.closeButtonRect = new Rect(0f, 0f, 18f, 18f);
 			
-			this.nodeLabel = string.Empty;
-			
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-					this.nodeInterfaceTypeStr = "flow node 0";
-					var height = loadPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length;
-					this.nodeLabel = this.loadPath.Replace("/", "\n/");
-					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, height * 16f);
-					break;
-				}
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+				case AssetGraphSettings.NodeKind.LOADER_GUI:
+
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
-					var height = exportPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length;
-					this.nodeLabel = this.exportPath.Replace("/", "\n/");
-					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, height * 16f);
-					break;
-				}
-				
-				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0";
-					this.nodeLabel = name;
-					break;
-				}
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0";
-					this.nodeLabel = name;
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.FILTER_GUI:
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
-				case AssetGraphSettings.NodeKind.GROUPING_GUI:
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
 				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1";
-					this.nodeLabel = name;
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 3";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				 {
+					this.nodeInterfaceTypeStr = "flow node 5";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
 
@@ -270,35 +295,43 @@ namespace AssetGraph {
 			Selection.activeObject = nodeInsp;
 
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-					this.nodeInterfaceTypeStr = "flow node 0 on";
-					break;
-				}
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+				case AssetGraphSettings.NodeKind.LOADER_GUI:
+
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0 on";
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 1 on";
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0 on";
+				
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 2 on";
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.FILTER_GUI:
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
-				case AssetGraphSettings.NodeKind.GROUPING_GUI:
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
-				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 3 on";
+					break;
+				}
+
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-					this.nodeInterfaceTypeStr = "flow node 1 on";
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				 {
+					this.nodeInterfaceTypeStr = "flow node 5 on";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 6 on";
 					break;
 				}
 
@@ -311,28 +344,43 @@ namespace AssetGraph {
 
 		public void SetInactive () {
 			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-					this.nodeInterfaceTypeStr = "flow node 0";
-					break;
-				}
+
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.FILTER_GUI:
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
-				case AssetGraphSettings.NodeKind.GROUPING_GUI:
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI:
 				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1";
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 3";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				 {
+					this.nodeInterfaceTypeStr = "flow node 5";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
 
@@ -342,7 +390,6 @@ namespace AssetGraph {
 				}
 			}
 		}
-
 
 		public void AddConnectionPoint (ConnectionPoint adding) {
 			connectionPoints.Add(adding);
@@ -474,18 +521,30 @@ namespace AssetGraph {
 			return null;
 		}
 
+		public void SetProgress (float val) {
+			progress = val;
+		}
 
+		public void ShowProgress () {
+			running = true;
+		}
+
+		public void HideProgress () {
+			running = false;
+		}
 
 		/**
 			GUI update for a Node.
 		*/
-		void OnGUI () {
+		public void OnGUI () {
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width, baseRect.height);
-			GUI.Label(nodeTitleRect, nodeLabel, style);
+			GUI.Label(nodeTitleRect, name, style);
+
+			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
 
 			style.alignment = defaultAlignment;
 		}

@@ -60,6 +60,8 @@ namespace AssetGraph {
 		public const string NODE_POS_Y = "y";
 		public const string NODE_OUTPUT_LABELS = "outputLabels";
 
+		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
+
 		// connection const
 		public const string CONNECTION_LABEL = "label";
 		public const string CONNECTION_ID = "connectionId";
