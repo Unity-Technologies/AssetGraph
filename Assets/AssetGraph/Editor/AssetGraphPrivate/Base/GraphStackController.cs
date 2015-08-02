@@ -314,13 +314,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null, null));
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null, null));
 						break;
 					}
 
@@ -334,7 +334,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null, null));
 						break;
 					}
 
@@ -344,7 +344,13 @@ namespace AssetGraph {
 						foreach (var containsKeywordSource in containsKeywordsSource) {
 							containsKeywords.Add(containsKeywordSource.ToString());
 						}
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords, null));
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						var importControlDict = new Dictionary<string, object>();
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, importControlDict));
 						break;
 					}
 
@@ -543,7 +549,13 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var executor = new IngegreatedGUIFilter(currentNodeData.containsKeywords);
+						var executor = new IntegreatedGUIFilter(currentNodeData.containsKeywords);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						var executor = new IntegreatedGUIImporter(currentNodeData.importControlDict);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -633,7 +645,13 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var executor = new IngegreatedGUIFilter(currentNodeData.containsKeywords);
+						var executor = new IntegreatedGUIFilter(currentNodeData.containsKeywords);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						var executor = new IntegreatedGUIImporter(currentNodeData.importControlDict);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -703,6 +721,8 @@ namespace AssetGraph {
 		// for filter GUI data
 		public readonly List<string> containsKeywords;
 
+		// for importer GUI data
+		public readonly Dictionary<string, object> importControlDict;
 
 		private bool done;
 
@@ -713,7 +733,8 @@ namespace AssetGraph {
 			string scriptType,
 			string loadPath,
 			string exportPath,
-			List<string> filterContainsList
+			List<string> filterContainsList,
+			Dictionary<string, object> importControlDict
 		) {
 			this.nodeId = currentNodeId;
 			this.nodeKind = currentNodeKind;
@@ -726,6 +747,7 @@ namespace AssetGraph {
 					this.loadFilePath = loadPath;
 					this.exportFilePath = null;
 					this.containsKeywords = null;
+					this.importControlDict = null;
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
@@ -734,6 +756,7 @@ namespace AssetGraph {
 					this.loadFilePath = null;
 					this.exportFilePath = exportPath;
 					this.containsKeywords = null;
+					this.importControlDict = null;
 					break;
 				}
 
@@ -749,6 +772,7 @@ namespace AssetGraph {
 					this.loadFilePath = null;
 					this.exportFilePath = null;
 					this.containsKeywords = null;
+					this.importControlDict = null;
 					break;
 				}
 
@@ -757,6 +781,16 @@ namespace AssetGraph {
 					this.loadFilePath = null;
 					this.exportFilePath = null;
 					this.containsKeywords = filterContainsList;
+					this.importControlDict = null;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					this.scriptType = null;
+					this.loadFilePath = null;
+					this.exportFilePath = null;
+					this.containsKeywords = null;
+					this.importControlDict = importControlDict;
 					break;
 				}
 

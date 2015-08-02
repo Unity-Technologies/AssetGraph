@@ -5,9 +5,9 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetGraph {
-	public class IngegreatedGUIFilter : INodeBase {
+	public class IntegreatedGUIFilter : INodeBase {
 		private readonly List<string> containsKeywords;
-		public IngegreatedGUIFilter (List<string> containsKeywords) {
+		public IntegreatedGUIFilter (List<string> containsKeywords) {
 			this.containsKeywords = containsKeywords;
 		}
 

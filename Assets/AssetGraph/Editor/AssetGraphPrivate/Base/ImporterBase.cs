@@ -14,8 +14,6 @@ namespace AssetGraph {
 		
 		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			var assumedImportedAssetDatas = new List<InternalAssetData>();
-			
-			Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、");
 				
 			foreach (var inputData in inputSources) {
 				var assumedImportedBasePath = inputData.absoluteSourcePath.Replace(inputData.sourceBasePath, AssetGraphSettings.IMPORTER_TEMP_PLACE);
@@ -131,6 +129,7 @@ namespace AssetGraph {
 		public virtual void AssetGraphOnAssignMaterialModel (Material material, Renderer renderer) {}
 
 		public Type AssumeTypeFromExtension () {
+			Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、");
 			return typeof(UnityEngine.Object);
 		}
 	}

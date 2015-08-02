@@ -22,6 +22,7 @@ namespace AssetGraph {
 		public string loadPath;
 		public string exportPath;
 		public List<string> filterContainsKeywords;
+		public Dictionary<string, object> importControlDict;
 
 		private string nodeInterfaceTypeStr;
 
@@ -49,6 +50,7 @@ namespace AssetGraph {
 				loadPath, 
 				null, 
 				null,
+				null,
 				x,
 				y
 			);
@@ -65,7 +67,8 @@ namespace AssetGraph {
 				null,
 				null, 
 				exportPath,
-				null, 
+				null,
+				null,
 				x,
 				y
 			);
@@ -81,8 +84,9 @@ namespace AssetGraph {
 				scriptType,
 				scriptPath,
 				null,
-				null, 
-				null, 
+				null,
+				null,
+				null,
 				x,
 				y
 			);
@@ -100,6 +104,25 @@ namespace AssetGraph {
 				null, 
 				null, 
 				filterContainsKeywords,
+				null,
+				x,
+				y
+			);
+		}
+
+		public static Node GUINodeForImport (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, Dictionary<string, object> importControlDict, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null,
+				null, 
+				null, 
+				null,
+				importControlDict,
 				x,
 				y
 			);
@@ -174,7 +197,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						Debug.LogError("画像の〜とか、なんか仮で作る");
+						Debug.LogError("nodeIdに対してサンプルがすでに取り込んであれば、そのimportセッティングをなんとかすることで対応できるはずだ。");
 						break;
 					}
 
@@ -183,7 +206,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						Debug.LogError("グルーピングはありそうだな〜");
+						Debug.LogError("グルーピング、設定項目一個だけなので、まあ足そう。");
 						break;
 					}
 
@@ -242,7 +265,21 @@ namespace AssetGraph {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
 
-		private Node (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, string loadPath, string exportPath, List<string> filterContainsKeywords, float x, float y) {
+		private Node (
+			Action<OnNodeEvent> emit, 
+			int index, 
+			string name, 
+			string id, 
+			AssetGraphSettings.NodeKind kind, 
+			string scriptType, 
+			string scriptPath, 
+			string loadPath, 
+			string exportPath, 
+			List<string> filterContainsKeywords, 
+			Dictionary<string, object>importControlDict,
+			float x, 
+			float y
+		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			this.Emit = emit;
 			this.nodeWindowId = index;
@@ -254,6 +291,7 @@ namespace AssetGraph {
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;
 			this.filterContainsKeywords = filterContainsKeywords;
+			this.importControlDict = importControlDict;
 			
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 			this.closeButtonRect = new Rect(0f, 0f, 18f, 18f);

@@ -234,6 +234,21 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						var importControlDict = nodeDict[AssetGraphSettings.NODE_IMPORTER_CONTROLDICT] as Dictionary<string, object>;
+						
+						var newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, name, id, kind, importControlDict, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
@@ -243,7 +258,6 @@ namespace AssetGraph {
 						nodes.Add(newNode);
 						break;
 					}
-
 
 					default: {
 						Debug.LogError("kind not found:" + kind);
@@ -330,7 +344,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						Debug.LogError("Importerの保存時の処理、一番でかそう。いろんな種類とかあるよな");
+						nodeDict[AssetGraphSettings.NODE_IMPORTER_CONTROLDICT] = node.importControlDict;
 						break;
 					}
 
@@ -631,12 +645,20 @@ namespace AssetGraph {
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
+
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
 					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, nodeName, nodeId, kind, new Dictionary<string, object>(), x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
 				case AssetGraphSettings.NodeKind.GROUPING_GUI:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
