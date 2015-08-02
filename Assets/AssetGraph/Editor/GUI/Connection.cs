@@ -105,7 +105,7 @@ namespace AssetGraph {
 			*/
 			var throughputCount = throughputDataList.Count;
 			var offsetSize = throughputCount.ToString().Length * 20f;
-			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 10f, offsetSize, 20f), throughputCount.ToString(), "sv_label_0")) {
+			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f), throughputCount.ToString(), "sv_label_0")) {
 				conInsp.UpdateCon(this, throughputDataList);
 				Selection.activeObject = conInsp;
 			}

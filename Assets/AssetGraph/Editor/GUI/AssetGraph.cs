@@ -17,6 +17,7 @@ namespace AssetGraph {
 		}
 
 		public void OnEnable () {
+			this.title = "AssetGraph";
 			InitializeGraph();
 		}
 
@@ -75,7 +76,7 @@ namespace AssetGraph {
 					.FindObjectsOfTypeAll(typeof(Texture2D))
 					.Where(data => data.ToString().Contains("d_RotateTool"))
 					.ToList();
-				reloadButtonTexture = reloadTextureSources[0] as Texture2D;
+				if (0 < reloadTextureSources.Count) reloadButtonTexture = reloadTextureSources[0] as Texture2D;
 			}
 
 
