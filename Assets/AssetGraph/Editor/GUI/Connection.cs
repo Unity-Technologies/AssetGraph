@@ -18,6 +18,7 @@ namespace AssetGraph {
 		public readonly Node endNode;
 		public readonly ConnectionPoint inputPoint;
 
+		public ConnectionInspector conInsp;
 
 		public static Connection LoadConnection (string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			return new Connection(
@@ -42,6 +43,8 @@ namespace AssetGraph {
 		}
 
 		private Connection (string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+			conInsp = ScriptableObject.CreateInstance<ConnectionInspector>();
+
 			this.label = label;
 			this.connectionId = connectionId;
 
@@ -54,7 +57,26 @@ namespace AssetGraph {
 			this.endPointInfo = end.name + ":" + input.label;
 		}
 
-		public void DrawConnection () {
+		/**
+			Inspector GUI for this connection.
+		*/
+		[CustomEditor(typeof(ConnectionInspector))]
+		public class ConnectionObj : Editor {
+			public override void OnInspectorGUI () {
+				var con = ((ConnectionInspector)target).con;
+				if (con == null) return;
+
+				var throughputDataList = ((ConnectionInspector)target).throughputDataList;
+				EditorGUILayout.LabelField("count", throughputDataList.Count.ToString());
+
+				for (var i = 0; i < throughputDataList.Count; i++) {
+					var data = throughputDataList[i];
+					EditorGUILayout.LabelField((i + 1).ToString(), data);
+				}
+			}
+		}
+
+		public void DrawConnection (List<string> throughputDataList) {
 			var start = startNode.GlobalConnectionPointPosition(outputPoint);
 			var startV3 = new Vector3(start.x, start.y, 0f);
 			
@@ -72,12 +94,20 @@ namespace AssetGraph {
 
 			Handles.DrawBezier(startV3, endV3, startTan, endTan, Color.gray, null, 4f);
 
-			
-
-			// draw label
-			if (1 < label.Length) {// ignore "+"
-				var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 10f, 0f) ;
+			// draw label.
+			if (label != AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL) {
+				var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
 				Handles.Label(labelPointV3, label);
+			}
+
+			/*
+				draw throughtput badge.
+			*/
+			var throughputCount = throughputDataList.Count;
+			var offsetSize = throughputCount.ToString().Length * 20f;
+			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 10f, offsetSize, 20f), throughputCount.ToString(), "sv_label_0")) {
+				conInsp.UpdateCon(this, throughputDataList);
+				Selection.activeObject = conInsp;
 			}
 		}
 

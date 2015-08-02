@@ -411,15 +411,6 @@ namespace AssetGraph {
 
 			// ready datas.
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
-
-			Debug.Log("GUI上のConnection上を通るリソースの情報が更新できた。さてどうやってGUIにボタン乗っけようかな。");
-			foreach (var connectionLabel in connectionThroughputs.Keys) {
-				Debug.Log("connectionLabel:" + connectionLabel);
-				var sources = connectionThroughputs[connectionLabel];
-				foreach (var source in sources) {
-					Debug.Log("	source:" + source);
-				}
-			}
 		}
 
 		private void Run () {
@@ -449,7 +440,9 @@ namespace AssetGraph {
 			};
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			GraphStackController.RunStackedGraph(loadedData, updateHandler);
+
+			// run datas.
+			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
 		}
 
 
@@ -490,7 +483,14 @@ namespace AssetGraph {
 				EndWindows();
 			}
 
-			connections.ForEach(con => con.DrawConnection());
+			foreach (var con in connections) {
+				if (connectionThroughputs.ContainsKey(con.connectionId)) {
+					var throughputDatas = connectionThroughputs[con.connectionId];
+					con.DrawConnection(throughputDatas);
+				} else {
+					con.DrawConnection(new List<string>());
+				}
+			}
 
 			/*
 				draw line if modifing connection.
