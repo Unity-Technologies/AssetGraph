@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -146,12 +147,10 @@ namespace AssetGraph {
 					node.Save();
 				}
 
-				EditorGUILayout.LabelField("kind", node.kind.ToString());
-
-				
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						EditorGUILayout.LabelField("kind", "Loader:load files from path.");
 						var newLoadPath = EditorGUILayout.TextField("loadPath", node.loadPath);
 						if (newLoadPath != node.loadPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
@@ -161,12 +160,15 @@ namespace AssetGraph {
 						break;
 					}
 
+
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
+						EditorGUILayout.LabelField("kind", "Filter:filtering files by script.");
 						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
 						Debug.LogError("既存のポイントの情報を表示しよう。");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						EditorGUILayout.LabelField("kind", "Filter:filtering files by keywords.");
 						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 							GUILayout.BeginHorizontal();
 							{
@@ -192,26 +194,80 @@ namespace AssetGraph {
 						break;
 					}
 
+
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
+						EditorGUILayout.LabelField("kind", "Importer:import files by script.");
 						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						Debug.LogError("nodeIdに対してサンプルがすでに取り込んであれば、そのimportセッティングをなんとかすることで対応できるはずだ。");
+						EditorGUILayout.LabelField("kind", "Importer:import files then apply settings from SamplingAssets.");
+						var nodeId = node.id;
+
+						var noFilesFound = false;
+						var tooManyFilesFound = false;
+
+						var samplingPath = Path.Combine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+						if (Directory.Exists(samplingPath)) {
+							var samplingFiles = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingPath);
+							switch (samplingFiles.Count) {
+								case 0: {
+									noFilesFound = true;
+									break;
+								}
+								case 1: {
+									var samplingAssetPath = samplingFiles[0];
+									EditorGUILayout.LabelField("SamplingAsset path", samplingAssetPath);
+									if (GUILayout.Button("modify SamplingAsset")) {
+										var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
+										Selection.activeObject = obj;
+									}
+									if (GUILayout.Button("clean SamplingAsset")) {
+										var result = AssetDatabase.DeleteAsset(samplingAssetPath);
+										if (!result) Debug.LogError("failed to delete samplingAsset:" + samplingAssetPath);
+									}
+									break;
+								}
+								default: {
+									tooManyFilesFound = true;
+									break;
+								}
+							}
+						} else {
+							noFilesFound = true;
+						}
+
+						if (noFilesFound) {
+							EditorGUILayout.LabelField("samplingAsset", "no asset found. please Reload first.");
+						}
+
+						if (tooManyFilesFound) {
+							EditorGUILayout.LabelField("samplingAsset", "too many assets found. please delete file at:" + samplingPath);
+						}
+
 						break;
 					}
 
+
 					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT: {
+						EditorGUILayout.LabelField("kind", "Grouping:grouping files by script.");
 						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+						EditorGUILayout.LabelField("kind", "Grouping:grouping files by one keyword.");
 						Debug.LogError("グルーピング、設定項目一個だけなので、まあ足そう。");
 						break;
 					}
+					
 
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+						EditorGUILayout.LabelField("kind", "Prefabricator:generate prefab by script.");
+						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
+						EditorGUILayout.LabelField("kind", "Prefabricator:generate prefab by script.");
 						var newScriptType = EditorGUILayout.TextField("scriptType", node.scriptType);
 						if (newScriptType != node.scriptType) {
 							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
@@ -221,15 +277,27 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+						EditorGUILayout.LabelField("kind", "Bundlizer:generate AssetBundle by script.");
 						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
 						break;
 					}
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						EditorGUILayout.LabelField("kind", "Bundlizer:generate AssetBundle by script.");
+						var newScriptType = EditorGUILayout.TextField("scriptType", node.scriptType);
+						if (newScriptType != node.scriptType) {
+							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
+							node.scriptType = newScriptType;
+							node.Save();
+						}
+						break;
+					}
+
 
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-
+						EditorGUILayout.LabelField("kind", "Exporter:export files to path.");
 						var newExportPath = EditorGUILayout.TextField("exportPath", node.exportPath);
 						if (newExportPath != node.exportPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");

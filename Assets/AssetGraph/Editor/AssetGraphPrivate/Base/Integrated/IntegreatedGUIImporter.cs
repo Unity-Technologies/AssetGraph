@@ -27,7 +27,7 @@ namespace AssetGraph {
 
 			// caution if file is exists already.
 			if (Directory.Exists(samplingDirectoryPath)) {
-				var filesInSampling = FileController.FilePathsInFolderWithoutMeta(samplingDirectoryPath);
+				var filesInSampling = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingDirectoryPath);
 				switch (filesInSampling.Count) {
 					case 0: {
 						Debug.Log("sampling start.");
@@ -39,7 +39,7 @@ namespace AssetGraph {
 						break;
 					}
 					default: {
-						Debug.LogError("too many samples in samplingDirectoryPath:" + samplingDirectoryPath + ", make sure only 1 file in path:" + samplingDirectoryPath + ", or delete all files in path:" + samplingDirectoryPath + " and reload.");
+						Debug.LogError("too many assets in samplingDirectoryPath:" + samplingDirectoryPath + ", make sure only 1 file in path:" + samplingDirectoryPath + ", or delete all files in path:" + samplingDirectoryPath + " and reload.");
 						first = false;
 						break;
 					}
@@ -92,7 +92,7 @@ namespace AssetGraph {
 			// caution if file is exists already.
 			var sampleAssetPath = string.Empty;
 			if (Directory.Exists(samplingDirectoryPath)) {
-				var filesInSampling = FileController.FilePathsInFolderWithoutMeta(samplingDirectoryPath);
+				var filesInSampling = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingDirectoryPath);
 				switch (filesInSampling.Count) {
 					case 0: {
 						throw new Exception("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
@@ -177,7 +177,9 @@ namespace AssetGraph {
 				outputSources.Add(newInternalAssetData);
 			}
 
-			Debug.LogError("該当するSampleの内容をセットする。種類見てないので一個しかないはず、っていう前提。sampleAssetPath:" + sampleAssetPath);
+			/*
+				adopt asset settings from sampling asset to imported assets.
+			*/
 			var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
 
 			if (samplingAssetImporter) {
@@ -187,6 +189,7 @@ namespace AssetGraph {
 			}
 
 			foreach (var asset in outputSources) {
+				if (asset.generated) continue;
 				AdoptSettings(asset, samplingAssetImporter);
 			}
 
@@ -255,6 +258,70 @@ namespace AssetGraph {
 					importer.wrapMode = importerSource.wrapMode;
 					importer.textureType = importerSource.textureType;
 
+					AssetDatabase.WriteImportSettingsIfDirty(targetData.importedPath);
+					break;
+				}
+				case "UnityEditor.ModelImporter": {
+					var importerSource = importerSourceObj as ModelImporter;
+					var importer = AssetImporter.GetAtPath(targetData.importedPath) as ModelImporter;
+
+					importer.addCollider = importerSource.addCollider;
+					importer.animationCompression = importerSource.animationCompression;
+					importer.animationPositionError = importerSource.animationPositionError;
+					importer.animationRotationError = importerSource.animationRotationError;
+					importer.animationScaleError = importerSource.animationScaleError;
+					importer.animationType = importerSource.animationType;
+					importer.animationWrapMode = importerSource.animationWrapMode;
+					importer.bakeIK = importerSource.bakeIK;
+					importer.clipAnimations = importerSource.clipAnimations;
+					// importer.defaultClipAnimations = importerSource.defaultClipAnimations;
+					importer.extraExposedTransformPaths = importerSource.extraExposedTransformPaths;
+					// importer.fileScale = importerSource.fileScale;
+					importer.generateAnimations = importerSource.generateAnimations;
+					importer.generateSecondaryUV = importerSource.generateSecondaryUV;
+					importer.globalScale = importerSource.globalScale;
+					importer.humanDescription = importerSource.humanDescription;
+					importer.importAnimation = importerSource.importAnimation;
+					importer.importBlendShapes = importerSource.importBlendShapes;
+					// importer.importedTakeInfos = importerSource.importedTakeInfos;
+					importer.importMaterials = importerSource.importMaterials;
+					// importer.isBakeIKSupported = importerSource.isBakeIKSupported;
+					// importer.isFileScaleUsed = importerSource.isFileScaleUsed;
+					importer.isReadable = importerSource.isReadable;
+					// importer.isTangentImportSupported = importerSource.isTangentImportSupported;
+					// importer.isUseFileUnitsSupported = importerSource.isUseFileUnitsSupported;
+					importer.materialName = importerSource.materialName;
+					importer.materialSearch = importerSource.materialSearch;
+					importer.meshCompression = importerSource.meshCompression;
+					importer.motionNodeName = importerSource.motionNodeName;
+					importer.normalImportMode = importerSource.normalImportMode;
+					importer.normalSmoothingAngle = importerSource.normalSmoothingAngle;
+					importer.optimizeGameObjects = importerSource.optimizeGameObjects;
+					importer.optimizeMesh = importerSource.optimizeMesh;
+					// importer.referencedClips = importerSource.referencedClips;
+					importer.secondaryUVAngleDistortion = importerSource.secondaryUVAngleDistortion;
+					importer.secondaryUVAreaDistortion = importerSource.secondaryUVAreaDistortion;
+					importer.secondaryUVHardAngle = importerSource.secondaryUVHardAngle;
+					importer.secondaryUVPackMargin = importerSource.secondaryUVPackMargin;
+					importer.sourceAvatar = importerSource.sourceAvatar;
+					importer.splitTangentsAcrossSeams = importerSource.splitTangentsAcrossSeams;
+					importer.swapUVChannels = importerSource.swapUVChannels;
+					importer.tangentImportMode = importerSource.tangentImportMode;
+					// importer.transformPaths = importerSource.transformPaths;
+					importer.useFileUnits = importerSource.useFileUnits;
+
+					AssetDatabase.WriteImportSettingsIfDirty(targetData.importedPath);
+					break;
+				}
+				case "UnityEditor.AudioImporter": {
+					var importerSource = importerSourceObj as AudioImporter;
+					var importer = AssetImporter.GetAtPath(targetData.importedPath) as AudioImporter;
+
+					importer.defaultSampleSettings = importerSource.defaultSampleSettings;
+					importer.forceToMono = importerSource.forceToMono;
+					importer.loadInBackground = importerSource.loadInBackground;
+					importer.preloadAudioData = importerSource.preloadAudioData;
+					
 					AssetDatabase.WriteImportSettingsIfDirty(targetData.importedPath);
 					break;
 				}
