@@ -5,8 +5,12 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class IntegratedGUILoader : INodeBase {
-		public string loadFilePath;
+		private readonly string loadFilePath;
 		
+		public IntegratedGUILoader (string loadFilePath) {
+			this.loadFilePath = loadFilePath;
+		}
+
 		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSource, Action<string, string, List<InternalAssetData>> Output) {
 			var outputSource = new List<InternalAssetData>();
 			try {

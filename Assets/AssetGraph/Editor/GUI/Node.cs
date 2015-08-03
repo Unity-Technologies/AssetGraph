@@ -23,7 +23,7 @@ namespace AssetGraph {
 		public string loadPath;
 		public string exportPath;
 		public List<string> filterContainsKeywords;
-		public Dictionary<string, object> importControlDict;
+		public string groupingKeyword;
 
 		private string nodeInterfaceTypeStr;
 
@@ -111,7 +111,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForImport (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, Dictionary<string, object> importControlDict, float x, float y) {
+		public static Node GUINodeForImport (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
 			return new Node(
 				emit,
 				index,
@@ -123,12 +123,29 @@ namespace AssetGraph {
 				null, 
 				null, 
 				null,
-				importControlDict,
+				null,
 				x,
 				y
 			);
 		}
 
+		public static Node GUINodeForGrouping (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string groupingKeyword, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null,
+				null, 
+				null, 
+				null,
+				groupingKeyword,
+				x,
+				y
+			);
+		}
 		
 
 		/**
@@ -256,7 +273,7 @@ namespace AssetGraph {
 					}
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						EditorGUILayout.LabelField("kind", "Grouping:grouping files by one keyword.");
-						Debug.LogError("グルーピング、設定項目一個だけなので、まあ足そう。");
+						Debug.LogError("グルーピング、設定項目一個だけなので、まあ足そう。groupingKeyword");
 						break;
 					}
 					
@@ -344,7 +361,7 @@ namespace AssetGraph {
 			string loadPath, 
 			string exportPath, 
 			List<string> filterContainsKeywords, 
-			Dictionary<string, object>importControlDict,
+			string groupingKeyword,
 			float x, 
 			float y
 		) {
@@ -359,7 +376,7 @@ namespace AssetGraph {
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;
 			this.filterContainsKeywords = filterContainsKeywords;
-			this.importControlDict = importControlDict;
+			this.groupingKeyword = groupingKeyword;
 			
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 			this.closeButtonRect = new Rect(0f, 0f, 18f, 18f);

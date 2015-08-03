@@ -8,16 +8,6 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class IntegreatedGUIImporter : INodeBase {
-		private readonly Dictionary<string, object> importControlDict;
-		
-		public UnityEditor.AssetPostprocessor assetPostprocessor;
-		public UnityEditor.AssetImporter assetImporter;
-		public string assetPath;
-
-		public IntegreatedGUIImporter (Dictionary<string, object> importControlDict) {
-			this.importControlDict = importControlDict;
-		}
-		
 		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
 			var samplingDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 
@@ -197,20 +187,7 @@ namespace AssetGraph {
 
 			Output(nodeId, labelToNext, outputSources);
 		}
-
-		/*
-			handled import events.
-		*/
-		public virtual void AssetGraphOnPostprocessAllAssets (string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {}
-		public virtual void AssetGraphOnPostprocessGameObjectWithUserProperties (GameObject g, string[] propNames, object[] values) {}
-		public virtual void AssetGraphOnPreprocessTexture () {}
-		public virtual void AssetGraphOnPostprocessTexture (Texture2D texture) {}
-		public virtual void AssetGraphOnPreprocessAudio () {}
-		public virtual void AssetGraphOnPostprocessAudio (AudioClip clip) {}
-		public virtual void AssetGraphOnPreprocessModel () {}
-		public virtual void AssetGraphOnPostprocessModel (GameObject g) {}
-		public virtual void AssetGraphOnAssignMaterialModel (Material material, Renderer renderer) {}
-
+		
 		public Type AssumeTypeFromExtension () {
 			Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、2");
 			return typeof(UnityEngine.Object);

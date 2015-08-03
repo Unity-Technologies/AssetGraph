@@ -22,6 +22,9 @@ namespace AssetGraph {
 
 		public static List<string> FilePathsInFolderWithoutMeta (string localFolderPath) {
 			var filePaths = new List<string>();
+			
+			if (string.IsNullOrEmpty(localFolderPath)) return filePaths;
+
 			GetFilePathsRecursive(localFolderPath, filePaths);
 			return filePaths
 				.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION))

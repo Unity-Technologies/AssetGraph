@@ -236,9 +236,21 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var importControlDict = nodeDict[AssetGraphSettings.NODE_IMPORTER_CONTROLDICT] as Dictionary<string, object>;
-						
-						var newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, name, id, kind, importControlDict, x, y);
+						var newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, name, id, kind, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+						var groupingKeyword = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as string;
+						var newNode = Node.GUINodeForGrouping(EmitEvent, nodes.Count, name, id, kind, groupingKeyword, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -345,12 +357,11 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						nodeDict[AssetGraphSettings.NODE_IMPORTER_CONTROLDICT] = node.importControlDict;
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						Debug.LogError("Groupingの保存時の処理、グループ条件を書き込む、、かなあ、、不鮮明");
+						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword;
 						break;
 					}
 
@@ -654,13 +665,19 @@ namespace AssetGraph {
 				}
 				
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, nodeName, nodeId, kind, new Dictionary<string, object>(), x, y);
+					newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.GROUPING_GUI:
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					newNode = Node.GUINodeForGrouping(EmitEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+				
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);

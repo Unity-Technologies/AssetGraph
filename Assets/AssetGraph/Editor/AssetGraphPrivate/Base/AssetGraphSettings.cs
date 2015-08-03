@@ -63,7 +63,7 @@ namespace AssetGraph {
 		public const string NODE_OUTPUT_LABELS = "outputLabels";
 
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
-		public const string NODE_IMPORTER_CONTROLDICT = "importerControlDict";
+		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 
 		// connection const
 		public const string CONNECTION_LABEL = "label";
