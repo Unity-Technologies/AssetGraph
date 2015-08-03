@@ -223,7 +223,7 @@ namespace AssetGraph {
 			return graphDataDict;
 		}
 		
-		public static Dictionary<string, List<string>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, Dictionary<string, List<string>>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -235,18 +235,11 @@ namespace AssetGraph {
 			foreach (var endNodeId in endpointNodeIds) {
 				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 			}
-
-			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
-
-			foreach (var key in resultDict.Keys) {
-				var assetDataDictList = resultDict[key];
-				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataDictList);
-			}
-
-			return resultConnectionSourcesDict;
+			
+			return DictDictList(resultDict);
 		}
 
-		public static Dictionary<string, List<string>> RunStackedGraph (
+		public static Dictionary<string, Dictionary<string, List<string>>> RunStackedGraph (
 			Dictionary<string, object> graphDataDict, 
 			Action<string, float> updateHandler=null
 		) {
@@ -262,30 +255,31 @@ namespace AssetGraph {
 				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, updateHandler);
 			}
 
-			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
-
-			foreach (var key in resultDict.Keys) {
-				var assetDataDictList = resultDict[key];
-				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataDictList);
-			}
-
-			return resultConnectionSourcesDict;
+			return DictDictList(resultDict);
 		}
 
-		private static List<string> GetResourcePathList (Dictionary<string, List<InternalAssetData>> assetDataDictList) {
-			var sourcePathList = new List<string>();
+		private static Dictionary<string, Dictionary<string, List<string>>> DictDictList (Dictionary<string, Dictionary<string, List<InternalAssetData>>> sourceDictDictList) {
+			var result = new Dictionary<string, Dictionary<string, List<string>>>();
+			foreach (var connectionId in sourceDictDictList.Keys) {
+				var connectionGroupDict = sourceDictDictList[connectionId];
 
-			foreach (var assetDatas in assetDataDictList.Values) {
-				foreach (var assetData in assetDatas) {
-					if (assetData.absoluteSourcePath != null) {
-						sourcePathList.Add(assetData.absoluteSourcePath);
-					} else {
-						sourcePathList.Add(assetData.pathUnderConnectionId);
+				var newConnectionGroupDict = new Dictionary<string, List<string>>();
+				foreach (var groupKey in connectionGroupDict.Keys) {
+					var connectionThroughputList = connectionGroupDict[groupKey];
+
+					var sourcePathList = new List<string>();
+					foreach (var assetData in connectionThroughputList) {
+						if (assetData.absoluteSourcePath != null) {
+							sourcePathList.Add(assetData.absoluteSourcePath);
+						} else {
+							sourcePathList.Add(assetData.pathUnderConnectionId);
+						}
 					}
+					newConnectionGroupDict[groupKey] = sourcePathList;
 				}
+				result[connectionId] = newConnectionGroupDict;
 			}
-			
-			return sourcePathList;
+			return result;
 		}
 		
 		/**

@@ -66,17 +66,27 @@ namespace AssetGraph {
 				var con = ((ConnectionInspector)target).con;
 				if (con == null) return;
 
-				var throughputDataList = ((ConnectionInspector)target).throughputDataList;
-				EditorGUILayout.LabelField("count", throughputDataList.Count.ToString());
+				var count = 0;
+				var throughputListDict = ((ConnectionInspector)target).throughputListDict;
+				foreach (var list in throughputListDict.Values) {
+					count += list.Count;
+				}
 
-				for (var i = 0; i < throughputDataList.Count; i++) {
-					var data = throughputDataList[i];
-					EditorGUILayout.LabelField((i + 1).ToString(), data);
+				EditorGUILayout.LabelField("connectionId:" + con.connectionId, "totalCount:" + count.ToString());
+
+				foreach (var groupKey in throughputListDict.Keys) {
+					var list = throughputListDict[groupKey];
+					EditorGUILayout.LabelField("groupKey:" + groupKey, "groupCount:" + list.Count.ToString());
+
+					for (var i = 0; i < list.Count; i++) {
+						var sourceStr = list[i];
+						EditorGUILayout.LabelField((i + 1).ToString(), sourceStr);
+					}
 				}
 			}
 		}
 
-		public void DrawConnection (List<string> throughputDataList) {
+		public void DrawConnection (Dictionary<string, List<string>> throughputListDict) {
 			var start = startNode.GlobalConnectionPointPosition(outputPoint);
 			var startV3 = new Vector3(start.x, start.y, 0f);
 			
@@ -103,12 +113,20 @@ namespace AssetGraph {
 			/*
 				draw throughtput badge.
 			*/
-			var throughputCount = throughputDataList.Count;
+			var throughputCount = 0;
+			foreach (var list in throughputListDict.Values) {
+				throughputCount += list.Count;
+			}
 			var offsetSize = throughputCount.ToString().Length * 20f;
+			
+			var style = EditorStyles.label;
+			var defaultAlignment = style.alignment;
+			style.alignment = TextAnchor.MiddleCenter;
 			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f), throughputCount.ToString(), "sv_label_0")) {
-				conInsp.UpdateCon(this, throughputDataList);
+				conInsp.UpdateCon(this, throughputListDict);
 				Selection.activeObject = conInsp;
 			}
+			style.alignment = defaultAlignment;
 		}
 
 		public bool IsStartAtConnectionPoint (ConnectionPoint p) {

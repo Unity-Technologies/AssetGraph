@@ -6,17 +6,14 @@ using System.IO;
 using System.Collections.Generic;
 
 public class SamplePrefabricator_0 : AssetGraph.PrefabricatorBase {
-	public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
 		
 		var textureAssetPath = source[0].assetPath;
 		var textureAssetType = source[0].assetType;
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
-			
-		if (characterTexture) Debug.Log("Prefabricate:loaded:" + textureAssetPath);
-		else Debug.LogError("Prefabricate:failed to load:" + textureAssetPath);
-
+		
 		var newMaterialPath = Path.Combine(recommendedPrefabOutputDir, "material.mat");
 
 		// generate texture material

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 public class SampleImporterForImage_1 : AssetGraph.ImporterBase {
 
 	public override void AssetGraphOnPreprocessTexture () {
-		Debug.Log("SampleImporterForImage_1 AssetGraphOnPreprocessTexture started.");
 		
 		UnityEditor.TextureImporter importer = assetImporter as UnityEditor.TextureImporter;
 		importer.textureType			= UnityEditor.TextureImporterType.Advanced;
@@ -19,7 +18,6 @@ public class SampleImporterForImage_1 : AssetGraph.ImporterBase {
 		importer.filterMode				= FilterMode.Bilinear;
 		importer.textureFormat 			= TextureImporterFormat.ARGB16;
 
-		Debug.Log("SampleImporterForImage_1 AssetGraphOnPreprocessTexture completed.");
 	}
 	
 }

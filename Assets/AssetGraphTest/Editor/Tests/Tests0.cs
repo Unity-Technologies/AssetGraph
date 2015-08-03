@@ -528,12 +528,6 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var resultDict = GraphStackController.SetupStackedGraph(graphDict);
-		
-		foreach (var connectionId in resultDict.Keys) {
-			var sourceArray = resultDict[connectionId].ToArray();
-			var str = string.Join("\n	source:", sourceArray);
-			Debug.Log("connectionId:" + connectionId + "\n	source:" + str);
-		}
 
 		if (resultDict.Count == 11) {
 			Debug.Log("passed _0_13_SetupStackedGraph_FullStacked");
@@ -556,16 +550,6 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		var setupResultDict = GraphStackController.SetupStackedGraph(graphDict);
-		
-		foreach (var connectionId in setupResultDict.Keys) {
-			var sourceArray = setupResultDict[connectionId].ToArray();
-			if (0 < sourceArray.Length) {
-				var str = string.Join("\n	source:", sourceArray);
-				Debug.Log("connectionId:" + connectionId + "\n	source:" + str);	
-			} else {
-				Debug.Log("connectionId:" + connectionId + " is empty.");
-			}
-		}
 
 		Debug.Log("passed _0_14_SetupStackedGraph_Sample");
 	}

@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class CreateSoundBundle : AssetGraph.BundlizerBase {
-	public override void In (List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
 
 		/*
 			create only one AssetBundle.
@@ -34,7 +34,6 @@ public class CreateSoundBundle : AssetGraph.BundlizerBase {
 				BuildAssetBundleOptions.CollectDependencies | BuildAssetBundleOptions.CompleteAssets,
 				BuildTarget.iOS
 			);
-			Debug.Log("succeeded to create AssetBundle:" + targetPath);
 		} catch (Exception e) {
 			Debug.Log("failed to create AssetBundle:" + targetPath);
 		}

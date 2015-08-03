@@ -7,7 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
-	public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
 		Debug.Log("SamplePrefabricator_3");
 
 		// 複数のセットを作りたい場合、その流入自体は全体の素材が一気に来るので、グルーピングするための情報が必要になる。

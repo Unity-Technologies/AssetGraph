@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class SampleBundlizer : AssetGraph.BundlizerBase {
-	public override void In (List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
 
 		var textureAssetPath = source[0].assetPath;
 		var textureAssetType = source[0].assetType;

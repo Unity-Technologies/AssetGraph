@@ -20,6 +20,9 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			FileController.RemakeDirectory(recommendedBundleOutputDir);
+
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -34,12 +37,9 @@ namespace AssetGraph {
 					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
 				}
 
-				var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
-				FileController.RemakeDirectory(recommendedBundleOutputDir);
-
 				var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 				try {
-					In(assets, recommendedBundleOutputDir);
+					In(groupKey, assets, recommendedBundleOutputDir);
 				} catch (Exception e) {
 					Debug.LogError("Bundlizer:" + this + " error:" + e);
 				}
@@ -67,7 +67,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict);
 		}
 
-		public virtual void In (List<AssetInfo> source, string recommendedBundleOutputDir) {
+		public virtual void In (string groupkey, List<AssetInfo> source, string recommendedBundleOutputDir) {
 			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir)\" in class:" + this);
 		}
 	}

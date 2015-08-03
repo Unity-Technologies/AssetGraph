@@ -19,6 +19,7 @@ namespace AssetGraph {
 		public void OnEnable () {
 			this.title = "AssetGraph";
 			InitializeGraph();
+			Reload();
 		}
 
 		private List<Node> nodes = new List<Node>();
@@ -49,7 +50,7 @@ namespace AssetGraph {
 
 		private Texture2D reloadButtonTexture;
 
-		private Dictionary<string, List<string>> connectionThroughputs = new Dictionary<string, List<string>>();
+		private Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
 
 		/**
 			node window initializer.
@@ -398,6 +399,9 @@ namespace AssetGraph {
 			};
 
 			UpdateGraphData(graphData);
+			// Reload();
+			// var validatedDataDict = GraphStackController.ValidateStackedGraph(deserialized);
+			Debug.LogError("うーーんここでReloadするのがいいんだけどダメっぽいな、削除が絡むと辛い。");
 		}
 
 		private void ResetGUI () {
@@ -421,7 +425,7 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
-			// ready datas.
+			// ready throughput datas.
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
 		}
 
@@ -497,10 +501,10 @@ namespace AssetGraph {
 
 			foreach (var con in connections) {
 				if (connectionThroughputs.ContainsKey(con.connectionId)) {
-					var throughputDatas = connectionThroughputs[con.connectionId];
-					con.DrawConnection(throughputDatas);
+					var throughputListDict = connectionThroughputs[con.connectionId];
+					con.DrawConnection(throughputListDict);
 				} else {
-					con.DrawConnection(new List<string>());
+					con.DrawConnection(new Dictionary<string, List<string>>());
 				}
 			}
 

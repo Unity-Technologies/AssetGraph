@@ -20,8 +20,11 @@ namespace AssetGraph {
 		}
 
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			var outputDict = new Dictionary<string, List<InternalAssetData>>();
+			var recommendedPrefabOutputDir = Path.Combine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
+			FileController.RemakeDirectory(recommendedPrefabOutputDir);
 
+			var outputDict = new Dictionary<string, List<InternalAssetData>>();
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				var assets = new List<AssetInfo>();
@@ -33,9 +36,6 @@ namespace AssetGraph {
 					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
 				}
 
-				var recommendedPrefabOutputDir = Path.Combine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
-				FileController.RemakeDirectory(recommendedPrefabOutputDir);
-
 				/*
 					files under "Assets/" before prefabricate.
 				*/
@@ -45,7 +45,7 @@ namespace AssetGraph {
 					execute inheritee's input method.
 				*/
 				try {
-					In(assets, recommendedPrefabOutputDir);
+					In(groupKey, assets, recommendedPrefabOutputDir);
 				} catch (Exception e) {
 					Debug.LogError("Prefabricator:" + this + " error:" + e);
 				}
@@ -98,7 +98,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict);
 		}
 
-		public virtual void In (List<AssetInfo> source, string recommendedPrefabOutputDir) {
+		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir) {
 			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
 	}

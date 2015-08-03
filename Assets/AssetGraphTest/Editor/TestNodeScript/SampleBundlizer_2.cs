@@ -7,11 +7,9 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class SampleBundlizer_2 : AssetGraph.BundlizerBase {
-	public override void In (List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
 
 		// フォルダ名からセットを構築する。SamplePrefabricator_3 と同一の扱い。
-
-		Debug.Log("SampleBundlizer_2 start");
 
 		/*
 			Model, Prefab, Image, Material, BGM, SE をまとめて一つずつのAssetBundleにする
@@ -59,7 +57,6 @@ public class SampleBundlizer_2 : AssetGraph.BundlizerBase {
 						BuildAssetBundleOptions.CollectDependencies | BuildAssetBundleOptions.CompleteAssets,
 						BuildTarget.iOS
 					);
-					Debug.Log("SampleBundlizer_2 succeeded:" + targetBasePath);
 				} catch (Exception e) {
 					Debug.Log("SampleBundlizer_2:e:" + e);
 				}
