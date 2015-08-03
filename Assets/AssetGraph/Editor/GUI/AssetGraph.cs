@@ -398,10 +398,10 @@ namespace AssetGraph {
 				{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, connectionList}
 			};
 
+			// var validatedDataDict = GraphStackController.ValidateStackedGraph(graphData);
+
 			UpdateGraphData(graphData);
 			// Reload();
-			// var validatedDataDict = GraphStackController.ValidateStackedGraph(deserialized);
-			Debug.LogError("うーーんここでReloadするのがいいんだけどダメっぽいな、削除が絡むと辛い。");
 		}
 
 		private void ResetGUI () {
