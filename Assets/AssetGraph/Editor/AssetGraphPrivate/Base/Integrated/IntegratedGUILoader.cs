@@ -11,7 +11,8 @@ namespace AssetGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSource, Action<string, string, List<InternalAssetData>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
@@ -25,13 +26,17 @@ namespace AssetGraph {
 					);
 				}
 
-				Output(nodeId, labelToNext, outputSource);
+				var outputDir = new Dictionary<string, List<InternalAssetData>> {
+					{"0", outputSource}
+				};
+
+				Output(nodeId, labelToNext, outputDir);
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, List<InternalAssetData> inputSource, Action<string, string, List<InternalAssetData>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
@@ -44,8 +49,12 @@ namespace AssetGraph {
 						)
 					);
 				}
+				
+				var outputDir = new Dictionary<string, List<InternalAssetData>> {
+					{"0", outputSource}
+				};
 
-				Output(nodeId, labelToNext, outputSource);
+				Output(nodeId, labelToNext, outputDir);
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}

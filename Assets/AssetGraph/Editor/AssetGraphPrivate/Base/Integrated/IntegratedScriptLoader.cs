@@ -5,9 +5,13 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class IntegratedScriptLoader : INodeBase {
-		public string loadFilePath;
-		
-		public void Setup (string nodeId, string labelToNext, List<InternalAssetData> inputSource, Action<string, string, List<InternalAssetData>> Output) {
+		private readonly string loadFilePath;
+			
+		public IntegratedScriptLoader (string loadFilePath) {
+			this.loadFilePath = loadFilePath;
+		}
+
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> inputSource, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
@@ -21,13 +25,17 @@ namespace AssetGraph {
 					);
 				}
 
-				Output(nodeId, labelToNext, outputSource);
+				var outputDict = new Dictionary<string, List<InternalAssetData>> {
+					{"0", outputSource}
+				};
+
+				Output(nodeId, labelToNext, outputDict);
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, List<InternalAssetData> inputSource, Action<string, string, List<InternalAssetData>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> inputSource, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
@@ -41,7 +49,11 @@ namespace AssetGraph {
 					);
 				}
 
-				Output(nodeId, labelToNext, outputSource);
+				var outputDict = new Dictionary<string, List<InternalAssetData>> {
+					{"0", outputSource}
+				};
+
+				Output(nodeId, labelToNext, outputDict);
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}

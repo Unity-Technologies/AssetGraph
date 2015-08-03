@@ -10,11 +10,11 @@ namespace AssetGraph {
 
 		public const string APPLICATIONDATAPATH_TEMP_PATH = "Assets/AssetGraph/Temp/";
 		
-		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported/";
-		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated/";
-		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized/";
+		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported";
+		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated";
+		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized";
 
-		public const string IMPORTER_SAMPLING_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Sampling/";
+		public const string IMPORTER_SAMPLING_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Sampling";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";

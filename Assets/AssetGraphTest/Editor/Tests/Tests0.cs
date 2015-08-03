@@ -19,20 +19,20 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
-		var emptySource = new List<InternalAssetData>();
+		var emptySource = new Dictionary<string, List<InternalAssetData>>();
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedScriptLoader = new IntegratedScriptLoader();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
-		integratedScriptLoader.loadFilePath = definedSourcePath;
 		integratedScriptLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, Out);
 
 		var outputs = results["CONNECTION_0_0_0_SetupLoader"];
 		if (outputs.Count == 2) {
+			Debug.Log("passed _0_0_0_SetupLoader");
 			return;
 		}
 
@@ -44,20 +44,20 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
-		var emptySource = new List<InternalAssetData>();
+		var emptySource = new Dictionary<string, List<InternalAssetData>>();
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedScriptLoader = new IntegratedScriptLoader();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
-		integratedScriptLoader.loadFilePath = definedSourcePath;
 		integratedScriptLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, Out);
 
 		var outputs = results["CONNECTION_0_0_1_RunLoader"];
 		if (outputs.Count == 2) {
+			Debug.Log("passed _0_0_1_RunLoader");
 			return;
 		}
 
@@ -65,16 +65,20 @@ public partial class Test {
 	}
 
 	public void _0_0_SetupFilter () {
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByLoader("A/1st", "A"),
-			InternalAssetData.InternalAssetDataByLoader("A/2nd", "A")
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByLoader("A/1st", "A"),
+					InternalAssetData.InternalAssetDataByLoader("A/2nd", "A")
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, Out);
@@ -85,6 +89,7 @@ public partial class Test {
 				if (results.ContainsKey("SampleFilter_0_LabelOf2nd")) {
 					var resut2 = results["SampleFilter_0_LabelOf2nd"];
 					if (resut2[0].absoluteSourcePath == "A/2nd") {
+						Debug.Log("passed _0_0_SetupFilter");
 						return;
 					}
 				}	
@@ -94,16 +99,20 @@ public partial class Test {
 		Debug.LogError("failed to split by filter");
 	}
 	public void _0_1_RunFilter () {
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByLoader("A/1st", "A"),
-			InternalAssetData.InternalAssetDataByLoader("A/2nd", "A")
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByLoader("A/1st", "A"),
+					InternalAssetData.InternalAssetDataByLoader("A/2nd", "A")
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, Out);
@@ -114,6 +123,7 @@ public partial class Test {
 				if (results.ContainsKey("SampleFilter_0_LabelOf2nd")) {
 					var resut2 = results["SampleFilter_0_LabelOf2nd"];
 					if (resut2[0].absoluteSourcePath == "A/2nd") {
+						Debug.Log("passed _0_1_RunFilter");
 						return;
 					}
 				}	
@@ -127,41 +137,50 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
-			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
+					InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, Out);
-		// do nothing in this test yet.
+		Debug.Log("passed _0_2_SetupImporter");
 	}
 	public void _0_3_RunImporter () {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
 		
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
-			InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "dummy.png"), definedSourcePath),
+					InternalAssetData.InternalAssetDataByLoader(Path.Combine(definedSourcePath, "model/sample.fbx"), definedSourcePath)
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, Out);
 
 		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
 		if (currentOutputs.Count == 3) {
+			Debug.Log("passed _0_3_RunImporter");
 			return;
 		}
 
@@ -171,50 +190,58 @@ public partial class Test {
 	public void _0_4_SetupPrefabricator () {
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByImporter(
-				"traceId_0_4_SetupPrefabricator",
-				Path.Combine(Application.dataPath, importedPath),
-				Application.dataPath,
-				Path.GetFileName(importedPath),
-				string.Empty,
-				importedPath,
-				AssetDatabase.AssetPathToGUID(importedPath),
-				AssetGraphInternalFunctions.GetAssetType(importedPath)
-			)
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByImporter(
+						"traceId_0_4_SetupPrefabricator",
+						Path.Combine(Application.dataPath, importedPath),
+						Application.dataPath,
+						Path.GetFileName(importedPath),
+						string.Empty,
+						importedPath,
+						AssetDatabase.AssetPathToGUID(importedPath),
+						AssetGraphInternalFunctions.GetAssetType(importedPath)
+					)
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, Out);
-		// do nothing in this test yet.
+		Debug.Log("passed _0_4_SetupPrefabricator");
 	}
 	public void _0_5_RunPrefabricator () {
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByImporter(
-				"traceId_0_5_RunPrefabricator",
-				Path.Combine(Application.dataPath, importedPath),
-				Application.dataPath,
-				Path.GetFileName(importedPath),
-				string.Empty,
-				importedPath,
-				AssetDatabase.AssetPathToGUID(importedPath),
-				AssetGraphInternalFunctions.GetAssetType(importedPath)
-			)
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByImporter(
+						"traceId_0_5_RunPrefabricator",
+						Path.Combine(Application.dataPath, importedPath),
+						Application.dataPath,
+						Path.GetFileName(importedPath),
+						string.Empty,
+						importedPath,
+						AssetDatabase.AssetPathToGUID(importedPath),
+						AssetGraphInternalFunctions.GetAssetType(importedPath)
+					)
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, Out);
@@ -224,6 +251,7 @@ public partial class Test {
 			// a.png
 			// material.mat
 			// prefab.prefab
+			Debug.Log("passed _0_5_RunPrefabricator");
 			return;
 		}
 
@@ -233,50 +261,59 @@ public partial class Test {
 	public void _0_6_SetupBundlizer () {
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByImporter(
-				"traceId_0_6_SetupBundlizer",
-				Path.Combine(Application.dataPath, importedPath),
-				Application.dataPath,
-				Path.GetFileName(importedPath),
-				string.Empty,
-				importedPath,
-				AssetDatabase.AssetPathToGUID(importedPath),
-				AssetGraphInternalFunctions.GetAssetType(importedPath)
-			)
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByImporter(
+						"traceId_0_6_SetupBundlizer",
+						Path.Combine(Application.dataPath, importedPath),
+						Application.dataPath,
+						Path.GetFileName(importedPath),
+						string.Empty,
+						importedPath,
+						AssetDatabase.AssetPathToGUID(importedPath),
+						AssetGraphInternalFunctions.GetAssetType(importedPath)
+					)
+				}
+
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sBundlizer = new SampleBundlizer_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, Out);
-		// do nothing in this test yet.
+		Debug.Log("passed _0_6_SetupBundlizer");
 	}
 	public void _0_7_RunBundlizer () {
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
-		var source = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataByImporter(
-				"traceId_0_7_RunBundlizer",
-				Path.Combine(Application.dataPath, importedPath),
-				Application.dataPath,
-				Path.GetFileName(importedPath),
-				string.Empty,
-				importedPath,
-				AssetDatabase.AssetPathToGUID(importedPath),
-				AssetGraphInternalFunctions.GetAssetType(importedPath)
-			)
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByImporter(
+						"traceId_0_7_RunBundlizer",
+						Path.Combine(Application.dataPath, importedPath),
+						Application.dataPath,
+						Path.GetFileName(importedPath),
+						string.Empty,
+						importedPath,
+						AssetDatabase.AssetPathToGUID(importedPath),
+						AssetGraphInternalFunctions.GetAssetType(importedPath)
+					)
+				}
+			}
 		};
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sBundlizer = new SampleBundlizer_0();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
-			results[connectionId] = output;
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+			results[connectionId] = output["0"];
 		};
 
 		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, Out);
@@ -284,6 +321,7 @@ public partial class Test {
 		var currentOutputs = results["CONNECTION_0_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
 			// a.bundle
+			Debug.Log("passed _0_7_RunBundlizer");
 			return;
 		}
 		
@@ -305,6 +343,7 @@ public partial class Test {
 		
 		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict);
 		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
+			Debug.Log("passed _0_8_0_SerializeGraph_hasValidEndpoint");
 			return;
 		}
 
@@ -331,7 +370,7 @@ public partial class Test {
 		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 		var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-		var resultDict = new Dictionary<string, List<InternalAssetData>>();
+		var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict);
 		
 		if (orderedConnectionIds.Count == 0) {
@@ -341,6 +380,7 @@ public partial class Test {
 
 		if (orderedConnectionIds[0] == "ローダーからフィルタへ" &&
 			orderedConnectionIds[1] == "フィルタからインポータへ") {
+			Debug.Log("passed _0_8_1_SerializeGraph_hasValidOrder");
 			return;
 		}
 
@@ -368,6 +408,7 @@ public partial class Test {
 			File.Exists(Path.Combine(expectedExportDestPath, "sample.fbx")) &&
 			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
 		) {
+			Debug.Log("passed _0_9_RunStackedGraph");
 			return;
 		}
 
@@ -390,18 +431,21 @@ public partial class Test {
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
 		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 
-		var exportTargets = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
+		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
+				}
+			}
 		};
 		
-		var integratedScriptExporter = new IntegratedScriptExporter();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
+		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
 			
 		};
 
-		integratedScriptExporter.exportFilePath = exportFilePath;
 		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, Out);
-		// nothing for check yet.
+		Debug.Log("passed _0_10_SetupExporter");
 	}
 
 	public void _0_11_RunExporter () {
@@ -419,21 +463,25 @@ public partial class Test {
 		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
 		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
 		
-		var exportTargets = new List<InternalAssetData>{
-			InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
+		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(importedPath, assetId, assetType),
+				}
+			}
 		};
 		
-		var integratedScriptExporter = new IntegratedScriptExporter();
-		Action<string, string, List<InternalAssetData>> Out = (string nodeId, string connectionId, List<InternalAssetData> output) => {
+		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
+		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
 			
 		};
 
-		integratedScriptExporter.exportFilePath = exportFilePath;
 		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, Out);
 
 		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
 
 		if (File.Exists(assumeedExportedFilePath)) {
+			Debug.Log("passed _0_11_RunExporter");
 			return;
 		}
 
@@ -460,6 +508,7 @@ public partial class Test {
 		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara0/chara0.assetbundle");
 		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara1/chara1.assetbundle");
 		if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
+			Debug.Log("passed _0_12_RunStackedGraph_FullStacked");
 			return;
 		}
 
@@ -487,6 +536,7 @@ public partial class Test {
 		}
 
 		if (resultDict.Count == 11) {
+			Debug.Log("passed _0_13_SetupStackedGraph_FullStacked");
 			return;
 		}
 
@@ -516,6 +566,8 @@ public partial class Test {
 				Debug.Log("connectionId:" + connectionId + " is empty.");
 			}
 		}
+
+		Debug.Log("passed _0_14_SetupStackedGraph_Sample");
 	}
 
 	public void _0_15_RunStackedGraph_Sample () {
@@ -542,6 +594,7 @@ public partial class Test {
 			File.Exists(the1stBundlePath) && 
 			File.Exists(the2ndBundlePath) &&
 			File.Exists(soundBundlePath)) {
+			Debug.Log("passed _0_15_RunStackedGraph_Sample");
 			return;
 		}
 

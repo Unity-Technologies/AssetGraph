@@ -6,47 +6,61 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class FilterBase : INodeBase {
-		public void Setup (string nodeId, string noUseLabel, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
-			var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
-			
-			Action<string, List<string>> _PreOutput = (string label, List<string> outputSources) => {
-				var outputs = new List<InternalAssetData>();
-				foreach (var outputSource in outputSources) {
-					foreach (var inputSource in inputSources) {
-						if (outputSource == inputSource.absoluteSourcePath) {
-							outputs.Add(inputSource);
+		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			foreach (var groupKey in groupedSources.Keys) {
+
+				var outputDict = new Dictionary<string, List<InternalAssetData>>();
+
+				var inputSources = groupedSources[groupKey];
+				var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
+				
+				Action<string, List<string>> _PreOutput = (string label, List<string> outputSources) => {
+					var outputs = new List<InternalAssetData>();
+					foreach (var outputSource in outputSources) {
+						foreach (var inputSource in inputSources) {
+							if (outputSource == inputSource.absoluteSourcePath) {
+								outputs.Add(inputSource);
+							}
 						}
 					}
-				}
 
-				Output(nodeId, label, outputs);
-			};
-			try {
-				In(absoluteSourcePaths, _PreOutput);
-			} catch (Exception e) {
-				Debug.LogError("Filter:" + this + " error:" + e);
+					outputDict[groupKey] = outputs;
+					Output(nodeId, label, outputDict);
+				};
+				try {
+					In(absoluteSourcePaths, _PreOutput);
+				} catch (Exception e) {
+					Debug.LogError("Filter:" + this + " error:" + e);
+				}
 			}
 		}
 		
-		public void Run (string nodeId, string noUseLabel, List<InternalAssetData> inputSources, Action<string, string, List<InternalAssetData>> Output) {
-			var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
-			
-			Action<string, List<string>> _Output = (string label, List<string> outputSources) => {
-				var outputs = new List<InternalAssetData>();
-				foreach (var outputSource in outputSources) {
-					foreach (var inputSource in inputSources) {
-						if (outputSource == inputSource.absoluteSourcePath) {
-							outputs.Add(inputSource);
+		public void Run (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			foreach (var groupKey in groupedSources.Keys) {
+				var outputDict = new Dictionary<string, List<InternalAssetData>>();
+
+				var inputSources = groupedSources[groupKey];
+				
+				var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
+				
+				Action<string, List<string>> _Output = (string label, List<string> outputSources) => {
+					var outputs = new List<InternalAssetData>();
+					foreach (var outputSource in outputSources) {
+						foreach (var inputSource in inputSources) {
+							if (outputSource == inputSource.absoluteSourcePath) {
+								outputs.Add(inputSource);
+							}
 						}
 					}
-				}
 
-				Output(nodeId, label, outputs);
-			};
-			try {
-				In(absoluteSourcePaths, _Output);
-			} catch (Exception e) {
-				Debug.LogError("Filter:" + this + " error:" + e);
+					outputDict[groupKey] = outputs;
+					Output(nodeId, label, outputDict);
+				};
+				try {
+					In(absoluteSourcePaths, _Output);
+				} catch (Exception e) {
+					Debug.LogError("Filter:" + this + " error:" + e);
+				}
 			}
 		}
 

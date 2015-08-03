@@ -181,7 +181,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						EditorGUILayout.LabelField("kind", "Filter:filtering files by script.");
 						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
-						Debug.LogError("既存のポイントの情報を表示しよう。");
+
+						var outputPointLabels = node.OutputPointLabels();
+						EditorGUILayout.LabelField("connectionPoints Count", outputPointLabels.Count.ToString());
+						
+						foreach (var label in outputPointLabels) {
+							EditorGUILayout.LabelField("label", label);
+						}
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
@@ -273,7 +279,11 @@ namespace AssetGraph {
 					}
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						EditorGUILayout.LabelField("kind", "Grouping:grouping files by one keyword.");
-						Debug.LogError("グルーピング、設定項目一個だけなので、まあ足そう。groupingKeyword");
+						var groupingKeyword = EditorGUILayout.TextField("groupingKeyword", node.groupingKeyword);
+						if (groupingKeyword != node.groupingKeyword) {
+							node.groupingKeyword = groupingKeyword;
+							node.Save();
+						}
 						break;
 					}
 					

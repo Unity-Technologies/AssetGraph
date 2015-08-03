@@ -11,7 +11,7 @@ public class FilterAllResources : AssetGraph.FilterBase {
 		// source:/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample/models/0/sample.fbx
 		// source:/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample/models/1/sample.fbx
 		// source:/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample/ses/crank_ringtone.mp3
-
+		
 		var images = new List<string>();
 		var models = new List<string>();
 		var bgms = new List<string>();

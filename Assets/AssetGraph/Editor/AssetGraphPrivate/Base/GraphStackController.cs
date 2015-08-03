@@ -29,11 +29,15 @@ namespace AssetGraph {
 			}
 
 			var labels = new List<string>();
-			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
+			Action<string, string, Dictionary<string, List<InternalAssetData>>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> source) => {
 				labels.Add(connectionLabel);
 			};
 
-			((FilterBase)nodeScriptInstance).Setup("GetLabelsFromSetupFilter_dummy_nodeId", string.Empty, new List<InternalAssetData>(), Output);
+			((FilterBase)nodeScriptInstance).Setup("GetLabelsFromSetupFilter_dummy_nodeId", string.Empty, 
+				new Dictionary<string, List<InternalAssetData>>{
+					{"0", new List<InternalAssetData>()}
+				},
+			Output);
 			return labels;
 
 		}
@@ -91,11 +95,15 @@ namespace AssetGraph {
 							}
 
 							var latestLabels = new HashSet<string>();
-							Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
+							Action<string, string, Dictionary<string, List<InternalAssetData>>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> source) => {
 								latestLabels.Add(connectionLabel);
 							};
 
-							((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, new List<InternalAssetData>(), Output);
+							((FilterBase)nodeScriptInstance).Setup(nodeId, string.Empty, 
+								new Dictionary<string, List<InternalAssetData>>{
+									{"0", new List<InternalAssetData>()}
+								},
+							Output);
 
 							if (!outoutLabelsSet.SetEquals(latestLabels)) {
 								changed = true;
@@ -222,7 +230,7 @@ namespace AssetGraph {
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
 				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
@@ -231,8 +239,8 @@ namespace AssetGraph {
 			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
 
 			foreach (var key in resultDict.Keys) {
-				var assetDataList = resultDict[key];
-				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataList);
+				var assetDataDictList = resultDict[key];
+				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataDictList);
 			}
 
 			return resultConnectionSourcesDict;
@@ -248,7 +256,7 @@ namespace AssetGraph {
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-			var resultDict = new Dictionary<string, List<InternalAssetData>>();
+			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
 				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, updateHandler);
@@ -257,24 +265,26 @@ namespace AssetGraph {
 			var resultConnectionSourcesDict = new Dictionary<string, List<string>>();
 
 			foreach (var key in resultDict.Keys) {
-				var assetDataList = resultDict[key];
-				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataList);
+				var assetDataDictList = resultDict[key];
+				resultConnectionSourcesDict[key] = GetResourcePathList(assetDataDictList);
 			}
 
 			return resultConnectionSourcesDict;
 		}
 
-		private static List<string> GetResourcePathList (List<InternalAssetData> assetDatas) {
+		private static List<string> GetResourcePathList (Dictionary<string, List<InternalAssetData>> assetDataDictList) {
 			var sourcePathList = new List<string>();
 
-			foreach (var assetData in assetDatas) {
-				if (assetData.absoluteSourcePath != null) {
-					sourcePathList.Add(assetData.absoluteSourcePath);
-				} else {
-					sourcePathList.Add(assetData.pathUnderConnectionId);
+			foreach (var assetDatas in assetDataDictList.Values) {
+				foreach (var assetData in assetDatas) {
+					if (assetData.absoluteSourcePath != null) {
+						sourcePathList.Add(assetData.absoluteSourcePath);
+					} else {
+						sourcePathList.Add(assetData.pathUnderConnectionId);
+					}
 				}
 			}
-
+			
 			return sourcePathList;
 		}
 		
@@ -399,8 +409,7 @@ namespace AssetGraph {
 			string endNodeId, 
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connections, 
-			Dictionary<string, 
-			List<InternalAssetData>> resultDict
+			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict
 		) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, false);
 
@@ -415,8 +424,7 @@ namespace AssetGraph {
 			string endNodeId, 
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connections, 
-			Dictionary<string, 
-			List<InternalAssetData>> resultDict,
+			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict,
 			Action<string, float> updateHandler=null
 		) {
 			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true, updateHandler);
@@ -431,8 +439,7 @@ namespace AssetGraph {
 			string nodeId, 
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connectionDatas, 
-			Dictionary<string, 
-			List<InternalAssetData>> resultDict, 
+			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict, 
 			bool isActualRun,
 			Action<string, float> updateHandler=null
 		) {
@@ -450,6 +457,11 @@ namespace AssetGraph {
 			foreach (var parentNodeId in parentNodeIds) {
 				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun, updateHandler);
 			}
+
+			/*
+				run after parent run.
+			*/
+
 
 			var connectionLabelsFromThisNodeToChildNode = connectionDatas
 				.Where(con => con.fromNodeId == nodeId)
@@ -475,7 +487,7 @@ namespace AssetGraph {
 			var nodeName = currentNodeData.nodeName;
 			var nodeKind = currentNodeData.nodeKind;
 			
-			var inputParentResults = new List<InternalAssetData>();
+			var inputParentResults = new Dictionary<string, List<InternalAssetData>>();
 			
 			var receivingConnectionIds = connectionDatas
 				.Where(con => con.toNodeId == nodeId)
@@ -488,10 +500,13 @@ namespace AssetGraph {
 					continue;
 				}
 				var result = resultDict[connecionId];
-				inputParentResults.AddRange(result);
+				foreach (var groupKey in result.Keys) {
+					if (!inputParentResults.ContainsKey(groupKey)) inputParentResults[groupKey] = new List<InternalAssetData>();
+					inputParentResults[groupKey].AddRange(result[groupKey]);	
+				}
 			}
 
-			Action<string, string, List<InternalAssetData>> Output = (string dataSourceNodeId, string connectionLabel, List<InternalAssetData> source) => {
+			Action<string, string, Dictionary<string, List<InternalAssetData>>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> result) => {
 				var targetConnectionIds = connectionDatas
 					.Where(con => con.fromNodeId == dataSourceNodeId) // from this node
 					.Where(con => con.connectionLabel == connectionLabel) // from this label
@@ -504,14 +519,20 @@ namespace AssetGraph {
 				}
 				
 				var targetConnectionId = targetConnectionIds[0];
-				resultDict[targetConnectionId] = source;
+				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
+				
+				var connectionResult = resultDict[targetConnectionId];
+
+				foreach (var groupKey in result.Keys) {
+					if (!connectionResult.ContainsKey(groupKey)) connectionResult[groupKey] = new List<InternalAssetData>();
+					connectionResult[groupKey].AddRange(result[groupKey]);
+				}
 			};
 
 			if (isActualRun) {
 				switch (nodeKind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = new IntegratedScriptLoader();
-						executor.loadFilePath = currentNodeData.loadFilePath;
+						var executor = new IntegratedScriptLoader(currentNodeData.loadFilePath);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -540,8 +561,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = new IntegratedScriptExporter();
-						executor.exportFilePath = currentNodeData.exportFilePath;
+						var executor = new IntegratedScriptExporter(currentNodeData.exportFilePath);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -594,8 +614,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var executor = new IntegratedGUIExporter();
-						executor.exportFilePath = currentNodeData.exportFilePath;
+						var executor = new IntegratedGUIExporter(currentNodeData.exportFilePath);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -611,8 +630,7 @@ namespace AssetGraph {
 						Script version
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = new IntegratedScriptLoader();
-						executor.loadFilePath = currentNodeData.loadFilePath;
+						var executor = new IntegratedScriptLoader(currentNodeData.loadFilePath);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -641,8 +659,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = new IntegratedScriptExporter();
-						executor.exportFilePath = currentNodeData.exportFilePath;
+						var executor = new IntegratedScriptExporter(currentNodeData.exportFilePath);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -695,8 +712,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var executor = new IntegratedGUIExporter();
-						executor.exportFilePath = currentNodeData.exportFilePath;
+						var executor = new IntegratedGUIExporter(currentNodeData.exportFilePath);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}

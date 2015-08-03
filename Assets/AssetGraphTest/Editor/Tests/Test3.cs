@@ -32,12 +32,13 @@ public partial class Test {
 		var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 		var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-		var resultDict = new Dictionary<string, List<InternalAssetData>>();
+		var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 		foreach (var endNodeId in endpointNodeIds) {
 			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 		}
 
 		// resultDictのチェックをすればよさげなのだが、記録が残しにくい、、
+		Debug.LogError("今ならできるな");
 	}
 }
