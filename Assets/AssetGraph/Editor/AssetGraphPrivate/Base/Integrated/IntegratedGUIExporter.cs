@@ -13,8 +13,7 @@ namespace AssetGraph {
 		}
 		
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			Debug.LogWarning("Exporter setup, まだ何もしない。フォルダに何かある場合それをリストアップ、くらいはしてもいいのかもしれない。");
-			Debug.LogWarning("その素材がimported ~ prefabricatedの間のノードを通ってる場合のみ扱える。っていうの明示したほうがいい気がする。そこからしかつなげない、っていうのがあればいいよな。");
+			// do nothing.
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {

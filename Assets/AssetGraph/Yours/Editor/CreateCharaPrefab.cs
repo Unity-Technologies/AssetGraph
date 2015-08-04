@@ -7,16 +7,6 @@ using System.Collections.Generic;
 
 public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
 	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
-		var searchIdStr = "/ID_" + groupKey + "/";
-
-		var currentCharaAssets = new List<AssetGraph.AssetInfo>();
-		foreach (var assetInfo in source) {
-			// Assets/AssetGraph/Temp/Imported/モデルを読み込む/models/ID_0/Materials/kiosk_0001.mat
-			if (assetInfo.assetPath.Contains(searchIdStr)) {
-				currentCharaAssets.Add(assetInfo);
-			}
-		}
-
 		/*
 			create character's prefab.
 
@@ -29,7 +19,7 @@ public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
 		Texture2D charaTex = null;
 		Material charaMat = null;
 		GameObject charaModel = null;
-		foreach (var assetInfo in currentCharaAssets) {
+		foreach (var assetInfo in source) {
 			if (assetInfo.assetType == typeof(Texture2D)) charaTex = AssetDatabase.LoadAssetAtPath(assetInfo.assetPath, assetInfo.assetType) as Texture2D;
 			if (assetInfo.assetType == typeof(Material)) charaMat = AssetDatabase.LoadAssetAtPath(assetInfo.assetPath, assetInfo.assetType) as Material;
 			if (assetInfo.assetType == typeof(GameObject)) charaModel = AssetDatabase.LoadAssetAtPath(assetInfo.assetPath, assetInfo.assetType) as GameObject;
@@ -46,13 +36,9 @@ public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
 
 		var meshRenderer = modelObj.GetComponentInChildren<MeshRenderer>();
 		meshRenderer.material = charaMat;
-
-		// create directory for prefab.
-		var targetPrefabBasePath = Path.Combine(recommendedPrefabOutputDir, "ID_" + groupKey + "/");
-		Directory.CreateDirectory(targetPrefabBasePath);
-
+		
 		// create prefab replacable file.
-		var prefabOutputPath = Path.Combine(targetPrefabBasePath, "chara.prefab");
+		var prefabOutputPath = Path.Combine(recommendedPrefabOutputDir, groupKey + "_chara.prefab");
 		var prefabFile = PrefabUtility.CreateEmptyPrefab(prefabOutputPath);
 		
 		// export prefab data.

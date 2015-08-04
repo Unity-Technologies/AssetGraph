@@ -28,7 +28,7 @@ namespace AssetGraph {
 							break;
 						}
 						case 1: {
-							Debug.Log("sample already exist:" + filesInSampling[0]);
+							Debug.Log("sampling over. sample:" + filesInSampling[0]);
 							first = false;
 							break;
 						}
@@ -203,7 +203,7 @@ namespace AssetGraph {
 		}
 		
 		public Type AssumeTypeFromExtension () {
-			Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、2");
+			// Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、2");
 			return typeof(UnityEngine.Object);
 		}
 

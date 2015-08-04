@@ -447,9 +447,10 @@ namespace AssetGraph {
 				if (targetNodes.Any()) {
 					targetNodes.ForEach(
 						node => {
-							Debug.LogWarning("うーーん、動作中はGUI止まっちゃうので、非同期にするとかyield挟むとかしないとダメっぽいな。AssetRailsのWebSocketで云々のアプローチはあれはあれでよかった。");
+							// Debug.LogWarning("うーーん、動作中はGUI止まっちゃうので、非同期にするとかyield挟むとかしないとダメっぽいな。AssetRailsのWebSocketで云々のアプローチはあれはあれでよかった。");
 							// if (progress == 0f) node.ShowProgress();
 							// node.SetProgress(progress);
+							// Repaint();
 						}
 					);
 				}

@@ -7,20 +7,10 @@ using System.Collections.Generic;
 
 public class CreateCharaBundle : AssetGraph.BundlizerBase {
 	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedBundleOutputDir) {
-		var searchIdStr = "/ID_" + groupkey + "/";
-
-		var currentCharaAssets = new List<AssetGraph.AssetInfo>();
-		foreach (var assetInfo in source) {
-			// Assets/AssetGraph/Temp/Imported/モデルを読み込む/models/ID_0/Materials/kiosk_0001.mat
-			if (assetInfo.assetPath.Contains(searchIdStr)) {
-				currentCharaAssets.Add(assetInfo);
-			}
-		}
-
-		var mainAssetInfo = currentCharaAssets[0];
+		var mainAssetInfo = source[0];
 		var mainAsset = AssetDatabase.LoadAssetAtPath(mainAssetInfo.assetPath, mainAssetInfo.assetType) as UnityEngine.Object;
 
-		var sunAssetInfos = currentCharaAssets.GetRange(1, currentCharaAssets.Count-1);
+		var sunAssetInfos = source.GetRange(1, source.Count-1);
 		var subAssets = new List<UnityEngine.Object>();
 
 		foreach (var subAssetInfo in sunAssetInfos) {

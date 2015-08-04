@@ -158,17 +158,18 @@ namespace AssetGraph {
 				var node = ((NodeInspector)target).node;
 				if (node == null) return;
 
-				var newName = EditorGUILayout.TextField("name", node.name);
-				if (newName != node.name) {
-					node.name = newName;
-					node.Save();
-				}
-
+				
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						EditorGUILayout.LabelField("kind", "Loader:load files from path.");
-						var newLoadPath = EditorGUILayout.TextField("loadPath", node.loadPath);
+						EditorGUILayout.HelpBox("Loader: load files from path.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						var newLoadPath = EditorGUILayout.TextField("Load Path", node.loadPath);
 						if (newLoadPath != node.loadPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 							node.loadPath = newLoadPath;
@@ -179,8 +180,14 @@ namespace AssetGraph {
 
 
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						EditorGUILayout.LabelField("kind", "Filter:filtering files by script.");
-						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						EditorGUILayout.HelpBox("Filter: filtering files by script.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 
 						var outputPointLabels = node.OutputPointLabels();
 						EditorGUILayout.LabelField("connectionPoints Count", outputPointLabels.Count.ToString());
@@ -191,7 +198,13 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						EditorGUILayout.LabelField("kind", "Filter:filtering files by keywords.");
+						EditorGUILayout.HelpBox("Filter: filtering files by keywords.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
 						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 							GUILayout.BeginHorizontal();
 							{
@@ -200,7 +213,7 @@ namespace AssetGraph {
 									node.UpdateOutputPoints();
 									node.Save();
 								} else {
-									var newContainsKeyword = EditorGUILayout.TextField("contains", node.filterContainsKeywords[i]);
+									var newContainsKeyword = EditorGUILayout.TextField("Contains", node.filterContainsKeywords[i]);
 									if (newContainsKeyword != node.filterContainsKeywords[i]) {
 										node.filterContainsKeywords[i] = newContainsKeyword;
 										node.UpdateOutputPoints();
@@ -219,12 +232,24 @@ namespace AssetGraph {
 
 
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-						EditorGUILayout.LabelField("kind", "Importer:import files by script.");
-						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						EditorGUILayout.HelpBox("Importer: import files by script.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						EditorGUILayout.LabelField("kind", "Importer:import files then apply settings from SamplingAssets.");
+						EditorGUILayout.HelpBox("Importer: import files with applying settings from SamplingAssets.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
 						var nodeId = node.id;
 
 						var noFilesFound = false;
@@ -261,11 +286,11 @@ namespace AssetGraph {
 						}
 
 						if (noFilesFound) {
-							EditorGUILayout.LabelField("samplingAsset", "no asset found. please Reload first.");
+							EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
 						}
 
 						if (tooManyFilesFound) {
-							EditorGUILayout.LabelField("samplingAsset", "too many assets found. please delete file at:" + samplingPath);
+							EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete file at:" + samplingPath);
 						}
 
 						break;
@@ -273,13 +298,20 @@ namespace AssetGraph {
 
 
 					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT: {
-						EditorGUILayout.LabelField("kind", "Grouping:grouping files by script.");
-						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						Debug.LogError("まだ存在してない。");
+						// EditorGUILayout.LabelField("kind", "Grouping:grouping files by script.");
+						// EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						EditorGUILayout.LabelField("kind", "Grouping:grouping files by one keyword.");
-						var groupingKeyword = EditorGUILayout.TextField("groupingKeyword", node.groupingKeyword);
+						EditorGUILayout.HelpBox("Grouping: grouping files by one keyword.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", node.groupingKeyword);
 						if (groupingKeyword != node.groupingKeyword) {
 							node.groupingKeyword = groupingKeyword;
 							node.Save();
@@ -289,13 +321,26 @@ namespace AssetGraph {
 					
 
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						EditorGUILayout.LabelField("kind", "Prefabricator:generate prefab by script.");
-						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						EditorGUILayout.LabelField("Script Path", node.scriptPath);
+						Debug.LogError("うーんType指定のほうが楽だね");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-						EditorGUILayout.LabelField("kind", "Prefabricator:generate prefab by script.");
-						var newScriptType = EditorGUILayout.TextField("scriptType", node.scriptType);
+						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
 						if (newScriptType != node.scriptType) {
 							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
 							node.scriptType = newScriptType;
@@ -306,13 +351,27 @@ namespace AssetGraph {
 
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						EditorGUILayout.LabelField("kind", "Bundlizer:generate AssetBundle by script.");
-						EditorGUILayout.LabelField("scriptPath", node.scriptPath);
+						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						EditorGUILayout.LabelField("Script Path", node.scriptPath);
+						Debug.LogError("Type指定のほうがいいだろうね。");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						EditorGUILayout.LabelField("kind", "Bundlizer:generate AssetBundle by script.");
-						var newScriptType = EditorGUILayout.TextField("scriptType", node.scriptType);
+						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
+						Debug.LogError("ここは消せる、Scriptの代わりに、名前指定のパラメータが必須。フォーマットはA*B");
 						if (newScriptType != node.scriptType) {
 							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
 							node.scriptType = newScriptType;
@@ -324,8 +383,14 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						EditorGUILayout.LabelField("kind", "Exporter:export files to path.");
-						var newExportPath = EditorGUILayout.TextField("exportPath", node.exportPath);
+						EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.Save();
+						}
+
+						var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath);
 						if (newExportPath != node.exportPath) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 							node.exportPath = newExportPath;

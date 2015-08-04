@@ -72,15 +72,15 @@ namespace AssetGraph {
 					count += list.Count;
 				}
 
-				EditorGUILayout.LabelField("connectionId:" + con.connectionId, "totalCount:" + count.ToString());
+				EditorGUILayout.LabelField("Total:" + count.ToString(), "");
 
 				foreach (var groupKey in throughputListDict.Keys) {
 					var list = throughputListDict[groupKey];
-					EditorGUILayout.LabelField("groupKey:" + groupKey, "groupCount:" + list.Count.ToString());
+					EditorGUILayout.LabelField("Group Key:" + groupKey, "");
 
 					for (var i = 0; i < list.Count; i++) {
 						var sourceStr = list[i];
-						EditorGUILayout.LabelField((i + 1).ToString(), sourceStr);
+						EditorGUILayout.LabelField(" "+ sourceStr);
 					}
 				}
 			}
