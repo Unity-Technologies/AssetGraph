@@ -200,8 +200,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
 
@@ -263,10 +262,23 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						var bundleNameTemplate = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as string;
+						var newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, name, id, kind, bundleNameTemplate, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						
 						var newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, name, id, kind, exportPath, x, y);
 
 						nodes.Add(newNode);
@@ -366,10 +378,14 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
 						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate;
 						break;
 					}
 
@@ -683,13 +699,21 @@ namespace AssetGraph {
 					break;
 				}
 				
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
 					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					
+					break;
+				}
+
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));

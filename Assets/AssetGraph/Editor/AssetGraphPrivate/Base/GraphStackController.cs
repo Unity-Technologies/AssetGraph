@@ -123,10 +123,9 @@ namespace AssetGraph {
 					}
 
 					/*
-						GUI node with script.
+						prefabricator GUI node with script.
 					*/
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 						if (string.IsNullOrEmpty(scriptType)) {
 							Debug.LogWarning("node:" + kind + ", script path is empty, please set prefer script to node:" + nodeName);
@@ -137,6 +136,15 @@ namespace AssetGraph {
 						
 						// warn if no class found.
 						if (nodeScriptInstance == null) Debug.LogWarning("no class found:" + scriptType + ", please set prefer script to node:" + nodeName);
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						var bundleNameTemplate = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as string;
+						if (string.IsNullOrEmpty(bundleNameTemplate)) {
+							Debug.LogWarning("node:" + kind + ", bundleNameTemplate is empty, please set prefer bundleNameTemplate to node:" + nodeName);
+							break;
+						}
 						break;
 					}
 
@@ -321,13 +329,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null, null, null));
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null, null, null));
 						break;
 					}
 
@@ -338,10 +346,9 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null, null, null));
 						break;
 					}
 
@@ -351,18 +358,24 @@ namespace AssetGraph {
 						foreach (var containsKeywordSource in containsKeywordsSource) {
 							containsKeywords.Add(containsKeywordSource.ToString());
 						}
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords, null, null));
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, null));
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var groupingKeyword = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, groupingKeyword));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, groupingKeyword, null));
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						var bundleNameTemplate = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as string;
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, bundleNameTemplate));
 						break;
 					}
 
@@ -442,7 +455,7 @@ namespace AssetGraph {
 
 			var currentNodeData = currentNodeDatas[0];
 
-			if (currentNodeData.IsAlreadyDone()) return;
+			if (currentNodeData.IsAlreadyCached()) return;
 
 			/*
 				run parent nodes of this node.
@@ -598,11 +611,11 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var scriptType = currentNodeData.scriptType;
-						if (string.IsNullOrEmpty(scriptType)) {
-							throw new Exception("failed to detect bundlizer class at node:" + nodeName + ", maybe script are empty or not matched. please set valid script.");
+						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
+						if (string.IsNullOrEmpty(bundleNameTemplate)) {
+							throw new Exception("failed to set bundleNameTemplate at node:" + nodeName + ", maybe script are empty or not matched. please set valid bundleNameTemplate.");
 						}
-						var executor = Executor<BundlizerBase>(scriptType);
+						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -696,11 +709,11 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var scriptType = currentNodeData.scriptType;
-						if (string.IsNullOrEmpty(scriptType)) {
-							throw new Exception("failed to detect bundlizer class at node:" + nodeName + ", maybe script are empty or not matched. please set valid script.");
+						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
+						if (string.IsNullOrEmpty(bundleNameTemplate)) {
+							throw new Exception("failed to set bundleNameTemplate at node:" + nodeName + ", maybe script are empty or not matched. please set valid bundleNameTemplate.");
 						}
-						var executor = Executor<BundlizerBase>(scriptType);
+						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -718,7 +731,7 @@ namespace AssetGraph {
 				}
 			}
 
-			currentNodeData.Done();
+			currentNodeData.Cached();
 			if (updateHandler != null) updateHandler(nodeId, 1f);
 		}
 
@@ -752,7 +765,10 @@ namespace AssetGraph {
 		// for importer GUI data
 		public readonly string groupingKeyword;
 
-		private bool done;
+		// for bundlizer GUI data
+		public readonly string bundleNameTemplate;
+
+		private bool cached;
 
 		public NodeData (
 			string currentNodeId, 
@@ -762,29 +778,29 @@ namespace AssetGraph {
 			string loadPath,
 			string exportPath,
 			List<string> filterContainsList,
-			string groupingKeyword
+			string groupingKeyword,
+			string bundleNameTemplate
 		) {
 			this.nodeId = currentNodeId;
 			this.nodeKind = currentNodeKind;
 			this.nodeName = nodeName;
 			
+			this.scriptType = null;
+			this.loadFilePath = null;
+			this.exportFilePath = null;
+			this.containsKeywords = null;
+			this.groupingKeyword = null;
+			this.bundleNameTemplate = null;
+
 			switch (currentNodeKind) {
 				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					this.scriptType = null;
 					this.loadFilePath = loadPath;
-					this.exportFilePath = null;
-					this.containsKeywords = null;
-					this.groupingKeyword = null;
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					this.scriptType = null;
-					this.loadFilePath = null;
 					this.exportFilePath = exportPath;
-					this.containsKeywords = null;
-					this.groupingKeyword = null;
 					break;
 				}
 
@@ -794,40 +810,28 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 					this.scriptType = scriptType;
-					this.loadFilePath = null;
-					this.exportFilePath = null;
-					this.containsKeywords = null;
-					this.groupingKeyword = null;
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
-					this.scriptType = null;
-					this.loadFilePath = null;
-					this.exportFilePath = null;
 					this.containsKeywords = filterContainsList;
-					this.groupingKeyword = null;
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					this.scriptType = null;
-					this.loadFilePath = null;
-					this.exportFilePath = null;
-					this.containsKeywords = null;
-					this.groupingKeyword = null;
+					// do nothing.
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-					this.scriptType = null;
-					this.loadFilePath = null;
-					this.exportFilePath = null;
-					this.containsKeywords = null;
 					this.groupingKeyword = groupingKeyword;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.bundleNameTemplate = bundleNameTemplate;
 					break;
 				}
 
@@ -842,12 +846,12 @@ namespace AssetGraph {
 			connectionDataOfParents.Add(new ConnectionData(connection));
 		}
 
-		public void Done () {
-			done = true;
+		public void Cached () {
+			cached = true;
 		}
 
-		public bool IsAlreadyDone () {
-			return done;
+		public bool IsAlreadyCached () {
+			return cached;
 		}
 	}
 

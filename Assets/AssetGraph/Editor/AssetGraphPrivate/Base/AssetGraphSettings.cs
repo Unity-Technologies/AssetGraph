@@ -64,6 +64,7 @@ namespace AssetGraph {
 
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
+		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 
 		// connection const
 		public const string CONNECTION_LABEL = "label";

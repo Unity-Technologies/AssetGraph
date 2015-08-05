@@ -24,6 +24,7 @@ namespace AssetGraph {
 		public string exportPath;
 		public List<string> filterContainsKeywords;
 		public string groupingKeyword;
+		public string bundleNameTemplate;
 
 		private string nodeInterfaceTypeStr;
 
@@ -52,6 +53,7 @@ namespace AssetGraph {
 				null, 
 				null,
 				null,
+				null,
 				x,
 				y
 			);
@@ -70,6 +72,7 @@ namespace AssetGraph {
 				exportPath,
 				null,
 				null,
+				null,
 				x,
 				y
 			);
@@ -84,6 +87,7 @@ namespace AssetGraph {
 				kind,
 				scriptType,
 				scriptPath,
+				null,
 				null,
 				null,
 				null,
@@ -106,6 +110,7 @@ namespace AssetGraph {
 				null, 
 				filterContainsKeywords,
 				null,
+				null,
 				x,
 				y
 			);
@@ -122,6 +127,7 @@ namespace AssetGraph {
 				null,
 				null, 
 				null, 
+				null,
 				null,
 				null,
 				x,
@@ -142,11 +148,30 @@ namespace AssetGraph {
 				null, 
 				null,
 				groupingKeyword,
+				null,
 				x,
 				y
 			);
 		}
-		
+
+		public static Node GUINodeForBundlizer (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string bundleNameTemplate, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null,
+				null, 
+				null, 
+				null,
+				null,
+				bundleNameTemplate,
+				x,
+				y
+			);
+		}
 
 		/**
 			Inspector GUI for this node.
@@ -359,22 +384,19 @@ namespace AssetGraph {
 						}
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
-						Debug.LogError("Type指定のほうがいいだろうね。");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
+						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by template.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
 							node.Save();
 						}
 
-						var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
-						Debug.LogError("ここは消せる、Scriptの代わりに、名前指定のパラメータが必須。フォーマットはA*B");
-						if (newScriptType != node.scriptType) {
-							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
-							node.scriptType = newScriptType;
+						var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate);
+						if (bundleNameTemplate != node.bundleNameTemplate) {
+							node.bundleNameTemplate = bundleNameTemplate;
 							node.Save();
 						}
 						break;
@@ -437,6 +459,7 @@ namespace AssetGraph {
 			string exportPath, 
 			List<string> filterContainsKeywords, 
 			string groupingKeyword,
+			string bundleNameTemplate,
 			float x, 
 			float y
 		) {
@@ -452,6 +475,7 @@ namespace AssetGraph {
 			this.exportPath = exportPath;
 			this.filterContainsKeywords = filterContainsKeywords;
 			this.groupingKeyword = groupingKeyword;
+			this.bundleNameTemplate = bundleNameTemplate;
 			
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 			this.closeButtonRect = new Rect(0f, 0f, 18f, 18f);
