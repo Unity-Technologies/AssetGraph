@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class Node {
-		private Action<OnNodeEvent> Emit;
+		private readonly Action<OnNodeEvent> Emit;
 
 		private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
@@ -265,12 +265,12 @@ namespace AssetGraph {
 								}
 								case 1: {
 									var samplingAssetPath = samplingFiles[0];
-									EditorGUILayout.LabelField("SamplingAsset path", samplingAssetPath);
-									if (GUILayout.Button("modify SamplingAsset")) {
+									EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
+									if (GUILayout.Button("Modify SamplingAsset")) {
 										var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
 										Selection.activeObject = obj;
 									}
-									if (GUILayout.Button("clean SamplingAsset")) {
+									if (GUILayout.Button("Clean SamplingAsset")) {
 										var result = AssetDatabase.DeleteAsset(samplingAssetPath);
 										if (!result) Debug.LogError("failed to delete samplingAsset:" + samplingAssetPath);
 									}
@@ -642,7 +642,7 @@ namespace AssetGraph {
 			return targetPoints[0];
 		}
 
-		public void UpdateNodeRect () {
+		public void DrawNode () {
 			baseRect = GUI.Window(nodeWindowId, baseRect, UpdateNodeEvent, string.Empty, nodeInterfaceTypeStr);
 		}
 

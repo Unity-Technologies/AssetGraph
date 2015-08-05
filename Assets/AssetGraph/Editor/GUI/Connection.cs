@@ -9,19 +9,21 @@ namespace AssetGraph {
 		public readonly string label;
 		public readonly string connectionId;
 
-		public readonly string startPointInfo;
-		public readonly string endPointInfo;
-
 		public readonly Node startNode;
 		public readonly ConnectionPoint outputPoint;
 
 		public readonly Node endNode;
 		public readonly ConnectionPoint inputPoint;
 
+		private readonly Action<OnConnectionEvent> Emit;
+
 		public ConnectionInspector conInsp;
 
-		public static Connection LoadConnection (string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+		private string connectionButtonStyle;
+
+		public static Connection LoadConnection (Action<OnConnectionEvent> Emit, string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			return new Connection(
+				Emit,
 				label,
 				connectionId,
 				start,
@@ -31,8 +33,9 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Connection NewConnection (string label, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+		public static Connection NewConnection (Action<OnConnectionEvent> Emit, string label, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			return new Connection(
+				Emit,
 				label,
 				Guid.NewGuid().ToString(),
 				start,
@@ -42,7 +45,7 @@ namespace AssetGraph {
 			);
 		}
 
-		private Connection (string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+		private Connection (Action<OnConnectionEvent> Emit, string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			conInsp = ScriptableObject.CreateInstance<ConnectionInspector>();
 
 			this.label = label;
@@ -53,8 +56,8 @@ namespace AssetGraph {
 			this.endNode = end;
 			this.inputPoint = input;
 
-			this.startPointInfo = start.name + ":" + output.label;
-			this.endPointInfo = end.name + ":" + input.label;
+			this.Emit = Emit;
+			connectionButtonStyle = "sv_label_0";
 		}
 
 		/**
@@ -70,6 +73,10 @@ namespace AssetGraph {
 				var throughputListDict = ((ConnectionInspector)target).throughputListDict;
 				foreach (var list in throughputListDict.Values) {
 					count += list.Count;
+				}
+
+				if (GUILayout.Button("Delete Connection")) {
+					con.Delete();
 				}
 
 				EditorGUILayout.LabelField("Total:" + count.ToString(), "");
@@ -119,14 +126,26 @@ namespace AssetGraph {
 			}
 			var offsetSize = throughputCount.ToString().Length * 20f;
 			
-			var style = EditorStyles.label;
-			var defaultAlignment = style.alignment;
-			style.alignment = TextAnchor.MiddleCenter;
-			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f), throughputCount.ToString(), "sv_label_0")) {
+			// var style = EditorStyles.boldLabel;
+
+			// var defaultColor = style.normal.textColor;
+			// var defaultAlignment = style.alignment;
+			
+			// if (throughputCount == 0) {
+			// 	Debug.LogError("hahaa");
+			// 	style.normal.textColor = Color.red;
+			// }
+
+			// style.alignment = TextAnchor.MiddleCenter;
+			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f), throughputCount.ToString(), connectionButtonStyle)) {
+				Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
+
 				conInsp.UpdateCon(this, throughputListDict);
 				Selection.activeObject = conInsp;
 			}
-			style.alignment = defaultAlignment;
+			
+			// style.normal.textColor = defaultColor;
+			// style.alignment = defaultAlignment;
 		}
 
 		public bool IsStartAtConnectionPoint (ConnectionPoint p) {
@@ -147,6 +166,18 @@ namespace AssetGraph {
 				return true;
 			}
 			return false;
+		}
+
+		public void SetActive () {
+			connectionButtonStyle = "sv_label_1";
+		}
+
+		public void SetInactive () {
+			connectionButtonStyle = "sv_label_0";
+		}
+
+		public void Delete () {
+			Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_DELETED, this));
 		}
 	}
 

@@ -183,7 +183,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 
-						var newNode = Node.LoaderNode(EmitEvent, nodes.Count, name, id, kind, loadPath, x, y);
+						var newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, name, id, kind, loadPath, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -205,7 +205,7 @@ namespace AssetGraph {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
 
-						var newNode = Node.ScriptNode(EmitEvent, nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
+						var newNode = Node.ScriptNode(EmitNodeEvent, nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -224,7 +224,7 @@ namespace AssetGraph {
 							filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
 						}
 
-						var newNode = Node.GUINode(EmitEvent, nodes.Count, name, id, kind, filterContainsKeywords, x, y);
+						var newNode = Node.GUINode(EmitNodeEvent, nodes.Count, name, id, kind, filterContainsKeywords, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -237,7 +237,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, name, id, kind, x, y);
+						var newNode = Node.GUINodeForImport(EmitNodeEvent, nodes.Count, name, id, kind, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -251,7 +251,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var groupingKeyword = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as string;
-						var newNode = Node.GUINodeForGrouping(EmitEvent, nodes.Count, name, id, kind, groupingKeyword, x, y);
+						var newNode = Node.GUINodeForGrouping(EmitNodeEvent, nodes.Count, name, id, kind, groupingKeyword, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -267,7 +267,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
 						
-						var newNode = Node.ExporterNode(EmitEvent, nodes.Count, name, id, kind, exportPath, x, y);
+						var newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, name, id, kind, exportPath, x, y);
 
 						nodes.Add(newNode);
 						break;
@@ -308,7 +308,7 @@ namespace AssetGraph {
 				var endNode = endNodeCandidates[0];
 				var endPoint = endNode.ConnectionPointFromLabel(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL);
 
-				connections.Add(Connection.LoadConnection(label, connectionId, startNode, startPoint, endNode, endPoint));
+				connections.Add(Connection.LoadConnection(EmitConnectionEvent, label, connectionId, startNode, startPoint, endNode, endPoint));
 			}
 		}
 
@@ -491,11 +491,11 @@ namespace AssetGraph {
 			EditorGUILayout.EndHorizontal();
 
 
-			// update node window x N
+			// draw node window x N
 			{
 				BeginWindows();
 				
-				nodes.ForEach(node => node.UpdateNodeRect());
+				nodes.ForEach(node => node.DrawNode());
 
 				EndWindows();
 			}
@@ -613,7 +613,7 @@ namespace AssetGraph {
 			Node newNode = null;
 			if (scriptBaseType == typeof(FilterBase)) {
 				var kind = AssetGraphSettings.NodeKind.FILTER_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitNodeEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				
 				// add output point to this node.
 				// setup this filter then add output point by result of setup.
@@ -626,19 +626,19 @@ namespace AssetGraph {
 			}
 			if (scriptBaseType == typeof(ImporterBase)) {
 				var kind = AssetGraphSettings.NodeKind.IMPORTER_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitNodeEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitNodeEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			if (scriptBaseType == typeof(BundlizerBase)) {
 				var kind = AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT;
-				newNode = Node.ScriptNode(EmitEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.ScriptNode(EmitNodeEvent, nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
@@ -658,26 +658,26 @@ namespace AssetGraph {
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
+					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
+					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					newNode = Node.GUINodeForImport(EmitEvent, nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.GUINodeForImport(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-					newNode = Node.GUINodeForGrouping(EmitEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
+					newNode = Node.GUINodeForGrouping(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -685,13 +685,13 @@ namespace AssetGraph {
 				
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
+					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode = Node.GUINode(EmitEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
+					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -723,7 +723,7 @@ namespace AssetGraph {
 		/**
 			emit event from node-GUI.
 		*/
-		public void EmitEvent (OnNodeEvent e) {
+		public void EmitNodeEvent (OnNodeEvent e) {
 			switch (modifyMode) {
 				case ModifyMode.CONNECT_STARTED: {
 					switch (e.eventType) {
@@ -829,6 +829,10 @@ namespace AssetGraph {
 								}
 								else node.SetInactive();
 							}
+
+							foreach (var con in connections) {
+								con.SetInactive();
+							}
 							break;
 						}
 
@@ -858,22 +862,18 @@ namespace AssetGraph {
 								show menuContext for control these connections.
 							*/
 							var menu = new GenericMenu();
-							foreach (var con in relatedConnections) {
-								var message = string.Empty;
-								if (sourcePoint.isInput) message = "from " + con.startPointInfo;
-								if (sourcePoint.isOutput) message = "to " + con.endPointInfo;
-								
-								var conId = con.connectionId;
-
-								menu.AddItem(
-									new GUIContent("delete connection:" + con.label + " " + message), 
-									false, 
-									() => {
+							menu.AddItem(
+								new GUIContent("delete all connections"), 
+								false, 
+								() => {
+									foreach (var con in relatedConnections) {
+										var conId = con.connectionId;
 										DeleteConnectionById(conId);
-										SaveGraph();
 									}
-								);
-							}
+
+									SaveGraph();
+								}
+							);
 							menu.ShowAsContext();
 							break;
 						}
@@ -932,6 +932,55 @@ namespace AssetGraph {
 				}
 				case OnNodeEvent.EventType.EVENT_SAVE: {
 					SaveGraph();
+					Repaint();
+					break;
+				}
+			}
+		}
+
+		public void EmitConnectionEvent (OnConnectionEvent e) {
+			switch (modifyMode) {
+				case ModifyMode.CONNECT_ENDED: {
+					switch (e.eventType) {
+						case OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED: {
+							var tappedConnectionId = e.eventSourceCon.connectionId;
+							foreach (var con in connections) {
+								if (con.connectionId == tappedConnectionId) {
+									con.SetActive();
+								} else {
+									con.SetInactive();
+								}
+							}
+
+							// set deactive for all nodes.
+							foreach (var node in nodes) {
+								node.SetInactive();
+							}
+							break;
+						}
+						case OnConnectionEvent.EventType.EVENT_CONNECTION_DELETED: {
+							var deletedConnectionId = e.eventSourceCon.connectionId;
+
+							Connection deletedCon = null;
+							foreach (var con in connections) {
+								if (con.connectionId == deletedConnectionId) {
+									deletedCon = con;
+									break;
+								}
+							}
+
+							if (deletedCon != null) {
+								connections.Remove(deletedCon);
+								SaveGraph();
+								Repaint();
+							}
+							break;
+						}
+						default: {
+							// Debug.Log("unconsumed or ignored event:" + e.eventType);
+							break;
+						}
+					}
 					break;
 				}
 			}
@@ -942,7 +991,7 @@ namespace AssetGraph {
 		*/
 		private void AddConnection (string label, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
 			if (!connections.ContainsConnection(startNode, startPoint, endNode, endPoint)) {
-				connections.Add(Connection.NewConnection(label, startNode, startPoint, endNode, endPoint));
+				connections.Add(Connection.NewConnection(EmitConnectionEvent, label, startNode, startPoint, endNode, endPoint));
 			}
 		}
 
