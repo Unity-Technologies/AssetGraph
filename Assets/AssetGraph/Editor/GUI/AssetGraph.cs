@@ -422,7 +422,7 @@ namespace AssetGraph {
 			// var validatedDataDict = GraphStackController.ValidateStackedGraph(graphData);
 
 			UpdateGraphData(graphData);
-			// Reload();
+			Reload();
 		}
 
 		private void ResetGUI () {

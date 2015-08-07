@@ -8,7 +8,22 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {			
+			var validation = true;
+			foreach (var sources in groupedSources.Values) {
+				foreach (var source in sources) {
+					if (string.IsNullOrEmpty(source.importedPath)) {
+						Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before prefabricate.");
+						validation = false;
+					}
+				}
+			}
+
+			if (!validation) return;
+
+			/*
+				through all.
+			*/
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -20,6 +35,18 @@ namespace AssetGraph {
 		}
 
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			var validation = true;
+			foreach (var sources in groupedSources.Values) {
+				foreach (var source in sources) {
+					if (string.IsNullOrEmpty(source.importedPath)) {
+						Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before prefabricate.");
+						validation = false;
+					}
+				}
+			}
+
+			if (!validation) return;
+
 			var recommendedPrefabOutputDir = Path.Combine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedPrefabOutputDir);
 

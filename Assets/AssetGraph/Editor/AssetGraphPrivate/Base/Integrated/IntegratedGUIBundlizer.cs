@@ -16,12 +16,12 @@ namespace AssetGraph {
 
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
-				Debug.LogWarning("no Bundle Name Template set.");
+				Debug.LogError("no Bundle Name Template set.");
 				return;
 			}
 
 			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
-				Debug.LogWarning("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
+				Debug.LogError("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
 				return;
 			}
 
@@ -37,12 +37,12 @@ namespace AssetGraph {
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
-				Debug.LogWarning("no Bundle Name Template set.");
+				Debug.LogError("no Bundle Name Template set.");
 				return;
 			}
 
 			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
-				Debug.LogWarning("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
+				Debug.LogError("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
 				return;
 			}
 			
@@ -54,18 +54,9 @@ namespace AssetGraph {
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 
-				var assets = new List<AssetInfo>();
-				foreach (var assetData in inputSources) {
-					var assetName = assetData.fileNameAndExtension;
-					var assetType = assetData.assetType;
-					var assetPath = assetData.importedPath;
-					var assetId = assetData.assetId;
-					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
-				}
-
 				var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 				try {
-					In(groupKey, assets, recommendedBundleOutputDir);
+					In(groupKey, inputSources, recommendedBundleOutputDir);
 				} catch (Exception e) {
 					Debug.LogError("Bundlizer:" + this + " error:" + e);
 				}
@@ -93,17 +84,26 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict);
 		}
 
-		public void In (string groupkey, List<AssetInfo> source, string recommendedBundleOutputDir) {
-			var mainAssetInfo = source[0];
-			var mainAsset = AssetDatabase.LoadAssetAtPath(mainAssetInfo.assetPath, mainAssetInfo.assetType) as UnityEngine.Object;
+		public void In (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir) {
+			var validation = true;
+			foreach (var source in sources) {
+				if (string.IsNullOrEmpty(source.importedPath)) {
+					Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before bundlize.");
+					validation = false;
+				}
+			}
 
-			var sunAssetInfos = source.GetRange(1, source.Count-1);
+			if (!validation) return;
+
+			var mainAssetInfo = sources[0];
+			var mainAsset = AssetDatabase.LoadAssetAtPath(mainAssetInfo.importedPath, mainAssetInfo.assetType) as UnityEngine.Object;
+			
+			var sunAssetInfos = sources.GetRange(1, sources.Count-1);
 			var subAssets = new List<UnityEngine.Object>();
 
 			foreach (var subAssetInfo in sunAssetInfos) {
-				subAssets.Add(
-					AssetDatabase.LoadAssetAtPath(subAssetInfo.assetPath, subAssetInfo.assetType) as UnityEngine.Object
-				);
+				var loadedSub = AssetDatabase.LoadAssetAtPath(subAssetInfo.importedPath, subAssetInfo.assetType) as UnityEngine.Object;
+				subAssets.Add(loadedSub);
 			}
 
 			var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
@@ -123,7 +123,7 @@ namespace AssetGraph {
 					BuildTarget.iOS
 				);
 			} catch (Exception e) {
-				Debug.Log("failed to create AssetBundle:" + targetPath);
+				Debug.LogError("failed to create AssetBundle:" + targetPath);
 			}
 		}
 	}
