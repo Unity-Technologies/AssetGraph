@@ -52,11 +52,16 @@ namespace AssetGraph {
 
 		private Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
 
+		private string projectPath;
+
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
+			var projectPathSource = Application.dataPath;
+			projectPath = Directory.GetParent(projectPathSource).ToString();
+
 			if (platformButtonDatas == null) {
 				platformButtonDatas = new List<PlatformButtonData>();
 				var platformButtonTextureResources = Resources
@@ -223,7 +228,7 @@ namespace AssetGraph {
 							filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
 						}
 
-						var newNode = Node.GUINode(EmitNodeEvent, nodes.Count, name, id, kind, filterContainsKeywords, x, y);
+						var newNode = Node.GUINodeForFilter(EmitNodeEvent, nodes.Count, name, id, kind, filterContainsKeywords, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -674,13 +679,13 @@ namespace AssetGraph {
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
+					newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, projectPath, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
-					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
+					newNode = Node.GUINodeForFilter(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -700,7 +705,7 @@ namespace AssetGraph {
 				}
 				
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
+					newNode = Node.GUINodeForPrefabricator(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -715,7 +720,7 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode = Node.GUINode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, null, x, y);
+					newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, projectPath, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}

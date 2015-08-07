@@ -97,7 +97,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, float x, float y) {
+		public static Node GUINodeForFilter (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, float x, float y) {
 			return new Node(
 				emit,
 				index,
@@ -148,6 +148,25 @@ namespace AssetGraph {
 				null, 
 				null,
 				groupingKeyword,
+				null,
+				x,
+				y
+			);
+		}
+
+		public static Node GUINodeForPrefabricator (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null,
+				null, 
+				null, 
+				null,
+				null,
 				null,
 				x,
 				y
