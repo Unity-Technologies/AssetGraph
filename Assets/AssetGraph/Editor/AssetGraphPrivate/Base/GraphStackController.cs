@@ -25,7 +25,8 @@ namespace AssetGraph {
 		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
 			if (nodeScriptInstance == null) {
-				throw new Exception("no class found:" + scriptType);
+				Debug.LogError("no class found:" + scriptType);
+				return new List<string>();
 			}
 
 			var labels = new List<string>();
@@ -451,7 +452,10 @@ namespace AssetGraph {
 			Action<string, float> updateHandler=null
 		) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.nodeId == nodeId).ToList();
-			if (!currentNodeDatas.Any()) throw new Exception("failed to find node from relations. nodeId:" + nodeId);
+			if (!currentNodeDatas.Any()) {
+				Debug.LogError("failed to find node from relations. nodeId:" + nodeId);
+				return;
+			}
 
 			var currentNodeData = currentNodeDatas[0];
 
@@ -603,7 +607,8 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = currentNodeData.scriptType;
 						if (string.IsNullOrEmpty(scriptType)) {
-							throw new Exception("failed to detect prefabriator class at node:" + nodeName + ", maybe script are empty or not matched. please set valid script.");
+							Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
+							break;;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
@@ -612,9 +617,6 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
-						if (string.IsNullOrEmpty(bundleNameTemplate)) {
-							throw new Exception("failed to set bundleNameTemplate at node:" + nodeName + ", maybe script are empty or not matched. please set valid bundleNameTemplate.");
-						}
 						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
@@ -701,7 +703,8 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = currentNodeData.scriptType;
 						if (string.IsNullOrEmpty(scriptType)) {
-							throw new Exception("failed to detect prefabriator class at node:" + nodeName + ", maybe script are empty or not matched. please set valid script.");
+							Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
+							break;;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
@@ -710,9 +713,6 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
-						if (string.IsNullOrEmpty(bundleNameTemplate)) {
-							throw new Exception("failed to set bundleNameTemplate at node:" + nodeName + ", maybe script are empty or not matched. please set valid bundleNameTemplate.");
-						}
 						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;

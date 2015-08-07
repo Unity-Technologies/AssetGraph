@@ -14,8 +14,8 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			if (string.IsNullOrEmpty(groupingKeyword)) {
-				Debug.LogWarning("groupingKeyword is empty.");
+			if (!groupingKeyword.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
+				Debug.LogWarning("grouping keyword does not contain " + AssetGraphSettings.KEYWORD_WILDCARD + ", will return empty throughput.");
 				return;
 			}
 
@@ -27,8 +27,8 @@ namespace AssetGraph {
 				foreach (var source in inputSources) {
 					var targetPath = source.importedPath;
 
-					var groupingKeywordPrefix = groupingKeyword.Split('*')[0];
-					var groupingKeywordPostfix = groupingKeyword.Split('*')[1];
+					var groupingKeywordPrefix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
+					var groupingKeywordPostfix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
 					var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
 					var match = regex.Match(targetPath);
@@ -45,11 +45,11 @@ namespace AssetGraph {
 		}
 
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			if (string.IsNullOrEmpty(groupingKeyword)) {
-				Debug.LogWarning("groupingKeyword is empty.");
+			if (!groupingKeyword.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
+				Debug.LogWarning("grouping keyword does not contain " + AssetGraphSettings.KEYWORD_WILDCARD + ", will return empty throughput.");
 				return;
 			}
-			
+
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -58,8 +58,8 @@ namespace AssetGraph {
 				foreach (var source in inputSources) {
 					var targetPath = source.importedPath;
 
-					var groupingKeywordPrefix = groupingKeyword.Split('*')[0];
-					var groupingKeywordPostfix = groupingKeyword.Split('*')[1];
+					var groupingKeywordPrefix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
+					var groupingKeywordPostfix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
 					var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
 					var match = regex.Match(targetPath);

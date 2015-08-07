@@ -96,7 +96,8 @@ namespace AssetGraph {
 					var filesInSampling = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingDirectoryPath);
 					switch (filesInSampling.Count) {
 						case 0: {
-							throw new Exception("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
+							Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
+							return;
 						}
 						case 1: {
 							Debug.Log("using sample:" + filesInSampling[0]);
@@ -104,11 +105,12 @@ namespace AssetGraph {
 							break;
 						}
 						default: {
-							throw new Exception("too many samples in samplingDirectoryPath:" + samplingDirectoryPath);
+							Debug.LogWarning("too many samples in samplingDirectoryPath:" + samplingDirectoryPath);
+							return;
 						}
 					}
 				} else {
-					throw new Exception("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
+					Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
 				}
 
 				/*
@@ -186,7 +188,8 @@ namespace AssetGraph {
 				if (samplingAssetImporter) {
 					Debug.Log("succeeded to get importer of Sampling Asset at path:" + sampleAssetPath);
 				} else {
-					throw new Exception("failed to get importer of Sampling asset at path:" + sampleAssetPath);
+					Debug.LogError("failed to get importer of Sampling asset at path:" + sampleAssetPath);
+					return;
 				}
 
 				foreach (var asset in outputSources) {

@@ -21,6 +21,8 @@ namespace AssetGraph {
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
 		public const char UNITY_FOLDER_SEPARATOR = '/';
 
+		public const char KEYWORD_WILDCARD = '*';
+
 		/*
 			node generation from GUI
 		*/

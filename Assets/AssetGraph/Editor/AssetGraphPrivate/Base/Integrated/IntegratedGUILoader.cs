@@ -12,6 +12,10 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			if (string.IsNullOrEmpty(loadFilePath)) {
+				Debug.LogWarning("no Load Path set.");
+				return;
+			}
 
 			var outputSource = new List<InternalAssetData>();
 			try {
@@ -37,6 +41,11 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			if (string.IsNullOrEmpty(loadFilePath)) {
+				Debug.LogWarning("no Load Path set.");
+				return;
+			}
+
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);

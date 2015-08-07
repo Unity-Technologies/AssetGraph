@@ -662,7 +662,10 @@ namespace AssetGraph {
 
 		public ConnectionPoint ConnectionPointFromLabel (string label) {
 			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
-			if (!targetPoints.Any()) throw new Exception("no connection label:" + label + " exists in node name:" + name);
+			if (!targetPoints.Any()) {
+				Debug.LogError("no connection label:" + label + " exists in node name:" + name);
+				return null;
+			}
 			return targetPoints[0];
 		}
 

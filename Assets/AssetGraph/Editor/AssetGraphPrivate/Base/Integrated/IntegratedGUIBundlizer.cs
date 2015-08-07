@@ -15,6 +15,16 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			if (string.IsNullOrEmpty(bundleNameTemplate)) {
+				Debug.LogWarning("no Bundle Name Template set.");
+				return;
+			}
+
+			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
+				Debug.LogWarning("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
+				return;
+			}
+
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -26,6 +36,16 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			if (string.IsNullOrEmpty(bundleNameTemplate)) {
+				Debug.LogWarning("no Bundle Name Template set.");
+				return;
+			}
+
+			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
+				Debug.LogWarning("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
+				return;
+			}
+			
 			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
@@ -86,8 +106,8 @@ namespace AssetGraph {
 				);
 			}
 
-			var templateHead = bundleNameTemplate.Split('*')[0];
-			var templateTail = bundleNameTemplate.Split('*')[1];
+			var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
+			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
 			// create AssetBundle from assets.
 			var targetPath = Path.Combine(recommendedBundleOutputDir, templateHead + groupkey + templateTail);
