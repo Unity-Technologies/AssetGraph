@@ -469,6 +469,10 @@ namespace AssetGraph {
 				return;
 			}
 
+			foreach (var node in nodes) {
+				node.HideProgress();
+			}
+
 			// reload
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
@@ -489,30 +493,43 @@ namespace AssetGraph {
 				return;
 			}
 
+
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
 				dataStr = sr.ReadToEnd();
 			}
 
+			var currentCount = 0.00f;
+			var totalCount = nodes.Count * 1f;
+
 			Action<string, float>  updateHandler = (nodeId, progress) => {
 				var targetNodes = nodes.Where(node => node.id == nodeId).ToList();
+				
+				var progressPercentage = ((currentCount/totalCount) * 100).ToString();
+				
+				if (progressPercentage.Contains(".")) progressPercentage = progressPercentage.Split('.')[0];
+				
+				if (0 < progress) {
+					currentCount = currentCount + 1f;
+				}
+
 				if (targetNodes.Any()) {
 					targetNodes.ForEach(
 						node => {
-							// Debug.LogWarning("うーーん、動作中はGUI止まっちゃうので、非同期にするとかyield挟むとかしないとダメっぽいな。AssetRailsのWebSocketで云々のアプローチはあれはあれでよかった。");
-							// if (progress == 0f) node.ShowProgress();
-							// node.SetProgress(progress);
-							// Repaint();
+							EditorUtility.DisplayProgressBar("AssetGraph Processing " + node.name + ".", progressPercentage + "%", currentCount/totalCount);
 						}
 					);
 				}
+				
 			};
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
-			if (ring != null) PlayClip(ring);
+
+			EditorUtility.ClearProgressBar();
+			PlayClip(ring);
 		}
 
 
