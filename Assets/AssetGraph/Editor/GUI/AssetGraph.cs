@@ -52,16 +52,18 @@ namespace AssetGraph {
 
 		private Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
 
-		private string projectPath;
+		public static string projectPathWithSlash;
+		public static string relativeProjectPath;
 
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			var projectPathSource = Application.dataPath;
-			projectPath = Directory.GetParent(projectPathSource).ToString();
-
+			var assetPath = Application.dataPath;
+			projectPathWithSlash = Directory.GetParent(assetPath).ToString() + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
+			relativeProjectPath = Directory.GetParent(assetPath).Name;
+			
 			if (platformButtonDatas == null) {
 				platformButtonDatas = new List<PlatformButtonData>();
 				var platformButtonTextureResources = Resources
@@ -422,6 +424,10 @@ namespace AssetGraph {
 			// var validatedDataDict = GraphStackController.ValidateStackedGraph(graphData);
 
 			UpdateGraphData(graphData);
+		}
+
+		private void SaveGraphWithReload () {
+			SaveGraph();
 			Reload();
 		}
 
@@ -595,7 +601,7 @@ namespace AssetGraph {
 					}
 				}
 
-				if (shouldSave) SaveGraph();
+				if (shouldSave) SaveGraphWithReload();
 			}
 
 			/*
@@ -611,7 +617,7 @@ namespace AssetGraph {
 						false, 
 						() => {
 							AddNodeFromGUI(string.Empty, targetGUINodeNameStr, Guid.NewGuid().ToString(), rightClickPos.x, rightClickPos.y);
-							SaveGraph();
+							SaveGraphWithReload();
 						}
 					);
 				}
@@ -679,7 +685,7 @@ namespace AssetGraph {
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, projectPath, x, y);
+					newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, relativeProjectPath, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
@@ -720,7 +726,7 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, projectPath, x, y);
+					newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, relativeProjectPath, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -835,7 +841,7 @@ namespace AssetGraph {
 
 								var label = startConnectionPoint.label;
 								AddConnection(label, startNode, startConnectionPoint, endNode, endConnectionPoint);
-								SaveGraph();
+								SaveGraphWithReload();
 							}
 							break;
 						}
@@ -900,7 +906,7 @@ namespace AssetGraph {
 										DeleteConnectionById(conId);
 									}
 
-									SaveGraph();
+									SaveGraphWithReload();
 								}
 							);
 							menu.ShowAsContext();
@@ -915,7 +921,7 @@ namespace AssetGraph {
 									nodes.Remove(node);
 								}
 							}
-							SaveGraph();
+							SaveGraphWithReload();
 							InitializeGraph();
 
 							break;
@@ -960,7 +966,7 @@ namespace AssetGraph {
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_SAVE: {
-					SaveGraph();
+					SaveGraphWithReload();
 					Repaint();
 					break;
 				}
@@ -1000,7 +1006,7 @@ namespace AssetGraph {
 
 							if (deletedCon != null) {
 								connections.Remove(deletedCon);
-								SaveGraph();
+								SaveGraphWithReload();
 								Repaint();
 							}
 							break;

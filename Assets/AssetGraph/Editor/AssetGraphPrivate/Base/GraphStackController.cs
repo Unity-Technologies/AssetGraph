@@ -1,6 +1,7 @@
 using UnityEngine;
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Collections;
@@ -182,7 +183,6 @@ namespace AssetGraph {
 					}
 					).ToList();
 				if (!fromNodeCandidates.Any()) {
-					Debug.LogError("c3");
 					changed = true;
 					continue;
 				}
@@ -195,7 +195,6 @@ namespace AssetGraph {
 					}
 					).ToList();
 				if (!toNodeCandidates.Any()) {
-					Debug.LogError("c4");
 					changed = true;
 					continue;
 				}
@@ -210,7 +209,6 @@ namespace AssetGraph {
 				}
 
 				if (!connectionLabels.Contains(connectionLabel)) {
-					Debug.LogError("c5");
 					changed = true;
 					continue;
 				}
@@ -220,7 +218,6 @@ namespace AssetGraph {
 
 
 			if (changed) {
-				Debug.LogError("changed!");
 				var validatedResultDict = new Dictionary<string, object>{
 					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now},
 					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, newNodes},
@@ -279,7 +276,8 @@ namespace AssetGraph {
 					var sourcePathList = new List<string>();
 					foreach (var assetData in connectionThroughputList) {
 						if (assetData.absoluteSourcePath != null) {
-							sourcePathList.Add(assetData.absoluteSourcePath);
+							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(AssetGraph.projectPathWithSlash, string.Empty);
+							sourcePathList.Add(relativeAbsolutePath);
 						} else {
 							sourcePathList.Add(assetData.pathUnderConnectionId);
 						}
@@ -543,7 +541,7 @@ namespace AssetGraph {
 			if (isActualRun) {
 				switch (nodeKind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = new IntegratedScriptLoader(currentNodeData.loadFilePath);
+						var executor = new IntegratedScriptLoader(WithProjectPath(currentNodeData.loadFilePath));
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -572,7 +570,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = new IntegratedScriptExporter(currentNodeData.exportFilePath);
+						var executor = new IntegratedScriptExporter(WithProjectPath(currentNodeData.exportFilePath));
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -581,7 +579,7 @@ namespace AssetGraph {
 						GUIs
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var executor = new IntegratedGUILoader(currentNodeData.loadFilePath);
+						var executor = new IntegratedGUILoader(WithProjectPath(currentNodeData.loadFilePath));
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -608,7 +606,7 @@ namespace AssetGraph {
 						var scriptType = currentNodeData.scriptType;
 						if (string.IsNullOrEmpty(scriptType)) {
 							Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
-							break;;
+							break;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
@@ -623,7 +621,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var executor = new IntegratedGUIExporter(currentNodeData.exportFilePath);
+						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -639,7 +637,7 @@ namespace AssetGraph {
 						Script version
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = new IntegratedScriptLoader(currentNodeData.loadFilePath);
+						var executor = new IntegratedScriptLoader(WithProjectPath(currentNodeData.loadFilePath));
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -668,7 +666,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = new IntegratedScriptExporter(currentNodeData.exportFilePath);
+						var executor = new IntegratedScriptExporter(WithProjectPath(currentNodeData.exportFilePath));
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -677,7 +675,7 @@ namespace AssetGraph {
 						GUIs
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var executor = new IntegratedGUILoader(currentNodeData.loadFilePath);
+						var executor = new IntegratedGUILoader(WithProjectPath(currentNodeData.loadFilePath));
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -719,7 +717,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var executor = new IntegratedGUIExporter(currentNodeData.exportFilePath);
+						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
 						break;
 					}
@@ -733,6 +731,13 @@ namespace AssetGraph {
 
 			currentNodeData.Cached();
 			if (updateHandler != null) updateHandler(nodeId, 1f);
+		}
+
+		public static string WithProjectPath (string pathUnderProjectFolder) {
+			var assetPath = Application.dataPath;
+			var projectPath = Directory.GetParent(assetPath).ToString();
+			var projectParentPath = Directory.GetParent(projectPath).ToString();
+			return Path.Combine(projectParentPath, pathUnderProjectFolder);
 		}
 
 		public static T Executor<T> (string typeStr) where T : INodeBase {

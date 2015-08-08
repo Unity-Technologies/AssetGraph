@@ -65,9 +65,13 @@ namespace AssetGraph {
 		*/
 		[CustomEditor(typeof(ConnectionInspector))]
 		public class ConnectionObj : Editor {
+
 			public override void OnInspectorGUI () {
 				var con = ((ConnectionInspector)target).con;
 				if (con == null) return;
+
+				var foldouts = ((ConnectionInspector)target).foldouts;
+				
 
 				var count = 0;
 				var throughputListDict = ((ConnectionInspector)target).throughputListDict;
@@ -78,17 +82,26 @@ namespace AssetGraph {
 				if (GUILayout.Button("Delete Connection")) {
 					con.Delete();
 				}
-
 				EditorGUILayout.LabelField("Total:" + count.ToString(), "");
 
+				var index = 0;
 				foreach (var groupKey in throughputListDict.Keys) {
 					var list = throughputListDict[groupKey];
-					EditorGUILayout.LabelField("Group Key:" + groupKey, "");
 
-					for (var i = 0; i < list.Count; i++) {
-						var sourceStr = list[i];
-						EditorGUILayout.LabelField(" "+ sourceStr);
+					var foldout = foldouts[index];
+					
+					foldout = EditorGUILayout.Foldout(foldout, "Group Key:" + groupKey);
+					if (foldout) {
+						EditorGUI.indentLevel = 1;
+						for (var i = 0; i < list.Count; i++) {
+							var sourceStr = list[i];
+							EditorGUILayout.LabelField(sourceStr);
+						}
+						EditorGUI.indentLevel = 0;
 					}
+					foldouts[index] = foldout;
+
+					index++;
 				}
 			}
 		}

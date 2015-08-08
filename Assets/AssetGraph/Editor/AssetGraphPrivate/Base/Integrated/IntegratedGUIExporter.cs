@@ -13,10 +13,28 @@ namespace AssetGraph {
 		}
 		
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			// do nothing.
+			if (string.IsNullOrEmpty(exportFilePath)) {
+				Debug.LogWarning("no Export Path set.");
+				return;
+			}
+
+			if (!Directory.Exists(exportFilePath)) {
+				Debug.LogError("no Export Path found, exportFilePath:" + exportFilePath);
+				return;
+			}
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+			if (string.IsNullOrEmpty(exportFilePath)) {
+				Debug.LogWarning("no Export Path set.");
+				return;
+			}
+
+			if (!Directory.Exists(exportFilePath)) {
+				Debug.LogError("no Export Path found, exportFilePath:" + exportFilePath);
+				return;
+			}
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				foreach (var source in inputSources) {

@@ -113,9 +113,12 @@ namespace AssetGraph {
 					Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
 				}
 
+				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
+				
 				/*
 					copy all sources from outside to inside of Unity.
 				*/
+				InternalSamplingImportAdopter.Attach(samplingAssetImporter);
 				foreach (var inputSource in inputSources) {
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
@@ -128,12 +131,15 @@ namespace AssetGraph {
 					}
 					try {
 						// copy files into local.
+
 						FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
 					} catch (Exception e) {
 						Debug.LogError("IntegratedGUIImporter:" + this + " error:" + e);
 					}
 				}
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+				InternalSamplingImportAdopter.Detach();
+				
 				
 				// get files, which are already assets.
 				var localFilePathsAfterImport = FileController.FilePathsInFolderWithoutMeta(targetDirectoryPath);
@@ -180,24 +186,6 @@ namespace AssetGraph {
 					outputSources.Add(newInternalAssetData);
 				}
 
-				/*
-					adopt asset settings from sampling asset to imported assets.
-				*/
-				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
-
-				if (samplingAssetImporter) {
-					Debug.Log("succeeded to get importer of Sampling Asset at path:" + sampleAssetPath);
-				} else {
-					Debug.LogError("failed to get importer of Sampling asset at path:" + sampleAssetPath);
-					return;
-				}
-
-				foreach (var asset in outputSources) {
-					if (asset.generated) continue;
-					AdoptSettings(asset, samplingAssetImporter);
-				}
-
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
 				outputDict[groupKey] = outputSources;
 			}
@@ -208,122 +196,6 @@ namespace AssetGraph {
 		public Type AssumeTypeFromExtension () {
 			// Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、2");
 			return typeof(UnityEngine.Object);
-		}
-
-		private void AdoptSettings (InternalAssetData targetData, AssetImporter importerSourceObj) {
-			var typeString = importerSourceObj.GetType().ToString();
-			
-			switch (typeString) {
-				case "UnityEditor.TextureImporter": {
-					var importerSource = importerSourceObj as TextureImporter;
-					var importer = AssetImporter.GetAtPath(targetData.importedPath) as TextureImporter;
-
-					importer.anisoLevel = importerSource.anisoLevel;
-					importer.borderMipmap = importerSource.borderMipmap;
-					importer.compressionQuality = importerSource.compressionQuality;
-					importer.convertToNormalmap = importerSource.convertToNormalmap;
-					importer.fadeout = importerSource.fadeout;
-					importer.filterMode = importerSource.filterMode;
-					importer.generateCubemap = importerSource.generateCubemap;
-					importer.generateMipsInLinearSpace = importerSource.generateMipsInLinearSpace;
-					importer.grayscaleToAlpha = importerSource.grayscaleToAlpha;
-					importer.heightmapScale = importerSource.heightmapScale;
-					importer.isReadable = importerSource.isReadable;
-					importer.lightmap = importerSource.lightmap;
-					importer.linearTexture = importerSource.linearTexture;
-					importer.maxTextureSize = importerSource.maxTextureSize;
-					importer.mipMapBias = importerSource.mipMapBias;
-					importer.mipmapEnabled = importerSource.mipmapEnabled;
-					importer.mipmapFadeDistanceEnd = importerSource.mipmapFadeDistanceEnd;
-					importer.mipmapFadeDistanceStart = importerSource.mipmapFadeDistanceStart;
-					importer.mipmapFilter = importerSource.mipmapFilter;
-					importer.normalmap = importerSource.normalmap;
-					importer.normalmapFilter = importerSource.normalmapFilter;
-					importer.npotScale = importerSource.npotScale;
-					// importer.qualifiesForSpritePacking = importerSource.qualifiesForSpritePacking;
-					importer.spriteBorder = importerSource.spriteBorder;
-					importer.spriteImportMode = importerSource.spriteImportMode;
-					importer.spritePackingTag = importerSource.spritePackingTag;
-					importer.spritePivot = importerSource.spritePivot;
-					importer.spritePixelsPerUnit = importerSource.spritePixelsPerUnit;
-					importer.spritesheet = importerSource.spritesheet;
-					importer.textureFormat = importerSource.textureFormat;
-					importer.textureType = importerSource.textureType;
-					importer.wrapMode = importerSource.wrapMode;
-					importer.textureType = importerSource.textureType;
-
-					AssetDatabase.WriteImportSettingsIfDirty(targetData.importedPath);
-					break;
-				}
-				case "UnityEditor.ModelImporter": {
-					var importerSource = importerSourceObj as ModelImporter;
-					var importer = AssetImporter.GetAtPath(targetData.importedPath) as ModelImporter;
-
-					importer.addCollider = importerSource.addCollider;
-					importer.animationCompression = importerSource.animationCompression;
-					importer.animationPositionError = importerSource.animationPositionError;
-					importer.animationRotationError = importerSource.animationRotationError;
-					importer.animationScaleError = importerSource.animationScaleError;
-					importer.animationType = importerSource.animationType;
-					importer.animationWrapMode = importerSource.animationWrapMode;
-					importer.bakeIK = importerSource.bakeIK;
-					importer.clipAnimations = importerSource.clipAnimations;
-					// importer.defaultClipAnimations = importerSource.defaultClipAnimations;
-					importer.extraExposedTransformPaths = importerSource.extraExposedTransformPaths;
-					// importer.fileScale = importerSource.fileScale;
-					importer.generateAnimations = importerSource.generateAnimations;
-					importer.generateSecondaryUV = importerSource.generateSecondaryUV;
-					importer.globalScale = importerSource.globalScale;
-					importer.humanDescription = importerSource.humanDescription;
-					importer.importAnimation = importerSource.importAnimation;
-					importer.importBlendShapes = importerSource.importBlendShapes;
-					// importer.importedTakeInfos = importerSource.importedTakeInfos;
-					importer.importMaterials = importerSource.importMaterials;
-					// importer.isBakeIKSupported = importerSource.isBakeIKSupported;
-					// importer.isFileScaleUsed = importerSource.isFileScaleUsed;
-					importer.isReadable = importerSource.isReadable;
-					// importer.isTangentImportSupported = importerSource.isTangentImportSupported;
-					// importer.isUseFileUnitsSupported = importerSource.isUseFileUnitsSupported;
-					importer.materialName = importerSource.materialName;
-					importer.materialSearch = importerSource.materialSearch;
-					importer.meshCompression = importerSource.meshCompression;
-					importer.motionNodeName = importerSource.motionNodeName;
-					importer.normalImportMode = importerSource.normalImportMode;
-					importer.normalSmoothingAngle = importerSource.normalSmoothingAngle;
-					importer.optimizeGameObjects = importerSource.optimizeGameObjects;
-					importer.optimizeMesh = importerSource.optimizeMesh;
-					// importer.referencedClips = importerSource.referencedClips;
-					importer.secondaryUVAngleDistortion = importerSource.secondaryUVAngleDistortion;
-					importer.secondaryUVAreaDistortion = importerSource.secondaryUVAreaDistortion;
-					importer.secondaryUVHardAngle = importerSource.secondaryUVHardAngle;
-					importer.secondaryUVPackMargin = importerSource.secondaryUVPackMargin;
-					importer.sourceAvatar = importerSource.sourceAvatar;
-					importer.splitTangentsAcrossSeams = importerSource.splitTangentsAcrossSeams;
-					importer.swapUVChannels = importerSource.swapUVChannels;
-					importer.tangentImportMode = importerSource.tangentImportMode;
-					// importer.transformPaths = importerSource.transformPaths;
-					importer.useFileUnits = importerSource.useFileUnits;
-
-					AssetDatabase.WriteImportSettingsIfDirty(targetData.importedPath);
-					break;
-				}
-				case "UnityEditor.AudioImporter": {
-					var importerSource = importerSourceObj as AudioImporter;
-					var importer = AssetImporter.GetAtPath(targetData.importedPath) as AudioImporter;
-
-					importer.defaultSampleSettings = importerSource.defaultSampleSettings;
-					importer.forceToMono = importerSource.forceToMono;
-					importer.loadInBackground = importerSource.loadInBackground;
-					importer.preloadAudioData = importerSource.preloadAudioData;
-					
-					AssetDatabase.WriteImportSettingsIfDirty(targetData.importedPath);
-					break;
-				}
-				default: {
-					Debug.LogError("not yet supported. type:" + typeString);
-					break;
-				}
-			}
 		}
 	}
 }
