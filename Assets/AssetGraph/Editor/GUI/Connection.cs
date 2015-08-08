@@ -82,7 +82,7 @@ namespace AssetGraph {
 				if (GUILayout.Button("Delete Connection")) {
 					con.Delete();
 				}
-				EditorGUILayout.LabelField("Total:" + count.ToString(), "");
+				EditorGUILayout.LabelField("Total", count.ToString());
 
 				var index = 0;
 				foreach (var groupKey in throughputListDict.Keys) {

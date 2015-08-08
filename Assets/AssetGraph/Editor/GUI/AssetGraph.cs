@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
@@ -37,7 +38,6 @@ namespace AssetGraph {
 
 		private DateTime lastLoaded = DateTime.MinValue;
 
-
 		private List<PlatformButtonData> platformButtonDatas;
 		public struct PlatformButtonData {
 			public readonly string name;
@@ -55,11 +55,14 @@ namespace AssetGraph {
 		public static string projectPathWithSlash;
 		public static string relativeProjectPath;
 
+		private AudioClip ring;
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
+			ring = AssetDatabase.LoadAssetAtPath("Assets/AssetGraph/Editor/Res/microwave-tin1.mp3", typeof(AudioClip)) as AudioClip;
+			
 			var assetPath = Application.dataPath;
 			projectPathWithSlash = Directory.GetParent(assetPath).ToString() + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
 			relativeProjectPath = Directory.GetParent(assetPath).Name;
@@ -331,6 +334,28 @@ namespace AssetGraph {
 			}
 		}
 
+		public void PlayClip(AudioClip clip) {
+			var unityEditorAssembly = typeof(AudioImporter).Assembly;
+			System.Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
+			var method = audioUtilClass.GetMethod(
+				"PlayClip",
+				BindingFlags.Static | BindingFlags.Public,
+				null,
+				new System.Type[] {
+					typeof(AudioClip)
+				},
+
+				null
+			);
+			
+			method.Invoke(
+				null,
+				new object[] {
+					clip
+				}
+			);
+		}
+
 		private void SaveGraph () {
 			var nodeList = new List<Dictionary<string, object>>();
 			foreach (var node in nodes) {
@@ -487,6 +512,7 @@ namespace AssetGraph {
 
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
+			if (ring != null) PlayClip(ring);
 		}
 
 
