@@ -540,7 +540,7 @@ namespace AssetGraph {
 					Reload();
 				}
 
-				if (GUILayout.Button("Run")) {
+				if (GUILayout.Button("Build")) {
 					Run();
 				}
 
@@ -724,7 +724,7 @@ namespace AssetGraph {
 		private void AddNodeFromGUI (string nodeName, AssetGraphSettings.NodeKind kind, string nodeId, float x, float y) {
 			Node newNode = null;
 
-			if (string.IsNullOrEmpty(nodeName)) nodeName = kind.ToString();
+			if (string.IsNullOrEmpty(nodeName)) nodeName = AssetGraphSettings.DEFAULT_NODE_NAME[kind];
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -764,6 +764,15 @@ namespace AssetGraph {
 					newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					Debug.LogError("作ろう。");
+					// newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
+					// newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					// newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					
 					break;
 				}

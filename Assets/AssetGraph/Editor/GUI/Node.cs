@@ -210,6 +210,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -228,6 +229,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -246,6 +248,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -261,6 +264,7 @@ namespace AssetGraph {
 									if (newContainsKeyword != node.filterContainsKeywords[i]) {
 										node.filterContainsKeywords[i] = newContainsKeyword;
 										node.UpdateOutputPoints();
+										node.UpdateNodeRect();
 										node.Save();
 									}
 								}
@@ -280,6 +284,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -291,6 +296,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -310,13 +316,14 @@ namespace AssetGraph {
 								case 1: {
 									var samplingAssetPath = samplingFiles[0];
 									EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-									if (GUILayout.Button("Modify SamplingAsset")) {
+									if (GUILayout.Button("Modify Import Setting")) {
 										var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
 										Selection.activeObject = obj;
 									}
-									if (GUILayout.Button("Clean SamplingAsset")) {
+									if (GUILayout.Button("Reset Import Setting")) {
 										var result = AssetDatabase.DeleteAsset(samplingAssetPath);
 										if (!result) Debug.LogError("failed to delete samplingAsset:" + samplingAssetPath);
+										node.Save();
 									}
 									break;
 								}
@@ -352,6 +359,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -369,6 +377,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -381,6 +390,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -399,6 +409,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -410,6 +421,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -428,6 +440,7 @@ namespace AssetGraph {
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
+							node.UpdateNodeRect();
 							node.Save();
 						}
 
@@ -530,12 +543,18 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				 {
-					this.nodeInterfaceTypeStr = "flow node 5";
+					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 5";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
@@ -582,12 +601,18 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				 {
-					this.nodeInterfaceTypeStr = "flow node 5 on";
+					this.nodeInterfaceTypeStr = "flow node 4 on";
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 5 on";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6 on";
 					break;
 				}
@@ -631,12 +656,18 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				 {
-					this.nodeInterfaceTypeStr = "flow node 5";
+					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 5";
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
@@ -658,6 +689,10 @@ namespace AssetGraph {
 
 			// update all connection point's index.
 
+			UpdateNodeRect();
+		}
+
+		private void RefreshConnectionPos () {
 			var inputPoints = connectionPoints.Where(p => p.isInput).ToList();
 			var outputPoints = connectionPoints.Where(p => p.isOutput).ToList();
 
@@ -777,8 +812,41 @@ namespace AssetGraph {
 			}
 
 
-			OnGUI();
+			DrawNodeContents();
+
 			GUI.DragWindow();
+		}
+
+		private void DrawNodeContents () {
+			var style = EditorStyles.label;
+			var defaultAlignment = style.alignment;
+			style.alignment = TextAnchor.MiddleCenter;
+			
+
+			var nodeTitleRect = new Rect(0, 0, baseRect.width, baseRect.height);
+			if (this.kind == AssetGraphSettings.NodeKind.PREFABRICATOR_GUI) GUI.contentColor = Color.black;
+			if (this.kind == AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT) GUI.contentColor = Color.black; 
+			GUI.Label(nodeTitleRect, name, style);
+
+			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
+
+			style.alignment = defaultAlignment;
+		}
+
+		public void UpdateNodeRect () {
+			var contentWidth = this.name.Length;
+			if (this.kind == AssetGraphSettings.NodeKind.FILTER_GUI) {
+				var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
+				if (longestFilterLengths.Any()) {
+					contentWidth = contentWidth + longestFilterLengths[0];
+				}
+			}
+
+			var newWidth = contentWidth * 12f;
+			if (newWidth < NodeEditorSettings.NODE_BASE_WIDTH) newWidth = NodeEditorSettings.NODE_BASE_WIDTH;
+			baseRect = new Rect(baseRect.x, baseRect.y, newWidth, baseRect.height);
+
+			RefreshConnectionPos();
 		}
 
 		private ConnectionPoint IsOverConnectionPoint (List<ConnectionPoint> points, Vector2 touchedPoint) {
@@ -805,22 +873,6 @@ namespace AssetGraph {
 
 		public void HideProgress () {
 			running = false;
-		}
-
-		/**
-			GUI update for a Node.
-		*/
-		public void OnGUI () {
-			var style = EditorStyles.label;
-			var defaultAlignment = style.alignment;
-			style.alignment = TextAnchor.MiddleCenter;
-
-			var nodeTitleRect = new Rect(0, 0, baseRect.width, baseRect.height);
-			GUI.Label(nodeTitleRect, name, style);
-
-			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
-
-			style.alignment = defaultAlignment;
 		}
 
 		public bool ConitainsGlobalPos (Vector2 globalPos) {

@@ -79,9 +79,6 @@ namespace AssetGraph {
 					count += list.Count;
 				}
 
-				if (GUILayout.Button("Delete Connection")) {
-					con.Delete();
-				}
 				EditorGUILayout.LabelField("Total", count.ToString());
 
 				var index = 0;

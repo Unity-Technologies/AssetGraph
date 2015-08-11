@@ -450,10 +450,7 @@ namespace AssetGraph {
 			Action<string, float> updateHandler=null
 		) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.nodeId == nodeId).ToList();
-			if (!currentNodeDatas.Any()) {
-				Debug.LogError("failed to find node from relations. nodeId:" + nodeId);
-				return;
-			}
+			if (!currentNodeDatas.Any()) return;
 
 			var currentNodeData = currentNodeDatas[0];
 

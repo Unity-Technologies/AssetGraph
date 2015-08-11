@@ -17,6 +17,7 @@ namespace AssetGraph {
 			EVENT_CLOSE_TAPPED,
 
 			EVENT_SAVE,
+			EVENT_RELOAD,
 		}
 
 		public readonly EventType eventType;

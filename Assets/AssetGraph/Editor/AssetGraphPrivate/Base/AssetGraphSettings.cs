@@ -32,16 +32,29 @@ namespace AssetGraph {
 		public const string MENU_GROUPING_NAME = "Grouping";
 		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
 		public const string MENU_BUNDLIZER_NAME = "Bundlizer";
+		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
 		public const string MENU_EXPORTER_NAME = "Exporter";
 
 		public static Dictionary<string, NodeKind> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, NodeKind>{
-			{"add " + MENU_LOADER_NAME + " node", NodeKind.LOADER_GUI},
-			{"add " + MENU_FILTER_NAME + " node", NodeKind.FILTER_GUI},
-			{"add " + MENU_IMPORTER_NAME + " node", NodeKind.IMPORTER_GUI},
-			{"add " + MENU_GROUPING_NAME + " node", NodeKind.GROUPING_GUI},
-			{"add " + MENU_PREFABRICATOR_NAME + " node", NodeKind.PREFABRICATOR_GUI},
-			{"add " + MENU_BUNDLIZER_NAME + " node", NodeKind.BUNDLIZER_GUI},
-			{"add " + MENU_EXPORTER_NAME + " node", NodeKind.EXPORTER_GUI}
+			{"Create " + MENU_LOADER_NAME + " Node", NodeKind.LOADER_GUI},
+			{"Create " + MENU_FILTER_NAME + " Node", NodeKind.FILTER_GUI},
+			{"Create " + MENU_IMPORTER_NAME + " Node", NodeKind.IMPORTER_GUI},
+			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
+			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
+			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
+			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
+			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
+		};
+
+		public static Dictionary<NodeKind, string> DEFAULT_NODE_NAME = new Dictionary<NodeKind, string>{
+			{NodeKind.LOADER_GUI, "Loader"},
+			{NodeKind.FILTER_GUI, "Filter"},
+			{NodeKind.IMPORTER_GUI, "Importer"},
+			{NodeKind.GROUPING_GUI, "Grouping"},
+			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
+			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
+			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
+			{NodeKind.EXPORTER_GUI, "Exporter"}
 		};
 
 		/*
@@ -88,6 +101,7 @@ namespace AssetGraph {
 			GROUPING_SCRIPT,
 			PREFABRICATOR_SCRIPT,
 			BUNDLIZER_SCRIPT,
+			BUNDLEBUILDER_SCRIPT,
 			EXPORTER_SCRIPT,
 
 			LOADER_GUI,
@@ -96,6 +110,7 @@ namespace AssetGraph {
 			GROUPING_GUI,
 			PREFABRICATOR_GUI,
 			BUNDLIZER_GUI,
+			BUNDLEBUILDER_GUI,
 			EXPORTER_GUI
 		}
 
