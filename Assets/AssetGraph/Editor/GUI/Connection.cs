@@ -136,26 +136,30 @@ namespace AssetGraph {
 			}
 			var offsetSize = throughputCount.ToString().Length * 20f;
 			
-			// var style = EditorStyles.boldLabel;
+			var buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);
 
-			// var defaultColor = style.normal.textColor;
-			// var defaultAlignment = style.alignment;
-			
-			// if (throughputCount == 0) {
-			// 	Debug.LogError("hahaa");
-			// 	style.normal.textColor = Color.red;
-			// }
+			if (Event.current.type == EventType.MouseUp && Event.current.button == 1) {
+				var rightClickPos = Event.current.mousePosition;
+				if (buttonRect.Contains(rightClickPos)) {
+					var menu = new GenericMenu();
+					menu.AddItem(
+						new GUIContent("Delete"),
+						false, 
+						() => {
+							Delete();
+						}
+					);
+					menu.ShowAsContext();
+					Event.current.Use();
+				}
+			}
 
-			// style.alignment = TextAnchor.MiddleCenter;
-			if (GUI.Button(new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f), throughputCount.ToString(), connectionButtonStyle)) {
+			if (GUI.Button(buttonRect, throughputCount.ToString(), connectionButtonStyle)) {
 				Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
 
 				conInsp.UpdateCon(this, throughputListDict);
 				Selection.activeObject = conInsp;
 			}
-			
-			// style.normal.textColor = defaultColor;
-			// style.alignment = defaultAlignment;
 		}
 
 		public bool IsStartAtConnectionPoint (ConnectionPoint p) {

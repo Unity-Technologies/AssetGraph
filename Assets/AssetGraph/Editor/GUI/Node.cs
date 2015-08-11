@@ -692,6 +692,15 @@ namespace AssetGraph {
 			UpdateNodeRect();
 		}
 
+		public List<ConnectionPoint> DuplicateConnectionPoints () {
+			var copiedConnectionList = new List<ConnectionPoint>();
+			foreach (var connectionPoint in connectionPoints) {
+				if (connectionPoint.isOutput) copiedConnectionList.Add(new OutputPoint(connectionPoint.label));
+				if (connectionPoint.isInput) copiedConnectionList.Add(new InputPoint(connectionPoint.label));
+			}
+			return copiedConnectionList;
+		}
+
 		private void RefreshConnectionPos () {
 			var inputPoints = connectionPoints.Where(p => p.isInput).ToList();
 			var outputPoints = connectionPoints.Where(p => p.isOutput).ToList();
@@ -806,9 +815,25 @@ namespace AssetGraph {
 				if (upInButtonRect) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_RECEIVE_TAPPED, this, Event.current.mousePosition, point));
 			}
 
-			// draw & update close button interface.
-			if (GUI.Button(closeButtonRect, string.Empty, "OL Minus")) {
-				Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Event.current.mousePosition, null));
+			if (Event.current.type == EventType.MouseUp && Event.current.button == 1) {
+				var rightClickPos = Event.current.mousePosition;
+				var menu = new GenericMenu();
+				menu.AddItem(
+					new GUIContent("Duplicate"),
+					false, 
+					() => {
+						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED, this, rightClickPos, null));
+					}
+				);
+				menu.AddItem(
+					new GUIContent("Delete"),
+					false, 
+					() => {
+						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Vector2.zero, null));
+					}
+				);
+				menu.ShowAsContext();
+				Event.current.Use();
 			}
 
 

@@ -807,6 +807,126 @@ namespace AssetGraph {
 			}
 		}
 
+		private void DuplicateNode (string sourceNodeId, float x, float y) {
+			var targetNodes = nodes.Where(node => node.id == sourceNodeId).ToList();
+			if (!targetNodes.Any()) return;
+
+			var targetNode = targetNodes[0];
+
+			var id = Guid.NewGuid().ToString();
+			var kind = targetNode.kind;
+			var name = targetNode.name;
+
+			switch (kind) {
+				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
+					var loadPath = targetNode.loadPath;
+
+					var newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, name, id, kind, loadPath, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+
+					nodes.Add(newNode);
+					break;
+				}
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+					var scriptType = targetNode.scriptType;
+					var scriptPath = targetNode.scriptPath;
+
+					var newNode = Node.ScriptNode(EmitNodeEvent, nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+
+					nodes.Add(newNode);
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					var filterContainsKeywords = targetNode.filterContainsKeywords;
+					
+					var newNode = Node.GUINodeForFilter(EmitNodeEvent, nodes.Count, name, id, kind, filterContainsKeywords, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+
+					nodes.Add(newNode);
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					var newNode = Node.GUINodeForImport(EmitNodeEvent, nodes.Count, name, id, kind, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+
+					nodes.Add(newNode);
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					var groupingKeyword = targetNode.groupingKeyword;
+					var newNode = Node.GUINodeForGrouping(EmitNodeEvent, nodes.Count, name, id, kind, groupingKeyword, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+
+					nodes.Add(newNode);
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					var bundleNameTemplate = targetNode.bundleNameTemplate;
+					var newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, name, id, kind, bundleNameTemplate, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+
+					nodes.Add(newNode);
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					var exportPath = targetNode.exportPath;
+					var newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, name, id, kind, exportPath, x, y);
+
+					var connectionPoints = targetNode.DuplicateConnectionPoints();
+					foreach (var connectionPoint in connectionPoints) {
+						newNode.AddConnectionPoint(connectionPoint);
+					}
+					
+					nodes.Add(newNode);
+					break;
+				}
+
+				default: {
+					Debug.LogError("kind not found:" + kind);
+					break;
+				}
+
+			}
+		}
+
 		/**
 			emit event from node-GUI.
 		*/
@@ -973,9 +1093,16 @@ namespace AssetGraph {
 									nodes.Remove(node);
 								}
 							}
+
 							SaveGraphWithReload();
 							InitializeGraph();
+							break;
+						}
 
+						case OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED: {
+							var duplicateNodeId = e.eventSourceNode.id;
+							var duplicatePoint = e.globalMousePosition;
+							DuplicateNode(duplicateNodeId, duplicatePoint.x, duplicatePoint.y);
 							break;
 						}
 
@@ -1077,6 +1204,12 @@ namespace AssetGraph {
 			create new connection if same relationship is not exist yet.
 		*/
 		private void AddConnection (string label, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
+			var connectionsFromThisNode = connections.Where(node => node.startNode.id == startNode.id).ToList();
+			if (connectionsFromThisNode.Any()) {
+				var alreadyExistConnection = connectionsFromThisNode[0];
+				DeleteConnectionById(alreadyExistConnection.connectionId);
+			}
+
 			if (!connections.ContainsConnection(startNode, startPoint, endNode, endPoint)) {
 				connections.Add(Connection.NewConnection(EmitConnectionEvent, label, startNode, startPoint, endNode, endPoint));
 			}
