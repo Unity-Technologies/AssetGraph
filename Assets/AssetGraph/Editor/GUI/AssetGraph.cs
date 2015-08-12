@@ -571,39 +571,47 @@ namespace AssetGraph {
 			}
 			EditorGUILayout.EndHorizontal();
 
-
-			// draw node window x N
-			{
-				BeginWindows();
-				
-				nodes.ForEach(node => node.DrawNode());
-
-				EndWindows();
-			}
-
-			foreach (var con in connections) {
-				if (connectionThroughputs.ContainsKey(con.connectionId)) {
-					var throughputListDict = connectionThroughputs[con.connectionId];
-					con.DrawConnection(throughputListDict);
-				} else {
-					con.DrawConnection(new Dictionary<string, List<string>>());
-				}
-			}
-
 			/*
-				draw line if modifing connection.
+				scroll view
 			*/
-			switch (modifyMode) {
-				case ModifyMode.CONNECT_STARTED: {
-					// from start node to mouse.
-					DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition);
-					break;
+			EditorGUILayout.BeginHorizontal();
+			scrollPos = EditorGUILayout.BeginScrollView(scrollPos, true, true);
+			{
+				// draw node window x N
+				{
+					BeginWindows();
+					
+					nodes.ForEach(node => node.DrawNode());
+
+					EndWindows();
 				}
-				case ModifyMode.CONNECT_ENDED: {
-					// do nothing
-					break;
+
+				foreach (var con in connections) {
+					if (connectionThroughputs.ContainsKey(con.connectionId)) {
+						var throughputListDict = connectionThroughputs[con.connectionId];
+						con.DrawConnection(throughputListDict);
+					} else {
+						con.DrawConnection(new Dictionary<string, List<string>>());
+					}
+				}
+
+				/*
+					draw line if modifing connection.
+				*/
+				switch (modifyMode) {
+					case ModifyMode.CONNECT_STARTED: {
+						// from start node to mouse.
+						DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition);
+						break;
+					}
+					case ModifyMode.CONNECT_ENDED: {
+						// do nothing
+						break;
+					}
 				}
 			}
+			EditorGUILayout.EndScrollView();
+			EditorGUILayout.EndHorizontal();
 
 			/*
 				detect dragging script then change interface to "(+)" icon.
@@ -697,6 +705,8 @@ namespace AssetGraph {
 					}
 					SaveGraphWithReload();
 					Repaint();
+
+					activeObject = null;
 				}
 			}
 
@@ -707,7 +717,7 @@ namespace AssetGraph {
 			// }
 		}
 
-
+		Vector2 scrollPos = new Vector2(1500,0);
 
 		private Type IsAcceptableScriptType (Type type) {
 			if (typeof(IntegratedScriptLoader).IsAssignableFrom(type)) return typeof(IntegratedScriptLoader);
@@ -1251,7 +1261,10 @@ namespace AssetGraph {
 			create new connection if same relationship is not exist yet.
 		*/
 		private void AddConnection (string label, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
-			var connectionsFromThisNode = connections.Where(node => node.startNode.id == startNode.id).ToList();
+			var connectionsFromThisNode = connections
+				.Where(con => con.startNode.id == startNode.id)
+				.Where(con => con.outputPoint == startPoint)
+				.ToList();
 			if (connectionsFromThisNode.Any()) {
 				var alreadyExistConnection = connectionsFromThisNode[0];
 				DeleteConnectionById(alreadyExistConnection.connectionId);

@@ -519,10 +519,7 @@ namespace AssetGraph {
 					.Select(con => con.connectionId)
 					.ToList();
 				
-				if (!targetConnectionIds.Any()) {
-					Debug.LogWarning("this dataSourceNodeId:" + dataSourceNodeId + " is endpointint このログの代わりに何か出したいところ。");
-					return;
-				}
+				if (!targetConnectionIds.Any()) return;
 				
 				var targetConnectionId = targetConnectionIds[0];
 				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
