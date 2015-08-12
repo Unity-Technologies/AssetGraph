@@ -486,12 +486,27 @@ namespace AssetGraph {
 
 						var bundleOptions = node.bundleOptions;
 						var keys = bundleOptions.Keys.ToList();
+
 						for (var i = 0; i < bundleOptions.Count; i++) {
 							var key = keys[i];
 							var val = bundleOptions[keys[i]];
 							var result = EditorGUILayout.ToggleLeft(key, val);
 							if (result != val) {
-								bundleOptions[key] = result;
+								node.bundleOptions[key] = result;
+
+								/*
+									Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
+								*/
+								if (key == "Disable Write TypeTree" && result &&
+									node.bundleOptions["Ignore TypeTree Changes"]) {
+									node.bundleOptions["Ignore TypeTree Changes"] = false;
+								}
+
+								if (key == "Ignore TypeTree Changes" && result &&
+									node.bundleOptions["Disable Write TypeTree"]) {
+									node.bundleOptions["Disable Write TypeTree"] = false;
+								}
+
 								node.Save();
 							}
 						}
