@@ -574,8 +574,7 @@ namespace AssetGraph {
 			/*
 				scroll view
 			*/
-			EditorGUILayout.BeginHorizontal();
-			scrollPos = EditorGUILayout.BeginScrollView(scrollPos, true, true);
+			scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 			{
 				// draw node window x N
 				{
@@ -609,9 +608,15 @@ namespace AssetGraph {
 						break;
 					}
 				}
+
+				// set rect for scroll.
+				if (nodes.Any()) {
+					var rightPoints = nodes.OrderByDescending(node => node.baseRect.x + node.baseRect.width).Select(node => node.baseRect.x + node.baseRect.width).ToList();
+					var bottomPoints = nodes.OrderByDescending(node => node.baseRect.y + node.baseRect.height).Select(node => node.baseRect.y + node.baseRect.height).ToList();
+					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(rightPoints[0]), GUILayout.Height(bottomPoints[0]));
+				}
 			}
 			EditorGUILayout.EndScrollView();
-			EditorGUILayout.EndHorizontal();
 
 			/*
 				detect dragging script then change interface to "(+)" icon.
@@ -1110,12 +1115,12 @@ namespace AssetGraph {
 						case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_RECEIVE_TAPPED: {
 							var sourcePoint = e.eventSourceConnectionPoint;
 
-							var relatedConnections = connections.
-								Where(
+							var relatedConnections = connections
+								.Where(
 									con => con.IsStartAtConnectionPoint(sourcePoint) || 
 									con.IsEndAtConnectionPoint(sourcePoint)
-								).
-								ToList();
+								)
+								.ToList();
 
 							/*
 								show menuContext for control these connections.
