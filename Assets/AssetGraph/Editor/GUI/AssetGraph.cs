@@ -56,6 +56,17 @@ namespace AssetGraph {
 		public static string relativeProjectPath;
 
 		private AudioClip ring;
+
+		public class ActiveObject {
+			public readonly AssetGraphSettings.ObjectKind kind;
+			public readonly string id;
+			public ActiveObject (AssetGraphSettings.ObjectKind kind, string id) {
+				this.kind = kind;
+				this.id = id;
+			}
+		}
+		private ActiveObject activeObject;
+		
 		/**
 			node window initializer.
 			setup nodes, points and connections from saved data.
@@ -533,7 +544,7 @@ namespace AssetGraph {
 		}
 
 
-		void OnGUI () {
+		public void OnGUI () {
 			EditorGUILayout.BeginHorizontal(GUI.skin.box);
 			{
 				if (GUILayout.Button(reloadButtonTexture)) {
@@ -666,7 +677,37 @@ namespace AssetGraph {
 				}
 				menu.ShowAsContext();
 			}
+
+			/*
+				Delete active node or connection.
+			*/
+			if (Event.current.type == EventType.ValidateCommand && Event.current.commandName == "Delete") {
+				if (activeObject != null) {
+					switch (activeObject.kind) {
+						case AssetGraphSettings.ObjectKind.NODE: {
+							var nodeId = activeObject.id;
+							DeleteNode(nodeId);
+							break;
+						}
+						case AssetGraphSettings.ObjectKind.CONNECTION: {
+							var connectionId = activeObject.id;
+							DeleteConnectionById(connectionId);
+							break;
+						}
+					}
+					SaveGraphWithReload();
+					Repaint();
+				}
+			}
+
+			// undo-redo control.
+			// if (Event.current.type == EventType.ValidateCommand
+			// 	&& Event.current.commandName == "UndoRedoPerformed") {
+			// 	Debug.LogError("undo");
+			// }
 		}
+
+
 
 		private Type IsAcceptableScriptType (Type type) {
 			if (typeof(IntegratedScriptLoader).IsAssignableFrom(type)) return typeof(IntegratedScriptLoader);
@@ -914,7 +955,7 @@ namespace AssetGraph {
 					foreach (var connectionPoint in connectionPoints) {
 						newNode.AddConnectionPoint(connectionPoint);
 					}
-					
+
 					nodes.Add(newNode);
 					break;
 				}
@@ -1033,6 +1074,7 @@ namespace AssetGraph {
 							foreach (var node in nodes) {
 								if (node.id == tappedNodeId) {
 									node.SetActive();
+									activeObject = new ActiveObject(AssetGraphSettings.ObjectKind.NODE, node.id);
 								}
 								else node.SetInactive();
 							}
@@ -1087,12 +1129,7 @@ namespace AssetGraph {
 
 						case OnNodeEvent.EventType.EVENT_CLOSE_TAPPED: {
 							var deletingNodeId = e.eventSourceNode.id;
-							for (int i = 0; i < nodes.Count; i++) {
-								var node = nodes[i];
-								if (node.id == deletingNodeId) {
-									nodes.Remove(node);
-								}
-							}
+							DeleteNode(deletingNodeId);
 
 							SaveGraphWithReload();
 							InitializeGraph();
@@ -1152,6 +1189,15 @@ namespace AssetGraph {
 			}
 		}
 
+		public void DeleteNode (string deletingNodeId) {
+			for (int i = 0; i < nodes.Count; i++) {
+				var node = nodes[i];
+				if (node.id == deletingNodeId) {
+					nodes.Remove(node);
+				}
+			}
+		}
+
 		public void EmitConnectionEvent (OnConnectionEvent e) {
 			switch (modifyMode) {
 				case ModifyMode.CONNECT_ENDED: {
@@ -1161,6 +1207,7 @@ namespace AssetGraph {
 							foreach (var con in connections) {
 								if (con.connectionId == tappedConnectionId) {
 									con.SetActive();
+									activeObject = new ActiveObject(AssetGraphSettings.ObjectKind.CONNECTION, con.connectionId);
 								} else {
 									con.SetInactive();
 								}

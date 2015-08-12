@@ -118,5 +118,9 @@ namespace AssetGraph {
 			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
 		}
 
+		public enum ObjectKind : int {
+			NODE,
+			CONNECTION
+		}
 	}
 }
