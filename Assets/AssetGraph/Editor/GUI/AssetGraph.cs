@@ -297,6 +297,27 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						var bundleOptionsSource = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_BUNDLEOPTIONS] as Dictionary<string, object>;
+						var bundleOptions = new Dictionary<string, bool>();
+
+						foreach (var key in bundleOptionsSource.Keys) {
+							var val = (bool)bundleOptionsSource[key];
+							bundleOptions[key] = val;
+						}
+
+						var newNode = Node.GUINodeForBundleBuilder(EmitNodeEvent, nodes.Count, name, id, kind, bundleOptions, x, y);
+
+						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+						foreach (var outputLabelSource in outputLabelsList) {
+							var label = outputLabelSource as string;
+							newNode.AddConnectionPoint(new OutputPoint(label));
+						}
+
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
@@ -429,6 +450,11 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate;
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_BUNDLEOPTIONS] = node.bundleOptions;
 						break;
 					}
 
@@ -820,16 +846,14 @@ namespace AssetGraph {
 					newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-					
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					Debug.LogError("作ろう。");
-					// newNode = Node.GUINodeForBundlizer(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
-					// newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					// newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-					
+					var bundleOptions = AssetGraphSettings.DefaultBundleOptionSettings;
+					newNode = Node.GUINodeForBundleBuilder(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 

@@ -178,7 +178,7 @@ namespace AssetGraph {
 				var assetPathsWhichAreNotTraced = localFilePathsWithoutTargetDirectoryPath.Except(assetPathsWhichAreAlreadyTraced);
 				foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
 					var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
+					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						basePathWithNewAssetPath,
 						AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
 						AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath)

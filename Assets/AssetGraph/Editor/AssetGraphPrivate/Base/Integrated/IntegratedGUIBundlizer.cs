@@ -24,14 +24,27 @@ namespace AssetGraph {
 				Debug.LogError("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
 				return;
 			}
+			
+			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
-				var outputSources = new List<InternalAssetData>();// cause of 0.
+				var inputSources = groupedSources[groupKey];
+				
+				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, false);
+				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
+
+				var outputSources = new List<InternalAssetData>();
+
+				var newAssetData = InternalAssetData.InternalAssetDataGeneratedByBundlizer(reservedBundlePath);
+
+				outputSources.Add(newAssetData);
+			
 				outputDict[groupKey] = outputSources;
 			}
-			
+
 			Output(nodeId, labelToNext, outputDict);
 		}
 		
@@ -53,38 +66,23 @@ namespace AssetGraph {
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
-
-				var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
-				try {
-					In(groupKey, inputSources, recommendedBundleOutputDir);
-				} catch (Exception e) {
-					Debug.LogError("Bundlizer:" + this + " error:" + e);
-				}
-
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
-				AssetDatabase.SaveAssets();
-
-				var localFilePathsAfterBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 				
+				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, true);
+				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
+
 				var outputSources = new List<InternalAssetData>();
 
-				var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
-				foreach (var newAssetPath in generatedAssetBundlePaths) {
-					var newAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
-						newAssetPath,
-						AssetDatabase.AssetPathToGUID(newAssetPath),
-						AssetGraphInternalFunctions.GetAssetType(newAssetPath)
-					);
-					outputSources.Add(newAssetData);
-				}
+				var newAssetData = InternalAssetData.InternalAssetDataGeneratedByBundlizer(reservedBundlePath);
 
+				outputSources.Add(newAssetData);
+			
 				outputDict[groupKey] = outputSources;
 			}
 
 			Output(nodeId, labelToNext, outputDict);
 		}
 
-		public void In (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir) {
+		public string BundlizeAssets (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {
 			var validation = true;
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importedPath)) {
@@ -93,38 +91,22 @@ namespace AssetGraph {
 				}
 			}
 
-			if (!validation) return;
-
-			var mainAssetInfo = sources[0];
-			var mainAsset = AssetDatabase.LoadAssetAtPath(mainAssetInfo.importedPath, mainAssetInfo.assetType) as UnityEngine.Object;
-			
-			var sunAssetInfos = sources.GetRange(1, sources.Count-1);
-			var subAssets = new List<UnityEngine.Object>();
-
-			foreach (var subAssetInfo in sunAssetInfos) {
-				var loadedSub = AssetDatabase.LoadAssetAtPath(subAssetInfo.importedPath, subAssetInfo.assetType) as UnityEngine.Object;
-				subAssets.Add(loadedSub);
-			}
+			if (!validation) return string.Empty;
 
 			var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
 			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
-			// create AssetBundle from assets.
-			var targetPath = Path.Combine(recommendedBundleOutputDir, templateHead + groupkey + templateTail);
-			
-			uint crc = 0;
-			try {
-				BuildPipeline.BuildAssetBundle(
-					mainAsset,
-					subAssets.ToArray(),
-					targetPath,
-					out crc,
-					BuildAssetBundleOptions.CollectDependencies | BuildAssetBundleOptions.CompleteAssets,
-					BuildTarget.iOS
-				);
-			} catch (Exception e) {
-				Debug.LogError("failed to create AssetBundle:" + targetPath);
+			var bundleName = templateHead + groupkey + templateTail;
+			var bundlePath = Path.Combine(recommendedBundleOutputDir, bundleName);
+
+			if (isRun) {
+				foreach (var source in sources) {
+					var assetImporter = AssetImporter.GetAtPath(source.importedPath);
+					assetImporter.assetBundleName = bundleName;
+				}
 			}
+
+			return bundlePath;
 		}
 	}
 }

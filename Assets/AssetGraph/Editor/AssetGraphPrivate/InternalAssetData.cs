@@ -51,9 +51,9 @@ namespace AssetGraph {
 		}
 
 		/**
-			new assets which is generated on Imported or Prefabricated or Bundlized.
+			new assets which is generated on Imported or Prefabricated.
 		*/
-		public static InternalAssetData InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer (string importedPath, string assetId, Type assetType) {
+		public static InternalAssetData InternalAssetDataGeneratedByImporterOrPrefabricator (string importedPath, string assetId, Type assetType) {
 			return new InternalAssetData(
 				Guid.NewGuid().ToString(),
 				null,
@@ -67,6 +67,41 @@ namespace AssetGraph {
 				true
 			);
 		}
+
+		/**
+			new assets which is generated on Bundlized.
+			no file exists. only setting applyied.
+		*/
+		public static InternalAssetData InternalAssetDataGeneratedByBundlizer (string importedPath) {
+			return new InternalAssetData(
+				Guid.NewGuid().ToString(),
+				null,
+				null,
+				Path.GetFileName(importedPath),
+				null,
+				importedPath,
+				The2LevelLowerPath(importedPath),
+				null,
+				null,
+				false
+			);
+		}
+
+		public static InternalAssetData InternalAssetDataGeneratedByBundleBuilder (string importedPath) {
+			return new InternalAssetData(
+				Guid.NewGuid().ToString(),
+				null,
+				null,
+				Path.GetFileName(importedPath),
+				null,
+				importedPath,
+				The2LevelLowerPath(importedPath),
+				null,
+				null,
+				false
+			);
+		}
+
 
 		private InternalAssetData (
 			string traceId,

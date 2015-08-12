@@ -150,6 +150,11 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						// nothing to do.
+						break;
+					}
+
 					default: {
 						Debug.LogError("not match kind:" + kind);
 						break;
@@ -328,13 +333,13 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, loadFilePath, null, null, null, null, null));
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
 						var exportFilePath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, exportFilePath, null, null, null, null));
 						break;
 					}
 
@@ -347,7 +352,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, scriptType, null, null, null, null, null, null));
 						break;
 					}
 
@@ -357,24 +362,35 @@ namespace AssetGraph {
 						foreach (var containsKeywordSource in containsKeywordsSource) {
 							containsKeywords.Add(containsKeywordSource.ToString());
 						}
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, containsKeywords, null, null, null));
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, null, null));
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var groupingKeyword = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, groupingKeyword, null));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, groupingKeyword, null, null));
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as string;
-						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, bundleNameTemplate));
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, bundleNameTemplate, null));
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						var bundleOptionsSource = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_BUNDLEOPTIONS] as Dictionary<string, object>;
+						var bundleOptions = new Dictionary<string, bool>();
+						foreach (var key in bundleOptionsSource.Keys) {
+							var val = (bool)bundleOptionsSource[key];
+							bundleOptions[key] = val;
+						}
+						nodeDatas.Add(new NodeData(nodeId, nodeKind, nodeName, null, null, null, null, null, null, bundleOptions));
 						break;
 					}
 
@@ -614,6 +630,13 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						var bundleOptions = currentNodeData.bundleOptions;
+						var executor = new IntegratedGUIBundleBuilder(bundleOptions);
+						executor.Run(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
 						executor.Run(nodeId, labelToChild, inputParentResults, Output);
@@ -710,6 +733,13 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						var bundleOptions = currentNodeData.bundleOptions;
+						var executor = new IntegratedGUIBundleBuilder(bundleOptions);
+						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
 						executor.Setup(nodeId, labelToChild, inputParentResults, Output);
@@ -767,6 +797,9 @@ namespace AssetGraph {
 		// for bundlizer GUI data
 		public readonly string bundleNameTemplate;
 
+		// for bundleBuilder GUI data
+		public readonly Dictionary<string, bool> bundleOptions;
+
 		private bool cached;
 
 		public NodeData (
@@ -778,7 +811,8 @@ namespace AssetGraph {
 			string exportPath,
 			List<string> filterContainsList,
 			string groupingKeyword,
-			string bundleNameTemplate
+			string bundleNameTemplate,
+			Dictionary<string, bool> bundleOptions
 		) {
 			this.nodeId = currentNodeId;
 			this.nodeKind = currentNodeKind;
@@ -790,6 +824,7 @@ namespace AssetGraph {
 			this.containsKeywords = null;
 			this.groupingKeyword = null;
 			this.bundleNameTemplate = null;
+			this.bundleOptions = null;
 
 			switch (currentNodeKind) {
 				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
@@ -831,6 +866,11 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.bundleNameTemplate = bundleNameTemplate;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					this.bundleOptions = bundleOptions;
 					break;
 				}
 

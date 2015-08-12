@@ -25,6 +25,7 @@ namespace AssetGraph {
 		public List<string> filterContainsKeywords;
 		public string groupingKeyword;
 		public string bundleNameTemplate;
+		public Dictionary<string, bool> bundleOptions;
 
 		private string nodeInterfaceTypeStr;
 
@@ -54,6 +55,7 @@ namespace AssetGraph {
 				null,
 				null,
 				null,
+				null,
 				x,
 				y
 			);
@@ -73,6 +75,7 @@ namespace AssetGraph {
 				null,
 				null,
 				null,
+				null,
 				x,
 				y
 			);
@@ -87,6 +90,7 @@ namespace AssetGraph {
 				kind,
 				scriptType,
 				scriptPath,
+				null,
 				null,
 				null,
 				null,
@@ -111,6 +115,7 @@ namespace AssetGraph {
 				filterContainsKeywords,
 				null,
 				null,
+				null,
 				x,
 				y
 			);
@@ -127,6 +132,7 @@ namespace AssetGraph {
 				null,
 				null, 
 				null, 
+				null,
 				null,
 				null,
 				null,
@@ -149,6 +155,7 @@ namespace AssetGraph {
 				null,
 				groupingKeyword,
 				null,
+				null,
 				x,
 				y
 			);
@@ -165,6 +172,7 @@ namespace AssetGraph {
 				null,
 				null, 
 				null, 
+				null,
 				null,
 				null,
 				null,
@@ -187,6 +195,27 @@ namespace AssetGraph {
 				null,
 				null,
 				bundleNameTemplate,
+				null,
+				x,
+				y
+			);
+		}
+
+		public static Node GUINodeForBundleBuilder (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, Dictionary<string, bool> bundleOptions, float x, float y) {
+			return new Node(
+				emit,
+				index,
+				name,
+				id,
+				kind,
+				null,
+				null,
+				null, 
+				null, 
+				null,
+				null,
+				null,
+				bundleOptions,
 				x,
 				y
 			);
@@ -417,7 +446,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by template.", MessageType.Info);
+						EditorGUILayout.HelpBox("Bundlizer: bundle resources to AssetBundle by template.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
 							node.name = newName;
@@ -429,6 +458,42 @@ namespace AssetGraph {
 						if (bundleNameTemplate != node.bundleNameTemplate) {
 							node.bundleNameTemplate = bundleNameTemplate;
 							node.Save();
+						}
+						break;
+					}
+
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT: {
+						Debug.LogError("not yet.");
+						// EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
+						// var newName = EditorGUILayout.TextField("Node Name", node.name);
+						// if (newName != node.name) {
+						// 	node.name = newName;
+						// 	node.UpdateNodeRect();
+						// 	node.Save();
+						// }
+
+						// EditorGUILayout.LabelField("Script Path", node.scriptPath);
+						break;
+					}
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle.", MessageType.Info);
+						var newName = EditorGUILayout.TextField("Node Name", node.name);
+						if (newName != node.name) {
+							node.name = newName;
+							node.UpdateNodeRect();
+							node.Save();
+						}
+
+						var bundleOptions = node.bundleOptions;
+						var keys = bundleOptions.Keys.ToList();
+						for (var i = 0; i < bundleOptions.Count; i++) {
+							var key = keys[i];
+							var val = bundleOptions[keys[i]];
+							var result = EditorGUILayout.ToggleLeft(key, val);
+							if (result != val) {
+								bundleOptions[key] = result;
+								node.Save();
+							}
 						}
 						break;
 					}
@@ -492,6 +557,7 @@ namespace AssetGraph {
 			List<string> filterContainsKeywords, 
 			string groupingKeyword,
 			string bundleNameTemplate,
+			Dictionary<string, bool> bundleOptions,
 			float x, 
 			float y
 		) {
@@ -508,6 +574,7 @@ namespace AssetGraph {
 			this.filterContainsKeywords = filterContainsKeywords;
 			this.groupingKeyword = groupingKeyword;
 			this.bundleNameTemplate = bundleNameTemplate;
+			this.bundleOptions = bundleOptions;
 			
 			this.baseRect = new Rect(x, y, NodeEditorSettings.NODE_BASE_WIDTH, NodeEditorSettings.NODE_BASE_HEIGHT);
 			this.closeButtonRect = new Rect(0f, 0f, 18f, 18f);

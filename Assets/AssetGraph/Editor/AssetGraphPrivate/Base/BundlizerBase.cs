@@ -53,7 +53,7 @@ namespace AssetGraph {
 
 				var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
 				foreach (var newAssetPath in generatedAssetBundlePaths) {
-					var newAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricatorOrBundlizer(
+					var newAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						newAssetPath,
 						AssetDatabase.AssetPathToGUID(newAssetPath),
 						AssetGraphInternalFunctions.GetAssetType(newAssetPath)

@@ -13,6 +13,7 @@ namespace AssetGraph {
 		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported";
 		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated";
 		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized";
+		public const string BUNDLEBUILDER_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "BundleBuilt";
 
 		public const string IMPORTER_SAMPLING_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Sampling";
 
@@ -22,6 +23,15 @@ namespace AssetGraph {
 		public const char UNITY_FOLDER_SEPARATOR = '/';
 
 		public const char KEYWORD_WILDCARD = '*';
+
+		public static Dictionary<string, bool> DefaultBundleOptionSettings = new Dictionary<string, bool> {
+			{"Uncompressed AssetBundle", false},
+			{"Disable Write TypeTree", false},
+			{"Deterministic AssetBundle", false},
+			{"Force Rebuild AssetBundle", false},
+			{"Ignore TypeTree Changes", false},
+			{"Append Hash To AssetBundle Name", false}
+		};
 
 		/*
 			node generation from GUI
@@ -80,6 +90,7 @@ namespace AssetGraph {
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
+		public const string NODE_BUNDLEBUILDER_BUNDLEOPTIONS = "bundleOptions";
 
 		// connection const
 		public const string CONNECTION_LABEL = "label";
