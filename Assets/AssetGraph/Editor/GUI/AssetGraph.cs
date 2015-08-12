@@ -573,10 +573,16 @@ namespace AssetGraph {
 		public void OnGUI () {
 			EditorGUILayout.BeginHorizontal(GUI.skin.box);
 			{
-				if (GUILayout.Button(reloadButtonTexture)) {
-					Reload();
+				if (!reloadButtonTexture) {
+					if (GUILayout.Button("Reload")) {
+						Reload();
+					}
+				} else {
+					if (GUILayout.Button(reloadButtonTexture)) {
+						Reload();
+					}
 				}
-
+				
 				if (GUILayout.Button("Build")) {
 					Run();
 				}
