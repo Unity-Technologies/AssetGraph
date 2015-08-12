@@ -593,7 +593,7 @@ namespace AssetGraph {
 					var platfornName = platformButtonData.name;
 
 					var onOff = false;
-					if (i == 1) onOff = true;
+					if (i == 8) onOff = true;
 
 					if (GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton")) {
 						// 、、、？？毎フレームよばれてしまうっぽいな？
