@@ -13,7 +13,7 @@ namespace AssetGraph {
 			this.assetPath = assetPath;
 			this.assetId = assetId;
 		}
-
+		
 		public override string ToString () {
 			return "assetName:" + assetName + " assetType:" + assetType + " assetPath:" + assetPath + " assetId:" + assetId;
 		}

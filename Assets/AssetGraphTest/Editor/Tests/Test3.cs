@@ -38,7 +38,16 @@ public partial class Test {
 			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 		}
 
-		// resultDictのチェックをすればよさげなのだが、記録が残しにくい、、
-		Debug.LogError("今ならできるな");
+		var connectionIds = resultDict.Keys.ToList();
+		
+		if (connectionIds.Contains("ロードからフィルタへ")) {
+			connectionIds.Remove("ロードからフィルタへ");
+		}
+
+		if (!connectionIds.Contains("ロードからフィルタへ")) {
+			return;
+		}
+
+		Debug.LogError("multiple same connectionId contains.");
 	}
 }

@@ -52,9 +52,6 @@ namespace AssetGraph {
 
 		private Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
 
-		public static string projectPathWithSlash;
-		public static string relativeProjectPath;
-
 		private AudioClip ring;
 
 		public class ActiveObject {
@@ -73,11 +70,7 @@ namespace AssetGraph {
 		*/
 		public void InitializeGraph () {
 			ring = AssetDatabase.LoadAssetAtPath("Assets/AssetGraph/Editor/Res/microwave-tin1.mp3", typeof(AudioClip)) as AudioClip;
-			
-			var assetPath = Application.dataPath;
-			projectPathWithSlash = Directory.GetParent(assetPath).ToString() + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
-			relativeProjectPath = Directory.GetParent(assetPath).Name;
-			
+
 			if (platformButtonDatas == null) {
 				platformButtonDatas = new List<PlatformButtonData>();
 				var platformButtonTextureResources = Resources
@@ -816,7 +809,7 @@ namespace AssetGraph {
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
-					newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, relativeProjectPath, x, y);
+					newNode = Node.LoaderNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, RelativeProjectPath(), x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
@@ -864,7 +857,7 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, relativeProjectPath, x, y);
+					newNode = Node.ExporterNode(EmitNodeEvent, nodes.Count, nodeName, nodeId, kind, RelativeProjectPath(), x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -891,6 +884,12 @@ namespace AssetGraph {
 			using (var sw = new StreamWriter(graphDataPath)) {
 				sw.Write(dataStr);
 			}
+		}
+
+		private string RelativeProjectPath () {
+			var assetPath = Application.dataPath;
+			var projectPathWithSlash = Directory.GetParent(assetPath).ToString() + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
+			return Directory.GetParent(assetPath).Name;
 		}
 
 		private void DuplicateNode (string sourceNodeId, float x, float y) {

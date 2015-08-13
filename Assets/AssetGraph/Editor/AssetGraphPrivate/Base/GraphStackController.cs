@@ -281,7 +281,7 @@ namespace AssetGraph {
 					var sourcePathList = new List<string>();
 					foreach (var assetData in connectionThroughputList) {
 						if (assetData.absoluteSourcePath != null) {
-							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(AssetGraph.projectPathWithSlash, string.Empty);
+							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(ProjectPathWithSlash(), string.Empty);
 							sourcePathList.Add(relativeAbsolutePath);
 						} else {
 							sourcePathList.Add(assetData.pathUnderConnectionId);
@@ -292,6 +292,11 @@ namespace AssetGraph {
 				result[connectionId] = newConnectionGroupDict;
 			}
 			return result;
+		}
+
+		private static string ProjectPathWithSlash () {
+			var assetPath = Application.dataPath;
+			return Directory.GetParent(assetPath).ToString() + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
 		}
 		
 		/**
