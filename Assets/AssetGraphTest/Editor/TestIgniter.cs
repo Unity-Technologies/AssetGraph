@@ -5,7 +5,7 @@ public class TestIgniter {
 
 	static TestIgniter () {
 		var testContext = new Test();
-		// testContext.RunTests();
+	// 	testContext.RunTests();
 	}
 
 }

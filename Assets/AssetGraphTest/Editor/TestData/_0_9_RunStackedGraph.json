@@ -5,7 +5,7 @@
             "name": "AssetGraph.IntegratedScriptLoader",
             "id": "0_Loader",
             "kind": "LOADER_SCRIPT",
-            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_9_SerializedGraphJSON",
+            "loadPath": "AssetGraph/TestResourcesFor_0_9_SerializedGraphJSON",
             "outputLabels": [
                 "_"
             ]
@@ -43,7 +43,7 @@
             "name": "AssetGraph.IntegratedScriptExporter",
             "id": "3rd_Exporter",
             "kind": "EXPORTER_SCRIPT",
-            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportPlace/For_0_9_SerializedGraphJSONByExporter",
+            "exportPath": "AssetGraph/TestExportPlace/For_0_9_SerializedGraphJSONByExporter",
             "pos": {
                 "x": 10,
                 "y": 10
