@@ -11,13 +11,13 @@ AssetGraph is a graph editor for generate Unity Assets from any resources.
 Put nodes on canvas.  
 ![SS](/Doc/1.png)
 
-###2.Set Parameters for each nodes
-Every nodes has parameters for customize resources.
-Set it from that Inspector.  
+###2.Connect them
+Let it connect! You can preview which resources will run on the connection.  
 ![SS](/Doc/2.png)
 
-###3.Connect them
-Let it connect! You can preview which resources will run on the connection.  
+###3.Set Parameters for each nodes
+Every nodes has parameters for customize resources.
+Set it from that Inspector.  
 ![SS](/Doc/3.png)
 
 ###4.Build!
