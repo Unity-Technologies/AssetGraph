@@ -1,11 +1,31 @@
 # AssetGraph
 
-A graph editor for generate Unity Assets & AssetBundles from any resources.
+Automate asset generating from import to AssetBundlize!
 
-##usage
-1. set source folder.
-2. add filter script if you need to use specific importer.
-3. add import script.
-4. add prefabricate script.
-5. add bundlize script.
-6. set output folder.
+AssetGraph is a graph editor for generate Unity Assets from any resources.
+
+素材からアセットバンドルまで、素材をブチ込むだけでOK
+
+##Usage
+###1.Add "node"
+右クリックでノードを置いていく。
+ImportとかBundlizeとか。
+
+###2.Connect them
+繋ごう。
+プレビューでいろいろ見れるな。
+
+###3.Set Parameters
+インポートして、素材をどうしようか。設定が反映されるっぽいぞ。
+
+###4.Build!
+ビルドが終わって、チン！ 
+簡単でしょう？
+
+##Examples
+###簡単インポート設定
+
+###組み合わせてバンドル化
+
+###
+

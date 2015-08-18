@@ -1,0 +1,40 @@
+ManifestFileVersion: 0
+CRC: 526874081
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 002b329d1e86be412e676896709ea25d
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c9bfb786bf859913062d54fcc3083f7f
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 90
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+Assets:
+- Assets/AssetGraph/Cache/Imported/08f0c6f7-d14f-4dc8-99eb-54266909dc5e/models/ID_1/sample.fbx
+- Assets/AssetGraph/Cache/Imported/7eff21b4-f4d9-4b0a-8fe0-73cb5bf24d8c/models/ID_1/Materials/kiosk_0001.mat
+- Assets/AssetGraph/Cache/Imported/ead5a993-1d8f-4686-b7d2-3071234b84e0/images/ID_1/dummy.png
+- Assets/AssetGraph/Cache/Imported/08f0c6f7-d14f-4dc8-99eb-54266909dc5e/models/ID_1/Materials/kiosk_0001.mat
+- Assets/AssetGraph/Cache/Prefabricated/fb139ec8-6e94-4110-b1e8-d25fdc16eda3/1_chara.prefab
+- Assets/AssetGraph/Cache/Imported/7eff21b4-f4d9-4b0a-8fe0-73cb5bf24d8c/models/ID_1/sample.fbx
+- Assets/AssetGraph/Cache/Imported/15d41f21-08ae-458d-ace0-e0073c9d502d/images/ID_1/dummy.png
+Dependencies: []

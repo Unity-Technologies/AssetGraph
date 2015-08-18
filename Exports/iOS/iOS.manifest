@@ -1,0 +1,21 @@
+ManifestFileVersion: 0
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: chara_0.assetbundle
+      Dependencies: {}
+    Info_1:
+      Name: chara_1.assetbundle
+      Dependencies: {}
+    Info_2:
+      Name: chara_2.assetbundle
+      Dependencies: {}
+    Info_3:
+      Name: sound_1.assetbundle
+      Dependencies: {}
+    Info_4:
+      Name: sound_2.assetbundle
+      Dependencies: {}
+    Info_5:
+      Name: sound_0.assetbundle
+      Dependencies: {}

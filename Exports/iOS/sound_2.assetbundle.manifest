@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 2685531062
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 4effdc6608ce6201e708a87ec1b4d2fc
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c516f2a3b2b6b67ef759f6410a790acd
+HashAppended: 0
+ClassTypes:
+- Class: 83
+  Script: {instanceID: 0}
+Assets:
+- Assets/AssetGraph/Cache/Imported/554b6d75-6739-4245-aa2d-eba451e47bb0/bgms/Stage_2/crank_ringtone.mp3
+- Assets/AssetGraph/Cache/Imported/68880f1f-d2a6-4075-889b-36b7a81f25db/ses/Stage_2/crank_ringtone.mp3
+Dependencies: []
