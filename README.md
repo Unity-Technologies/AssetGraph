@@ -9,18 +9,22 @@ AssetGraph is a graph editor for generate Unity Assets from any resources.
 ##Usage
 ###1.Add "node"
 右クリックでノードを置いていく。
-ImportとかBundlizeとか。
+ImportとかBundlizeとか。  
+![SS](/Doc/1.png)
 
 ###2.Connect them
 繋ごう。
-プレビューでいろいろ見れるな。
+プレビューでいろいろ見れるな。  
+![SS](/Doc/2.png)
 
 ###3.Set Parameters
-インポートして、素材をどうしようか。設定が反映されるっぽいぞ。
+インポートして、素材をどうしようか。設定が反映されるっぽいぞ。  
+![SS](/Doc/3.png)
 
 ###4.Build!
 ビルドが終わって、チン！ 
-簡単でしょう？
+簡単でしょう？  
+![SS](/Doc/4.png)
 
 ##Examples
 ###簡単インポート設定
