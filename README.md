@@ -24,7 +24,9 @@ ImportとかBundlizeとか。
 ###4.Build!
 ビルドが終わって、チン！ 
 簡単でしょう？  
-![SS](/Doc/4.png)
+![SS](/Doc/4.png)  
+![SS](/Doc/5.png)    
+![SS](/Doc/6.png)
 
 ##Examples
 ###簡単インポート設定
