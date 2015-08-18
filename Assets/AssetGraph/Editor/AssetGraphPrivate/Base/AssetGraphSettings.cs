@@ -5,10 +5,10 @@ namespace AssetGraph {
 	public class AssetGraphSettings {
 		public const string GUI_TEXT_MENU_OPEN = "AssetGraph/Open...";
 		
-		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/Temp";
+		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
-		public const string APPLICATIONDATAPATH_TEMP_PATH = "Assets/AssetGraph/Temp/";
+		public const string APPLICATIONDATAPATH_TEMP_PATH = "Assets/AssetGraph/Cache/";
 		
 		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported";
 		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated";

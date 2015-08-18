@@ -17,3 +17,6 @@ TestExportFor_0_12_SerializedGraphJSON/*
 Export/*
 
 AssetGraphExports/*
+Assets/AssetGraph/Cache/*
+
+
