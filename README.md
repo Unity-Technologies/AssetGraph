@@ -8,22 +8,21 @@ AssetGraph is a graph editor for generate Unity Assets from any resources.
 
 ##Usage
 ###1.Add "node"
-右クリックでノードを置いていく。
-ImportとかBundlizeとか。  
+Put nodes on canvas.  
 ![SS](/Doc/1.png)
 
-###2.Connect them
-繋ごう。
-プレビューでいろいろ見れるな。  
+###2.Set Parameters for each nodes
+Every nodes has parameters for customize resources.
+Set it from that Inspector.  
 ![SS](/Doc/2.png)
 
-###3.Set Parameters
-インポートして、素材をどうしようか。設定が反映されるっぽいぞ。  
+###3.Connect them
+Let it connect! You can preview which resources will run on the connection.  
 ![SS](/Doc/3.png)
 
 ###4.Build!
-ビルドが終わって、チン！ 
-簡単でしょう？  
+Resources are running on the nodes & connections!  
+It's easy, scalable, adjustable way for generate assets.    
 ![SS](/Doc/4.png)  
 ![SS](/Doc/5.png)    
 ![SS](/Doc/6.png)
