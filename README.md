@@ -63,9 +63,9 @@ Grouping makes a group of resources from given list of assets by configured keyw
 ![SS](/Doc/400-2.png)  
 
 ###Prefabricator
-Prefabricator is a node that let you create Prefab in the form you need in your game. You can use Prefabricator by extending AssetGraph.PrefabricatorBase script and make your own Prefab. 
+Prefabricator is a node that let you create Prefab in the form you need in your game. You can use Prefabricator by extending AssetGraph.PrefabricatorBase script and make your own Prefab.
 - IN: list of group of assets
-- OUT: list of generated prefabs
+- OUT: list of group of assets (generated prefabs added to each group)
 
 ![SS](/Doc/700.png)  
 
