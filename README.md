@@ -1,68 +1,75 @@
 # AssetGraph
 
-Automate asset generating from import to AssetBundle via GUI!
-
-AssetGraph is the tool for generating Unity Assets by editing flow of resource's stream.
+AssetGraph is a visual toolset lets you configure and create Unity's AssetBundles. It is intended to create rule-based configuration in visual form to create and manage efficient workflow around AssetBundle generation. 
 
 ##Usage
-###1.Add "node"
-Put nodes to canvas.  
+###1.Add Nodes
+Right click AssetGraph canvas gives you list of nodes you can create. Select one of them and create nodes. To start, create Loader node to identify which assets should go into AssetBundles.
 ![SS](/Doc/1.png)
 
-###2.Connect them
-Let it connect!  
-You can preview which resources will run on the connection.  
+###2.Connect Them
+When you create more than two nodes, let's connect them. Simply click the dot on created node, drag and drop to the dot of other node you wish to connect, then you will have link. 
+
+AssetGraph gives you live update preview of asset list that will be passed through the link. By clicking link you will see the full list of assets.
+
 ![SS](/Doc/2.png)
 
-###3.Set Parameters for each nodes
-Every nodes has parameters for customizing resources.  
-These settings will reflect to the resources on streams!
+###3.Configure Settings
+By selecting a node, you can configure settings for your AssetBundle building rules. I.e. Filter node let you configure filtering rules, Importer node let you configure different importing setting you wish to apply onto assets go through that node. 
 ![SS](/Doc/3.png)
 
-###4.Build!
-Resources will be customized by the nodes!  
-It's easy, repeatable, scalable way for generating assets.  
+###4.Build It!
+By pressing Build button on AssetGraph window, AssetBundles are built respect to rules you created.
+Visual editor lets you build AssetBunldes in the way you want to while keeping everything easy, repeatable and scalable.
 ![SS](/Doc/4.png)  
 ![SS](/Doc/5.png)    
 ![SS](/Doc/6.png)
 
-##Want more same-ruled assets from another resources?
-AssetGraph controls all modification processes.  
-When you added new resources, the output results are fully modified by the setting of AssetGraph!  
-No need to modify them one by one.
+##Why Rule Based?
+Because AssetGraph handles AssetBundle build pipeline by rules, programmers can safely build simple workflow with artists or game designers without making them worry about AssetBundle configuration. When they add new assets into project, AssetGraph automatically takes care of them and build necessary AssetBundles by your rule(s). 
 
-##Nodes for flow
-There are nodes for constructing resource modification flow.
+##Nodes
+There are several types of nodes you can use to construct AssetBundle building pipeline.
 
 ###Loader
-Load resources to AssetGraph from outside of /Assets folder.  
+Loader finds and lists assets. You can specify root directory of assets to target. You can also select directory outside /Assets/. 
+- IN: none
+- OUT: list of assets under given root directory
+
 ![SS](/Doc/1000.png)
 
 ###Filter
-Split resource streams by keyword.  
-It's useful for split flow of resources by resource's path.  
+Filter filters list of assets passed by previous node. You can add multiple filtering rules to create multiple filter result.
+- IN: list of assets
+- OUT: list of assets which matches given filter setting
+
 ![SS](/Doc/600.png)  
 
 ###Importer
-Set import settings directly!  
-The settings will be applied to all resources which passes this node.  
+Importer overwrites import settings of assets passed by previous node for this AssetBundle build. (NOTE: original asset configuration remains. )
+- IN: list of assets
+- OUT: list of assets with given importer settings applied
+
 ![SS](/Doc/500.png)  
 
 ###Grouping
-Grouping resources by keyword.  
-"Group" is very useful approach for this tool.  
-The keyword should contains "*" as wildcard.  
-Outputs will be grouped dynamically  by keyword.  
+Grouping makes a group of resources from given list of assets by configured keyword.
+"Group" is very useful approach for building AssetBundle. In keyword configuration, you can use *"*"* as a wildcard.
+- IN: list of assets
+- OUT: list of group of assets
+
 ![SS](/Doc/400-0.png)  
 ![SS](/Doc/400-1.png)  
 ![SS](/Doc/400-2.png)  
 
 ###Prefabricator
-Generate prefabs by attaching script.  
-This script should extend specific type:"AssetGraph.PrefabricatorBase".  
+Prefabricator is a node that let you create Prefab in the form you need in your game. You can use Prefabricator by extending AssetGraph.PrefabricatorBase script and make your own Prefab.
+- IN: list of group of assets
+- OUT: list of group of assets (generated prefabs added to each group)
+
 ![SS](/Doc/700.png)  
 
-
+#### Prefabricator code example:
 ```
 public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
 	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
@@ -88,18 +95,24 @@ full example script is [here](https://github.com/unity3d-jp/AssetGraph/blob/0.7.
 
 
 ###Bundlizer
-Bundle inputted resources.  
-You can set the name of the file of AssetBundle.  
-"*" will be replaced to the grouping identifier.  
+Bundlizer create "bundle" of given group of assets and configure generating AssetBundle's filename. "*" will be replaced to the grouping identifier.  
+- IN: list of group of assets
+- OUT: list of bundles
+
 ![SS](/Doc/800.png)
 
 
 ###BundleBuilder
-Generate actual AssetBundles.  
-This node will output AssetBundle files only.  
+BundleBuilder create actual AssetBundle files from given list of bundle configurations. By using Bundlizer and BundleBuilder(s), you can simultaneously create AssetBundles with different AssetBundle configuration (i.e. compressed & uncompressed)
+
+- IN: list of bundles
+- OUT: list of generated AssetBundle files
+
 ![SS](/Doc/100.png)
 
 
 ###Exporter
-Export resources to outside of /Assets folder.  
+Exporter saves given assets into given directory.  You can also select directory outside /Assets/. 
+- IN: list of assets (or AssetBundle files)
+
 ![SS](/Doc/900.png)
