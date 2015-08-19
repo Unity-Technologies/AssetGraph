@@ -3,7 +3,7 @@
 AssetGraph is a visual toolset lets you configure and create Unity's AssetBundles. It is intended to create rule-based configuration in visual form to create and manage efficient workflow around AssetBundle generation. 
 
 ##Usage
-###1.Adding Nodes
+###1.Add Nodes
 Right click AssetGraph canvas gives you list of nodes you can create. Select one of them and create nodes. To start, create Loader node to identify which assets should go into AssetBundles.
 ![SS](/Doc/1.png)
 
