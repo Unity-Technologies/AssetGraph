@@ -1,8 +1,6 @@
 # AssetGraph
 
-Automate asset generating from import to AssetBundle via GUI!
-
-AssetGraph is the tool for generating Unity Assets by editing flow of resource's stream.
+AssetGraph is a visual toolset lets you configure and create Unity's AssetBundles. It is intended to create rule-based configuration in visual form to create and manage efficient workflow around AssetBundle generation. 
 
 ##Usage
 ###1.Add "node"
