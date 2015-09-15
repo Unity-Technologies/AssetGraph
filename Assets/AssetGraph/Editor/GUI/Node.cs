@@ -770,7 +770,7 @@ namespace AssetGraph {
 					only emit event.
 				*/
 				case EventType.Ignore: {
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DROPPED, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_DROPPED, this, Event.current.mousePosition, null));
 					break;
 				}
 				/*
@@ -778,7 +778,7 @@ namespace AssetGraph {
 					cancel connecting event.
 				*/
 				case EventType.MouseUp: {
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_RELEASED, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_RELEASED, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -786,7 +786,7 @@ namespace AssetGraph {
 					handling drag.
 				*/
 				case EventType.MouseDrag: {
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_HANDLING, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLING, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -797,7 +797,7 @@ namespace AssetGraph {
 				case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 
-					if (result != null) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_HANDLE_STARTED, this, Event.current.mousePosition, result));
+					if (result != null) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED, this, Event.current.mousePosition, result));
 					else Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TAPPED, this, Event.current.mousePosition, null));
 					
 					break;
@@ -840,7 +840,7 @@ namespace AssetGraph {
 				var rightClickPos = Event.current.mousePosition;
 				var menu = new GenericMenu();
 				menu.AddItem(
-					new GUIContent("Duplicate"),
+					new GUIContent("Copy"),
 					false, 
 					() => {
 						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED, this, rightClickPos, null));

@@ -33,6 +33,8 @@ namespace AssetGraph {
 			{"Append Hash To AssetBundle Name", false}
 		};
 
+		public const float WINDOW_SPAN = 50f;
+
 		/*
 			node generation from GUI
 		*/

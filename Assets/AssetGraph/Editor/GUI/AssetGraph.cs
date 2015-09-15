@@ -45,6 +45,8 @@ namespace AssetGraph {
 
 			InitializeGraph();
 			Reload();
+
+			UpdateSpacerRect();
 		}
 
 		private Dictionary<int, string> nodeIdCacheDict = new Dictionary<int, string>();
@@ -65,15 +67,7 @@ namespace AssetGraph {
 
 		private DateTime lastLoaded = DateTime.MinValue;
 
-		private List<PlatformButtonData> platformButtonDatas;
-		public struct PlatformButtonData {
-			public readonly string name;
-			public readonly Texture2D texture;
-			public PlatformButtonData (string name, Texture2D tex) {
-				this.name = name;
-				this.texture = tex;
-			}
-		}
+		private Vector2 spacerRectRightBottom;
 
 		private Texture2D reloadButtonTexture;
 
@@ -94,22 +88,7 @@ namespace AssetGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			if (platformButtonDatas == null) {
-				platformButtonDatas = new List<PlatformButtonData>();
-				var platformButtonTextureResources = Resources
-					.FindObjectsOfTypeAll(typeof(Texture2D))
-					.Where(data => data.ToString().StartsWith("d_BuildSettings"))
-					.Where(data => data.ToString().Contains("Small"))
-					.ToList();
-
-				foreach (var textureResource in platformButtonTextureResources) {
-					// d_BuildSettings.Tizen.Small
-					var platfornName = textureResource.ToString().Split('.')[1];
-					platformButtonDatas.Add(
-						new PlatformButtonData(platfornName, textureResource as Texture2D)
-					);
-				}
-
+			if (reloadButtonTexture == null) {
 				var reloadTextureSources = Resources
 					.FindObjectsOfTypeAll(typeof(Texture2D))
 					.Where(data => data.ToString().Contains("d_RotateTool"))
@@ -579,20 +558,6 @@ namespace AssetGraph {
 				if (GUILayout.Button("Build")) {
 					Run();
 				}
-
-				int i = 0;
-				foreach (var platformButtonData in platformButtonDatas) {
-					var platformButtonTexture = platformButtonData.texture;
-					var platfornName = platformButtonData.name;
-
-					var onOff = false;
-					if (i == 8) onOff = true;
-
-					if (GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton")) {
-						// 、、、？？毎フレームよばれてしまうっぽいな？
-					}
-					i++;
-				}
 			}
 			EditorGUILayout.EndHorizontal();
 
@@ -636,9 +601,7 @@ namespace AssetGraph {
 
 				// set rect for scroll.
 				if (nodes.Any()) {
-					var rightPoints = nodes.OrderByDescending(node => node.baseRect.x + node.baseRect.width).Select(node => node.baseRect.x + node.baseRect.width).ToList();
-					var bottomPoints = nodes.OrderByDescending(node => node.baseRect.y + node.baseRect.height).Select(node => node.baseRect.y + node.baseRect.height).ToList();
-					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(rightPoints[0]), GUILayout.Height(bottomPoints[0]));
+					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
 				}
 			}
 			EditorGUILayout.EndScrollView();
@@ -739,12 +702,6 @@ namespace AssetGraph {
 					activeObject = null;
 				}
 			}
-
-			// undo-redo control.
-			// if (Event.current.type == EventType.ValidateCommand
-			// 	&& Event.current.commandName == "UndoRedoPerformed") {
-			// 	Debug.LogError("undo");
-			// }
 		}
 
 		Vector2 scrollPos = new Vector2(1500,0);
@@ -1022,7 +979,7 @@ namespace AssetGraph {
 						/*
 							handling
 						*/
-						case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_HANDLING: {
+						case OnNodeEvent.EventType.EVENT_NODE_HANDLING: {
 
 							/*
 								animate connectionPoint under mouse if this connectionPoint is able to accept this kind of connection.
@@ -1055,7 +1012,7 @@ namespace AssetGraph {
 						/*
 							drop detected.
 						*/
-						case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DROPPED: {
+						case OnNodeEvent.EventType.EVENT_NODE_DROPPED: {
 							// finish connecting mode.
 							modifyMode = ModifyMode.CONNECT_ENDED;
 							
@@ -1132,7 +1089,7 @@ namespace AssetGraph {
 						/*
 							start connection handling.
 						*/
-						case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_HANDLE_STARTED: {
+						case OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED: {
 							modifyMode = ModifyMode.CONNECT_STARTED;
 							currentEventSource = e;
 							break;
@@ -1192,7 +1149,8 @@ namespace AssetGraph {
 								node moved.
 								node tapped.
 						*/
-						case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_RELEASED: {
+						case OnNodeEvent.EventType.EVENT_NODE_RELEASED: {
+							UpdateSpacerRect();
 							SaveGraph();
 							break;
 						}
@@ -1231,6 +1189,12 @@ namespace AssetGraph {
 					break;
 				}
 			}
+		}
+
+		private void UpdateSpacerRect () {
+			var rightPoint = nodes.OrderByDescending(node => node.baseRect.x + node.baseRect.width).Select(node => node.baseRect.x + node.baseRect.width).ToList()[0] + AssetGraphSettings.WINDOW_SPAN;
+			var bottomPoint = nodes.OrderByDescending(node => node.baseRect.y + node.baseRect.height).Select(node => node.baseRect.y + node.baseRect.height).ToList()[0] + AssetGraphSettings.WINDOW_SPAN;
+			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
 
 		public void DeleteNode (string deletingNodeId) {
