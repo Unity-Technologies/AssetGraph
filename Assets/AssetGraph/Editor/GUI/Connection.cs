@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class Connection {
 		public readonly string label;
-		public readonly string connectionId;
+		public string connectionId;
 
 		public readonly Node startNode;
 		public readonly ConnectionPoint outputPoint;
@@ -101,6 +101,10 @@ namespace AssetGraph {
 					index++;
 				}
 			}
+		}
+
+		public void SetId (string id) {
+			this.connectionId = id;
 		}
 
 		public void DrawConnection (Dictionary<string, List<string>> throughputListDict) {

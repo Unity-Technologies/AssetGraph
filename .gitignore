@@ -22,3 +22,9 @@ Assets/AssetGraph/Cache/*
 
 
 Exports/*
+
+Assembly-CSharp-Editor.csproj
+
+Assembly-CSharp.csproj
+
+AssetGraph.sln
