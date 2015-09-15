@@ -19,9 +19,36 @@ namespace AssetGraph {
 
 		public void OnEnable () {
 			this.title = "AssetGraph";
+
+			Undo.undoRedoPerformed += () => {
+				// restore node id from nodeIdCacheDict.
+				if (nodeIdCacheDict.ContainsKey(nodes.Count)) {
+					var targetNode = nodes[nodes.Count - 1];
+					if (targetNode.id != nodeIdCacheDict[nodes.Count]) {
+						targetNode.SetId(nodeIdCacheDict[nodes.Count]);
+					}
+				}
+
+				// restore connection id from connectionIdCacheDict.
+				if (connectionIdCacheDict.ContainsKey(connections.Count)) {
+					var targetConnection = connections[connections.Count - 1];
+					if (targetConnection.connectionId != connectionIdCacheDict[connections.Count]) {
+						targetConnection.SetId(connectionIdCacheDict[connections.Count]);
+					}
+				}
+
+				Debug.LogError("inspector情報の変化。");
+				// this.ApplyDataToInspector();
+
+				Repaint();
+			};
+
 			InitializeGraph();
 			Reload();
 		}
+
+		private Dictionary<int, string> nodeIdCacheDict = new Dictionary<int, string>();
+		private Dictionary<int, string> connectionIdCacheDict = new Dictionary<int, string>();
 
 		private List<Node> nodes = new List<Node>();
 		private List<Connection> connections = new List<Connection>();
@@ -52,8 +79,6 @@ namespace AssetGraph {
 
 		private Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
 
-		private AudioClip ring;
-
 		public class ActiveObject {
 			public readonly AssetGraphSettings.ObjectKind kind;
 			public readonly string id;
@@ -69,8 +94,6 @@ namespace AssetGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			ring = AssetDatabase.LoadAssetAtPath("Assets/AssetGraph/Editor/Res/microwave-tin1.mp3", typeof(AudioClip)) as AudioClip;
-
 			if (platformButtonDatas == null) {
 				platformButtonDatas = new List<PlatformButtonData>();
 				var platformButtonTextureResources = Resources
@@ -359,28 +382,6 @@ namespace AssetGraph {
 			}
 		}
 
-		public void PlayClip(AudioClip clip) {
-			var unityEditorAssembly = typeof(AudioImporter).Assembly;
-			System.Type audioUtilClass = unityEditorAssembly.GetType("UnityEditor.AudioUtil");
-			var method = audioUtilClass.GetMethod(
-				"PlayClip",
-				BindingFlags.Static | BindingFlags.Public,
-				null,
-				new System.Type[] {
-					typeof(AudioClip)
-				},
-
-				null
-			);
-			
-			method.Invoke(
-				null,
-				new object[] {
-					clip
-				}
-			);
-		}
-
 		private void SaveGraph () {
 			var nodeList = new List<Dictionary<string, object>>();
 			foreach (var node in nodes) {
@@ -559,7 +560,6 @@ namespace AssetGraph {
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
 
 			EditorUtility.ClearProgressBar();
-			PlayClip(ring);
 		}
 
 
