@@ -21,7 +21,10 @@ namespace AssetGraph {
 			Debug.LogError("OnEnable");
 			this.title = "AssetGraph";
 
-			Undo.undoRedoPerformed += () => Repaint();
+			Undo.undoRedoPerformed += () => {
+				SaveGraphWithReload();
+				Repaint();
+			};
 
 			InitializeGraph();
 			Reload();
