@@ -30,7 +30,7 @@ namespace AssetGraph {
 			this.eventType = type;
 			this.eventSourceNode = node;
 			this.eventSourceConnectionPoint = conPoint;
-			this.globalMousePosition = new Vector2(localMousePos.x + node.baseRect.x, localMousePos.y + node.baseRect.y);
+			this.globalMousePosition = new Vector2(localMousePos.x + node.GetX(), localMousePos.y + node.GetY());
 		}
 	}
 }

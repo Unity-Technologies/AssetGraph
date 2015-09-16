@@ -5,58 +5,56 @@ using System;
 using System.Collections.Generic;
 
 namespace AssetGraph {
-	public class Connection {
-		public readonly string label;
-		public string connectionId;
+	[Serializable] public class Connection {
+		public static Action<OnConnectionEvent> Emit;
+		
+		[SerializeField] public string label;
+		[SerializeField] public string connectionId;
 
-		public readonly Node startNode;
-		public readonly ConnectionPoint outputPoint;
+		[SerializeField] public string startNodeId;
+		[SerializeField] public ConnectionPoint outputPoint;
 
-		public readonly Node endNode;
-		public readonly ConnectionPoint inputPoint;
+		[SerializeField] public string endNodeId;
+		[SerializeField] public ConnectionPoint inputPoint;
 
-		private readonly Action<OnConnectionEvent> Emit;
+		[SerializeField] public ConnectionInspector conInsp;
 
-		public ConnectionInspector conInsp;
+		[SerializeField] private string connectionButtonStyle;
 
-		private string connectionButtonStyle;
-
-		public static Connection LoadConnection (Action<OnConnectionEvent> Emit, string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+		public static Connection LoadConnection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			return new Connection(
-				Emit,
 				label,
 				connectionId,
-				start,
+				startNodeId,
 				output,
-				end,
+				endNodeId,
 				input
 			);
 		}
 
-		public static Connection NewConnection (Action<OnConnectionEvent> Emit, string label, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+		public static Connection NewConnection (string label, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			return new Connection(
-				Emit,
 				label,
 				Guid.NewGuid().ToString(),
-				start,
+				startNodeId,
 				output,
-				end,
+				endNodeId,
 				input
 			);
 		}
 
-		private Connection (Action<OnConnectionEvent> Emit, string label, string connectionId, Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
+		private Connection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			conInsp = ScriptableObject.CreateInstance<ConnectionInspector>();
+			conInsp.hideFlags = HideFlags.DontSave;
 
 			this.label = label;
 			this.connectionId = connectionId;
 
-			this.startNode = start;
+			this.startNodeId = startNodeId;
 			this.outputPoint = output;
-			this.endNode = end;
+			this.endNodeId = endNodeId;
 			this.inputPoint = input;
 
-			this.Emit = Emit;
 			connectionButtonStyle = "sv_label_0";
 		}
 
@@ -70,11 +68,15 @@ namespace AssetGraph {
 				var con = ((ConnectionInspector)target).con;
 				if (con == null) return;
 
+				EditorGUILayout.LabelField("connectionId:", con.connectionId);
+
 				var foldouts = ((ConnectionInspector)target).foldouts;
 				
 
 				var count = 0;
 				var throughputListDict = ((ConnectionInspector)target).throughputListDict;
+				if (throughputListDict == null)  return;
+
 				foreach (var list in throughputListDict.Values) {
 					count += list.Count;
 				}
@@ -103,15 +105,16 @@ namespace AssetGraph {
 			}
 		}
 
-		public void SetId (string id) {
-			this.connectionId = id;
+		private Node GetNodeById (List<Node> nodes, string nodeId) {
+			var index = nodes.FindIndex(node => node.nodeId == nodeId);
+			return nodes[index];
 		}
 
-		public void DrawConnection (Dictionary<string, List<string>> throughputListDict) {
-			var start = startNode.GlobalConnectionPointPosition(outputPoint);
+		public void DrawConnection (List<Node> nodes, Dictionary<string, List<string>> throughputListDict) {
+			var start = GetNodeById(nodes, startNodeId).GlobalConnectionPointPosition(outputPoint);
 			var startV3 = new Vector3(start.x, start.y, 0f);
 			
-			var end = endNode.GlobalConnectionPointPosition(inputPoint);
+			var end = GetNodeById(nodes, endNodeId).GlobalConnectionPointPosition(inputPoint);
 			var endV3 = new Vector3(end.x, end.y, 0f);
 			
 			var centerPoint = start + ((end - start) / 2);
@@ -176,9 +179,9 @@ namespace AssetGraph {
 
 		public bool IsSameDetail (Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			if (
-				startNode == start &&
+				startNodeId == start.nodeId &&
 				outputPoint == output && 
-				endNode == end &&
+				endNodeId == end.nodeId &&
 				inputPoint == input
 			) {
 				return true;

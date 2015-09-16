@@ -1,14 +1,16 @@
+using System;
+
 using UnityEngine;
 using UnityEditor;
 
 namespace AssetGraph {
-	public class ConnectionPoint {
-		public readonly string label;
-		public readonly bool isInput;
-		public readonly bool isOutput;
+	[Serializable] public class ConnectionPoint {
+		[SerializeField] public string label;
+		[SerializeField] public bool isInput;
+		[SerializeField] public bool isOutput;
 		
-		public Rect buttonRect;
-		public string buttonStyle;
+		[SerializeField] public Rect buttonRect;
+		[SerializeField] public string buttonStyle;
 
 		public ConnectionPoint (string label, bool input, bool output) {
 			this.label = label;

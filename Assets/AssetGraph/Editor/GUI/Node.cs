@@ -8,44 +8,41 @@ using System.Collections.Generic;
 
 
 namespace AssetGraph {
-	public class Node {
-		private readonly Action<OnNodeEvent> Emit;
+	[Serializable] public class Node {
+		public static Action<OnNodeEvent> Emit;
 
-		private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
+		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
-		private readonly int nodeWindowId;
+		[SerializeField] private int nodeWindowId;
+		[SerializeField] private Rect baseRect;
 
-		public string name;
-		public string id;
-		public AssetGraphSettings.NodeKind kind;
-		public string scriptType;
-		public string scriptPath;
-		public string loadPath;
-		public string exportPath;
-		public List<string> filterContainsKeywords;
-		public string groupingKeyword;
-		public string bundleNameTemplate;
-		public Dictionary<string, bool> bundleOptions;
+		[SerializeField] public string name;
+		[SerializeField] public string nodeId;
+		[SerializeField] public AssetGraphSettings.NodeKind kind;
 
-		private string nodeInterfaceTypeStr;
+		[SerializeField] public string scriptType;
+		[SerializeField] public string scriptPath;
+		[SerializeField] public string loadPath;
+		[SerializeField] public string exportPath;
+		[SerializeField] public List<string> filterContainsKeywords;
+		[SerializeField] public string groupingKeyword;
+		[SerializeField] public string bundleNameTemplate;
+		[SerializeField] public Dictionary<string, bool> bundleOptions;
 
+		[SerializeField] private string nodeInterfaceTypeStr;
 
-		public NodeInspector nodeInsp;
-
-
-		public Rect baseRect;
+		[SerializeField] private NodeInspector nodeInsp;
 
 
 		private float progress;
 		private bool running;
 
 		
-		public static Node LoaderNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
+		public static Node LoaderNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -53,12 +50,11 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node ExporterNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string exportPath, float x, float y) {
+		public static Node ExporterNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string exportPath, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -66,12 +62,11 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node ScriptNode (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
+		public static Node ScriptNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -80,12 +75,11 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForFilter (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, float x, float y) {
+		public static Node GUINodeForFilter (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -93,24 +87,22 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForImport (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+		public static Node GUINodeForImport (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y
 			);
 		}
 
-		public static Node GUINodeForGrouping (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string groupingKeyword, float x, float y) {
+		public static Node GUINodeForGrouping (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string groupingKeyword, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -118,24 +110,22 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForPrefabricator (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, float x, float y) {
+		public static Node GUINodeForPrefabricator (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y
 			);
 		}
 
-		public static Node GUINodeForBundlizer (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, string bundleNameTemplate, float x, float y) {
+		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string bundleNameTemplate, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -143,12 +133,11 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForBundleBuilder (Action<OnNodeEvent> emit, int index, string name, string id, AssetGraphSettings.NodeKind kind, Dictionary<string, bool> bundleOptions, float x, float y) {
+		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, bool> bundleOptions, float x, float y) {
 			return new Node(
-				emit: emit,
 				index: index,
 				name: name,
-				id: id,
+				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
@@ -166,7 +155,8 @@ namespace AssetGraph {
 				var node = ((NodeInspector)target).node;
 				if (node == null) return;
 
-				
+				EditorGUILayout.LabelField("nodeId:", node.nodeId);
+
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -264,7 +254,7 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var nodeId = node.id;
+						var nodeId = node.nodeId;
 
 						var noFilesFound = false;
 						var tooManyFilesFound = false;
@@ -494,11 +484,12 @@ namespace AssetGraph {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
 
+		public Node () {}
+
 		private Node (
-			Action<OnNodeEvent> emit, 
 			int index, 
 			string name, 
-			string id, 
+			string nodeId, 
 			AssetGraphSettings.NodeKind kind, 
 			float x, 
 			float y,
@@ -512,10 +503,11 @@ namespace AssetGraph {
 			Dictionary<string, bool> bundleOptions = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
-			this.Emit = emit;
+			nodeInsp.hideFlags = HideFlags.DontSave;
+
 			this.nodeWindowId = index;
 			this.name = name;
-			this.id = id;
+			this.nodeId = nodeId;
 			this.kind = kind;
 			this.scriptType = scriptType;
 			this.scriptPath = scriptPath;
@@ -580,11 +572,6 @@ namespace AssetGraph {
 					break;
 				}
 			}
-		}
-
-		public void SetId (string id) {
-			Debug.LogError("redo時");
-			this.id = id;
 		}
 
 		public void SetActive () {
@@ -760,7 +747,7 @@ namespace AssetGraph {
 		/**
 			retrieve GUI events for this node.
 		*/
-		void UpdateNodeEvent (int id) {
+		private void UpdateNodeEvent (int id) {
 			var currentEvent = Event.current.type;
 			switch (currentEvent) {
 
@@ -840,7 +827,7 @@ namespace AssetGraph {
 				var rightClickPos = Event.current.mousePosition;
 				var menu = new GenericMenu();
 				menu.AddItem(
-					new GUIContent("Copy"),
+					new GUIContent("Duplicate"),
 					false, 
 					() => {
 						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED, this, rightClickPos, null));
@@ -907,6 +894,30 @@ namespace AssetGraph {
 			}
 			
 			return null;
+		}
+
+		public Vector2 GetPos () {
+			return baseRect.position;
+		}
+
+		public int GetX () {
+			return (int)baseRect.x;
+		}
+
+		public int GetY () {
+			return (int)baseRect.y;
+		}
+
+		public int GetRightPos () {
+			return (int)(baseRect.x + baseRect.width);
+		}
+
+		public int GetBottomPos () {
+			return (int)(baseRect.y + baseRect.height);
+		}
+
+		public void SetPos (Vector2 position) {
+			baseRect.position = position;
 		}
 
 		public void SetProgress (float val) {

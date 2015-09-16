@@ -33,7 +33,7 @@ namespace AssetGraph {
 			{"Append Hash To AssetBundle Name", false}
 		};
 
-		public const float WINDOW_SPAN = 50f;
+		public const float WINDOW_SPAN = 20f;
 
 		/*
 			node generation from GUI
@@ -132,6 +132,7 @@ namespace AssetGraph {
 		}
 
 		public enum ObjectKind : int {
+			NONE,
 			NODE,
 			CONNECTION
 		}
