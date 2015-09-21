@@ -4,6 +4,7 @@ namespace AssetGraph {
 	public class OnNodeEvent {
 		public enum EventType : int {
 			EVENT_NONE,
+			EVENT_NODE_MULTIPLE_SELECTION,
 			EVENT_NODE_HANDLE_STARTED,
 			EVENT_NODE_HANDLING,
 			EVENT_NODE_DROPPED,
@@ -11,6 +12,8 @@ namespace AssetGraph {
 			EVENT_NODE_RELEASED,
 
 			EVENT_NODE_TAPPED,
+			
+			EVENT_NODE_TOUCHDOWN,
 
 			EVENT_CONNECTIONPOINT_UPDATED,
 			

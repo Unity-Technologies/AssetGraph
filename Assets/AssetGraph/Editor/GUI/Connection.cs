@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetGraph {
@@ -107,22 +108,23 @@ namespace AssetGraph {
 			}
 		}
 
-		private Node GetNodeById (List<Node> nodes, string nodeId) {
-			var index = nodes.FindIndex(node => node.nodeId == nodeId);
-			return nodes[index];
-		}
-
 		public void DrawConnection (List<Node> nodes, Dictionary<string, List<string>> throughputListDict) {
-			var start = GetNodeById(nodes, startNodeId).GlobalConnectionPointPosition(outputPoint);
-			var startV3 = new Vector3(start.x, start.y + 1f, 0f);
-			
-			var end = GetNodeById(nodes, endNodeId).GlobalConnectionPointPosition(inputPoint);
+			var startNodes = nodes.Where(node => node.nodeId == startNodeId).ToList();
+			if (!startNodes.Any()) return;
+
+			var start = startNodes[0].GlobalConnectionPointPosition(outputPoint);
+			var startV3 = new Vector3(start.x, start.y, 0f);
+
+			var endNodes = nodes.Where(node => node.nodeId == endNodeId).ToList();
+			if (!endNodes.Any()) return;
+
+			var end = endNodes[0].GlobalConnectionPointPosition(inputPoint);
 			var endV3 = new Vector3(end.x, end.y + 1f, 0f);
 			
 			var centerPoint = start + ((end - start) / 2);
 			var centerPointV3 = new Vector3(centerPoint.x, centerPoint.y, 0f);
 
-			var pointDistance = (end.x - start.x) / 2f;
+			var pointDistance = (end.x - start.x) / 3f;
 			if (pointDistance < AssetGraphGUISettings.CONNECTION_CURVE_LENGTH) pointDistance = AssetGraphGUISettings.CONNECTION_CURVE_LENGTH;
 
 			var startTan = new Vector3(start.x + pointDistance, start.y, 0f);
@@ -158,7 +160,10 @@ namespace AssetGraph {
 			
 			var buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);
 
-			if (Event.current.type == EventType.MouseUp && Event.current.button == 1) {
+			if (
+				Event.current.type == EventType.ContextClick
+				|| (Event.current.type == EventType.MouseUp && Event.current.button == 1)
+			) {
 				var rightClickPos = Event.current.mousePosition;
 				if (buttonRect.Contains(rightClickPos)) {
 					var menu = new GenericMenu();
@@ -175,10 +180,13 @@ namespace AssetGraph {
 			}
 
 			if (GUI.Button(buttonRect, throughputCount.ToString(), connectionButtonStyle)) {
-				Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
+				if (Event.current.shift) {
+					Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_MULTIPLE_SELECTION, this));
+					return;
+				}
 
 				conInsp.UpdateCon(this, throughputListDict);
-				Selection.activeObject = conInsp;
+				Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
 			}
 		}
 
@@ -203,6 +211,7 @@ namespace AssetGraph {
 		}
 
 		public void SetActive () {
+			Selection.activeObject = conInsp;
 			connectionButtonStyle = "sv_label_1";
 		}
 

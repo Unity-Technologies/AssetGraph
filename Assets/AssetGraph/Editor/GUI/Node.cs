@@ -14,9 +14,12 @@ namespace AssetGraph {
 		public static Texture2D inputPointTex;
 		public static Texture2D outputPointTex;
 
+
+		public static Texture2D enablePointMarkTex;
+
 		public static Texture2D inputPointMarkTex;
 		public static Texture2D outputPointMarkTex;
-		public static Texture2D enablePointMarkTex;
+		public static Texture2D outputPointMarkConnectedTex;
 
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
@@ -769,7 +772,12 @@ namespace AssetGraph {
 					handling release of mouse drag on this node.
 				*/
 				case EventType.MouseUp: {
-					// if mouse position is on the connection point, cancel event.
+					if (Event.current.shift) {
+						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_MULTIPLE_SELECTION, this, Vector2.zero, null));
+						break;
+					}
+
+					// if mouse position is on the connection point, emit mouse raised event over thr connection.
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
 						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
@@ -797,9 +805,12 @@ namespace AssetGraph {
 				case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 
-					if (result != null) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED, this, Event.current.mousePosition, result));
-					else Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TAPPED, this, Event.current.mousePosition, null));
-					
+					if (result != null) {
+						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED, this, Event.current.mousePosition, result));
+						break;
+					}
+
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHDOWN, this, Event.current.mousePosition, result));
 					break;
 				}
 			}
@@ -841,7 +852,10 @@ namespace AssetGraph {
 			/*
 				right click.
 			*/
-			if (Event.current.type == EventType.MouseUp && Event.current.button == 1) {
+			if (
+				Event.current.type == EventType.ContextClick
+				 || (Event.current.type == EventType.MouseUp && Event.current.button == 1)
+			) {
 				var rightClickPos = Event.current.mousePosition;
 				var menu = new GenericMenu();
 				menu.AddItem(
@@ -909,7 +923,7 @@ namespace AssetGraph {
 		}
 
 		public void DrawConnectionOutputPointMark (OnNodeEvent eventSource, bool justConnecting, Event current) {
-			var defaultPointTex = outputPointMarkTex;
+			var defaultPointTex = outputPointMarkConnectedTex;
 			
 			if (justConnecting && eventSource != null) {
 				if (eventSource.eventSourceNode.nodeId != this.nodeId) {
@@ -995,6 +1009,10 @@ namespace AssetGraph {
 			return null;
 		}
 
+		public Rect GetRect () {
+			return baseRect;
+		}
+
 		public Vector2 GetPos () {
 			return baseRect.position;
 		}
@@ -1021,6 +1039,10 @@ namespace AssetGraph {
 
 		public void SetProgress (float val) {
 			progress = val;
+		}
+
+		public void MoveRelative (Vector2 diff) {
+			baseRect.position = baseRect.position - diff;
 		}
 
 		public void ShowProgress () {
