@@ -180,11 +180,6 @@ namespace AssetGraph {
 			}
 
 			if (GUI.Button(buttonRect, throughputCount.ToString(), connectionButtonStyle)) {
-				if (Event.current.shift) {
-					Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_MULTIPLE_SELECTION, this));
-					return;
-				}
-
 				conInsp.UpdateCon(this, throughputListDict);
 				Emit(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
 			}

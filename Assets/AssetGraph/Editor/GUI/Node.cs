@@ -764,7 +764,7 @@ namespace AssetGraph {
 					only emit event.
 				*/
 				case EventType.Ignore: {
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_DROPPED, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -772,11 +772,6 @@ namespace AssetGraph {
 					handling release of mouse drag on this node.
 				*/
 				case EventType.MouseUp: {
-					if (Event.current.shift) {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_MULTIPLE_SELECTION, this, Vector2.zero, null));
-						break;
-					}
-
 					// if mouse position is on the connection point, emit mouse raised event over thr connection.
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
@@ -786,7 +781,7 @@ namespace AssetGraph {
 						}
 					}
 
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_RELEASED, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TATCHED, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -794,7 +789,7 @@ namespace AssetGraph {
 					handling drag.
 				*/
 				case EventType.MouseDrag: {
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLING, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_MOVING, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -806,11 +801,9 @@ namespace AssetGraph {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 
 					if (result != null) {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED, this, Event.current.mousePosition, result));
+						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
 						break;
 					}
-
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHDOWN, this, Event.current.mousePosition, result));
 					break;
 				}
 			}
@@ -947,7 +940,7 @@ namespace AssetGraph {
 					// eventPosition is contained by outputPointRect.
 					if (outputPointRect.Contains(globalMousePosition)) {
 						if (current.type == EventType.MouseDown) {
-							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED, this, current.mousePosition, point));
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, current.mousePosition, point));
 						}
 					}
 				}

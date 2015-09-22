@@ -83,15 +83,14 @@ namespace AssetGraph {
 
 
 		[Serializable] public struct ActiveObject {
-			[SerializeField] public List<string> ids;
-			[SerializeField] public Vector2 pos;
+			[SerializeField] public Dictionary<string, Vector2> idPosDict;
 			
-			public ActiveObject (List<string> ids, Vector2 pos) {
-				this.ids = new List<string>(ids);
-				this.pos = pos;
+			public ActiveObject (Dictionary<string, Vector2> idPosDict) {
+				this.idPosDict = new Dictionary<string, Vector2>(idPosDict);
+
 			}
 		}
-		[SerializeField] private ActiveObject activeObject = new ActiveObject(new List<string>(), Vector2.zero);
+		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 		
 		public struct Selection {
 			public readonly float x;
@@ -104,7 +103,18 @@ namespace AssetGraph {
 		}
 		private Selection selection;
 
-		private Dictionary<string, Vector2> movingObjects = new Dictionary<string, Vector2>();
+
+
+		private ActiveObject RenewActiveObject (List<string> ids) {
+			var idPosDict = new Dictionary<string, Vector2>();
+			foreach (var node in nodes) {
+				if (ids.Contains(node.nodeId)) idPosDict[node.nodeId] = node.GetPos();
+			}
+			foreach (var connection in connections) {
+				if (ids.Contains(connection.connectionId)) idPosDict[connection.connectionId] = Vector2.zero;
+			}
+			return new ActiveObject(idPosDict);
+		}
 
 		/**
 			node window initializer.
@@ -660,9 +670,6 @@ namespace AssetGraph {
 							}
 							case ModifyMode.SELECTION_STARTED: {
 								// do nothing.
-								foreach (var node in nodes) {
-									GUI.DrawTexture(node.GetRect(), selectionTex);
-								}
 								break;
 							}
 						}
@@ -702,8 +709,10 @@ namespace AssetGraph {
 								}
 
 
-								var selectedRect = new Rect(x, y, width, height);
 								var activeObjectIds = new List<string>();
+
+								var selectedRect = new Rect(x, y, width, height);
+								
 								
 								foreach (var node in nodes) {
 									// get containd nodes,
@@ -722,27 +731,20 @@ namespace AssetGraph {
 									}
 								}
 
-								// add active object if already selected anything.
-								if (activeObject.ids.Any()) activeObjectIds.AddRange(activeObject.ids);
-
-								activeObject = new ActiveObject(activeObjectIds, Vector2.zero);
-								foreach (var node in nodes) {
-									if (activeObject.ids.Contains(node.nodeId)) {
-										node.SetActive();
-										continue;
+								if (Event.current.shift) {
+									// add current active object ids to new list.
+									foreach (var alreadySelectedObjectId in activeObject.idPosDict.Keys) {
+										if (!activeObjectIds.Contains(alreadySelectedObjectId)) activeObjectIds.Add(alreadySelectedObjectId);
 									}
-									
-									node.SetInactive();
+								} else {
+									// do nothing, means cancel selections if nodes are not contained by selection.
 								}
 
-								foreach (var connection in connections) {
-									if (activeObject.ids.Contains(connection.connectionId)) {
-										connection.SetActive();
-										continue;
-									}
-									
-									connection.SetInactive();
-								}
+
+								Undo.RecordObject(this, "Select Objects");
+
+								activeObject = RenewActiveObject(activeObjectIds);
+								UpdateActivationOfObjects(activeObject);
 
 								selection = new Selection(Vector2.zero);
 								modifyMode = ModifyMode.CONNECT_ENDED;
@@ -844,10 +846,10 @@ namespace AssetGraph {
 					modifyMode = ModifyMode.CONNECT_ENDED;
 					HandleUtility.Repaint();
 					
-					if (activeObject.ids.Any()) {
+					if (activeObject.idPosDict.Any()) {
 						Undo.RecordObject(this, "Unselect");
 
-						foreach (var activeObjectId in activeObject.ids) {
+						foreach (var activeObjectId in activeObject.idPosDict.Keys) {
 							// unselect all.
 							foreach (var node in nodes) {
 								if (activeObjectId == node.nodeId) node.SetInactive();
@@ -857,7 +859,7 @@ namespace AssetGraph {
 							}
 						}
 
-						activeObject = new ActiveObject(new List<string>(), Vector2.zero);
+						activeObject = RenewActiveObject(new List<string>());
 					}
 
 					break;
@@ -867,13 +869,12 @@ namespace AssetGraph {
 					switch (Event.current.commandName) {
 						// Delete active node or connection.
 						case "Delete": {
-							if (!activeObject.ids.Any()) {
-								break;
-							}
+
+							if (!activeObject.idPosDict.Any()) break;
 
 							Undo.RecordObject(this, "Delete Selection");
 
-							foreach (var targetId in activeObject.ids) {
+							foreach (var targetId in activeObject.idPosDict.Keys) {
 								DeleteNode(targetId);
 								DeleteConnectionById(targetId);
 							}
@@ -881,16 +882,15 @@ namespace AssetGraph {
 							SaveGraphWithReload();
 							InitializeGraph();
 
-							Repaint();
-
-							activeObject = new ActiveObject(new List<string>(), Vector2.zero);
+							activeObject = RenewActiveObject(new List<string>());
+							UpdateActivationOfObjects(activeObject);
 
 							Event.current.Use();
 							break;
 						}
 
 						case "Copy": {
-							if (!activeObject.ids.Any()) {
+							if (!activeObject.idPosDict.Any()) {
 								break;
 							}
 
@@ -902,7 +902,7 @@ namespace AssetGraph {
 						}
 
 						case "Cut": {
-							if (!activeObject.ids.Any()) {
+							if (!activeObject.idPosDict.Any()) {
 								break;
 							}
 
@@ -912,7 +912,7 @@ namespace AssetGraph {
 						}
 
 						case "Paste": {
-							if (!activeObject.ids.Any()) {
+							if (!activeObject.idPosDict.Any()) {
 								break;
 							}
 
@@ -925,7 +925,7 @@ namespace AssetGraph {
 							Undo.RecordObject(this, "Select All Objects");
 
 							var nodeIds = nodes.Select(node => node.nodeId).ToList();
-							activeObject = new ActiveObject(new List<string>(nodeIds), Vector2.zero);
+							activeObject = RenewActiveObject(nodeIds);
 
 							// select all.
 							foreach (var node in nodes) {
@@ -940,7 +940,7 @@ namespace AssetGraph {
 						}
 
 						default: {
-							Debug.LogError("Event.current.commandName:" + Event.current.commandName);
+							// Debug.LogError("Event.current.commandName:" + Event.current.commandName);
 							break;
 						}
 					}
@@ -1238,7 +1238,7 @@ namespace AssetGraph {
 						/*
 							handling
 						*/
-						case OnNodeEvent.EventType.EVENT_NODE_HANDLING: {
+						case OnNodeEvent.EventType.EVENT_NODE_MOVING: {
 							// do nothing.
 							break;
 						}
@@ -1282,9 +1282,9 @@ namespace AssetGraph {
 						}
 
 						/*
-							connection drop from started node detected.
+							connection drop detected by started node.
 						*/
-						case OnNodeEvent.EventType.EVENT_NODE_DROPPED: {
+						case OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
 							// finish connecting mode.
 							modifyMode = ModifyMode.CONNECT_ENDED;
 							
@@ -1342,114 +1342,50 @@ namespace AssetGraph {
 				}
 				case ModifyMode.CONNECT_ENDED: {
 					switch (e.eventType) {
-						case OnNodeEvent.EventType.EVENT_NODE_TOUCHDOWN: {
-							var tappedNodeId = e.eventSourceNode.nodeId;
+						/*
+							node move detected.
+						*/
+						case OnNodeEvent.EventType.EVENT_NODE_MOVING: {
+							var tappedNode = e.eventSourceNode;
+							var tappedNodeId = tappedNode.nodeId;
+							
+							if (activeObject.idPosDict.ContainsKey(tappedNodeId)) {
+								// already active, do nothing for this node.
+								var distancePos = tappedNode.GetPos() - activeObject.idPosDict[tappedNodeId];
 
-							if (activeObject.ids.Contains(tappedNodeId)) {
-								if (1 < activeObject.ids.Count) {
-									movingObjects = new Dictionary<string, Vector2>();
-									foreach (var node in nodes) {
-										if (activeObject.ids.Contains(node.nodeId)) {
-											movingObjects[node.nodeId] = node.GetPos();
-										}
-									}
+								foreach (var node in nodes) {
+									if (node.nodeId == tappedNodeId) continue;
+									if (!activeObject.idPosDict.ContainsKey(node.nodeId)) continue;
+									var relativePos = activeObject.idPosDict[node.nodeId] + distancePos;
+									node.SetPos(relativePos);
 								}
 								break;
 							}
-							break;
-						}
 
-						case OnNodeEvent.EventType.EVENT_NODE_HANDLING: {
-							var tappedNodeId = e.eventSourceNode.nodeId;
-							
-							if (activeObject.ids.Contains(tappedNodeId)) {
-								if (1 < activeObject.ids.Count) {
-									if (movingObjects.Any()) {
-										var before = movingObjects[tappedNodeId];
-										var after = e.eventSourceNode.GetPos();
-										Debug.LogError("位置関係怪しい。");
+							if (Event.current.shift) {
+								Undo.RecordObject(this, "Select Objects");
 
-										// var distance = before - after;
-										
-										// foreach (var node in nodes) {
-										// 	if (!activeObject.ids.Contains(node.nodeId)) continue;
-										// 	if (node.nodeId == tappedNodeId) continue;
+								var additiveIds = new List<string>(activeObject.idPosDict.Keys);
 
-										// 	node.MoveRelative(distance);
-										// }
-									}
-								}
+								additiveIds.Add(tappedNodeId);
+								
+								activeObject = RenewActiveObject(additiveIds);
+
+								UpdateActivationOfObjects(activeObject);
+								UpdateSpacerRect();
 								break;
 							}
 
 							Undo.RecordObject(this, "Select Node");
-							
-							foreach (var node in nodes) {
-								if (node.nodeId == tappedNodeId) {
-									node.SetActive();
-									activeObject = new ActiveObject(new List<string>{node.nodeId}, node.GetPos());
-								}
-								else node.SetInactive();
-							}
-
-							foreach (var con in connections) {
-								con.SetInactive();
-							}
-							break;
-						}
-
-						case OnNodeEvent.EventType.EVENT_NODE_MULTIPLE_SELECTION: {
-							
-							Undo.RecordObject(this, "Select Objects");
-
-							var objectId = string.Empty;
-
-							if (e.eventSourceNode != null) {
-								objectId = e.eventSourceNode.nodeId;
-								if (!activeObject.ids.Any()) {
-									var objectPos = e.eventSourceNode.GetPos();
-									activeObject = new ActiveObject(new List<string>{objectId}, objectPos);
-								} else {
-									var additiveIds = new List<string>(activeObject.ids);
-
-									// already contained, cancel.
-									if (!activeObject.ids.Contains(objectId)) {
-										additiveIds.Add(objectId);	
-									} else {
-										additiveIds.Remove(objectId);
-									}
-									
-									Debug.LogError("位置は、選択オブジェクトの集まりから、一番左上を選びたいところ。Paste時に全部反映させたものを乗っけたい。消えてるものもコピー、、したいよな。。。ということはコピー用に領域持つ必要がある。うん、異論ない。");
-									
-									activeObject = new ActiveObject(additiveIds, activeObject.pos);
-								}
-							}
-
-							foreach (var node in nodes) {
-								if (activeObject.ids.Contains(node.nodeId)) {
-									node.SetActive();
-									continue;
-								}
-								
-								node.SetInactive();
-							}
-
-							foreach (var connection in connections) {
-								if (activeObject.ids.Contains(connection.connectionId)) {
-									connection.SetActive();
-									continue;
-								}
-								
-								connection.SetInactive();
-							}
-
+							activeObject = RenewActiveObject(new List<string>{tappedNodeId});
+							UpdateActivationOfObjects(activeObject);
 							break;
 						}
 
 						/*
 							start connection handling.
 						*/
-						case OnNodeEvent.EventType.EVENT_NODE_HANDLE_STARTED: {
+						case OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
 							modifyMode = ModifyMode.CONNECT_STARTED;
 							currentEventSource = e;
 							break;
@@ -1493,7 +1429,9 @@ namespace AssetGraph {
 						}
 
 						case OnNodeEvent.EventType.EVENT_CLOSE_TAPPED: {
+							
 							Undo.RecordObject(this, "Delete Node");
+							
 							var deletingNodeId = e.eventSourceNode.nodeId;
 							DeleteNode(deletingNodeId);
 
@@ -1511,38 +1449,91 @@ namespace AssetGraph {
 
 						/*
 							releasse detected.
-								node moved.
+								node move over.
 								node tapped.
 						*/
-						case OnNodeEvent.EventType.EVENT_NODE_RELEASED: {
+						case OnNodeEvent.EventType.EVENT_NODE_TATCHED: {
 							var movedNode = e.eventSourceNode;
 							var movedNodeId = movedNode.nodeId;
-							
-							if (activeObject.ids.Contains(movedNodeId)) {
-								var beforePosition = activeObject.pos;
-								var afterPosition = movedNode.GetPos();
 
-								movedNode.SetPos(beforePosition);
+							// already active, node(s) are just tapped or moved.
+							if (activeObject.idPosDict.ContainsKey(movedNodeId)) {
 
-								Undo.RecordObject(this, "Move Node");
-
-								movedNode.SetPos(afterPosition);
-
-								activeObject = new ActiveObject(new List<string>{movedNodeId}, movedNode.GetPos());
-							} else {
-								Undo.RecordObject(this, "Select Node");
-
-								activeObject = new ActiveObject(new List<string>{movedNodeId}, movedNode.GetPos());
-
+								/*
+									active nodes(contains tap released node) are possibly moved.
+								*/
+								var movedIdPosDict = new Dictionary<string, Vector2>();
 								foreach (var node in nodes) {
-									if (node.nodeId == movedNodeId) node.SetActive();
-									else node.SetInactive();
+									if (!activeObject.idPosDict.ContainsKey(node.nodeId)) continue;
+
+									var startPos = activeObject.idPosDict[node.nodeId];
+									if (node.GetPos() != startPos) {
+										// moved.
+										movedIdPosDict[node.nodeId] = node.GetPos();
+									}
 								}
 
-								foreach (var con in connections) {
-									con.SetInactive();
+								if (movedIdPosDict.Any()) {
+									
+									foreach (var node in nodes) {
+										if (activeObject.idPosDict.Keys.Contains(node.nodeId)) {
+											var startPos = activeObject.idPosDict[node.nodeId];
+											node.SetPos(startPos);
+										}
+									}
+
+									Undo.RecordObject(this, "Move Node");
+
+									foreach (var node in nodes) {
+										if (movedIdPosDict.Keys.Contains(node.nodeId)) {
+											var endPos = movedIdPosDict[node.nodeId];
+											node.SetPos(endPos);
+										}
+									}
+
+									var activeObjectIds = activeObject.idPosDict.Keys.ToList();
+									activeObject = RenewActiveObject(activeObjectIds);
+								} else {
+									// nothing moved, should cancel selecting this node.
+									var cancelledActivatedIds = new List<string>(activeObject.idPosDict.Keys);
+									cancelledActivatedIds.Remove(movedNodeId);
+
+									Undo.RecordObject(this, "Select Objects");
+
+									activeObject = RenewActiveObject(cancelledActivatedIds);
 								}
+								
+								UpdateActivationOfObjects(activeObject);
+
+								UpdateSpacerRect();
+								SaveGraph();
+								break;
 							}
+
+							if (Event.current.shift) {
+								Undo.RecordObject(this, "Select Objects");
+
+								var additiveIds = new List<string>(activeObject.idPosDict.Keys);
+
+								// already contained, cancel.
+								if (additiveIds.Contains(movedNodeId)) {
+									additiveIds.Remove(movedNodeId);
+								} else {
+									additiveIds.Add(movedNodeId);
+								}
+
+								activeObject = RenewActiveObject(additiveIds);
+								UpdateActivationOfObjects(activeObject);
+
+								UpdateSpacerRect();
+								SaveGraph();
+								break;
+							}
+
+							Undo.RecordObject(this, "Select Node");
+
+							activeObject = RenewActiveObject(new List<string>{movedNodeId});
+							UpdateActivationOfObjects(activeObject);
 
 							UpdateSpacerRect();
 							SaveGraph();
@@ -1602,60 +1593,44 @@ namespace AssetGraph {
 			switch (modifyMode) {
 				case ModifyMode.CONNECT_ENDED: {
 					switch (e.eventType) {
-						case OnConnectionEvent.EventType.EVENT_CONNECTION_MULTIPLE_SELECTION: {
-							Undo.RecordObject(this, "Select Objects");
-
-							var objectId = string.Empty;
-
-							if (e.eventSourceCon != null) {
-								objectId = e.eventSourceCon.connectionId;
-								if (!activeObject.ids.Any()) {
-									var objectPos = new Vector2(-1, -1);
-									activeObject = new ActiveObject(new List<string>{objectId}, objectPos);
-								} else {
-									var additiveIds = new List<string>(activeObject.ids);
-
-									// already contained, cancel.
-									if (!activeObject.ids.Contains(objectId)) {
-										additiveIds.Add(objectId);	
-									} else {
-										activeObject.ids.Remove(objectId);
-									}
-									
-									Debug.LogError("位置は、選択オブジェクトの集まりから、一番左上を選びたいところ。connectionのものは含まない。");
-									
-									activeObject = new ActiveObject(additiveIds, activeObject.pos);
-								}
-							}
-
-							foreach (var node in nodes) {
-								if (activeObject.ids.Contains(node.nodeId)) {
-									node.SetActive();
-									continue;
-								}
-								
-								node.SetInactive();
-							}
-
-							foreach (var connection in connections) {
-								if (activeObject.ids.Contains(connection.connectionId)) {
-									connection.SetActive();
-									continue;
-								}
-								
-								connection.SetInactive();
-							}
-							break;
-						}
+						
 						case OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED: {
 							
+							if (Event.current.shift) {
+								Undo.RecordObject(this, "Select Objects");
+
+								var objectId = string.Empty;
+
+								if (e.eventSourceCon != null) {
+									objectId = e.eventSourceCon.connectionId;
+									if (!activeObject.idPosDict.Any()) {
+										activeObject = RenewActiveObject(new List<string>{objectId});
+									} else {
+										var additiveIds = new List<string>(activeObject.idPosDict.Keys);
+
+										// already contained, cancel.
+										if (additiveIds.Contains(objectId)) {
+											additiveIds.Remove(objectId);
+										} else {
+											additiveIds.Add(objectId);
+										}
+										
+										activeObject = RenewActiveObject(additiveIds);
+									}
+								}
+
+								UpdateActivationOfObjects(activeObject);
+								break;
+							}
+
+
 							Undo.RecordObject(this, "Select Connection");
 
 							var tappedConnectionId = e.eventSourceCon.connectionId;
 							foreach (var con in connections) {
 								if (con.connectionId == tappedConnectionId) {
 									con.SetActive();
-									activeObject = new ActiveObject(new List<string>{con.connectionId}, Vector2.zero);
+									activeObject = RenewActiveObject(new List<string>{con.connectionId});
 								} else {
 									con.SetInactive();
 								}
@@ -1686,6 +1661,26 @@ namespace AssetGraph {
 					}
 					break;
 				}
+			}
+		}
+
+		private void UpdateActivationOfObjects (ActiveObject currentActiveObject) {
+			foreach (var node in nodes) {
+				if (currentActiveObject.idPosDict.ContainsKey(node.nodeId)) {
+					node.SetActive();
+					continue;
+				}
+				
+				node.SetInactive();
+			}
+
+			foreach (var connection in connections) {
+				if (currentActiveObject.idPosDict.ContainsKey(connection.connectionId)) {
+					connection.SetActive();
+					continue;
+				}
+				
+				connection.SetInactive();
 			}
 		}
 

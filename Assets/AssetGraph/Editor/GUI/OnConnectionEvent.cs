@@ -2,8 +2,6 @@ namespace AssetGraph {
 	public class OnConnectionEvent {
 		public enum EventType : int {
 			EVENT_NONE,
-			
-			EVENT_CONNECTION_MULTIPLE_SELECTION,
 
 			EVENT_CONNECTION_TAPPED,
 			EVENT_CONNECTION_DELETED,
