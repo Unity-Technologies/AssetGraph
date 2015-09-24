@@ -1,0 +1,19 @@
+ManifestFileVersion: 0
+CRC: 2827943570
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 4c872d5243bf12616437823774fb3ef1
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c516f2a3b2b6b67ef759f6410a790acd
+HashAppended: 0
+ClassTypes:
+- Class: 83
+  Script: {instanceID: 0}
+Assets:
+- Assets/AssetGraph/Cache/Imported/fcc122f1-8336-4fb4-9b05-b108f1853f45/ses/Stage_1/se.mp3
+- Assets/AssetGraph/Cache/Imported/9f45d076-14b8-4a9d-b5dc-34b164609124/bgms/Stage_1/bgm.mp3
+- Assets/AssetGraph/Cache/Imported/fcc122f1-8336-4fb4-9b05-b108f1853f45/ses/Stage_2/se.mp3
+- Assets/AssetGraph/Cache/Imported/9f45d076-14b8-4a9d-b5dc-34b164609124/bgms/Stage_2/bgm.mp3
+Dependencies: []
