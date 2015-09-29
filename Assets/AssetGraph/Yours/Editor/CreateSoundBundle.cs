@@ -35,7 +35,7 @@ public class CreateSoundBundle : AssetGraph.BundlizerBase {
 				BuildTarget.iOS
 			);
 		} catch (Exception e) {
-			Debug.Log("failed to create AssetBundle:" + targetPath);
+			Debug.Log("error:" + e + " /failed to create AssetBundle:" + targetPath);
 		}
 	}
 }

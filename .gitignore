@@ -28,3 +28,15 @@ Assembly-CSharp-Editor.csproj
 Assembly-CSharp.csproj
 
 AssetGraph.sln
+
+ProjectSettings/ClusterInputManager.asset
+
+ProjectSettings/ProjectSettings.asset
+
+ProjectSettings/ProjectSettings.asset
+
+ProjectSettings/ProjectVersion.txt
+
+ProjectSettings/UnityAnalyticsManager.asset
+
+ProjectSettings/UnityConnectSettings.asset

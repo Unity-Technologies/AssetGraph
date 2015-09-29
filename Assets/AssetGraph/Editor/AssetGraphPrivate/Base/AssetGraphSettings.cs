@@ -130,11 +130,5 @@ namespace AssetGraph {
 		public static NodeKind NodeKindFromString (string val) {
 			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
 		}
-
-		public enum ObjectKind : int {
-			NONE,
-			NODE,
-			CONNECTION
-		}
 	}
 }
