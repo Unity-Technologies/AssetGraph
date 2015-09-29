@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;// for ReorderableList
 
 using System;
 using System.IO;
@@ -160,9 +161,31 @@ namespace AssetGraph {
 		*/
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
-			
-			public override void OnInspectorGUI () {
+
+			ReorderableList reorderableList;
+
+			public void OnEnable () {
 				var node = ((NodeInspector)target).node;
+
+				// switch (node.kind) {
+				// 	case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				// 	case AssetGraphSettings.NodeKind.FILTER_GUI: {
+				// 		var contents = serializedObject.FindProperty ("filterKeywords");
+				// 		reorderableList = new ReorderableList(serializedObject, contents);
+				// 		reorderableList.drawElementCallback = (rect, index, isActive, isFocused) => {
+				// 			var element = contents.GetArrayElementAtIndex(index);
+				// 			rect.height -= 4;
+				// 			rect.x = -20;
+				// 			EditorGUI.PropertyField(rect, element);
+				// 		};
+				// 		break;	
+				// 	}
+				// }
+			}
+
+			public override void OnInspectorGUI () {
+				var currentTarget = (NodeInspector)target;
+				var node = currentTarget.node;
 				if (node == null) return;
 
 				EditorGUILayout.LabelField("nodeId:", node.nodeId);
@@ -216,6 +239,44 @@ namespace AssetGraph {
 							node.Save();
 						}
 
+						// serializedObject.Update();
+						// reorderableList.DoLayoutList();
+						// serializedObject.ApplyModifiedProperties();
+
+						// if (currentTarget.filterKeywords == null) {
+						// 	if (node.filterContainsKeywords.Any()) node.filterContainsKeywords = new List<string>();
+						// } else {
+						// 	if (node.filterContainsKeywords.Count != currentTarget.filterKeywords.Length) {
+						// 		Debug.LogError("undo考えないとな");
+						// 		node.filterContainsKeywords = new List<string>();
+						// 		for (var i = 0; i < currentTarget.filterKeywords.Length; i++) {
+						// 			node.filterContainsKeywords.Add(currentTarget.filterKeywords[i]);
+						// 		}
+						// 		node.UpdateOutputPoints();
+						// 		node.UpdateNodeRect();
+						// 		node.Save();
+						// 		break;
+						// 	}
+
+						// 	var changed = false;
+						// 	// same count, but changed.
+						// 	for (var i = 0; i < currentTarget.filterKeywords.Length; i++) {
+						// 		var key = currentTarget.filterKeywords[i];
+						// 		if (key != node.filterContainsKeywords[i]) {
+						// 			changed = true;
+						// 		}
+						// 	}
+
+						// 	if (changed) {
+						// 		for (var i = 0; i < currentTarget.filterKeywords.Length; i++) {
+						// 			node.filterContainsKeywords[i] = currentTarget.filterKeywords[i];
+						// 		}
+						// 		node.UpdateOutputPoints();
+						// 		node.UpdateNodeRect();
+						// 		node.Save();
+						// 	}
+						// }
+						
 						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 							GUILayout.BeginHorizontal();
 							{
@@ -700,9 +761,12 @@ namespace AssetGraph {
 		public void AddConnectionPoint (ConnectionPoint adding) {
 			connectionPoints.Add(adding);
 			
-			// update node size by number of connectionPoint.
-			if (3 < connectionPoints.Count) {
-				this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (connectionPoints.Count - 3)));
+			// update node size by number of output connectionPoint.
+			var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
+			if (1 < outputPointCount) {
+				this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
+			} else {
+				this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
 			}
 
 			UpdateNodeRect();

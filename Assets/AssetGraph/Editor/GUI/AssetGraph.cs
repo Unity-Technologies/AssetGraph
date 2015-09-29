@@ -602,7 +602,7 @@ namespace AssetGraph {
 					Reload();
 				}
 				
-				if (GUILayout.Button("Build (active platform is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
+				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
 					Run();
 				}
 			}
@@ -1155,7 +1155,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						var filterContainsKeywords = targetNode.filterContainsKeywords;
 						
-						var newNode = Node.GUINodeForFilter(nodes.Count, name, id, kind, filterContainsKeywords, x, y);
+						var newNode = Node.GUINodeForFilter(nodes.Count, name, id, kind, filterContainsKeywords.ToList(), x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
 						foreach (var connectionPoint in connectionPoints) {
