@@ -40,16 +40,15 @@ namespace AssetGraph {
 			{
 				// json to object.
 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\"}");
-				Debug.LogError ("s:" + s.key);
+				Debug.LogError ("deserialize KeyObject.key:" + s.key);
 
 				// object to json.
 				var keyObj = new KeyObject("value1");
 
 				var result = JsonUtility.ToJson(keyObj, true);
-				Debug.LogError ("hahaha result:" + result);
+				Debug.LogError ("serialize result:" + result);
 			}
 #endif
-
 		}
 		
 		[Serializable]
