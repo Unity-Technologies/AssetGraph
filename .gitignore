@@ -40,3 +40,12 @@ ProjectSettings/ProjectVersion.txt
 ProjectSettings/UnityAnalyticsManager.asset
 
 ProjectSettings/UnityConnectSettings.asset
+
+Assembly-CSharp-Editor-vs.csproj
+
+Assembly-CSharp-vs.csproj
+
+AssetGraph-csharp.sln
+
+iOS/*
+

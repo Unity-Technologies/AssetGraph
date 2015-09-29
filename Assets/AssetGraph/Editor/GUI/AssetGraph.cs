@@ -18,6 +18,7 @@ namespace AssetGraph {
 		}
 
 		public void OnEnable () {
+			Debug.LogError("should change title setting(with icon");
 			this.title = "AssetGraph";
 
 			Undo.undoRedoPerformed += () => {
@@ -601,7 +602,7 @@ namespace AssetGraph {
 					Reload();
 				}
 				
-				if (GUILayout.Button("Build")) {
+				if (GUILayout.Button("Build (active platform is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
 					Run();
 				}
 			}
@@ -727,16 +728,6 @@ namespace AssetGraph {
 									// get containd nodes,
 									if (node.GetRect().Overlaps(selectedRect)) {
 										activeObjectIds.Add(node.nodeId);
-									}
-								}
-
-								// add connections if connected nodes are contained.
-								foreach (var connection in connections) {
-									var startNodeId = connection.startNodeId;
-									var endNodeId = connection.endNodeId;
-
-									if (activeObjectIds.Contains(startNodeId) && activeObjectIds.Contains(endNodeId)) {
-										activeObjectIds.Add(connection.connectionId);
 									}
 								}
 
