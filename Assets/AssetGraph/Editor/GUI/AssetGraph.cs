@@ -18,7 +18,6 @@ namespace AssetGraph {
 		}
 
 		public void OnEnable () {
-			Debug.LogError("OnEnable");
 			this.title = "AssetGraph";
 
 			Undo.undoRedoPerformed += () => {
@@ -36,23 +35,31 @@ namespace AssetGraph {
 
 
 			if (nodes.Any()) UpdateSpacerRect();
+
+#if UNITY_5_3
+			{
+				// json to object.
+				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\"}");
+				Debug.LogError ("s:" + s.key);
+
+				// object to json.
+				var keyObj = new KeyObject("value1");
+
+				var result = JsonUtility.ToJson(keyObj, true);
+				Debug.LogError ("hahaha result:" + result);
+			}
+#endif
+
 		}
+		
+		[Serializable]
+		public struct KeyObject {
+			public string key;
 
-		private void LoadTextures () {
-			Node.inputPointTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_INPUT_BG, typeof(Texture2D)) as Texture2D;
-			Node.outputPointTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_OUTPUT_BG, typeof(Texture2D)) as Texture2D;
-
-			Node.enablePointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE, typeof(Texture2D)) as Texture2D;
-
-			Node.inputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT, typeof(Texture2D)) as Texture2D;
-			Node.outputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT, typeof(Texture2D)) as Texture2D;
-			Node.outputPointMarkConnectedTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED, typeof(Texture2D)) as Texture2D;
-
-			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
-
-			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
+			public KeyObject (string val) {
+				key = val;
+			}
 		}
-
 
 		[SerializeField] private List<Node> nodes = new List<Node>();
 		[SerializeField] private List<Connection> connections = new List<Connection>();
@@ -70,14 +77,12 @@ namespace AssetGraph {
 		}
 		private ModifyMode modifyMode;
 
-
-
 		private DateTime lastLoaded = DateTime.MinValue;
 		
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
 		
-		private Texture2D reloadButtonTexture;
+		private GUIContent reloadButtonTexture;
 
 		private Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
 
@@ -104,6 +109,26 @@ namespace AssetGraph {
 		private Selection selection;
 
 
+		private void LoadTextures () {
+			// load shared node textures
+			Node.inputPointTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_INPUT_BG, typeof(Texture2D)) as Texture2D;
+			Node.outputPointTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_OUTPUT_BG, typeof(Texture2D)) as Texture2D;
+
+			Node.enablePointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE, typeof(Texture2D)) as Texture2D;
+
+			Node.inputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT, typeof(Texture2D)) as Texture2D;
+			Node.outputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT, typeof(Texture2D)) as Texture2D;
+			Node.outputPointMarkConnectedTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED, typeof(Texture2D)) as Texture2D;
+
+			// load shared connection textures
+			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
+
+			// load other textures
+			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent ("d_RotateTool");
+			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
+			Debug.LogError("load platform textures here.");
+		}
+
 
 		private ActiveObject RenewActiveObject (List<string> ids) {
 			var idPosDict = new Dictionary<string, Vector2>();
@@ -121,16 +146,6 @@ namespace AssetGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			if (reloadButtonTexture == null) {
-				Debug.LogError("ローディング画像、ひどい読み方。");
-				var reloadTextureSources = Resources
-					.FindObjectsOfTypeAll(typeof(Texture2D))
-					.Where(data => data.ToString().Contains("d_RotateTool"))
-					.ToList();
-				if (0 < reloadTextureSources.Count) reloadButtonTexture = reloadTextureSources[0] as Texture2D;
-			}
-
-
 			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
 			
 			// create Temp folder under Assets/AssetGraph
@@ -582,14 +597,9 @@ namespace AssetGraph {
 		public void OnGUI () {
 			EditorGUILayout.BeginHorizontal(GUI.skin.box);
 			{
-				if (!reloadButtonTexture) {
-					if (GUILayout.Button("Reload")) {
-						Reload();
-					}
-				} else {
-					if (GUILayout.Button(reloadButtonTexture)) {
-						Reload();
-					}
+
+				if (GUILayout.Button(reloadButtonTexture)) {
+					Reload();
 				}
 				
 				if (GUILayout.Button("Build")) {

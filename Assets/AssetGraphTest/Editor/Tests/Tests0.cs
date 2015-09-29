@@ -547,9 +547,11 @@ public partial class Test {
 		using (var sr = new StreamReader(graphDataPath)) {
 			dataStr = sr.ReadToEnd();
 		}
+
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
-		
-		var setupResultDict = GraphStackController.SetupStackedGraph(graphDict);
+
+		// var setupResultDict = 
+		GraphStackController.SetupStackedGraph(graphDict);
 
 		Debug.Log("passed _0_14_SetupStackedGraph_Sample");
 	}
