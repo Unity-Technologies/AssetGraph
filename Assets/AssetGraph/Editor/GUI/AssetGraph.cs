@@ -523,8 +523,7 @@ namespace AssetGraph {
 		}
 
 		private void Reload () {
-			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
-			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
@@ -547,8 +546,7 @@ namespace AssetGraph {
 		}
 
 		private void Run () {
-			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
-			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
@@ -727,6 +725,13 @@ namespace AssetGraph {
 									// get containd nodes,
 									if (node.GetRect().Overlaps(selectedRect)) {
 										activeObjectIds.Add(node.nodeId);
+									}
+								}
+
+								foreach (var connection in connections) {
+									// get contained connection badge.
+									if (connection.GetRect().Overlaps(selectedRect)) {
+										activeObjectIds.Add(connection.connectionId);
 									}
 								}
 
@@ -1097,7 +1102,6 @@ namespace AssetGraph {
 		}
 
 		private string RelativeProjectPath () {
-			Debug.LogError("winだとへんなの返している気がする");
 			var assetPath = Application.dataPath;
 			return Directory.GetParent(assetPath).Name;
 		}
@@ -1550,7 +1554,7 @@ namespace AssetGraph {
 
 			switch (e.eventType) {
 				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_UPDATED: {
-					Debug.LogError("あーポイント追加時に線が消えちゃうのが困るよな");
+					Debug.LogError("auto delete connection if connection point is added. will fix.");
 					var targetNode = e.eventSourceNode;
 
 					var connectionsFromThisNode = connections.Where(con => con.startNodeId == targetNode.nodeId).ToList();

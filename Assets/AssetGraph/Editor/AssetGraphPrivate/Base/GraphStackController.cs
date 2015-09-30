@@ -522,10 +522,8 @@ namespace AssetGraph {
 				.ToList();
 
 			foreach (var connecionId in receivingConnectionIds) {
-				if (!resultDict.ContainsKey(connecionId)) {
-					Debug.LogWarning("failed to detect parentNode's result. searching connectionId:" + connecionId);
-					continue;
-				}
+				if (!resultDict.ContainsKey(connecionId)) continue;
+				
 				var result = resultDict[connecionId];
 				foreach (var groupKey in result.Keys) {
 					if (!inputParentResults.ContainsKey(groupKey)) inputParentResults[groupKey] = new List<InternalAssetData>();

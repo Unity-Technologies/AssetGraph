@@ -33,39 +33,63 @@ namespace AssetGraph {
 				.ToList();
 		}
 
-		public static List<string> FilePathsInFolderWithoutMetaOnly1Level (string localFolderPath) {
-			var filePaths = Directory.GetFiles(localFolderPath);
-			return filePaths
-				.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION))
-				.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
-				.ToList();
-		}
-
-		private static void GetFilePathsRecursive (string localFolderPath, List<string> filePaths) {
+		private static void GetFilePathsRecursive (string localFolderPath, List<string> filePaths, bool ignoreMeta=true) {
 			var folders = Directory.GetDirectories(localFolderPath);
 			foreach (var folder in folders) {
 				GetFilePathsRecursive(folder, filePaths);
 			}
 
-			var files = Directory.GetFiles(localFolderPath);
+			var files = FilePathsInFolderWithoutMetaOnly1Level(localFolderPath, ignoreMeta);
 			filePaths.AddRange(files);
 		}
 
 		/**
-			create path combination.
+			returns file paths which are located in the folder.
 
-			delimiter is always '/'. and '\' will be replaced with '/'.
+			this method is main point for supporting path format of cross platform.
 
-			in windows, Application.dataPath returns PATH_OF_PROJECT/Assets with slashes(/). 
-			like below.
-				C:/SOMEWHERE/PROJECT_FOLDER/Assets
+			Usually Unity Editor uses '/' as folder delimter.
 
-			we follow that.
+			e.g.
+				Application.dataPath returns 
+					C:/somewhere/projectPath/Assets @ Windows.
+						or
+					/somewhere/projectPath/Assets @ Mac, Linux.
+
+
+			but "Directory.GetFiles(localFolderPath + "/")" method returns different formatted path by platform.
+
+			@ Windows:
+				localFolderPath + / + somewhere\folder\file.extention
+
+			@ Mac/Linux:
+				localFolderPath + / + somewhere/folder/file.extention
+
+			the problem is, "Directory.GetFiles" returns mixed format path of files @ Windows.
+			this is the point of failure.
+
+			this method replaces folder delimiters to '/'.
+		*/
+		public static List<string> FilePathsInFolderWithoutMetaOnly1Level (string localFolderPath, bool ignoreMeta=true) {
+			// change platform-depends folder delimiter -> '/'
+			var filePaths = Directory.GetFiles(localFolderPath).Select(filePath => filePath.Replace(Path.DirectorySeparatorChar.ToString(), AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())).ToArray();
+			
+			if (ignoreMeta) filePaths = filePaths.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)).ToArray();
+
+			return filePaths
+				.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
+				.ToList();
+		}
+
+		/**
+			create combination of path.
+
+			delimiter is always '/'.
 		*/
 		public static string PathCombine (params string[] paths) {
 			if (paths.Length < 2) throw new Exception("failed to combine paths: only 1 path.");
 
-			var combinedPath = Path.Combine(paths[0], paths[1]);
+			var combinedPath = _PathCombine(paths[0], paths[1]);
 			var restPaths = new string[paths.Length-2];
 
 			Array.Copy(paths, 2, restPaths, 0, restPaths.Length);
@@ -77,7 +101,6 @@ namespace AssetGraph {
 		private static string _PathCombine (string head, string tail) {
 			if (!head.EndsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) head = head + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
 
-			if (tail.Contains("\\")) tail = tail.Replace("\\", AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString());
 			if (tail.StartsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) tail = tail.Substring(1);
 
 			return Path.Combine(head, tail);

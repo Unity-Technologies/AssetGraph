@@ -24,6 +24,8 @@ namespace AssetGraph {
 
 		[SerializeField] private string connectionButtonStyle;
 
+		private Rect buttonRect;
+
 		public static Connection LoadConnection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			return new Connection(
 				label,
@@ -108,6 +110,10 @@ namespace AssetGraph {
 			}
 		}
 
+		public Rect GetRect () {
+			return buttonRect;
+		}
+
 		public void DrawConnection (List<Node> nodes, Dictionary<string, List<string>> throughputListDict) {
 			var startNodes = nodes.Where(node => node.nodeId == startNodeId).ToList();
 			if (!startNodes.Any()) return;
@@ -158,7 +164,7 @@ namespace AssetGraph {
 			}
 			var offsetSize = throughputCount.ToString().Length * 20f;
 			
-			var buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);
+			buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);
 
 			if (
 				Event.current.type == EventType.ContextClick

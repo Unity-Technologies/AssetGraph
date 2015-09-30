@@ -239,7 +239,10 @@ namespace AssetGraph {
 
 						// add contains keyword interface.
 						if (GUILayout.Button("+")) {
-							// node.AddFilterKeyword(AssetGraphSettings.);
+							node.filterContainsKeywords.Add(AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
+							node.UpdateOutputPoints();
+							node.UpdateNodeRect();
+							node.Save();
 						}
 
 						break;

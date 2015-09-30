@@ -1,3 +1,5 @@
+using UnityEngine;
+
 using System;
 using System.IO;
 
@@ -19,16 +21,12 @@ namespace AssetGraph {
 		*/
 		public static InternalAssetData InternalAssetDataByLoader (string absoluteSourcePath, string sourceBasePath) {
 			return new InternalAssetData(
-				Guid.NewGuid().ToString(),
-				absoluteSourcePath,
-				sourceBasePath,
-				Path.GetFileName(absoluteSourcePath),
-				GetPathWithoutBasePath(absoluteSourcePath, sourceBasePath),
-				null,
-				null,
-				null,
-				null,
-				false
+				traceId:Guid.NewGuid().ToString(),
+				absoluteSourcePath:absoluteSourcePath,
+				sourceBasePath:sourceBasePath,
+				fileNameAndExtension:Path.GetFileName(absoluteSourcePath),
+				pathUnderSourceBase:GetPathWithoutBasePath(absoluteSourcePath, sourceBasePath),
+				generated:false
 			);
 		}
 
@@ -37,16 +35,16 @@ namespace AssetGraph {
 		*/
 		public static InternalAssetData InternalAssetDataByImporter (string traceId, string absoluteSourcePath, string sourceBasePath, string fileNameAndExtension, string pathUnderSourceBase, string importedPath, string assetId, Type assetType) {
 			return new InternalAssetData(
-				traceId,
-				absoluteSourcePath,
-				sourceBasePath,
-				fileNameAndExtension,
-				pathUnderSourceBase,
-				importedPath,
-				The2LevelLowerPath(importedPath),
-				assetId,
-				assetType,
-				false
+				traceId:traceId,
+				absoluteSourcePath:absoluteSourcePath,
+				sourceBasePath:sourceBasePath,
+				fileNameAndExtension:fileNameAndExtension,
+				pathUnderSourceBase:pathUnderSourceBase,
+				importedPath:importedPath,
+				pathUnderConnectionId:The2LevelLowerPath(importedPath),
+				assetId:assetId,
+				assetType:assetType,
+				generated:false
 			);
 		}
 
@@ -55,16 +53,13 @@ namespace AssetGraph {
 		*/
 		public static InternalAssetData InternalAssetDataGeneratedByImporterOrPrefabricator (string importedPath, string assetId, Type assetType) {
 			return new InternalAssetData(
-				Guid.NewGuid().ToString(),
-				null,
-				null,
-				Path.GetFileName(importedPath),
-				null,
-				importedPath,
-				The2LevelLowerPath(importedPath),
-				assetId,
-				assetType,
-				true
+				traceId:Guid.NewGuid().ToString(),
+				fileNameAndExtension:Path.GetFileName(importedPath),
+				importedPath:importedPath,
+				pathUnderConnectionId:The2LevelLowerPath(importedPath),
+				assetId:assetId,
+				assetType:assetType,
+				generated:true
 			);
 		}
 
@@ -74,46 +69,36 @@ namespace AssetGraph {
 		*/
 		public static InternalAssetData InternalAssetDataGeneratedByBundlizer (string importedPath) {
 			return new InternalAssetData(
-				Guid.NewGuid().ToString(),
-				null,
-				null,
-				Path.GetFileName(importedPath),
-				null,
-				importedPath,
-				The2LevelLowerPath(importedPath),
-				null,
-				null,
-				false
+				traceId:Guid.NewGuid().ToString(),
+				fileNameAndExtension:Path.GetFileName(importedPath),
+				importedPath:importedPath,
+				pathUnderConnectionId:The2LevelLowerPath(importedPath),
+				generated:false
 			);
 		}
 
 		public static InternalAssetData InternalAssetDataGeneratedByBundleBuilder (string importedPath) {
 			return new InternalAssetData(
-				Guid.NewGuid().ToString(),
-				null,
-				null,
-				Path.GetFileName(importedPath),
-				null,
-				importedPath,
-				The2LevelLowerPath(importedPath),
-				null,
-				null,
-				false
+				traceId:Guid.NewGuid().ToString(),
+				fileNameAndExtension:Path.GetFileName(importedPath),
+				importedPath:importedPath,
+				pathUnderConnectionId:The2LevelLowerPath(importedPath),
+				generated:false
 			);
 		}
 
 
 		private InternalAssetData (
-			string traceId,
-			string absoluteSourcePath,
-			string sourceBasePath,
-			string fileNameAndExtension,
-			string pathUnderSourceBase,
-			string importedPath,
-			string pathUnderConnectionId,
-			string assetId,
-			Type assetType,
-			bool generated
+			string traceId = null,
+			string absoluteSourcePath = null,
+			string sourceBasePath = null,
+			string fileNameAndExtension = null,
+			string pathUnderSourceBase = null,
+			string importedPath = null,
+			string pathUnderConnectionId = null,
+			string assetId = null,
+			Type assetType = null,
+			bool generated = false
 		) {
 			this.traceId = traceId;
 			this.absoluteSourcePath = absoluteSourcePath;
@@ -127,12 +112,22 @@ namespace AssetGraph {
 			this.generated = generated;
 		}
 
+		/**
+			get ITEM_FOLDERS&ITEMS path
+			from Assets/AssetGraph/Cache/NODE_KIND/CONNECTION_ID_FOLDER/ITEM_FOLDERS&ITEMS path.
+
+			e.g. 
+				Assets/AssetGraph/Cache/NODE_KIND_FOLDER/CONNECTION_ID_FOLDER/somewhere/something.png
+				->
+				something/something.png
+		*/
 		private static string The2LevelLowerPath (string assetsTemp_ConnectionId_ResourcePath) {
 			var splitted = assetsTemp_ConnectionId_ResourcePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
 			var depthCount = AssetGraphSettings.APPLICATIONDATAPATH_TEMP_PATH.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;// last +1 is connectionId's count
 			var concatenated = new string[splitted.Length - depthCount];
 			Array.Copy(splitted, depthCount, concatenated, 0, concatenated.Length);
 			var resultPath = string.Join(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), concatenated);
+			
 			return resultPath;
 		}
 
