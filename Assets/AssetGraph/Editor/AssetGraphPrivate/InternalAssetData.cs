@@ -143,7 +143,7 @@ namespace AssetGraph {
 		}
 		
 		public static string GetPathWithBasePath (string localPathWithoutBasePath, string basePath) {
-			return Path.Combine(basePath, localPathWithoutBasePath);
+			return FileController.PathCombine(basePath, localPathWithoutBasePath);
 		}
 	}
 }

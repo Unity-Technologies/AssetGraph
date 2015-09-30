@@ -25,7 +25,7 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -59,7 +59,7 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -97,7 +97,7 @@ namespace AssetGraph {
 			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
 			var bundleName = templateHead + groupkey + templateTail;
-			var bundlePath = Path.Combine(recommendedBundleOutputDir, bundleName);
+			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
 
 			if (isRun) {
 				foreach (var source in sources) {

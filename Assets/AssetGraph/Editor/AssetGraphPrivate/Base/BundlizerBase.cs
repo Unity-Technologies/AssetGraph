@@ -20,7 +20,7 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			var recommendedBundleOutputDir = Path.Combine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();

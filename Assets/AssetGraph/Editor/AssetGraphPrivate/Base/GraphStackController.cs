@@ -766,7 +766,7 @@ namespace AssetGraph {
 			var assetPath = Application.dataPath;
 			var projectPath = Directory.GetParent(assetPath).ToString();
 			var projectParentPath = Directory.GetParent(projectPath).ToString();
-			return Path.Combine(projectParentPath, pathUnderProjectFolder);
+			return FileController.PathCombine(projectParentPath, pathUnderProjectFolder);
 		}
 
 		public static T Executor<T> (string typeStr) where T : INodeBase {

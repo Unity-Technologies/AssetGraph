@@ -22,7 +22,7 @@ namespace AssetGraph {
 					
 				foreach (var inputData in inputSources) {
 					var assumedImportedBasePath = inputData.absoluteSourcePath.Replace(inputData.sourceBasePath, AssetGraphSettings.IMPORTER_TEMP_PLACE);
-					var assumedImportedPath = Path.Combine(assumedImportedBasePath, nodeId);
+					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
 
 					var assumedType = AssumeTypeFromExtension();
 
@@ -52,7 +52,7 @@ namespace AssetGraph {
 				var inputSources = groupedSources[groupKey];
 
 				// import specific place / node's id folder.
-				var targetDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
+				var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
 				FileController.RemakeDirectory(targetDirectoryPath);
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
@@ -64,7 +64,7 @@ namespace AssetGraph {
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
 
-					var targetFilePath = Path.Combine(targetDirectoryPath, pathUnderSourceBase);
+					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
 					if (File.Exists(targetFilePath)) {
 						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。");

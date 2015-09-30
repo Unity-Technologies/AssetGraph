@@ -39,7 +39,7 @@ namespace AssetGraph {
 				var inputSources = groupedSources[groupKey];
 				foreach (var source in inputSources) {
 					if (!Directory.Exists(exportFilePath)) Directory.CreateDirectory(exportFilePath);
-					var destination = Path.Combine(exportFilePath, source.pathUnderConnectionId);
+					var destination = FileController.PathCombine(exportFilePath, source.pathUnderConnectionId);
 					var parentDir = Directory.GetParent(destination).ToString();
 
 					if (!Directory.Exists(parentDir)) Directory.CreateDirectory(parentDir);

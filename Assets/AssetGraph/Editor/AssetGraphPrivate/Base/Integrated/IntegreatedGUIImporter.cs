@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class IntegreatedGUIImporter : INodeBase {
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			var samplingDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -42,7 +42,7 @@ namespace AssetGraph {
 
 				foreach (var inputSource in inputSources) {
 					var assumedImportedBasePath = inputSource.absoluteSourcePath.Replace(inputSource.sourceBasePath, AssetGraphSettings.IMPORTER_TEMP_PLACE);
-					var assumedImportedPath = Path.Combine(assumedImportedBasePath, nodeId);
+					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
 
 					var assumedType = AssumeTypeFromExtension();
 
@@ -62,7 +62,7 @@ namespace AssetGraph {
 						if (!Directory.Exists(samplingDirectoryPath)) Directory.CreateDirectory(samplingDirectoryPath);
 
 						var absoluteFilePath = inputSource.absoluteSourcePath;
-						var targetFilePath = Path.Combine(samplingDirectoryPath, inputSource.fileNameAndExtension);
+						var targetFilePath = FileController.PathCombine(samplingDirectoryPath, inputSource.fileNameAndExtension);
 
 						FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
 						first = false;
@@ -78,14 +78,14 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			var samplingDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 
 				// import specific place / node's id folder.
-				var targetDirectoryPath = Path.Combine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
+				var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
 				FileController.RemakeDirectory(targetDirectoryPath);
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
@@ -123,7 +123,7 @@ namespace AssetGraph {
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
 
-					var targetFilePath = Path.Combine(targetDirectoryPath, pathUnderSourceBase);
+					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
 					if (File.Exists(targetFilePath)) {
 						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。2");

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;// for ReorderableList
 
 using System;
 using System.IO;
@@ -162,27 +161,6 @@ namespace AssetGraph {
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
 
-			ReorderableList reorderableList;
-
-			public void OnEnable () {
-				var node = ((NodeInspector)target).node;
-
-				// switch (node.kind) {
-				// 	case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-				// 	case AssetGraphSettings.NodeKind.FILTER_GUI: {
-				// 		var contents = serializedObject.FindProperty ("filterKeywords");
-				// 		reorderableList = new ReorderableList(serializedObject, contents);
-				// 		reorderableList.drawElementCallback = (rect, index, isActive, isFocused) => {
-				// 			var element = contents.GetArrayElementAtIndex(index);
-				// 			rect.height -= 4;
-				// 			rect.x = -20;
-				// 			EditorGUI.PropertyField(rect, element);
-				// 		};
-				// 		break;	
-				// 	}
-				// }
-			}
-
 			public override void OnInspectorGUI () {
 				var currentTarget = (NodeInspector)target;
 				var node = currentTarget.node;
@@ -238,44 +216,6 @@ namespace AssetGraph {
 							node.UpdateNodeRect();
 							node.Save();
 						}
-
-						// serializedObject.Update();
-						// reorderableList.DoLayoutList();
-						// serializedObject.ApplyModifiedProperties();
-
-						// if (currentTarget.filterKeywords == null) {
-						// 	if (node.filterContainsKeywords.Any()) node.filterContainsKeywords = new List<string>();
-						// } else {
-						// 	if (node.filterContainsKeywords.Count != currentTarget.filterKeywords.Length) {
-						// 		Debug.LogError("undo考えないとな");
-						// 		node.filterContainsKeywords = new List<string>();
-						// 		for (var i = 0; i < currentTarget.filterKeywords.Length; i++) {
-						// 			node.filterContainsKeywords.Add(currentTarget.filterKeywords[i]);
-						// 		}
-						// 		node.UpdateOutputPoints();
-						// 		node.UpdateNodeRect();
-						// 		node.Save();
-						// 		break;
-						// 	}
-
-						// 	var changed = false;
-						// 	// same count, but changed.
-						// 	for (var i = 0; i < currentTarget.filterKeywords.Length; i++) {
-						// 		var key = currentTarget.filterKeywords[i];
-						// 		if (key != node.filterContainsKeywords[i]) {
-						// 			changed = true;
-						// 		}
-						// 	}
-
-						// 	if (changed) {
-						// 		for (var i = 0; i < currentTarget.filterKeywords.Length; i++) {
-						// 			node.filterContainsKeywords[i] = currentTarget.filterKeywords[i];
-						// 		}
-						// 		node.UpdateOutputPoints();
-						// 		node.UpdateNodeRect();
-						// 		node.Save();
-						// 	}
-						// }
 						
 						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 							GUILayout.BeginHorizontal();
@@ -298,7 +238,9 @@ namespace AssetGraph {
 						}
 
 						// add contains keyword interface.
-						if (GUILayout.Button("+")) node.filterContainsKeywords.Add(string.Empty);
+						if (GUILayout.Button("+")) {
+							// node.AddFilterKeyword(AssetGraphSettings.);
+						}
 
 						break;
 					}
@@ -330,7 +272,7 @@ namespace AssetGraph {
 						var noFilesFound = false;
 						var tooManyFilesFound = false;
 
-						var samplingPath = Path.Combine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+						var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 						if (Directory.Exists(samplingPath)) {
 							var samplingFiles = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingPath);
 							switch (samplingFiles.Count) {

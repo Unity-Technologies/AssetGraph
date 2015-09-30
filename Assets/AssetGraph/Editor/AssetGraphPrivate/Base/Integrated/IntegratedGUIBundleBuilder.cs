@@ -27,8 +27,8 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			var recommendedBundleOutputDirSource = Path.Combine(AssetGraphSettings.BUNDLEBUILDER_TEMP_PLACE, nodeId);
-			var recommendedBundleOutputDir = Path.Combine(recommendedBundleOutputDirSource, "iOS");
+			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, "iOS");
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();

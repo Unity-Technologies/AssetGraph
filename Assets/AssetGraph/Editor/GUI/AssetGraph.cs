@@ -40,7 +40,7 @@ namespace AssetGraph {
 #if UNITY_5_3
 			{
 				// json to object.
-				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\"}");
+				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
 				Debug.LogError ("deserialize KeyObject.key:" + s.key);
 
 				// object to json.
@@ -52,8 +52,7 @@ namespace AssetGraph {
 #endif
 		}
 		
-		[Serializable]
-		public struct KeyObject {
+		[Serializable] public struct KeyObject {
 			public string key;
 
 			public KeyObject (string val) {
@@ -146,12 +145,12 @@ namespace AssetGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
 			
 			// create Temp folder under Assets/AssetGraph
 			if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
 
-			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 
 
 			var deserialized = new Dictionary<string, object>();
@@ -524,8 +523,8 @@ namespace AssetGraph {
 		}
 
 		private void Reload () {
-			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
-			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
@@ -548,8 +547,8 @@ namespace AssetGraph {
 		}
 
 		private void Run () {
-			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
-			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
@@ -1090,8 +1089,8 @@ namespace AssetGraph {
 
 		private void UpdateGraphData (Dictionary<string, object> data) {
 			var dataStr = Json.Serialize(data);
-			var basePath = Path.Combine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
-			var graphDataPath = Path.Combine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			using (var sw = new StreamWriter(graphDataPath)) {
 				sw.Write(dataStr);
 			}

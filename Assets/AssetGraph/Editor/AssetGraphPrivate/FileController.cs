@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEditor;
 
 using System;
@@ -48,6 +49,38 @@ namespace AssetGraph {
 
 			var files = Directory.GetFiles(localFolderPath);
 			filePaths.AddRange(files);
+		}
+
+		/**
+			create path combination.
+
+			delimiter is always '/'. and '\' will be replaced with '/'.
+
+			in windows, Application.dataPath returns PATH_OF_PROJECT/Assets with slashes(/). 
+			like below.
+				C:/SOMEWHERE/PROJECT_FOLDER/Assets
+
+			we follow that.
+		*/
+		public static string PathCombine (params string[] paths) {
+			if (paths.Length < 2) throw new Exception("failed to combine paths: only 1 path.");
+
+			var combinedPath = Path.Combine(paths[0], paths[1]);
+			var restPaths = new string[paths.Length-2];
+
+			Array.Copy(paths, 2, restPaths, 0, restPaths.Length);
+			foreach (var path in restPaths) combinedPath = _PathCombine(combinedPath, path);
+
+			return combinedPath;
+		}
+
+		private static string _PathCombine (string head, string tail) {
+			if (!head.EndsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) head = head + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
+
+			if (tail.Contains("\\")) tail = tail.Replace("\\", AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString());
+			if (tail.StartsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) tail = tail.Substring(1);
+
+			return Path.Combine(head, tail);
 		}
 	}
 }

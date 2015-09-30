@@ -47,7 +47,7 @@ namespace AssetGraph {
 
 			if (!validation) return;
 
-			var recommendedPrefabOutputDir = Path.Combine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
+			var recommendedPrefabOutputDir = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedPrefabOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
