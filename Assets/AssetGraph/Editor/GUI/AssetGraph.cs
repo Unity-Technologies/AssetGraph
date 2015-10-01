@@ -17,6 +17,12 @@ namespace AssetGraph {
 			GetWindow<AssetGraph>();
 		}
 
+		public void OnFocus () {
+			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
+			Node.Emit = EmitNodeEvent;
+			Connection.Emit = EmitConnectionEvent;
+		}
+
 		public void OnEnable () {
 			Debug.LogError("should change title setting(with icon");
 			this.title = "AssetGraph";
@@ -1230,6 +1236,7 @@ namespace AssetGraph {
 			}
 		}
 
+		
 
 		/**
 			emit event from node-GUI.
@@ -1532,7 +1539,7 @@ namespace AssetGraph {
 								SaveGraph();
 								break;
 							}
-
+							
 							Undo.RecordObject(this, "Select Node");
 
 							activeObject = RenewActiveObject(new List<string>{movedNodeId});
