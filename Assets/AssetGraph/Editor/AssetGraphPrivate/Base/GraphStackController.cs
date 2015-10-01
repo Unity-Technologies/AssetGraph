@@ -530,7 +530,7 @@ namespace AssetGraph {
 
 			var currentNodeData = currentNodeDatas[0];
 
-			if (currentNodeData.IsAlreadyCached()) return;
+			if (currentNodeData.IsAlreadyDone()) return;
 
 			/*
 				run parent nodes of this node.
@@ -811,7 +811,7 @@ namespace AssetGraph {
 				}
 			}
 
-			currentNodeData.Cached();
+			currentNodeData.Done();
 			if (updateHandler != null) updateHandler(nodeId, 1f);
 		}
 
@@ -858,7 +858,7 @@ namespace AssetGraph {
 		// for bundleBuilder GUI data
 		public readonly List<string> enabledBundleOptions;
 
-		private bool cached;
+		private bool done;
 
 		public NodeData (
 			string nodeId, 
@@ -943,12 +943,12 @@ namespace AssetGraph {
 			connectionDataOfParents.Add(new ConnectionData(connection));
 		}
 
-		public void Cached () {
-			cached = true;
+		public void Done () {
+			done = true;
 		}
 
-		public bool IsAlreadyCached () {
-			return cached;
+		public bool IsAlreadyDone () {
+			return done;
 		}
 	}
 
