@@ -357,12 +357,19 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						var bundleOptionsSource = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_BUNDLEOPTIONS] as Dictionary<string, object>;
-						var bundleOptions = new Dictionary<string, bool>();
+						var enabledBundleOptionsSource = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as List<object>;
+						if (enabledBundleOptionsSource == null) {
+							Debug.LogError("データからの復帰時、どっからかnullになってる");
+							break;
+						}
+						// load default settings. all options are disabled.
+						var bundleOptions = new List<string>();
 
-						foreach (var key in bundleOptionsSource.Keys) {
-							var val = (bool)bundleOptionsSource[key];
-							bundleOptions[key] = val;
+						
+						if (enabledBundleOptionsSource.Any()) {
+							foreach (var enaledBundleOption in enabledBundleOptionsSource) {
+								bundleOptions.Add(enaledBundleOption as string);
+							}
 						}
 
 						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
@@ -491,7 +498,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_BUNDLEOPTIONS] = node.bundleOptions;
+						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions;
 						break;
 					}
 
@@ -1067,7 +1074,7 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					var bundleOptions = AssetGraphSettings.DefaultBundleOptionSettings;
+					var bundleOptions = new List<string>();
 					newNode = Node.GUINodeForBundleBuilder(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
@@ -1595,6 +1602,7 @@ namespace AssetGraph {
 		public void DeleteNode (string deletingNodeId) {
 			var deletedNodeIndex = nodes.FindIndex(node => node.nodeId == deletingNodeId);
 			if (0 <= deletedNodeIndex) {
+				nodes[deletedNodeIndex].SetInactive();
 				nodes.RemoveAt(deletedNodeIndex);
 			}
 		}
@@ -1734,6 +1742,7 @@ namespace AssetGraph {
 		private void DeleteConnectionById (string connectionId) {
 			var deletedConnectionIndex = connections.FindIndex(con => con.connectionId == connectionId);
 			if (0 <= deletedConnectionIndex) {
+				connections[deletedConnectionIndex].SetInactive();
 				connections.RemoveAt(deletedConnectionIndex);
 			}
 		}

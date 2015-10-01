@@ -25,13 +25,13 @@ namespace AssetGraph {
 
 		public const char KEYWORD_WILDCARD = '*';
 
-		public static Dictionary<string, bool> DefaultBundleOptionSettings = new Dictionary<string, bool> {
-			{"Uncompressed AssetBundle", false},
-			{"Disable Write TypeTree", false},
-			{"Deterministic AssetBundle", false},
-			{"Force Rebuild AssetBundle", false},
-			{"Ignore TypeTree Changes", false},
-			{"Append Hash To AssetBundle Name", false}
+		public static List<string> DefaultBundleOptionSettings = new List<string> {
+			"Uncompressed AssetBundle",
+			"Disable Write TypeTree",
+			"Deterministic AssetBundle",
+			"Force Rebuild AssetBundle",
+			"Ignore TypeTree Changes",
+			"Append Hash To AssetBundle Name"
 		};
 
 		public const float WINDOW_SPAN = 20f;
@@ -93,7 +93,7 @@ namespace AssetGraph {
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
-		public const string NODE_BUNDLEBUILDER_BUNDLEOPTIONS = "bundleOptions";
+		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
 		// connection const
 		public const string CONNECTION_LABEL = "label";

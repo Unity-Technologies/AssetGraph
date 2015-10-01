@@ -37,7 +37,7 @@ namespace AssetGraph {
 		[SerializeField] public List<string> filterContainsKeywords;
 		[SerializeField] public string groupingKeyword;
 		[SerializeField] public string bundleNameTemplate;
-		[SerializeField] public Dictionary<string, bool> bundleOptions;
+		[SerializeField] public List<string> enabledBundleOptions;
 
 		[SerializeField] private string nodeInterfaceTypeStr;
 
@@ -47,7 +47,6 @@ namespace AssetGraph {
 		private float progress;
 		private bool running;
 
-		
 		public static Node LoaderNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
 			return new Node(
 				index: index,
@@ -143,7 +142,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, bool> bundleOptions, float x, float y) {
+		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, List<string> enabledBundleOptions, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -151,7 +150,7 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				bundleOptions: bundleOptions
+				enabledBundleOptions: enabledBundleOptions
 			);
 		}
 
@@ -425,27 +424,33 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var bundleOptions = node.bundleOptions;
-						var keys = bundleOptions.Keys.ToList();
+						var bundleOptions = node.enabledBundleOptions;
+						if (bundleOptions == null) {
+							Debug.LogError("null, なるほど選択してると出るのか。まあ確かにnullになり得るんだよな。");
+							break;
+						}
+						
+						for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
+							var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
 
-						for (var i = 0; i < bundleOptions.Count; i++) {
-							var key = keys[i];
-							var val = bundleOptions[keys[i]];
-							var result = EditorGUILayout.ToggleLeft(key, val);
-							if (result != val) {
-								node.bundleOptions[key] = result;
+							var isEnable = bundleOptions.Contains(enablablekey);
+
+							var result = EditorGUILayout.ToggleLeft(enablablekey, isEnable);
+							if (result != isEnable) {
+
+								node.enabledBundleOptions.Add(enablablekey);
 
 								/*
 									Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
 								*/
-								if (key == "Disable Write TypeTree" && result &&
-									node.bundleOptions["Ignore TypeTree Changes"]) {
-									node.bundleOptions["Ignore TypeTree Changes"] = false;
+								if (enablablekey == "Disable Write TypeTree" && result &&
+									node.enabledBundleOptions.Contains("Ignore TypeTree Changes")) {
+									node.enabledBundleOptions.Remove("Ignore TypeTree Changes");
 								}
 
-								if (key == "Ignore TypeTree Changes" && result &&
-									node.bundleOptions["Disable Write TypeTree"]) {
-									node.bundleOptions["Disable Write TypeTree"] = false;
+								if (enablablekey == "Ignore TypeTree Changes" && result &&
+									node.enabledBundleOptions.Contains("Disable Write TypeTree")) {
+									node.enabledBundleOptions.Remove("Disable Write TypeTree");
 								}
 
 								node.Save();
@@ -516,7 +521,7 @@ namespace AssetGraph {
 			List<string> filterContainsKeywords = null, 
 			string groupingKeyword = null,
 			string bundleNameTemplate = null,
-			Dictionary<string, bool> bundleOptions = null
+			List<string> enabledBundleOptions = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			nodeInsp.hideFlags = HideFlags.DontSave;
@@ -532,7 +537,7 @@ namespace AssetGraph {
 			this.filterContainsKeywords = filterContainsKeywords;
 			this.groupingKeyword = groupingKeyword;
 			this.bundleNameTemplate = bundleNameTemplate;
-			this.bundleOptions = bundleOptions;
+			this.enabledBundleOptions = enabledBundleOptions;
 			
 			this.baseRect = new Rect(x, y, AssetGraphGUISettings.NODE_BASE_WIDTH, AssetGraphGUISettings.NODE_BASE_HEIGHT);
 			

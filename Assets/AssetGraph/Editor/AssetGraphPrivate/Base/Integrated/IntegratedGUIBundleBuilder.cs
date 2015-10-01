@@ -8,9 +8,9 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class IntegratedGUIBundleBuilder : INodeBase {
-		private readonly Dictionary<string, bool> bundleOptions;
+		private readonly List<string> bundleOptions;
 		
-		public IntegratedGUIBundleBuilder (Dictionary<string, bool> bundleOptions) {
+		public IntegratedGUIBundleBuilder (List<string> bundleOptions) {
 			this.bundleOptions = bundleOptions;
 		}
 
@@ -37,31 +37,30 @@ namespace AssetGraph {
 			var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 			var assetBundleOptions = BuildAssetBundleOptions.None;
 
-			foreach (var key in bundleOptions.Keys) {
-				var adopt = bundleOptions[key];
-				switch (key) {
+			foreach (var enabled in bundleOptions) {
+				switch (enabled) {
 					case "Uncompressed AssetBundle": {
-						if (adopt) assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.UncompressedAssetBundle;
+						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.UncompressedAssetBundle;
 						break;
 					}
 					case "Disable Write TypeTree": {
-						if (adopt) assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.DisableWriteTypeTree;
+						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.DisableWriteTypeTree;
 						break;
 					}
 					case "Deterministic AssetBundle": {
-						if (adopt) assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.DeterministicAssetBundle;
+						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.DeterministicAssetBundle;
 						break;
 					}
 					case "Force Rebuild AssetBundle": {
-						if (adopt) assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.ForceRebuildAssetBundle;
+						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.ForceRebuildAssetBundle;
 						break;
 					}
 					case "Ignore TypeTree Changes": {
-						if (adopt) assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.IgnoreTypeTreeChanges;
+						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.IgnoreTypeTreeChanges;
 						break;
 					}
 					case "Append Hash To AssetBundle Name": {
-						if (adopt) assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.AppendHashToAssetBundleName;
+						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.AppendHashToAssetBundleName;
 						break;
 					}
 				}
