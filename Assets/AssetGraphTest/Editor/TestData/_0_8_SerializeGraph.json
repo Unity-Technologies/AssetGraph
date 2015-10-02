@@ -5,7 +5,7 @@
             "name": "AssetGraph.IntegratedScriptLoader",
             "id": "0_Loader",
             "kind": "LOADER_SCRIPT",
-            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_8_SerializedGraphJSON",
+            "loadPath": "/AssetGraph/TestResourcesFor_0_8_SerializedGraphJSON",
             "outputLabels": [
                 "_"
             ],

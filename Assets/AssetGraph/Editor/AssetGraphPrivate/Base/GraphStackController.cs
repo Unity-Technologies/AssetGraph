@@ -308,7 +308,7 @@ namespace AssetGraph {
 		}
 		
 		public static EndpointNodeIdsAndNodeDatasAndConnectionDatas SerializeNodeRoute (Dictionary<string, object> graphDataDict) {
-			Debug.LogError("should check infinite loop.");
+			Debug.LogWarning("should check infinite loop.");
 
 
 			var nodeIds = new List<string>();
@@ -552,7 +552,7 @@ namespace AssetGraph {
 				run after parent run.
 			*/
 
-			Debug.LogError("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。");
+			Debug.LogWarning("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。");
 			var cached = new List<string>();
 
 			var connectionLabelsFromThisNodeToChildNode = connectionDatas
@@ -615,7 +615,7 @@ namespace AssetGraph {
 					connectionResult[groupKey].AddRange(result[groupKey]);
 				}
 
-				Debug.LogError("ここでcachedを扱う");
+				Debug.LogWarning("ここでcachedを扱う");
 			};
 
 			if (isActualRun) {

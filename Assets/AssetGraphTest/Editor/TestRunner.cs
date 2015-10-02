@@ -11,7 +11,6 @@ public partial class Test {
 		
 		// general
 		{
-			
 			// tests.Add(this._0_0_0_SetupLoader);
 			// tests.Add(this._0_0_1_RunLoader);
 			// tests.Add(this._0_0_SetupFilter);
@@ -27,7 +26,7 @@ public partial class Test {
 			// tests.Add(this._0_9_RunStackedGraph);
 			// tests.Add(this._0_10_SetupExporter);
 			// tests.Add(this._0_11_RunExporter);
-			tests.Add(this._0_12_RunStackedGraph_FullStacked);
+			// tests.Add(this._0_12_RunStackedGraph_FullStacked);
 			// tests.Add(this._0_13_SetupStackedGraph_FullStacked);
 			// tests.Add(this._0_14_SetupStackedGraph_Sample);
 			// tests.Add(this._0_15_RunStackedGraph_Sample);
@@ -39,7 +38,9 @@ public partial class Test {
 		}
 
 		// cache test
-
+		{
+			tests.Add(this._4_0_CacheWithSetup);
+		}
 
 		
 		Debug.LogError("test start date:" + DateTime.Now);

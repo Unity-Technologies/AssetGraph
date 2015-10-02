@@ -13,10 +13,9 @@ using MiniJSONForAssetGraph;
 // 同じFilterの結果を複数のノードが使用する場合、キャッシュが効くかどうか
 
 public partial class Test {
-	public void _3_0_OrderWithCache0 () {
-		// 根っこあたりにフィルタがあり、4つ又のimportの結果が再度読まれないかどうか
+	public void _4_0_CacheWithSetup () {
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
-		var graphDataPath = Path.Combine(basePath, "_3_0_OrderWithCache0.json");
+		var graphDataPath = Path.Combine(basePath, "_4_0_CacheWithSetup.json");
 		
 		// load
 		var dataStr = string.Empty;
@@ -38,16 +37,7 @@ public partial class Test {
 			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
 		}
 
-		var connectionIds = resultDict.Keys.ToList();
-		
-		if (connectionIds.Contains("ロードからフィルタへ")) {
-			connectionIds.Remove("ロードからフィルタへ");
-		}
-
-		if (!connectionIds.Contains("ロードからフィルタへ")) {
-			return;
-		}
-
-		Debug.LogError("multiple same connectionId contains.");
+		Debug.LogError("not yet,この間でcacheの話が済んでいれば、cacheの使用したことを示すデータが出る");
 	}
+
 }

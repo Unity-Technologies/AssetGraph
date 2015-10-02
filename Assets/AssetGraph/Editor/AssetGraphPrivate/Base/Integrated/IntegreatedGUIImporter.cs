@@ -24,16 +24,14 @@ namespace AssetGraph {
 					var filesInSampling = FileController.FilePathsInFolder(samplingDirectoryPath);
 					switch (filesInSampling.Count) {
 						case 0: {
-							Debug.Log("sampling start.");
+							Debug.LogWarning("sampling start. 仮のimportが走るんで、なにかするならここ。");
 							break;
 						}
 						case 1: {
-							Debug.Log("sampling over. sample:" + filesInSampling[0]);
 							first = false;
 							break;
 						}
 						default: {
-							Debug.LogError("too many assets in samplingDirectoryPath:" + samplingDirectoryPath + ", make sure only 1 file in path:" + samplingDirectoryPath + ", or delete all files in path:" + samplingDirectoryPath + " and reload.");
 							first = false;
 							break;
 						}

@@ -12,7 +12,7 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/AssetGraph/TestResourcesFor_3_0_OrderWithCache0"
+            "loadPath": "/AssetGraph/TestResourcesFor_4_0_CacheWithSetup"
         },
         {
             "name": "SampleFilter_3",
@@ -91,31 +91,31 @@
     "connections": [
         {
             "label": "+",
-            "connectionId": "ロードからフィルタへ",
+            "connectionId": "ロードからフィルタへ_cache",
             "fromNode": "リソースの呼び込み",
             "toNode": "リソースの仕分け"
         },
         {
             "label": "画像",
-            "connectionId": "フィルタから画像吐き出し",
+            "connectionId": "フィルタから画像吐き出し_cache",
             "fromNode": "リソースの仕分け",
             "toNode": "画像を読み込む"
         },
         {
             "label": "モデル",
-            "connectionId": "フィルタからモデル吐き出し",
+            "connectionId": "フィルタからモデル吐き出し_cache",
             "fromNode": "リソースの仕分け",
             "toNode": "モデルを読み込む"
         },
         {
             "label": "BGM",
-            "connectionId": "フィルタからBGM吐き出し",
+            "connectionId": "フィルタからBGM吐き出し_cache",
             "fromNode": "リソースの仕分け",
             "toNode": "BGMを読み込む"
         },
         {
             "label": "SE",
-            "connectionId": "フィルタからSE吐き出し",
+            "connectionId": "フィルタからSE吐き出し_cache",
             "fromNode": "リソースの仕分け",
             "toNode": "SEを読み込む"
         }

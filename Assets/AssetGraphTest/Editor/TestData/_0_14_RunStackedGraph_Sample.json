@@ -12,7 +12,7 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            "loadPath": "/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample"
         },
         {
             "name": "FilterAllResources",
@@ -138,7 +138,7 @@
                 "x": 1043,
                 "y": 185
             },
-            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
+            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
         }
     ],
     "connections": [

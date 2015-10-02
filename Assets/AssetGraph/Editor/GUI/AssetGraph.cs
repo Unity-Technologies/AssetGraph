@@ -24,7 +24,7 @@ namespace AssetGraph {
 		}
 
 		public void OnEnable () {
-			Debug.LogError("should change title setting(with icon");
+			Debug.LogWarning("should change title setting(with icon");
 			this.title = "AssetGraph";
 
 			Undo.undoRedoPerformed += () => {
@@ -131,7 +131,7 @@ namespace AssetGraph {
 			// load other textures
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent ("d_RotateTool");
 			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
-			Debug.LogError("load platform textures here.");
+			Debug.LogWarning("load platform textures here.");
 		}
 
 
