@@ -14,7 +14,7 @@ namespace AssetGraph {
 			this.bundleNameTemplate = bundleNameTemplate;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
 				Debug.LogError("no Bundle Name Template set.");
 				return;
@@ -45,10 +45,10 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
 				Debug.LogError("no Bundle Name Template set.");
 				return;
@@ -79,7 +79,7 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 
 		public string BundlizeAssets (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {

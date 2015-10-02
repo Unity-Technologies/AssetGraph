@@ -3,18 +3,18 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	/**
-		全てのNodeクラスのインターフェース
+		interface of all nodes
 	*/
 	public interface INodeBase {
 
 		/**
-			起動時に走るメソッド
+			fire when setup.
 		*/
-		void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output);
+		void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output);
 
 		/**
-			実行時に走るメソッド
+			fire when build.
 		*/
-		void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output);
+		void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output);
 	}
 }

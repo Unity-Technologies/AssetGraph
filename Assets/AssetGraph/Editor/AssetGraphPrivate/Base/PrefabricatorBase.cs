@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {			
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			var validation = true;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -31,10 +31,10 @@ namespace AssetGraph {
 				outputDict[groupKey] = inputSources;
 			};
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var validation = true;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -66,7 +66,7 @@ namespace AssetGraph {
 				/*
 					files under "Assets/" before prefabricate.
 				*/
-				var localFilePathsBeforePrefabricate = FileController.FilePathsInFolderWithoutMeta("Assets");
+				var localFilePathsBeforePrefabricate = FileController.FilePathsInFolder("Assets");
 				
 				/*
 					execute inheritee's input method.
@@ -104,7 +104,7 @@ namespace AssetGraph {
 				/*
 					files under "Assets/" after prefabricated.
 				*/
-				var localFilePathsAfterPrefabricate = FileController.FilePathsInFolderWithoutMeta("Assets");
+				var localFilePathsAfterPrefabricate = FileController.FilePathsInFolder("Assets");
 				
 				/*
 					check if new Assets are generated, trace it.
@@ -122,7 +122,7 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 
 		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir) {

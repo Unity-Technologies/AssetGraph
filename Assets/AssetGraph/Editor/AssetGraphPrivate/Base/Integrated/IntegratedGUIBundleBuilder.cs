@@ -14,7 +14,7 @@ namespace AssetGraph {
 			this.bundleOptions = bundleOptions;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
@@ -23,10 +23,10 @@ namespace AssetGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 			
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_TEMP_PLACE, nodeId);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, "iOS");
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
@@ -34,7 +34,7 @@ namespace AssetGraph {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
-			var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
+			var localFilePathsBeforeBundlize = FileController.FilePathsInFolder(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 			var assetBundleOptions = BuildAssetBundleOptions.None;
 
 			foreach (var enabled in bundleOptions) {
@@ -68,7 +68,7 @@ namespace AssetGraph {
 
 			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, BuildTarget.iOS);
 
-			var localFilePathsAfterBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
+			var localFilePathsAfterBundlize = FileController.FilePathsInFolder(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 				
 			var outputSources = new List<InternalAssetData>();
 
@@ -80,7 +80,7 @@ namespace AssetGraph {
 
 			outputDict["0"] = outputSources;
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 	}
 }

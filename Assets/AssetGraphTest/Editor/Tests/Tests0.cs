@@ -24,11 +24,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		integratedScriptLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, Out);
+		integratedScriptLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, new List<string>(), Out);
 
 		var outputs = results["CONNECTION_0_0_0_SetupLoader"];
 		if (outputs.Count == 2) {
@@ -49,11 +49,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		integratedScriptLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, Out);
+		integratedScriptLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, new List<string>(), Out);
 
 		var outputs = results["CONNECTION_0_0_1_RunLoader"];
 		if (outputs.Count == 2) {
@@ -77,11 +77,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, Out);
+		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, new List<string>(), Out);
 
 		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
 			var result1 = results["SampleFilter_0_LabelOf1st"];
@@ -111,11 +111,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, Out);
+		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, new List<string>(), Out);
 
 		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
 			var result1 = results["SampleFilter_0_LabelOf1st"];
@@ -149,11 +149,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, Out);
+		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, new List<string>(), Out);
 		Debug.Log("passed _0_2_SetupImporter");
 	}
 	public void _0_3_RunImporter () {
@@ -172,11 +172,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, Out);
+		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
 		if (currentOutputs.Count == 3) {
@@ -210,11 +210,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, Out);
+		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, new List<string>(), Out);
 		Debug.Log("passed _0_4_SetupPrefabricator");
 	}
 	public void _0_5_RunPrefabricator () {
@@ -240,11 +240,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, Out);
+		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"];
 		if (currentOutputs.Count == 3) {
@@ -282,11 +282,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sBundlizer = new SampleBundlizer_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, Out);
+		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, new List<string>(), Out);
 		Debug.Log("passed _0_6_SetupBundlizer");
 	}
 	public void _0_7_RunBundlizer () {
@@ -312,11 +312,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sBundlizer = new SampleBundlizer_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, Out);
+		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
@@ -440,11 +440,11 @@ public partial class Test {
 		};
 		
 		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			
 		};
 
-		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, Out);
+		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, new List<string>(), Out);
 		Debug.Log("passed _0_10_SetupExporter");
 	}
 
@@ -472,11 +472,11 @@ public partial class Test {
 		};
 		
 		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			
 		};
 
-		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, Out);
+		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, new List<string>(), Out);
 
 		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
 

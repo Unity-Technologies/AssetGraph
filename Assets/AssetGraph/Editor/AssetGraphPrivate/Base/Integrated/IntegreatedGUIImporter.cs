@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class IntegreatedGUIImporter : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -21,7 +21,7 @@ namespace AssetGraph {
 
 				// caution if file is exists already.
 				if (Directory.Exists(samplingDirectoryPath)) {
-					var filesInSampling = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingDirectoryPath);
+					var filesInSampling = FileController.FilePathsInFolder(samplingDirectoryPath);
 					switch (filesInSampling.Count) {
 						case 0: {
 							Debug.Log("sampling start.");
@@ -74,10 +74,10 @@ namespace AssetGraph {
 				outputDict[groupKey] = assumedImportedAssetDatas;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -93,7 +93,7 @@ namespace AssetGraph {
 				// caution if file is exists already.
 				var sampleAssetPath = string.Empty;
 				if (Directory.Exists(samplingDirectoryPath)) {
-					var filesInSampling = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingDirectoryPath);
+					var filesInSampling = FileController.FilePathsInFolder(samplingDirectoryPath);
 					switch (filesInSampling.Count) {
 						case 0: {
 							Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
@@ -142,7 +142,7 @@ namespace AssetGraph {
 				
 				
 				// get files, which are already assets.
-				var localFilePathsAfterImport = FileController.FilePathsInFolderWithoutMeta(targetDirectoryPath);
+				var localFilePathsAfterImport = FileController.FilePathsInFolder(targetDirectoryPath);
 
 				var localFilePathsWithoutTargetDirectoryPath = localFilePathsAfterImport.Select(path => InternalAssetData.GetPathWithoutBasePath(path, targetDirectoryPath)).ToList();
 				
@@ -190,11 +190,10 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 		
 		public Type AssumeTypeFromExtension () {
-			// Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、2");
 			return typeof(UnityEngine.Object);
 		}
 	}

@@ -276,7 +276,7 @@ namespace AssetGraph {
 
 						var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 						if (Directory.Exists(samplingPath)) {
-							var samplingFiles = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingPath);
+							var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath);
 							switch (samplingFiles.Count) {
 								case 0: {
 									noFilesFound = true;

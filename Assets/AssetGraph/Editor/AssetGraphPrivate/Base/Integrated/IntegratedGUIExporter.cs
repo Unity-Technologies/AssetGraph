@@ -12,7 +12,7 @@ namespace AssetGraph {
 			this.exportFilePath = exportFilePath;
 		}
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(exportFilePath)) {
 				Debug.LogWarning("no Export Path set.");
 				return;
@@ -24,7 +24,7 @@ namespace AssetGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(exportFilePath)) {
 				Debug.LogWarning("no Export Path set.");
 				return;

@@ -21,25 +21,24 @@ namespace AssetGraph {
 		}
 
 
-		public static List<string> FilePathsInFolderWithoutMeta (string localFolderPath) {
+		public static List<string> FilePathsInFolder (string localFolderPath, bool ignoreMeta=true) {
 			var filePaths = new List<string>();
 			
 			if (string.IsNullOrEmpty(localFolderPath)) return filePaths;
 
-			GetFilePathsRecursive(localFolderPath, filePaths);
-			return filePaths
-				.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION))
-				.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
-				.ToList();
+			GetFilePathsRecursive(localFolderPath, filePaths, ignoreMeta);
+
+			return filePaths;
 		}
 
 		private static void GetFilePathsRecursive (string localFolderPath, List<string> filePaths, bool ignoreMeta=true) {
 			var folders = Directory.GetDirectories(localFolderPath);
+			
 			foreach (var folder in folders) {
-				GetFilePathsRecursive(folder, filePaths);
+				GetFilePathsRecursive(folder, filePaths, ignoreMeta);
 			}
 
-			var files = FilePathsInFolderWithoutMetaOnly1Level(localFolderPath, ignoreMeta);
+			var files = FilePathsInFolderOnly1Level(localFolderPath, ignoreMeta);
 			filePaths.AddRange(files);
 		}
 
@@ -70,7 +69,7 @@ namespace AssetGraph {
 
 			this method replaces folder delimiters to '/'.
 		*/
-		public static List<string> FilePathsInFolderWithoutMetaOnly1Level (string localFolderPath, bool ignoreMeta=true) {
+		public static List<string> FilePathsInFolderOnly1Level (string localFolderPath, bool ignoreMeta=true) {
 			// change platform-depends folder delimiter -> '/'
 			var filePaths = Directory.GetFiles(localFolderPath).Select(filePath => filePath.Replace(Path.DirectorySeparatorChar.ToString(), AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())).ToArray();
 			

@@ -12,7 +12,7 @@ namespace AssetGraph {
 		public UnityEditor.AssetImporter assetImporter;
 		public string assetPath;
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -42,10 +42,10 @@ namespace AssetGraph {
 				outputDict[groupKey] = assumedImportedAssetDatas;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
 			foreach (var groupKey in groupedSources.Keys) {
@@ -81,7 +81,7 @@ namespace AssetGraph {
 				InternalImporter.Detach();
 				
 				// get files, which are already assets.
-				var localFilePathsAfterImport = FileController.FilePathsInFolderWithoutMeta(targetDirectoryPath);
+				var localFilePathsAfterImport = FileController.FilePathsInFolder(targetDirectoryPath);
 
 				var localFilePathsWithoutTargetDirectoryPath = localFilePathsAfterImport.Select(path => InternalAssetData.GetPathWithoutBasePath(path, targetDirectoryPath)).ToList();
 				
@@ -128,7 +128,7 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, alreadyCached);
 		}
 
 		/*
@@ -145,7 +145,6 @@ namespace AssetGraph {
 		public virtual void AssetGraphOnAssignMaterialModel (Material material, Renderer renderer) {}
 
 		public Type AssumeTypeFromExtension () {
-			Debug.LogWarning("もしもこれからimportする型の仮定が、拡張子とかからできれば、どのAssetPostprocessorが起動するのか特定できて、どのimporterがどのメソッドを積めばいいのかwarningとかで示せる。そういうUnityの関数ないっすかね、、");
 			return typeof(UnityEngine.Object);
 		}
 	}

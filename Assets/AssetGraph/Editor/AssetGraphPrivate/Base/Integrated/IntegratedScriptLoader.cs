@@ -11,10 +11,10 @@ namespace AssetGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> inputSource, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> inputSource, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputSource = new List<InternalAssetData>();
 			try {
-				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
+				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
 					outputSource.Add(
@@ -29,16 +29,16 @@ namespace AssetGraph {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDict);
+				Output(nodeId, labelToNext, outputDict, alreadyCached);
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> inputSource, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> inputSource, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputSource = new List<InternalAssetData>();
 			try {
-				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
+				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
 					outputSource.Add(
@@ -48,12 +48,12 @@ namespace AssetGraph {
 						)
 					);
 				}
-
+				
 				var outputDict = new Dictionary<string, List<InternalAssetData>> {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDict);
+				Output(nodeId, labelToNext, outputDict, alreadyCached);
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
