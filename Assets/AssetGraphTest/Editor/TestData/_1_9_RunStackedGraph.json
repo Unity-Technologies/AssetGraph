@@ -13,24 +13,36 @@
         {
             "name": "SampleFilter_2",
             "id": "1st_Filter",
-            "kind": "FILTER_SCRIPT",
-            "scriptType": "SampleFilter_2",
-            "scriptPath": "Scriptのパス",
+            "kind": "FILTER_GUI",
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
+             "filterContainsKeywords": [
+                "dummy",
+                "model"
+            ],
+            "outputLabels": [
+                "dummy",
+                "model"
+            ]
+        },
+        {
+            "name": "SampleImporter_2",
+            "id": "2nd_Importer1",
+            "kind": "IMPORTER_GUI",
             "pos": {
                 "x": 10,
                 "y": 10
             },
             "outputLabels": [
-                "SampleFilter_1_LabelOf1st",
-                "SampleFilter_2_LabelOf2nd"
+                "_"
             ]
         },
         {
-            "name": "SampleImporter_2",
-            "id": "2nd_Importer",
-            "kind": "IMPORTER_SCRIPT",
-            "scriptType": "SampleImporter_2",
-            "scriptPath": "Scriptのパス",
+            "name": "SampleImporter_3",
+            "id": "2nd_Importer2",
+            "kind": "IMPORTER_GUI",
             "pos": {
                 "x": 10,
                 "y": 10
@@ -43,7 +55,7 @@
             "name": "AssetGraph.IntegratedScriptExporter",
             "id": "3rd_Exporter",
             "kind": "EXPORTER_GUI",
-            "exportPath": "AssetGraph/TestExportPlace/For_0_9_SerializedGraphJSONByExporter",
+            "exportPath": "AssetGraph/TestExportPlace/For_1_9_SerializedGraphJSONByExporter",
             "pos": {
                 "x": 10,
                 "y": 10
@@ -60,15 +72,27 @@
             "toNode": "1st_Filter"
         },
         {
-            "label": "SampleFilter_1_LabelOf1st",
-            "connectionId": "フィルタからインポータへ",
+            "label": "dummy",
+            "connectionId": "フィルタからインポータへ1",
             "fromNode": "1st_Filter",
-            "toNode": "2nd_Importer"
+            "toNode": "2nd_Importer1"
+        },
+        {
+            "label": "model",
+            "connectionId": "フィルタからインポータへ2",
+            "fromNode": "1st_Filter",
+            "toNode": "2nd_Importer2"
         },
         {
             "label": "_",
-            "connectionId": "インポータからエクスポータへ",
-            "fromNode": "2nd_Importer",
+            "connectionId": "インポータからエクスポータへ1",
+            "fromNode": "2nd_Importer1",
+            "toNode": "3rd_Exporter"
+        },
+        {
+            "label": "_",
+            "connectionId": "インポータからエクスポータへ2",
+            "fromNode": "2nd_Importer2",
             "toNode": "3rd_Exporter"
         }
     ]

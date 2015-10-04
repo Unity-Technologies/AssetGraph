@@ -4,7 +4,7 @@
         {
             "name": "AssetGraph.IntegratedLoader",
             "id": "リソースの呼び込み",
-            "kind": "LOADER_SCRIPT",
+            "kind": "LOADER_GUI",
             "outputLabels": [
                 "+"
             ],
@@ -12,7 +12,7 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
         },
         {
             "name": "FilterAllResources",
@@ -132,7 +132,7 @@
         {
             "name": "AssetGraph.IntegratedScriptExporter",
             "id": "バンドルをフォルダに出力",
-            "kind": "EXPORTER_SCRIPT",
+            "kind": "EXPORTER_GUI",
             "outputLabels": [],
             "pos": {
                 "x": 1043,

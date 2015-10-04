@@ -79,13 +79,10 @@ namespace AssetGraph {
 				}
 
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 				
 						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
@@ -345,8 +342,7 @@ namespace AssetGraph {
 				var nodeName = nodeDict[AssetGraphSettings.NODE_NAME] as string;
 
 				switch (nodeKind) {
-					case AssetGraphSettings.NodeKind.LOADER_GUI:
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var loadFilePath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 						nodeDatas.Add(
 							new NodeData(
@@ -358,8 +354,7 @@ namespace AssetGraph {
 						);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
 						nodeDatas.Add(
 							new NodeData(
@@ -374,7 +369,6 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
@@ -636,11 +630,9 @@ namespace AssetGraph {
 
 			if (isActualRun) {
 				switch (nodeKind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = new IntegratedScriptLoader(WithProjectPath(currentNodeData.loadFilePath));
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
-						break;
-					}
+					/*
+						Scripts
+					*/
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<FilterBase>(scriptType);
@@ -665,11 +657,7 @@ namespace AssetGraph {
 						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = new IntegratedScriptExporter(WithProjectPath(currentNodeData.exportFilePath));
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
-						break;
-					}
+					
 
 					/*
 						GUIs
@@ -737,13 +725,8 @@ namespace AssetGraph {
 			} else {
 				switch (nodeKind) {
 					/*
-						Script version
+						Scripts
 					*/
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT: {
-						var executor = new IntegratedScriptLoader(WithProjectPath(currentNodeData.loadFilePath));
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
-						break;
-					}
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<FilterBase>(scriptType);
@@ -768,11 +751,7 @@ namespace AssetGraph {
 						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
-						var executor = new IntegratedScriptExporter(WithProjectPath(currentNodeData.exportFilePath));
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
-						break;
-					}
+					
 
 					/*
 						GUIs
@@ -912,12 +891,10 @@ namespace AssetGraph {
 			this.enabledBundleOptions = null;
 
 			switch (nodeKind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
 					this.loadFilePath = loadPath;
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.exportFilePath = exportPath;
 					break;

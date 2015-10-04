@@ -14,60 +14,6 @@ using MiniJSONForAssetGraph;
 
 public partial class Test {
 
-	public void _0_0_0_SetupLoader () {
-		GraphStackController.CleanCache();
-
-		// contains 2 resources.
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
-
-		var emptySource = new Dictionary<string, List<InternalAssetData>>();
-
-		var results = new Dictionary<string, List<InternalAssetData>>();
-
-		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
-			results[connectionId] = output["0"];
-		};
-
-		integratedScriptLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, new List<string>(), Out);
-
-		var outputs = results["CONNECTION_0_0_0_SetupLoader"];
-		if (outputs.Count == 2) {
-			Debug.Log("passed _0_0_0_SetupLoader");
-			return;
-		}
-
-		Debug.LogError("not match 2, actual:" + outputs.Count);
-	}
-
-	public void _0_0_1_RunLoader () {
-		GraphStackController.CleanCache();
-
-		// contains 2 resources.
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
-
-		var emptySource = new Dictionary<string, List<InternalAssetData>>();
-
-		var results = new Dictionary<string, List<InternalAssetData>>();
-
-		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
-			results[connectionId] = output["0"];
-		};
-
-		integratedScriptLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, new List<string>(), Out);
-
-		var outputs = results["CONNECTION_0_0_1_RunLoader"];
-		if (outputs.Count == 2) {
-			Debug.Log("passed _0_0_1_RunLoader");
-			return;
-		}
-
-		Debug.LogError("not match 2, actual:" + outputs.Count);
-	}
-
 	public void _0_0_SetupFilter () {
 		GraphStackController.CleanCache();
 
@@ -145,7 +91,7 @@ public partial class Test {
 		GraphStackController.CleanCache();
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources0/");
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -170,7 +116,7 @@ public partial class Test {
 		GraphStackController.CleanCache();
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources0/");
 		
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -447,82 +393,7 @@ public partial class Test {
 		Debug.LogError("not yet");
 	}
 
-
-	public void _0_10_SetupExporter () {
-		GraphStackController.CleanCache();
-		
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_10_SetupExport");
-
-		// delete all if exist
-		if (Directory.Exists(exportFilePath)) {
-			Directory.Delete(exportFilePath, true);
-		}
-
-		Directory.CreateDirectory(exportFilePath);
-
-		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/SpanTempPath/SpanPath/a.png";
-		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
-		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
-
-		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
-			{"0", 
-				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType),
-				}
-			}
-		};
-		
-		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
-			
-		};
-
-		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, new List<string>(), Out);
-		Debug.Log("passed _0_10_SetupExporter");
-	}
-
-	public void _0_11_RunExporter () {
-		GraphStackController.CleanCache();
-		
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_11_RunExport");
-
-		// delete all if exist
-		if (Directory.Exists(exportFilePath)) {
-			Directory.Delete(exportFilePath, true);
-		}
-
-		Directory.CreateDirectory(exportFilePath);
-
-		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/SpanTempPath/SpanPath/a.png";
-		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
-		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
-		
-		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
-			{"0", 
-				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType),
-				}
-			}
-		};
-		
-		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
-			
-		};
-
-		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, new List<string>(), Out);
-
-		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
-
-		if (File.Exists(assumeedExportedFilePath)) {
-			Debug.Log("passed _0_11_RunExporter");
-			return;
-		}
-
-		Debug.LogError("failed to export");
-	}
+	//  10 & 11 is blank.
 
 	public void _0_12_RunStackedGraph_FullStacked () {
 		GraphStackController.CleanCache();

@@ -17,75 +17,71 @@
         {
             "name": "SampleFilter_4",
             "id": "リソースの仕分け",
-            "kind": "FILTER_SCRIPT",
+            "kind": "FILTER_GUI",
+            "filterContainsKeywords": [
+                "/images/",
+                "/models/",
+                "/bgms/",
+                "/ses/"
+            ],
             "outputLabels": [
-                "画像",
-                "モデル",
-                "BGM",
-                "SE"
+                "/images/",
+                "/models/",
+                "/bgms/",
+                "/ses/"
             ],
             "pos": {
                 "x": 59,
                 "y": 133
-            },
-            "scriptType": "SampleFilter_4",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter.cs"
+            }
         },
         {
             "name": "SampleImporterForImage",
             "id": "画像を読み込む",
-            "kind": "IMPORTER_SCRIPT",
+            "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
                 "x": 345,
                 "y": 24
-            },
-            "scriptType": "SampleImporterForImage",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage.cs"
+            }
         },
         {
             "name": "SampleImporterForModel",
             "id": "モデルを読み込む",
-            "kind": "IMPORTER_SCRIPT",
+            "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
                 "x": 346,
                 "y": 103
-            },
-            "scriptType": "SampleImporterForModel",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel.cs"
+            }
         },
         {
             "name": "SampleImporterForBGM",
             "id": "BGMを読み込む",
-            "kind": "IMPORTER_SCRIPT",
+            "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
                 "x": 351,
                 "y": 179
-            },
-            "scriptType": "SampleImporterForBGM",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM.cs"
+            }
         },
         {
             "name": "SampleImporterForSE",
             "id": "SEを読み込む",
-            "kind": "IMPORTER_SCRIPT",
+            "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
                 "x": 347,
                 "y": 261
-            },
-            "scriptType": "SampleImporterForSE",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE.cs"
+            }
         },
         {
             "name": "SamplePrefabricator_3",
@@ -104,7 +100,7 @@
         {
             "name": "SampleBundlizer_2",
             "id": "バンドルにする",
-            "kind": "BUNDLIZER_SCRIPT",
+            "kind": "BUNDLIZER_GUI",
             "outputLabels": [
                 "+"
             ],
@@ -112,8 +108,20 @@
                 "x": 814,
                 "y": 160
             },
-            "scriptType": "SampleBundlizer_2",
-            "scriptPath": "Scriptのパス"
+            "bundleNameTemplate": "chara*.assetbundle"
+        },
+        {
+            "name": "BundleBuilder",
+            "id": "バンドル生成を行う",
+            "kind": "BUNDLEBUILDER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 803,
+                "y": 145
+            },
+            "enabledBundleOptions": []
         },
         {
             "name": "AssetGraph.IntegratedScriptExporter",
@@ -124,10 +132,16 @@
                 "x": 1035,
                 "y": 219
             },
-            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
+            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_1_12_SerializedGraphJSON"
         }
     ],
     "connections": [
+        {
+            "label": "+",
+            "connectionId": "LoaderToFilter",
+            "fromNode": "リソースの呼び込み",
+            "toNode": "リソースの仕分け"
+        },
         {
             "label": "画像",
             "connectionId": "ImageFilterToImporter",
@@ -139,12 +153,6 @@
             "connectionId": "ModelFilterToImporter",
             "fromNode": "リソースの仕分け",
             "toNode": "モデルを読み込む"
-        },
-        {
-            "label": "+",
-            "connectionId": "LoaderToFilter",
-            "fromNode": "リソースの呼び込み",
-            "toNode": "リソースの仕分け"
         },
         {
             "label": "BGM",
@@ -190,8 +198,14 @@
         },
         {
             "label": "+",
-            "connectionId": "BundlizeToExporter",
+            "connectionId": "BundlizeToBundleBuilder",
             "fromNode": "バンドルにする",
+            "toNode": "バンドル生成を行う"
+        },
+        {
+            "label": "+",
+            "connectionId": "BundleBuilderToExporter",
+            "fromNode": "バンドルをフォルダに出力",
             "toNode": "バンドルをフォルダに出力"
         }
     ]

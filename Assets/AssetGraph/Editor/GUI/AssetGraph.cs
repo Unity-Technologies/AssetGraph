@@ -259,7 +259,6 @@ namespace AssetGraph {
 				var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);		
 
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
 
@@ -384,7 +383,6 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
 						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
@@ -404,7 +402,6 @@ namespace AssetGraph {
 
 			// add default input if node is not NodeKind.SOURCE.
 			foreach (var node in nodes) {
-				if (node.kind == AssetGraphSettings.NodeKind.LOADER_SCRIPT) continue;
 				if (node.kind == AssetGraphSettings.NodeKind.LOADER_GUI) continue;
 				node.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 			}
@@ -451,12 +448,10 @@ namespace AssetGraph {
 				nodeDict[AssetGraphSettings.NODE_POS] = posDict;
 
 				switch (node.kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] = node.loadPath;
 						break;
 					}
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] = node.exportPath;
 						break;
@@ -464,7 +459,6 @@ namespace AssetGraph {
 					
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
@@ -975,12 +969,10 @@ namespace AssetGraph {
 		}
 
 		private Type IsAcceptableScriptType (Type type) {
-			if (typeof(IntegratedScriptLoader).IsAssignableFrom(type)) return typeof(IntegratedScriptLoader);
 			if (typeof(FilterBase).IsAssignableFrom(type)) return typeof(FilterBase);
 			if (typeof(ImporterBase).IsAssignableFrom(type)) return typeof(ImporterBase);
 			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) return typeof(PrefabricatorBase);
 			if (typeof(BundlizerBase).IsAssignableFrom(type)) return typeof(BundlizerBase);
-			if (typeof(IntegratedScriptExporter).IsAssignableFrom(type)) return typeof(IntegratedScriptExporter);
 			Debug.LogError("failed to accept:" + type);
 			return null;
 		}
@@ -1133,7 +1125,6 @@ namespace AssetGraph {
 				var name = targetNode.name;
 
 				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPath = targetNode.loadPath;
 
@@ -1220,7 +1211,6 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPath = targetNode.exportPath;
 						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);

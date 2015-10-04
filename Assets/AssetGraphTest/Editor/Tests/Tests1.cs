@@ -15,9 +15,11 @@ using MiniJSONForAssetGraph;
 public partial class Test {
 
 	public void _1_0_0_SetupLoader () {
+		GraphStackController.CleanCache();
+
 		// contains 2 resources.
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 
 		var emptySource = new Dictionary<string, List<InternalAssetData>>();
 
@@ -40,9 +42,11 @@ public partial class Test {
 	}
 
 	public void _1_0_1_RunLoader () {
+		GraphStackController.CleanCache();
+
 		// contains 2 resources.
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 
 		var emptySource = new Dictionary<string, List<InternalAssetData>>();
 
@@ -65,6 +69,8 @@ public partial class Test {
 	}
 
 	public void _1_0_SetupFilter () {
+		GraphStackController.CleanCache();
+
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
@@ -107,6 +113,8 @@ public partial class Test {
 		Debug.LogError("failed to split by filter");
 	}
 	public void _1_1_RunFilter () {
+		GraphStackController.CleanCache();
+
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
@@ -149,8 +157,10 @@ public partial class Test {
 	}
 
 	public void _1_2_SetupImporter () {
+		GraphStackController.CleanCache();
+
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -173,7 +183,7 @@ public partial class Test {
 	}
 	public void _1_3_RunImporter () {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 		
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -205,6 +215,8 @@ public partial class Test {
 	// there is no GUI Prefabricator.
 
 	public void _1_6_SetupBundlizer () {
+		GraphStackController.CleanCache();
+
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
@@ -238,6 +250,8 @@ public partial class Test {
 		Debug.Log("passed _1_6_SetupBundlizer");
 	}
 	public void _1_7_RunBundlizer () {
+		GraphStackController.CleanCache();
+
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
@@ -284,6 +298,8 @@ public partial class Test {
 	}
 
 	public void _1_8_0_SerializeGraph_hasValidEndpoint () {
+		GraphStackController.CleanCache();
+
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_1_8_SerializeGraph.json");
 		
@@ -337,7 +353,8 @@ public partial class Test {
 		}
 
 		if (orderedConnectionIds[0] == "ローダーからフィルタへ" &&
-			orderedConnectionIds[1] == "フィルタからインポータへ") {
+			orderedConnectionIds[1] == "フィルタからインポータへ1" &&
+			orderedConnectionIds[2] == "フィルタからインポータへ2") {
 			Debug.Log("passed _1_8_1_SerializeGraph_hasValidOrder");
 			return;
 		}
@@ -346,6 +363,8 @@ public partial class Test {
 	}
 
 	public void _1_9_RunStackedGraph () {
+		GraphStackController.CleanCache();
+
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_1_9_RunStackedGraph.json");
 		
@@ -360,23 +379,25 @@ public partial class Test {
 		GraphStackController.RunStackedGraph(graphDict);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_1_9_SerializedGraphJSONByExporter");
 
-		if (File.Exists(Path.Combine(expectedExportDestPath, "kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "sample.fbx")) &&
+		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
 			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
 		) {
 			Debug.Log("passed _1_9_RunStackedGraph");
 			return;
 		}
 
-		Debug.LogError("not yet");
+		Debug.LogError("failed to export");
 	}
 
 
 	public void _1_10_SetupExporter () {
+		GraphStackController.CleanCache();
+
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_10_SetupExport");
+		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_1_10_SetupExport");
 
 		// delete all if exist
 		if (Directory.Exists(exportFilePath)) {
@@ -397,18 +418,20 @@ public partial class Test {
 			}
 		};
 		
-		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
+		var integratedGUIExporter = new IntegratedGUIExporter(exportFilePath);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			
 		};
 
-		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, new List<string>(), Out);
+		integratedGUIExporter.Setup("ID_1_10_SetupExport", "CONNECTION_1_10_SetupExport", exportTargets, new List<string>(), Out);
 		Debug.Log("passed _1_10_SetupExporter");
 	}
 
 	public void _1_11_RunExporter () {
+		GraphStackController.CleanCache();
+
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_11_RunExport");
+		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_1_11_RunExport");
 
 		// delete all if exist
 		if (Directory.Exists(exportFilePath)) {
@@ -429,12 +452,12 @@ public partial class Test {
 			}
 		};
 		
-		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
+		var integratedGUIExporter = new IntegratedGUIExporter(exportFilePath);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			
 		};
 
-		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, new List<string>(), Out);
+		integratedGUIExporter.Run("ID_1_11_RunExport", "CONNECTION_1_11_RunExport", exportTargets, new List<string>(), Out);
 
 		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
 
@@ -444,5 +467,112 @@ public partial class Test {
 		}
 
 		Debug.LogError("failed to export");
+	}
+
+	public void _1_12_RunStackedGraph_FullStacked () {
+		GraphStackController.CleanCache();
+		
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_1_12_RunStackedGraph_FullStacked.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		GraphStackController.RunStackedGraph(graphDict);
+		
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_12_SerializedGraphJSON");
+
+		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara0/chara0.assetbundle");
+		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara1/chara1.assetbundle");
+		if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
+			Debug.Log("passed _1_12_RunStackedGraph_FullStacked");
+			return;
+		}
+
+		Debug.LogError("failed to generate");
+	}
+
+	public void _1_13_SetupStackedGraph_FullStacked () {
+		GraphStackController.CleanCache();
+		
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_1_12_RunStackedGraph_FullStacked.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		var resultDict = GraphStackController.SetupStackedGraph(graphDict);
+
+		if (resultDict.Count == 11) {
+			Debug.Log("passed _1_13_SetupStackedGraph_FullStacked");
+			return;
+		}
+
+		Debug.LogError("shortage of connections");
+	}
+
+	public void _1_14_SetupStackedGraph_Sample () {
+		GraphStackController.CleanCache();
+		
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_1_14_RunStackedGraph_Sample.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+
+		// var setupResultDict = 
+		GraphStackController.SetupStackedGraph(graphDict);
+
+		Debug.Log("passed _1_14_SetupStackedGraph_Sample");
+	}
+
+	public void _1_15_RunStackedGraph_Sample () {
+		GraphStackController.CleanCache();
+		
+		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(basePath, "_1_14_RunStackedGraph_Sample.json");
+		
+		// load
+		var dataStr = string.Empty;
+		
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		
+		GraphStackController.RunStackedGraph(graphDict);
+		
+		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
+		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_14_RunStackedGraph_Sample");
+
+		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara_0.assetbundle");
+		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara_1.assetbundle");
+		var soundBundlePath = Path.Combine(expectedExportDestPath, "sounds.assetbundle");
+		if (
+			File.Exists(the1stBundlePath) && 
+			File.Exists(the2ndBundlePath) &&
+			File.Exists(soundBundlePath)) {
+			Debug.Log("passed _1_15_RunStackedGraph_Sample");
+			return;
+		}
+
+		Debug.LogError("failed to generate");
 	}
 }

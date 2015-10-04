@@ -133,9 +133,7 @@ namespace AssetGraph {
 				}
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 				InternalSamplingImportAdopter.Detach();
-				
-				Debug.LogError("targetDirectoryPath:" + targetDirectoryPath);
-				
+
 				// get files, which are already assets.
 				var localFilePathsAfterImport = FileController.FilePathsInFolder(targetDirectoryPath);
 

@@ -11,8 +11,6 @@ public partial class Test {
 		
 		// non gui node tests.
 		{
-			// tests.Add(this._0_0_0_SetupLoader);
-			// tests.Add(this._0_0_1_RunLoader);
 			// tests.Add(this._0_0_SetupFilter);
 			// tests.Add(this._0_1_RunFilter);
 			// tests.Add(this._0_2_SetupImporter);
@@ -24,8 +22,6 @@ public partial class Test {
 			// tests.Add(this._0_8_0_SerializeGraph_hasValidEndpoint);
 			// tests.Add(this._0_8_1_SerializeGraph_hasValidOrder);
 			// tests.Add(this._0_9_RunStackedGraph);
-			// tests.Add(this._0_10_SetupExporter);
-			// tests.Add(this._0_11_RunExporter);
 			// tests.Add(this._0_12_RunStackedGraph_FullStacked);
 			// tests.Add(this._0_13_SetupStackedGraph_FullStacked);
 			// tests.Add(this._0_14_SetupStackedGraph_Sample);
@@ -43,11 +39,13 @@ public partial class Test {
 		// 	tests.Add(this._1_6_SetupBundlizer);
 		// 	tests.Add(this._1_7_RunBundlizer);
 		// 	tests.Add(this._1_8_0_SerializeGraph_hasValidEndpoint);
-			
-			tests.Add(this._1_8_1_SerializeGraph_hasValidOrder);
+
+			// tests.Add(this._1_8_1_SerializeGraph_hasValidOrder);
 			// tests.Add(this._1_9_RunStackedGraph);
 			// tests.Add(this._1_10_SetupExporter);
 			// tests.Add(this._1_11_RunExporter);
+			
+			// tests.Add(this._1_12_RunStackedGraph_FullStacked);
 		}
 
 		// only 1 time run, use cache.

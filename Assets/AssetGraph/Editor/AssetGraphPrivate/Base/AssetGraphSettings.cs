@@ -110,14 +110,10 @@ namespace AssetGraph {
 		public const string DEFAULT_FILTER_KEYWORD = "set keyword.";
 
 		public enum NodeKind : int {
-			LOADER_SCRIPT,
 			FILTER_SCRIPT,
 			IMPORTER_SCRIPT,
-			GROUPING_SCRIPT,
 			PREFABRICATOR_SCRIPT,
 			BUNDLIZER_SCRIPT,
-			BUNDLEBUILDER_SCRIPT,
-			EXPORTER_SCRIPT,
 
 			LOADER_GUI,
 			FILTER_GUI,
