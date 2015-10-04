@@ -488,8 +488,8 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_12_SerializedGraphJSON");
 
-		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara0/chara0.assetbundle");
-		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara1/chara1.assetbundle");
+		var the1stBundlePath = Path.Combine(expectedExportDestPath, "iOS/chara0.assetbundle");
+		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "iOS/chara1.assetbundle");
 		if (File.Exists(the1stBundlePath) && File.Exists(the2ndBundlePath)) {
 			Debug.Log("passed _1_12_RunStackedGraph_FullStacked");
 			return;
@@ -562,9 +562,9 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_14_RunStackedGraph_Sample");
 
-		var the1stBundlePath = Path.Combine(expectedExportDestPath, "chara_0.assetbundle");
-		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "chara_1.assetbundle");
-		var soundBundlePath = Path.Combine(expectedExportDestPath, "sounds.assetbundle");
+		var the1stBundlePath = Path.Combine(expectedExportDestPath, "iOS/chara_0.assetbundle");
+		var the2ndBundlePath = Path.Combine(expectedExportDestPath, "iOS/chara_1.assetbundle");
+		var soundBundlePath = Path.Combine(expectedExportDestPath, "iOS/sounds_0.assetbundle");
 		if (
 			File.Exists(the1stBundlePath) && 
 			File.Exists(the2ndBundlePath) &&

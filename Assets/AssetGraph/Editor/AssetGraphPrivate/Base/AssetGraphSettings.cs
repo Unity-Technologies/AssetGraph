@@ -6,17 +6,18 @@ namespace AssetGraph {
 	public class AssetGraphSettings {
 		public const string GUI_TEXT_MENU_OPEN = "AssetGraph/Open...";
 		
-		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/SettingFiles";
+		public const string ASSETGRAPH_DATA_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
-		public const string APPLICATIONDATAPATH_TEMP_PATH = "Assets/AssetGraph/Cache/";
+		public const string ASSETGRAPH_PATH = "Assets/AssetGraph/";
+		public const string APPLICATIONDATAPATH_TEMP_PATH = ASSETGRAPH_PATH + "Cache/";
 		
 		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported";
 		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated";
 		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized";
 		public const string BUNDLEBUILDER_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Sampling";
+		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Sampling";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";

@@ -49,6 +49,8 @@ namespace AssetGraph {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
 			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
+			// set target folder to empty.
+			FileController.RemakeDirectory(targetDirectoryPath);
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
@@ -64,11 +66,13 @@ namespace AssetGraph {
 					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
 					if (File.Exists(targetFilePath)) {
-						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。");
-						continue;
+						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。まだ作業中。");
+						// continue;
 					}
 					try {
-						// copy files into local.
+						/*
+							copy files into local.
+						*/
 						FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
 					} catch (Exception e) {
 						Debug.LogError("Importer:" + this + " error:" + e);

@@ -151,7 +151,7 @@ namespace AssetGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
 			
 			// create Temp folder under Assets/AssetGraph
 			if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
@@ -530,7 +530,7 @@ namespace AssetGraph {
 		}
 
 		private void Reload () {
-			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
@@ -553,7 +553,7 @@ namespace AssetGraph {
 		}
 
 		private void Run () {
-			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
 				return;
@@ -1099,7 +1099,7 @@ namespace AssetGraph {
 
 		private void UpdateGraphData (Dictionary<string, object> data) {
 			var dataStr = Json.Serialize(data);
-			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_TEMP_PATH);
+			var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
 			var graphDataPath = FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			using (var sw = new StreamWriter(graphDataPath)) {
 				sw.Write(dataStr);

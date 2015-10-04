@@ -13,10 +13,10 @@ using MiniJSONForAssetGraph;
 // 同じFilterの結果を複数のノードが使用する場合、すでに一度終わったファイルを使用できるかどうか
 
 public partial class Test {
-	public void _3_0_OrderWithCache0 () {
+	public void _3_0_OrderWithDone0 () {
 		// 根っこあたりにフィルタがあり、4つ又のimportの結果が再度読まれないかどうか
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
-		var graphDataPath = Path.Combine(basePath, "_3_0_OrderWithCache0.json");
+		var graphDataPath = Path.Combine(basePath, "_3_0_OrderWithDone0.json");
 		
 		// load
 		var dataStr = string.Empty;

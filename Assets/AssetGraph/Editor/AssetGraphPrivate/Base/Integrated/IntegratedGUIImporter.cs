@@ -80,14 +80,14 @@ namespace AssetGraph {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
-
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
 				// caution if file is exists already.
 				var sampleAssetPath = string.Empty;
 				if (Directory.Exists(samplingDirectoryPath)) {
-					var filesInSampling = FileController.FilePathsInFolder(samplingDirectoryPath);
+					var filesInSampling = FileController.FilePathsInFolderOnly1Level(samplingDirectoryPath);
 					switch (filesInSampling.Count) {
 						case 0: {
 							Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
@@ -120,12 +120,13 @@ namespace AssetGraph {
 					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
 					if (File.Exists(targetFilePath)) {
-						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。2");
-						continue;
+						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。まだ作業をするのでスキップなし。");
+						// continue;
 					}
 					try {
-						// copy files into local.
-
+						/*
+							copy files into local.
+						*/
 						FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
 					} catch (Exception e) {
 						Debug.LogError("IntegratedGUIImporter:" + this + " error:" + e);

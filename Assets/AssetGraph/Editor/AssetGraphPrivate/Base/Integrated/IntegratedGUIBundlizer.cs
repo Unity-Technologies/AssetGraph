@@ -26,8 +26,7 @@ namespace AssetGraph {
 			}
 			
 			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
-			FileController.RemakeDirectory(recommendedBundleOutputDir);
-
+			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -60,8 +59,7 @@ namespace AssetGraph {
 			}
 			
 			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
-			FileController.RemakeDirectory(recommendedBundleOutputDir);
-
+			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {

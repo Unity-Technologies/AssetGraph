@@ -15,6 +15,7 @@ namespace AssetGraph {
 		}
 		
 		public static void CopyFileFromGlobalToLocal (string absoluteSourceFilePath, string localTargetFilePath) {
+			Debug.LogWarning("cacheと相性が悪い部分。");
 			var parentDirectoryPath = Path.GetDirectoryName(localTargetFilePath);
 			Directory.CreateDirectory(parentDirectoryPath);
 			FileUtil.CopyFileOrDirectory(absoluteSourceFilePath, localTargetFilePath);

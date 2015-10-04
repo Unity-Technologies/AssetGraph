@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEditor;
 
 using System;
 using System.IO;
@@ -25,6 +26,7 @@ namespace AssetGraph {
 		public static void CleanCache () {
 			var targetCachePath = AssetGraphSettings.APPLICATIONDATAPATH_TEMP_PATH;
 			if (Directory.Exists(targetCachePath)) Directory.Delete(targetCachePath, true);
+			AssetDatabase.Refresh();
 		}
 
 		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
@@ -619,6 +621,7 @@ namespace AssetGraph {
 				}
 
 				// add cache to resultDict[nodeId].
+				// not yet.
 				if (isActualRun) {
 					if (!cachedDict.ContainsKey(nodeId)) cachedDict[nodeId] = new List<string>();
 					cachedDict[nodeId].AddRange(justCached);

@@ -28,7 +28,7 @@ namespace AssetGraph {
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_TEMP_PLACE, nodeId);
-			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, "iOS");
+			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -66,7 +66,9 @@ namespace AssetGraph {
 				}
 			}
 
-			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, BuildTarget.iOS);
+			Debug.LogError("AssetDatabase.RemoveAssetBundleNameとかを使って、今回使用しないものに関しては登録を消さないと、おかしなことになりかねない。このnameの指定構造、やっぱり規模に耐えられないかんじがして微妙。cacheとの兼ね合いが難しいね。");
+
+			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, EditorUserBuildSettings.activeBuildTarget);
 
 			var localFilePathsAfterBundlize = FileController.FilePathsInFolder(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 				

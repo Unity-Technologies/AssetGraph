@@ -91,7 +91,7 @@ public partial class Test {
 		GraphStackController.CleanCache();
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources0/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -116,7 +116,7 @@ public partial class Test {
 		GraphStackController.CleanCache();
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources0/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 		
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -378,19 +378,21 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		GraphStackController.RunStackedGraph(graphDict);
-		
+		AssetDatabase.Refresh();
+
+
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
-
-		if (File.Exists(Path.Combine(expectedExportDestPath, "kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "sample.fbx")) &&
+		
+		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
 			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
 		) {
 			Debug.Log("passed _0_9_RunStackedGraph");
 			return;
 		}
 
-		Debug.LogError("not yet");
+		Debug.LogError("failed to generate");
 	}
 
 	//  10 & 11 is blank.
