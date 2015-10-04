@@ -10,7 +10,6 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class GraphStackController {
-
 		public struct EndpointNodeIdsAndNodeDatasAndConnectionDatas {
 			public List<string> endpointNodeIds;
 			public List<NodeData> nodeDatas;
@@ -21,6 +20,11 @@ namespace AssetGraph {
 				this.nodeDatas = nodeDatas;
 				this.connectionDatas = connectionDatas;
 			}
+		}
+
+		public static void CleanCache () {
+			var targetCachePath = AssetGraphSettings.APPLICATIONDATAPATH_TEMP_PATH;
+			if (Directory.Exists(targetCachePath)) Directory.Delete(targetCachePath, true);
 		}
 
 		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
@@ -250,9 +254,10 @@ namespace AssetGraph {
 			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
+			var cacheDict = new Dictionary<string, List<string>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
+				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
 			}
 			
 			return DictDictList(resultDict);
@@ -269,9 +274,10 @@ namespace AssetGraph {
 			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
+			var cacheDict = new Dictionary<string, List<string>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, updateHandler);
+				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, updateHandler);
 			}
 
 			return DictDictList(resultDict);
@@ -499,9 +505,10 @@ namespace AssetGraph {
 			string endNodeId, 
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connections, 
-			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict
+			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict,
+			Dictionary<string, List<string>> cacheDict
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, false);
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, false);
 
 			return resultDict.Keys.ToList();
 		}
@@ -515,9 +522,10 @@ namespace AssetGraph {
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connections, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict,
+			Dictionary<string, List<string>> cacheDict,
 			Action<string, float> updateHandler=null
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, true, updateHandler);
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, true, updateHandler);
 
 			return resultDict.Keys.ToList();
 		}
@@ -530,6 +538,7 @@ namespace AssetGraph {
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connectionDatas, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict, 
+			Dictionary<string, List<string>> cachedDict,
 			bool isActualRun,
 			Action<string, float> updateHandler=null
 		) {
@@ -545,14 +554,14 @@ namespace AssetGraph {
 			*/
 			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
-				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, isActualRun, updateHandler);
+				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, isActualRun, updateHandler);
 			}
 
 			/*
 				run after parent run.
 			*/
 
-			Debug.LogWarning("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。");
+			Debug.LogWarning("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。 nodeId:" + nodeId);
 			var cached = new List<string>();
 
 			var connectionLabelsFromThisNodeToChildNode = connectionDatas
@@ -615,7 +624,14 @@ namespace AssetGraph {
 					connectionResult[groupKey].AddRange(result[groupKey]);
 				}
 
-				Debug.LogWarning("ここでcachedを扱う");
+				// add cache to resultDict[nodeId].
+				if (isActualRun) {
+					if (!cachedDict.ContainsKey(nodeId)) cachedDict[nodeId] = new List<string>();
+					cachedDict[nodeId].AddRange(justCached);
+					foreach (var cache in cached) {
+						Debug.LogError("cache:" + cache);
+					}
+				}
 			};
 
 			if (isActualRun) {
@@ -665,19 +681,19 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var executor = new IntegreatedGUIFilter(currentNodeData.containsKeywords);
+						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
 						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var executor = new IntegreatedGUIImporter();
+						var executor = new IntegratedGUIImporter();
 						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var executor = new IntegreatedGUIGrouping(currentNodeData.groupingKeyword);
+						var executor = new IntegratedGUIGrouping(currentNodeData.groupingKeyword);
 						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
@@ -768,19 +784,19 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var executor = new IntegreatedGUIFilter(currentNodeData.containsKeywords);
+						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
 						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var executor = new IntegreatedGUIImporter();
+						var executor = new IntegratedGUIImporter();
 						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var executor = new IntegreatedGUIGrouping(currentNodeData.groupingKeyword);
+						var executor = new IntegratedGUIGrouping(currentNodeData.groupingKeyword);
 						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
 						break;
 					}
@@ -840,7 +856,6 @@ namespace AssetGraph {
 			return ((T)nodeScriptInstance);
 		}
 	}
-
 
 	public class NodeData {
 		public readonly string nodeName;

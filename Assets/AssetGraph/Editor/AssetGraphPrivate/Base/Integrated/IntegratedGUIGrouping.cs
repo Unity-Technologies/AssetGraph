@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace AssetGraph {
-	public class IntegreatedGUIGrouping : INodeBase {
+	public class IntegratedGUIGrouping : INodeBase {
 		private readonly string groupingKeyword;
 
-		public IntegreatedGUIGrouping (string groupingKeyword) {
+		public IntegratedGUIGrouping (string groupingKeyword) {
 			this.groupingKeyword = groupingKeyword;
 		}
 

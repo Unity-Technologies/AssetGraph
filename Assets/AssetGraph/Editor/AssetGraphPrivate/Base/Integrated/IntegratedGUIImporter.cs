@@ -7,7 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 
 namespace AssetGraph {
-	public class IntegreatedGUIImporter : INodeBase {
+	public class IntegratedGUIImporter : INodeBase {
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -79,14 +79,10 @@ namespace AssetGraph {
 			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
+			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
-
-				// import specific place / node's id folder.
-				var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
-				FileController.RemakeDirectory(targetDirectoryPath);
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
-
 				
 				// caution if file is exists already.
 				var sampleAssetPath = string.Empty;
@@ -125,7 +121,7 @@ namespace AssetGraph {
 
 					if (File.Exists(targetFilePath)) {
 						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。2");
-						throw new Exception("すでに同じファイルがある2:" + targetFilePath);
+						continue;
 					}
 					try {
 						// copy files into local.
@@ -138,6 +134,7 @@ namespace AssetGraph {
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 				InternalSamplingImportAdopter.Detach();
 				
+				Debug.LogError("targetDirectoryPath:" + targetDirectoryPath);
 				
 				// get files, which are already assets.
 				var localFilePathsAfterImport = FileController.FilePathsInFolder(targetDirectoryPath);

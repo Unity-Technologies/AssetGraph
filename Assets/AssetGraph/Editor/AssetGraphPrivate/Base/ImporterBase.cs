@@ -48,13 +48,10 @@ namespace AssetGraph {
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
+			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
-
-				// import specific place / node's id folder.
-				var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
-				FileController.RemakeDirectory(targetDirectoryPath);
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
 				/*
 					ready import resources from outside of Unity to inside of Unity.
@@ -68,7 +65,7 @@ namespace AssetGraph {
 
 					if (File.Exists(targetFilePath)) {
 						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。");
-						throw new Exception("すでに同じファイルがある:" + targetFilePath);
+						continue;
 					}
 					try {
 						// copy files into local.

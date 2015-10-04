@@ -9,7 +9,7 @@ public partial class Test {
 	public void RunTests () {
 		var tests = new List<Action>();
 		
-		// general
+		// non gui node tests.
 		{
 			// tests.Add(this._0_0_0_SetupLoader);
 			// tests.Add(this._0_0_1_RunLoader);
@@ -32,6 +32,24 @@ public partial class Test {
 			// tests.Add(this._0_15_RunStackedGraph_Sample);
 		}
 
+		// gui node tests.
+		{
+		// 	tests.Add(this._1_0_0_SetupLoader);
+		// 	tests.Add(this._1_0_1_RunLoader);
+		// 	tests.Add(this._1_0_SetupFilter);
+		// 	tests.Add(this._1_1_RunFilter);
+		// 	tests.Add(this._1_2_SetupImporter);
+		// 	tests.Add(this._1_3_RunImporter);
+		// 	tests.Add(this._1_6_SetupBundlizer);
+		// 	tests.Add(this._1_7_RunBundlizer);
+		// 	tests.Add(this._1_8_0_SerializeGraph_hasValidEndpoint);
+			
+			tests.Add(this._1_8_1_SerializeGraph_hasValidOrder);
+			// tests.Add(this._1_9_RunStackedGraph);
+			// tests.Add(this._1_10_SetupExporter);
+			// tests.Add(this._1_11_RunExporter);
+		}
+
 		// only 1 time run, use cache.
 		{
 			// tests.Add(this._3_0_OrderWithCache0);
@@ -39,7 +57,7 @@ public partial class Test {
 
 		// cache test
 		{
-			tests.Add(this._4_0_CacheWithSetup);
+			// tests.Add(this._4_0_RunThenCached);
 		}
 
 		

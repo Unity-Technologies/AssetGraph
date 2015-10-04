@@ -34,8 +34,10 @@ public partial class Test {
 
 		var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
+		var cacheDict = new Dictionary<string, List<string>>();
+
 		foreach (var endNodeId in endpointNodeIds) {
-			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict);
+			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
 		}
 
 		var connectionIds = resultDict.Keys.ToList();

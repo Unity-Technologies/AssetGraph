@@ -1,0 +1,57 @@
+{
+    "lastModified":"07/09/2015 00:46:59",
+    "nodes": [
+        {
+            "name": "AssetGraph.IntegratedScriptLoader",
+            "id": "0_Loader",
+            "kind": "LOADER_GUI",
+            "loadPath": "/AssetGraph/TestResourcesFor_0_8_SerializedGraphJSON",
+            "outputLabels": [
+                "_"
+            ]
+        },
+        {
+            "name": "SampleFilter_1",
+            "id": "1st_Filter",
+            "kind": "FILTER_GUI",            
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
+            "filterContainsKeywords": [
+                "SampleFilter_1_LabelOf1st",
+                "SampleFilter_2_LabelOf2nd"
+            ],
+            "outputLabels": [
+                "SampleFilter_1_LabelOf1st",
+                "SampleFilter_2_LabelOf2nd"
+            ]
+        },
+        {
+            "name": "SampleImporter_1",
+            "id": "2nd_Importer",
+            "kind": "IMPORTER_GUI",
+            "pos": {
+                "x": 10,
+                "y": 10
+            },
+            "outputLabels": [
+                "SampleImporter"
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "label": "_",
+            "connectionId": "ローダーからフィルタへ",
+            "fromNode": "0_Loader",
+            "toNode": "1st_Filter"
+        },
+        {
+            "label": "SampleFilter_1_LabelOf1st",
+            "connectionId": "フィルタからインポータへ",
+            "fromNode": "1st_Filter",
+            "toNode": "2nd_Importer"
+        }
+    ]
+}
