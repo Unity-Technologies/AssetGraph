@@ -40,6 +40,6 @@ Assembly-CSharp-vs.csproj
 
 AssetGraph-csharp.sln
 
-Assets/AssetGraph/Sampling/*
-
 AssetGraphExport/*
+
+Assets/AssetGraph/Settings/*

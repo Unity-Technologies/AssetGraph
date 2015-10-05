@@ -17,7 +17,7 @@ namespace AssetGraph {
 		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized";
 		public const string BUNDLEBUILDER_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Sampling";
+		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Settings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
