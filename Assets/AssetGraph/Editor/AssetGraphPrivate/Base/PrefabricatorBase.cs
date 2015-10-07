@@ -31,10 +31,12 @@ namespace AssetGraph {
 				outputDict[groupKey] = inputSources;
 			};
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			var usedCache = new List<string>();
+
 			var validation = true;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -47,7 +49,7 @@ namespace AssetGraph {
 
 			if (!validation) return;
 
-			var recommendedPrefabOutputDir = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
+			var recommendedPrefabOutputDir = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedPrefabOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -68,11 +70,21 @@ namespace AssetGraph {
 				*/
 				var localFilePathsBeforePrefabricate = FileController.FilePathsInFolder("Assets");
 				
+				Func<GameObject, string, string> Prefabricate = (GameObject baseObject, string prefabName) => {
+					var newPrefabOutputPath = Path.Combine(recommendedPrefabOutputDir, prefabName);
+					UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
+					
+					// export prefab data.
+					PrefabUtility.ReplacePrefab(baseObject, prefabFile);
+
+					return newPrefabOutputPath;
+				};
+
 				/*
 					execute inheritee's input method.
 				*/
 				try {
-					In(groupKey, assets, recommendedPrefabOutputDir);
+					In(groupKey, assets, recommendedPrefabOutputDir, Prefabricate);
 				} catch (Exception e) {
 					Debug.LogError("Prefabricator:" + this + " error:" + e);
 				}
@@ -122,10 +134,10 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 
-		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir) {
+		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
 			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
 	}

@@ -10,12 +10,12 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
 		public const string ASSETGRAPH_PATH = "Assets/AssetGraph/";
-		public const string APPLICATIONDATAPATH_TEMP_PATH = ASSETGRAPH_PATH + "Cache/";
+		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETGRAPH_PATH + "Cache/";
 		
-		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported";
-		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated";
-		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized";
-		public const string BUNDLEBUILDER_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "BundleBuilt";
+		public const string IMPORTER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Imported";
+		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
+		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
+		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
 		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Settings";
 

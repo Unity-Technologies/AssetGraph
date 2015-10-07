@@ -40,7 +40,7 @@ namespace AssetGraph {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDir, alreadyCached);
+				Output(nodeId, labelToNext, outputDir, new List<string>());
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
@@ -74,7 +74,7 @@ namespace AssetGraph {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDir, alreadyCached);
+				Output(nodeId, labelToNext, outputDir, new List<string>());
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}

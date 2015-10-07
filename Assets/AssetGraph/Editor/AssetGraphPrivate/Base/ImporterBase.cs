@@ -21,9 +21,9 @@ namespace AssetGraph {
 				var assumedImportedAssetDatas = new List<InternalAssetData>();
 					
 				foreach (var inputData in inputSources) {
-					var assumedImportedBasePath = inputData.absoluteSourcePath.Replace(inputData.sourceBasePath, AssetGraphSettings.IMPORTER_TEMP_PLACE);
+					var assumedImportedBasePath = inputData.absoluteSourcePath.Replace(inputData.sourceBasePath, AssetGraphSettings.IMPORTER_CACHE_PLACE);
 					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
-
+					Debug.LogWarning("assetIdが取得できてないのなんかあったっけな、、、Script系なので後回し。");
 					var assumedType = AssumeTypeFromExtension();
 
 					var newData = InternalAssetData.InternalAssetDataByImporter(
@@ -42,15 +42,18 @@ namespace AssetGraph {
 				outputDict[groupKey] = assumedImportedAssetDatas;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			var usedCache = new List<string>();
+
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
-			
-			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
+
+			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId);
+
 			// set target folder to empty.
-			FileController.RemakeDirectory(targetDirectoryPath);
+			// FileController.RemakeDirectory(targetDirectoryPath);
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
@@ -65,10 +68,11 @@ namespace AssetGraph {
 
 					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
-					if (File.Exists(targetFilePath)) {
-						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。まだ作業中。");
-						// continue;
+					if (GraphStackController.IsCached(alreadyCached, targetFilePath)) {
+						usedCache.Add(targetFilePath);
+						continue;
 					}
+
 					try {
 						/*
 							copy files into local.
@@ -129,7 +133,7 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 
 		/*

@@ -16,11 +16,11 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 			
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -64,7 +64,7 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
 		public virtual void In (string groupkey, List<AssetInfo> source, string recommendedBundleOutputDir) {

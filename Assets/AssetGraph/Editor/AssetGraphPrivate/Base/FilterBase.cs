@@ -25,7 +25,7 @@ namespace AssetGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(nodeId, label, outputDict, alreadyCached);
+					Output(nodeId, label, outputDict, new List<string>());
 				};
 				try {
 					In(absoluteSourcePaths, _PreOutput);
@@ -54,7 +54,7 @@ namespace AssetGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(nodeId, label, outputDict, alreadyCached);
+					Output(nodeId, label, outputDict, new List<string>());
 				};
 				try {
 					In(absoluteSourcePaths, _Output);

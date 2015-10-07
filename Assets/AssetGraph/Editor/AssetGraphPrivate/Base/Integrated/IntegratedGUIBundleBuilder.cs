@@ -23,11 +23,15 @@ namespace AssetGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 			
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_TEMP_PLACE, nodeId);
+			foreach (var name in alreadyCached) {
+				Debug.LogError("name:" + name);
+			}
+
+			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
@@ -66,7 +70,7 @@ namespace AssetGraph {
 				}
 			}
 
-			Debug.LogError("AssetDatabase.RemoveAssetBundleNameとかを使って、今回使用しないものに関しては登録を消さないと、おかしなことになりかねない。このnameの指定構造、やっぱり規模に耐えられないかんじがして微妙。cacheとの兼ね合いが難しいね。");
+			Debug.LogWarning("AssetDatabase.RemoveAssetBundleNameとかを使って、今回使用しないものに関しては登録を消す。どこで消すかは、ここでは無いけど覚えとくためにここに書いとく。");
 
 			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, EditorUserBuildSettings.activeBuildTarget);
 
@@ -81,8 +85,9 @@ namespace AssetGraph {
 			}
 
 			outputDict["0"] = outputSources;
-
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			
+			var usedCache = new List<string>(alreadyCached);
+			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 	}
 }

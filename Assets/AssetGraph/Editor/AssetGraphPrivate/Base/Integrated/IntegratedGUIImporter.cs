@@ -39,7 +39,7 @@ namespace AssetGraph {
 				}
 
 				foreach (var inputSource in inputSources) {
-					var assumedImportedBasePath = inputSource.absoluteSourcePath.Replace(inputSource.sourceBasePath, AssetGraphSettings.IMPORTER_TEMP_PLACE);
+					var assumedImportedBasePath = inputSource.absoluteSourcePath.Replace(inputSource.sourceBasePath, AssetGraphSettings.IMPORTER_CACHE_PLACE);
 					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
 
 					var assumedType = AssumeTypeFromExtension();
@@ -72,18 +72,22 @@ namespace AssetGraph {
 				outputDict[groupKey] = assumedImportedAssetDatas;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			var usedCache = new List<string>();
+			
 			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
-			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_TEMP_PLACE, nodeId);
-			
+			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId);
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
+				var localFilePathsBeforeImport = FileController.FilePathsInFolder(targetDirectoryPath);
+
 				// caution if file is exists already.
 				var sampleAssetPath = string.Empty;
 				if (Directory.Exists(samplingDirectoryPath)) {
@@ -104,7 +108,7 @@ namespace AssetGraph {
 						}
 					}
 				} else {
-					Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", please reload first.");
+					Debug.LogWarning("no samples found in samplingDirectoryPath:" + samplingDirectoryPath + ", applying default importer settings. If you want to set Importer seting, please Reload and set import setting by Importer.");
 				}
 
 				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
@@ -119,10 +123,9 @@ namespace AssetGraph {
 
 					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
-					if (File.Exists(targetFilePath)) {
-						Debug.LogError("この時点でファイルがダブってる場合どうしようかな、、事前のエラーでここまで見ても意味はないな。まだ作業をするのでスキップなし。");
-						// continue;
-					}
+					// skip if cached.
+					if (GraphStackController.IsCached(alreadyCached, targetFilePath)) continue;
+					
 					try {
 						/*
 							copy files into local.
@@ -130,47 +133,29 @@ namespace AssetGraph {
 						FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
 					} catch (Exception e) {
 						Debug.LogError("IntegratedGUIImporter:" + this + " error:" + e);
+						return;
 					}
 				}
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 				InternalSamplingImportAdopter.Detach();
 
-				// get files, which are already assets.
+
+				// get files, which are imported or cached assets.
 				var localFilePathsAfterImport = FileController.FilePathsInFolder(targetDirectoryPath);
 
+				// modify to local path.
 				var localFilePathsWithoutTargetDirectoryPath = localFilePathsAfterImport.Select(path => InternalAssetData.GetPathWithoutBasePath(path, targetDirectoryPath)).ToList();
 				
+				// collect used cached data paths. which are, After - Before.
+				var cachedDataPaths = localFilePathsBeforeImport.Except(localFilePathsWithoutTargetDirectoryPath).Select(path => InternalAssetData.GetPathWithoutBasePath(path, targetDirectoryPath)).ToList();
+				usedCache.AddRange(cachedDataPaths);
+
+
 				var outputSources = new List<InternalAssetData>();
-
-				// generate matching between source and imported assets.
-				foreach (var localFilePathWithoutTargetDirectoryPath in localFilePathsWithoutTargetDirectoryPath) {
-					foreach (var inputtedSourceCandidate in inputSources) {
-						var pathsUnderSourceBase = inputtedSourceCandidate.pathUnderSourceBase;
-
-						if (localFilePathWithoutTargetDirectoryPath == pathsUnderSourceBase) {
-							var localFilePathWithTargetDirectoryPath = InternalAssetData.GetPathWithBasePath(localFilePathWithoutTargetDirectoryPath, targetDirectoryPath);
-
-							var newInternalAssetData = InternalAssetData.InternalAssetDataByImporter(
-								inputtedSourceCandidate.traceId,
-								inputtedSourceCandidate.absoluteSourcePath,
-								inputtedSourceCandidate.sourceBasePath,
-								inputtedSourceCandidate.fileNameAndExtension,
-								inputtedSourceCandidate.pathUnderSourceBase,
-								localFilePathWithTargetDirectoryPath,
-								AssetDatabase.AssetPathToGUID(localFilePathWithTargetDirectoryPath),
-								AssetGraphInternalFunctions.GetAssetType(localFilePathWithTargetDirectoryPath)
-							);
-							outputSources.Add(newInternalAssetData);
-						}
-					}
-				}
-
 				/*
-					check if new Assets are generated, trace it.
+					treat all assets inside node.
 				*/
-				var assetPathsWhichAreAlreadyTraced = outputSources.Select(path => path.pathUnderSourceBase).ToList();
-				var assetPathsWhichAreNotTraced = localFilePathsWithoutTargetDirectoryPath.Except(assetPathsWhichAreAlreadyTraced);
-				foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
+				foreach (var newAssetPath in localFilePathsWithoutTargetDirectoryPath) {
 					var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
 					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						basePathWithNewAssetPath,
@@ -180,11 +165,10 @@ namespace AssetGraph {
 					outputSources.Add(newInternalAssetData);
 				}
 
-
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 		
 		public Type AssumeTypeFromExtension () {

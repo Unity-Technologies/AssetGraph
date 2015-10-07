@@ -14,18 +14,20 @@ namespace AssetGraph {
 			Directory.CreateDirectory(localFolderPath);
 		}
 		
+		/**
+			default is "overwrite same path" by filepath.
+		*/
 		public static void CopyFileFromGlobalToLocal (string absoluteSourceFilePath, string localTargetFilePath) {
-			Debug.LogWarning("cacheと相性が悪い部分。");
 			var parentDirectoryPath = Path.GetDirectoryName(localTargetFilePath);
 			Directory.CreateDirectory(parentDirectoryPath);
-			FileUtil.CopyFileOrDirectory(absoluteSourceFilePath, localTargetFilePath);
+			File.Copy(absoluteSourceFilePath, localTargetFilePath, true);
 		}
-
 
 		public static List<string> FilePathsInFolder (string localFolderPath, bool ignoreMeta=true) {
 			var filePaths = new List<string>();
 			
 			if (string.IsNullOrEmpty(localFolderPath)) return filePaths;
+			if (!Directory.Exists(localFolderPath)) return filePaths;
 
 			GetFilePathsRecursive(localFolderPath, filePaths, ignoreMeta);
 

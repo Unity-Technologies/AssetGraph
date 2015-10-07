@@ -25,7 +25,7 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -44,7 +44,7 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -58,7 +58,7 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_TEMP_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -73,11 +73,13 @@ namespace AssetGraph {
 				var newAssetData = InternalAssetData.InternalAssetDataGeneratedByBundlizer(reservedBundlePath);
 
 				outputSources.Add(newAssetData);
+
+				Debug.LogWarning("BundleにResourceを足すかどうかの話、実際にバンドルがこの時点であるわけではないんだけど、ここで考える機会を覚えとく。うーーん、、あ、もうあるからこのへんはなんもせんでいいんだ。");
 			
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict, alreadyCached);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
 		public string BundlizeAssets (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {

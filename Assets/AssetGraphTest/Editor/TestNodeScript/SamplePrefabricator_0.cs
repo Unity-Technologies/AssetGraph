@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class SamplePrefabricator_0 : AssetGraph.PrefabricatorBase {
-	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
 		
 		var textureAssetPath = source[0].assetPath;
 		var textureAssetType = source[0].assetType;
@@ -31,13 +31,8 @@ public class SamplePrefabricator_0 : AssetGraph.PrefabricatorBase {
 		meshRenderer.material = characterMaterial;
 
 
-		// generate prefab in prefabBaseName folder."SOMEWHERE/example";
-		var newPrefabOutputPath = Path.Combine(recommendedPrefabOutputDir, "prefab.prefab");
-		UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
-		
-
-		// export prefab data.
-		PrefabUtility.ReplacePrefab(cubeObj, prefabFile);
+		// generate prefab in prefabBaseName folder."SOMEWHERE/prefab.prefab" from object.
+		Prefabricate(cubeObj, "prefab.prefab");
 
 		// delete unnecessary cube model from hierarchy.
 		GameObject.DestroyImmediate(cubeObj);

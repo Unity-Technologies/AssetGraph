@@ -48,6 +48,8 @@ namespace AssetGraph {
 					File.Copy(source.importedPath, destination);
 				}
 			}
+
+			// there is no output from this node.
 		}
 	}
 }

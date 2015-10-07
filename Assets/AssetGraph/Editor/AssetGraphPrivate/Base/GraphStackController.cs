@@ -23,10 +23,22 @@ namespace AssetGraph {
 			}
 		}
 
+		/**
+			clean cache. 
+		*/
 		public static void CleanCache () {
-			var targetCachePath = AssetGraphSettings.APPLICATIONDATAPATH_TEMP_PATH;
+			var targetCachePath = AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH;
 			if (Directory.Exists(targetCachePath)) Directory.Delete(targetCachePath, true);
 			AssetDatabase.Refresh();
+		}
+
+		/**
+			chech if cache is exist at local path.
+		*/
+		public static bool IsCached (List<string> alreadyCachedPath, string localAssetPath) {
+			if (alreadyCachedPath.Contains(localAssetPath)) return true;
+
+			return false;
 		}
 
 		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
@@ -37,7 +49,7 @@ namespace AssetGraph {
 			}
 
 			var labels = new List<string>();
-			Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> source, List<string> alreadyCached) => {
+			Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> source, List<string> usedCache) => {
 				labels.Add(connectionLabel);
 			};
 
@@ -96,6 +108,9 @@ namespace AssetGraph {
 							continue;
 						}
 
+						/*
+							on validation, filter script receives all groups to only one group. group key is "0".
+						*/
 						if (kind == AssetGraphSettings.NodeKind.FILTER_SCRIPT) {
 							var outoutLabelsSource = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 							var outoutLabelsSet = new HashSet<string>();
@@ -104,7 +119,7 @@ namespace AssetGraph {
 							}
 
 							var latestLabels = new HashSet<string>();
-							Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> source, List<string> alreadyCached) => {
+							Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> source, List<string> usedCache) => {
 								latestLabels.Add(connectionLabel);
 							};
 
@@ -556,10 +571,6 @@ namespace AssetGraph {
 			/*
 				run after parent run.
 			*/
-
-			Debug.LogWarning("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。 nodeId:" + nodeId);
-			var cached = new List<string>();
-
 			var connectionLabelsFromThisNodeToChildNode = connectionDatas
 				.Where(con => con.fromNodeId == nodeId)
 				.Select(con => con.connectionLabel)
@@ -584,6 +595,13 @@ namespace AssetGraph {
 			var nodeName = currentNodeData.nodeName;
 			var nodeKind = currentNodeData.nodeKind;
 			
+			Debug.LogWarning("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。 nodeId:" + nodeId);
+			var alreadyCachedPaths = new List<string>();
+			if (cachedDict.ContainsKey(nodeId)) alreadyCachedPaths.AddRange(cachedDict[nodeId]);
+
+			alreadyCachedPaths.AddRange(GetCachedData(nodeKind, nodeId));
+			
+
 			var inputParentResults = new Dictionary<string, List<InternalAssetData>>();
 			
 			var receivingConnectionIds = connectionDatas
@@ -620,14 +638,9 @@ namespace AssetGraph {
 					connectionResult[groupKey].AddRange(result[groupKey]);
 				}
 
-				// add cache to resultDict[nodeId].
-				// not yet.
 				if (isActualRun) {
 					if (!cachedDict.ContainsKey(nodeId)) cachedDict[nodeId] = new List<string>();
 					cachedDict[nodeId].AddRange(justCached);
-					foreach (var cache in cached) {
-						Debug.LogError("cache:" + cache);
-					}
 				}
 			};
 
@@ -639,25 +652,25 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<FilterBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<ImporterBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<BundlizerBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					
@@ -667,25 +680,25 @@ namespace AssetGraph {
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var executor = new IntegratedGUILoader(WithProjectPath(currentNodeData.loadFilePath));
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 						var executor = new IntegratedGUIImporter();
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var executor = new IntegratedGUIGrouping(currentNodeData.groupingKeyword);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -696,27 +709,27 @@ namespace AssetGraph {
 							break;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
 						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var bundleOptions = currentNodeData.enabledBundleOptions;
 						var executor = new IntegratedGUIBundleBuilder(bundleOptions);
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
-						executor.Run(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -733,25 +746,25 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<FilterBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<ImporterBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<BundlizerBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					
@@ -761,25 +774,25 @@ namespace AssetGraph {
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var executor = new IntegratedGUILoader(WithProjectPath(currentNodeData.loadFilePath));
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 						var executor = new IntegratedGUIImporter();
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var executor = new IntegratedGUIGrouping(currentNodeData.groupingKeyword);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -790,27 +803,27 @@ namespace AssetGraph {
 							break;;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
 						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var bundleOptions = currentNodeData.enabledBundleOptions;
 						var executor = new IntegratedGUIBundleBuilder(bundleOptions);
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
-						executor.Setup(nodeId, labelToChild, inputParentResults, cached, Output);
+						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -836,6 +849,50 @@ namespace AssetGraph {
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
 			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
 			return ((T)nodeScriptInstance);
+		}
+
+		public static List<string> GetCachedData (AssetGraphSettings.NodeKind nodeKind, string nodeId) {
+			switch (nodeKind) {
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					var cachedPathBase = FileController.PathCombine(
+						AssetGraphSettings.IMPORTER_CACHE_PLACE, 
+						nodeId
+					);
+
+					return FileController.FilePathsInFolder(cachedPathBase);
+				}
+				
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+					// 
+					var cachedPathBase = FileController.PathCombine(
+						AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, 
+						nodeId
+					);
+						
+					return FileController.FilePathsInFolder(cachedPathBase);
+				}
+				
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: 
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					var cachedPathBase = FileController.PathCombine(
+						AssetGraphSettings.BUNDLIZER_CACHE_PLACE, 
+						nodeId
+					);
+
+					return FileController.FilePathsInFolder(cachedPathBase);
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					break;
+				}
+
+				default: {
+					// nothing to do.
+					break;
+				}
+			}
+			return new List<string>();
 		}
 	}
 

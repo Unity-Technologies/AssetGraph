@@ -6,7 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
-	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir) {
+	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
 		/*
 			create character's prefab.
 
@@ -38,11 +38,8 @@ public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
 		meshRenderer.material = charaMat;
 		
 		// create prefab replacable file.
-		var prefabOutputPath = Path.Combine(recommendedPrefabOutputDir, groupKey + "_chara.prefab");
-		var prefabFile = PrefabUtility.CreateEmptyPrefab(prefabOutputPath);
-		
-		// export prefab data.
-		PrefabUtility.ReplacePrefab(modelObj, prefabFile);
+		var prefabName = groupKey + "_chara.prefab";
+		var prefabOutputPath = Prefabricate(modelObj, prefabName);
 
 		// delete unnecessary chara model from hierarchy.
 		GameObject.DestroyImmediate(modelObj);
