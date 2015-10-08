@@ -595,6 +595,7 @@ namespace AssetGraph {
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
 
 			EditorUtility.ClearProgressBar();
+			AssetDatabase.Refresh();
 		}
 
 

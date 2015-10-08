@@ -21,7 +21,7 @@ public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 
 			var modelAssets = source.Where(s => s.assetPath.Contains("/models/chara" + i + "/") && s.assetPath.EndsWith(".fbx")).ToList();
 			var materialAssets = source.Where(s => s.assetPath.Contains("/models/chara" + i + "/Materials/")).ToList();
-			
+
 			
 			var imageAsset = imageAssets[0];
 			var modelAsset = modelAssets[0];
@@ -47,18 +47,8 @@ public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 			var meshRenderer = modelObj.GetComponentInChildren<MeshRenderer>();
 			// Debug.LogError("meshRenderer:" + meshRenderer);
 			meshRenderer.material = modelMaterial;
-
-			// generate prefab in prefabBaseName folder."SOMEWHERE/example";
-			var newPrefabOutputBasePath = Path.Combine(recommendedPrefabOutputDir, "chara" + i);
-
-			// create "recommendedPrefabOutputDir"/charaN/ folder before creating prefab.
-			Directory.CreateDirectory(newPrefabOutputBasePath);
 			
-			var newPrefabOutputPath = Path.Combine(newPrefabOutputBasePath, "chara" + i + "_prefab.prefab");
-			UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
-			
-			// export prefab data.
-			PrefabUtility.ReplacePrefab(modelObj, prefabFile);
+			Prefabricate(modelObj, "chara" + i + "_prefab.prefab");
 
 			GameObject.DestroyImmediate(modelObj);
 		}

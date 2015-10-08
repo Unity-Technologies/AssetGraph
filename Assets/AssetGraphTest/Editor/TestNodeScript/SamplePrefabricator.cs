@@ -7,9 +7,10 @@ using System.Collections.Generic;
 
 public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
-		
-		var textureAssetPath = source[0].assetPath;
-		var textureAssetType = source[0].assetType;
+
+		// get texture.
+		var textureAssetPath = source[2].assetPath;
+		var textureAssetType = source[2].assetType;
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
@@ -17,15 +18,16 @@ public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 		if (characterTexture) Debug.Log("Prefabricate:loaded:" + textureAssetPath);
 		else Debug.LogError("Prefabricate:failed to load:" + textureAssetPath);
 
-		var newMaterialPath = Path.Combine(recommendedPrefabOutputDir, "material.mat");
 
-		// generate texture material
-		var characterMaterial = new Material(Shader.Find ("Transparent/Diffuse"));
-		AssetDatabase.CreateAsset(characterMaterial, newMaterialPath);
+		// get material from path.
+		var materialAssetPath = source[0].assetPath;
+		var materialAssetType = source[0].assetType;
+
+		// load texture from AssetDatabase.
+		var characterMaterial = AssetDatabase.LoadAssetAtPath(materialAssetPath, materialAssetType) as Material;
 		
-		// then set loaded texture to that material.
+		// // then set loaded texture to that material.
 		characterMaterial.mainTexture = characterTexture;
-
 
 		// generate cube then set texture to it.
 		var cubeObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -33,10 +35,9 @@ public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 		var meshRenderer = cubeObj.GetComponent<MeshRenderer>();
 		meshRenderer.material = characterMaterial;
 
-
 		// generate prefab in prefabBaseName folder."SOMEWHERE/prefab.prefab" made from "cubeObj".
 		var generatedPrefabPath = Prefabricate(cubeObj, "prefab.prefab");
-
+		Debug.Log("prefab:" + generatedPrefabPath + " is generated.");
 
 		// delete unnecessary cube model from hierarchy.
 		GameObject.DestroyImmediate(cubeObj);

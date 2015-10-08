@@ -33,7 +33,7 @@ namespace AssetGraph {
 
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
-			FileController.RemakeDirectory(recommendedBundleOutputDir);
+			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();

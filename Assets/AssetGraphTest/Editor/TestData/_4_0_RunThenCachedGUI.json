@@ -1,9 +1,9 @@
 {
-    "lastModified": "10/05/2015 22:03:53",
+    "lastModified": "10/08/2015 16:50:35",
     "nodes": [
         {
             "name": "Loader",
-            "id": "Test62441f33-c978-4455-9747-054d3c57cb2e",
+            "id": "TestLoader",
             "kind": "LOADER_GUI",
             "outputLabels": [
                 "+"
@@ -16,7 +16,7 @@
         },
         {
             "name": "Filter",
-            "id": "Testbc003f5b-3974-4791-80b1-29751b6383b8",
+            "id": "TestFilter",
             "kind": "FILTER_GUI",
             "outputLabels": [
                 "images",
@@ -37,7 +37,7 @@
         },
         {
             "name": "Importer",
-            "id": "Test1b0344b3-2a2c-4d13-938d-fccc9e6fb3e3",
+            "id": "TestImporter0",
             "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
@@ -49,7 +49,7 @@
         },
         {
             "name": "Importer",
-            "id": "Test6ba2c1f7-81df-463b-a9f2-8327e6c0dd25",
+            "id": "Testimporter1",
             "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
@@ -61,7 +61,7 @@
         },
         {
             "name": "Importer",
-            "id": "Testf11bf97e-2e20-4d6f-a46e-88f7bf737b43",
+            "id": "TestImporter2",
             "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
@@ -73,7 +73,7 @@
         },
         {
             "name": "Importer",
-            "id": "Test7675a564-0178-489d-b862-2f841c319b74",
+            "id": "TestImporter3",
             "kind": "IMPORTER_GUI",
             "outputLabels": [
                 "+"
@@ -85,7 +85,7 @@
         },
         {
             "name": "Grouping",
-            "id": "Testb6bdb12f-cb4a-458d-8534-97439c648cb8",
+            "id": "TestGroup",
             "kind": "GROUPING_GUI",
             "outputLabels": [
                 "+"
@@ -97,52 +97,66 @@
             "groupingKeyword": "/ID_*/"
         },
         {
+            "name": "SamplePrefabricator",
+            "id": "TestPrefabricator",
+            "kind": "PREFABRICATOR_SCRIPT",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 523,
+                "y": 137
+            },
+            "scriptType": "SamplePrefabricator",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
+        },
+        {
             "name": "Bundlizer",
-            "id": "Testf88e2207-f97d-441b-85a5-1400a5dd9086",
+            "id": "TestBundlizer",
             "kind": "BUNDLIZER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
-                "x": 629,
-                "y": 231
+                "x": 672,
+                "y": 257
             },
             "bundleNameTemplate": "b_*.bundle"
         },
         {
             "name": "Exporter",
-            "id": "Test3ff192c5-eb06-45db-b935-3b2f6f8145cb",
+            "id": "TestExporter",
             "kind": "EXPORTER_GUI",
             "outputLabels": [],
             "pos": {
-                "x": 883,
-                "y": 243
+                "x": 968,
+                "y": 292
             },
             "exportPath": "AssetGraph/TestExportPlace/TestExportFor_4_0_RunThenCachedGUI"
         },
         {
             "name": "BundleBuilder",
-            "id": "Test4cc11b71-6615-419b-bfa6-aac2076783a5",
+            "id": "TestBundleBuilder",
             "kind": "BUNDLEBUILDER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
-                "x": 803,
-                "y": 176
+                "x": 864,
+                "y": 220
             },
             "enabledBundleOptions": []
         },
         {
             "name": "Bundlizer",
-            "id": "Test89cf4c4b-1375-4b41-a75e-885321ad8be7",
+            "id": "TestBundlizer2",
             "kind": "BUNDLIZER_GUI",
             "outputLabels": [
                 "+"
             ],
             "pos": {
-                "x": 627,
-                "y": 126
+                "x": 674,
+                "y": 195
             },
             "bundleNameTemplate": "a_*.assetbundle"
         }
@@ -151,80 +165,86 @@
         {
             "label": "+",
             "connectionId": "975179e7-60c6-4802-960a-0080491aac2f",
-            "fromNode": "Test62441f33-c978-4455-9747-054d3c57cb2e",
-            "toNode": "Testbc003f5b-3974-4791-80b1-29751b6383b8"
+            "fromNode": "TestLoader",
+            "toNode": "TestFilter"
         },
         {
             "label": "images",
             "connectionId": "6f508cfb-9df5-449f-ba2d-f370db1503b4",
-            "fromNode": "Testbc003f5b-3974-4791-80b1-29751b6383b8",
-            "toNode": "Test1b0344b3-2a2c-4d13-938d-fccc9e6fb3e3"
+            "fromNode": "TestFilter",
+            "toNode": "TestImporter0"
         },
         {
             "label": "models",
             "connectionId": "81b793a4-febf-4884-a8ca-7a60ee19ed98",
-            "fromNode": "Testbc003f5b-3974-4791-80b1-29751b6383b8",
-            "toNode": "Test6ba2c1f7-81df-463b-a9f2-8327e6c0dd25"
+            "fromNode": "TestFilter",
+            "toNode": "Testimporter1"
         },
         {
             "label": "bgms",
             "connectionId": "b5ac0ffa-7765-4782-a2c3-daa4110564e3",
-            "fromNode": "Testbc003f5b-3974-4791-80b1-29751b6383b8",
-            "toNode": "Testf11bf97e-2e20-4d6f-a46e-88f7bf737b43"
-        },
-        {
-            "label": "ses",
-            "connectionId": "1c6dcef2-684c-4bf5-a1d8-e14dfc31c2f9",
-            "fromNode": "Testbc003f5b-3974-4791-80b1-29751b6383b8",
-            "toNode": "Test7675a564-0178-489d-b862-2f841c319b74"
-        },
-        {
-            "label": "+",
-            "connectionId": "ad8b3afc-3aba-4f3d-a8f5-83bad0ca7c4c",
-            "fromNode": "Test1b0344b3-2a2c-4d13-938d-fccc9e6fb3e3",
-            "toNode": "Testb6bdb12f-cb4a-458d-8534-97439c648cb8"
+            "fromNode": "TestFilter",
+            "toNode": "TestImporter2"
         },
         {
             "label": "+",
             "connectionId": "0f052259-4793-4d7b-bc9a-79ff9ca9ab0a",
-            "fromNode": "Test6ba2c1f7-81df-463b-a9f2-8327e6c0dd25",
-            "toNode": "Testb6bdb12f-cb4a-458d-8534-97439c648cb8"
-        },
-        {
-            "label": "+",
-            "connectionId": "1855fcb3-1b42-4706-a942-6d799a00f24e",
-            "fromNode": "Testf11bf97e-2e20-4d6f-a46e-88f7bf737b43",
-            "toNode": "Testf88e2207-f97d-441b-85a5-1400a5dd9086"
-        },
-        {
-            "label": "+",
-            "connectionId": "56d55862-0bba-4f3a-8a77-27af96ec9563",
-            "fromNode": "Test7675a564-0178-489d-b862-2f841c319b74",
-            "toNode": "Testf88e2207-f97d-441b-85a5-1400a5dd9086"
+            "fromNode": "Testimporter1",
+            "toNode": "TestGroup"
         },
         {
             "label": "+",
             "connectionId": "7631d220-f7d8-49ef-87d1-43e5003b6591",
-            "fromNode": "Testf88e2207-f97d-441b-85a5-1400a5dd9086",
-            "toNode": "Test4cc11b71-6615-419b-bfa6-aac2076783a5"
+            "fromNode": "TestBundlizer",
+            "toNode": "TestBundleBuilder"
         },
         {
             "label": "+",
             "connectionId": "e4acf21b-2bf9-4178-82ac-27b2a6ae74d2",
-            "fromNode": "Test4cc11b71-6615-419b-bfa6-aac2076783a5",
-            "toNode": "Test3ff192c5-eb06-45db-b935-3b2f6f8145cb"
-        },
-        {
-            "label": "+",
-            "connectionId": "4adf70a6-3be8-43ab-86de-3d3ac1cfea03",
-            "fromNode": "Testb6bdb12f-cb4a-458d-8534-97439c648cb8",
-            "toNode": "Test89cf4c4b-1375-4b41-a75e-885321ad8be7"
+            "fromNode": "TestBundleBuilder",
+            "toNode": "TestExporter"
         },
         {
             "label": "+",
             "connectionId": "16044c84-09b2-451a-9766-19cbafe2fa4e",
-            "fromNode": "Test89cf4c4b-1375-4b41-a75e-885321ad8be7",
-            "toNode": "Test4cc11b71-6615-419b-bfa6-aac2076783a5"
+            "fromNode": "TestBundlizer2",
+            "toNode": "TestBundleBuilder"
+        },
+        {
+            "label": "+",
+            "connectionId": "05e05221-b496-4958-a9d1-770ed86218e4",
+            "fromNode": "TestImporter0",
+            "toNode": "TestGroup"
+        },
+        {
+            "label": "+",
+            "connectionId": "38925dde-8631-4486-bc0b-eaa8fd2975f2",
+            "fromNode": "TestGroup",
+            "toNode": "TestPrefabricator"
+        },
+        {
+            "label": "+",
+            "connectionId": "4d913a4d-33de-4d04-a449-957e46034e78",
+            "fromNode": "TestPrefabricator",
+            "toNode": "TestBundlizer2"
+        },
+        {
+            "label": "+",
+            "connectionId": "ecad2c49-e9b4-4fe0-91c2-62154d40d6ff",
+            "fromNode": "TestImporter2",
+            "toNode": "TestBundlizer"
+        },
+        {
+            "label": "ses",
+            "connectionId": "8e07fecd-e52b-4ebf-bbba-e591ae7cdbd4",
+            "fromNode": "TestFilter",
+            "toNode": "TestImporter3"
+        },
+        {
+            "label": "+",
+            "connectionId": "c0074af9-b479-4787-84ef-94fbf6d199ef",
+            "fromNode": "TestImporter3",
+            "toNode": "TestBundlizer"
         }
     ]
 }

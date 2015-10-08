@@ -86,7 +86,7 @@
         {
             "name": "SamplePrefabricator_3",
             "id": "画像とモデルを合わせてPrefabつくる",
-            "kind": "PREFABRICATOR_GUI",
+            "kind": "PREFABRICATOR_SCRIPT",
             "outputLabels": [
                 "+"
             ],

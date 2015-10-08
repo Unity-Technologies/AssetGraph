@@ -14,6 +14,7 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			Debug.LogWarning("groupingのsetup、グループを受け入れるのかどうか、テスト書く");
 			GroupingOutput(nodeId, labelToNext, groupedSources, Output);
 		}
 
@@ -28,18 +29,17 @@ namespace AssetGraph {
 				return;
 			}
 
-			var validation = true;
+			var isInvalid = false;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
 					if (string.IsNullOrEmpty(source.importedPath)) {
 						Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before grouping.");
-						validation = false;
+						isInvalid = true;
 					}
 				}
 			}
 
-			if (!validation) return;
-
+			if (isInvalid) return;
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

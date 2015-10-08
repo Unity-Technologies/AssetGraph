@@ -344,7 +344,7 @@ namespace AssetGraph {
 						}
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
-						Debug.LogError("うーんType指定のほうが楽だね");
+						Debug.LogError("型指定をしたらScriptPathが決まる、っていうのがいいと思う。型指定の窓が欲しい。");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{

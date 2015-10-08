@@ -36,8 +36,9 @@ namespace AssetGraph {
 			chech if cache is exist at local path.
 		*/
 		public static bool IsCached (List<string> alreadyCachedPath, string localAssetPath) {
-			if (alreadyCachedPath.Contains(localAssetPath)) return true;
-
+			if (alreadyCachedPath.Contains(localAssetPath)) {
+				return true;
+			}
 			return false;
 		}
 
@@ -595,10 +596,12 @@ namespace AssetGraph {
 			var nodeName = currentNodeData.nodeName;
 			var nodeKind = currentNodeData.nodeKind;
 			
-			Debug.LogWarning("キャッシュが済んでいるファイル一覧を出し、実行するノードに渡す。 nodeId:" + nodeId);
 			var alreadyCachedPaths = new List<string>();
 			if (cachedDict.ContainsKey(nodeId)) alreadyCachedPaths.AddRange(cachedDict[nodeId]);
 
+			/*
+				load already exist cache from node.
+			*/
 			alreadyCachedPaths.AddRange(GetCachedData(nodeKind, nodeId));
 			
 
@@ -864,12 +867,11 @@ namespace AssetGraph {
 				}
 				
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-					// 
 					var cachedPathBase = FileController.PathCombine(
 						AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, 
 						nodeId
 					);
-						
+					
 					return FileController.FilePathsInFolder(cachedPathBase);
 				}
 				

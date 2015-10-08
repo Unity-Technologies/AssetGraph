@@ -15,6 +15,7 @@ namespace AssetGraph {
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
+			Debug.LogError("GUIのほうと合わせてやる必要がある。groupを想定する。");
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 
@@ -46,6 +47,7 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			Debug.LogError("importerBase, cacheについての収集部分でまだうまく動いてない。");
 			var usedCache = new List<string>();
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();

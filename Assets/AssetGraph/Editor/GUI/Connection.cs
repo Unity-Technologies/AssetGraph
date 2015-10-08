@@ -82,23 +82,23 @@ namespace AssetGraph {
 				var throughputListDict = ((ConnectionInspector)target).throughputListDict;
 				if (throughputListDict == null)  return;
 
-				foreach (var list in throughputListDict.Values) {
-					count += list.Count;
+				foreach (var throughputList in throughputListDict.Values) {
+					count += throughputList.Count;
 				}
 
 				EditorGUILayout.LabelField("Total", count.ToString());
 
 				var index = 0;
 				foreach (var groupKey in throughputListDict.Keys) {
-					var list = throughputListDict[groupKey];
+					var throughputList = throughputListDict[groupKey];
 
 					var foldout = foldouts[index];
 					
 					foldout = EditorGUILayout.Foldout(foldout, "Group Key:" + groupKey);
 					if (foldout) {
 						EditorGUI.indentLevel = 1;
-						for (var i = 0; i < list.Count; i++) {
-							var sourceStr = list[i];
+						for (var i = 0; i < throughputList.Count; i++) {
+							var sourceStr = throughputList[i];
 							EditorGUILayout.LabelField(sourceStr);
 						}
 						EditorGUI.indentLevel = 0;
