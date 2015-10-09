@@ -210,14 +210,19 @@ public partial class Test {
 
 		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"];
 		if (currentOutputs.Count == 3) {
-			// a.png
 			// material.mat
 			// prefab.prefab
+			// a.png
+			
+			if (!currentOutputs[0].fileNameAndExtension.Contains("material.mat")) Debug.LogError("not contained 'material.mat'");
+			if (!currentOutputs[1].fileNameAndExtension.Contains("prefab.prefab")) Debug.LogError("not contained 'prefab.prefab'");
+			if (!currentOutputs[2].fileNameAndExtension.Contains("a.png")) Debug.LogError("not contained 'a.png'");
+			
 			Debug.Log("passed _0_5_RunPrefabricator");
 			return;
 		}
 
-		Debug.LogError("failed to prefabricate");
+		Debug.LogError("failed to prefabricate:" + currentOutputs.Count);
 	}
 
 	public void _0_6_SetupBundlizer () {

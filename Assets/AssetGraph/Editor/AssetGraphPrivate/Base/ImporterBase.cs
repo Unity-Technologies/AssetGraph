@@ -15,7 +15,7 @@ namespace AssetGraph {
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
-			Debug.LogError("GUIのほうと合わせてやる必要がある。groupを想定する。");
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 
@@ -23,8 +23,8 @@ namespace AssetGraph {
 					
 				foreach (var inputData in inputSources) {
 					var assumedImportedBasePath = inputData.absoluteSourcePath.Replace(inputData.sourceBasePath, AssetGraphSettings.IMPORTER_CACHE_PLACE);
-					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
-					Debug.LogWarning("assetIdが取得できてないのなんかあったっけな、、、Script系なので後回し。");
+					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId, groupKey);
+					
 					var assumedType = AssumeTypeFromExtension();
 
 					var newData = InternalAssetData.InternalAssetDataByImporter(
@@ -47,18 +47,16 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			Debug.LogError("importerBase, cacheについての収集部分でまだうまく動いてない。");
 			var usedCache = new List<string>();
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId);
 
-			// set target folder to empty.
-			// FileController.RemakeDirectory(targetDirectoryPath);
-
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
+
+				var targetGroupPath = FileController.PathCombine(targetDirectoryPath, groupKey);
 
 				/*
 					ready import resources from outside of Unity to inside of Unity.
@@ -68,7 +66,7 @@ namespace AssetGraph {
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
 
-					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
+					var targetFilePath = FileController.PathCombine(targetGroupPath, pathUnderSourceBase);
 
 					if (GraphStackController.IsCached(alreadyCached, targetFilePath)) {
 						usedCache.Add(targetFilePath);

@@ -95,7 +95,7 @@
                 "y": 141
             },
             "scriptType": "SamplePrefabricator_3",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
+            "scriptPath": "Assets/AssetGraphTest/Editor/TestNodeScript/SamplePrefabricator_3.cs"
         },
         {
             "name": "SampleBundlizer_2",

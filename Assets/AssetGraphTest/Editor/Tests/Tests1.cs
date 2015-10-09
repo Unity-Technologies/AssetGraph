@@ -537,7 +537,6 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
-		// var setupResultDict = 
 		GraphStackController.SetupStackedGraph(graphDict);
 
 		Debug.Log("passed _1_14_SetupStackedGraph_Sample");
@@ -545,7 +544,7 @@ public partial class Test {
 
 	public void _1_15_RunStackedGraph_Sample () {
 		GraphStackController.CleanCache();
-		
+
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_1_14_RunStackedGraph_Sample.json");
 		
@@ -558,7 +557,7 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		GraphStackController.RunStackedGraph(graphDict);
-		
+
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_14_RunStackedGraph_Sample");
 

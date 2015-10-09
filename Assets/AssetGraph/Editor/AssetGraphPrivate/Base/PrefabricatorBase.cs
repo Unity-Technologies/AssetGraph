@@ -59,6 +59,9 @@ namespace AssetGraph {
 
 				var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
 
+				/*
+					ready input resource info for execute. not contains cache in this node.
+				*/
 				var assets = new List<AssetInfo>();
 				foreach (var assetData in inputSources) {
 					var assetName = assetData.fileNameAndExtension;
@@ -86,16 +89,6 @@ namespace AssetGraph {
 						Debug.Log("same prefab already exists:" + newPrefabOutputPath);
 					}
 
-					/*
-						create new output from prefab.
-					*/
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-						newPrefabOutputPath,
-						AssetDatabase.AssetPathToGUID(newPrefabOutputPath),
-						AssetGraphInternalFunctions.GetAssetType(newPrefabOutputPath)
-					);
-					outputSources.Add(newInternalAssetData);
-					
 					// set used.
 					PrefabricateIsUsed();
 
@@ -120,10 +113,28 @@ namespace AssetGraph {
 				}
 
 				if (!isUsed) {
-					Debug.LogError("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
-					Debug.LogError("このNodeのキャッシュを空にする");
+					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
 				}
 				
+
+				// generate next output.
+
+				/*
+					add assets in this node to next output.
+					it contains "cached" or "generated as prefab" or "else" assets.
+					output all assets.
+				*/
+				var currentAssetsInThisNode = FileController.FilePathsInFolder(recommendedPrefabPath);
+				foreach (var newAssetPath in currentAssetsInThisNode) {
+					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						newAssetPath,
+						AssetDatabase.AssetPathToGUID(newAssetPath),
+						AssetGraphInternalFunctions.GetAssetType(newAssetPath)
+					);
+					outputSources.Add(newAsset);
+				}
+
+
 				/*
 					add current resources to next node's resources.
 				*/
@@ -140,6 +151,7 @@ namespace AssetGraph {
 					);
 					outputSources.Add(inheritedInternalAssetData);
 				}
+
 
 				outputDict[groupKey] = outputSources;
 			}

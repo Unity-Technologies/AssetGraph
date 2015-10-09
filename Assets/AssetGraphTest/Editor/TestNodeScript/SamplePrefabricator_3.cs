@@ -8,8 +8,6 @@ using System.Collections.Generic;
 
 public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
-		Debug.Log("SamplePrefabricator_3、groupingを使っていない場合のサンプル。あんま意味ないな。");
-
 		/*
 			フォルダ名に入っている"chara"というキーワードを元に複数の素材からセットを作り出し、
 			モデルにテクスチャを貼ってそれをPrefabにする。
@@ -47,7 +45,7 @@ public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 			var meshRenderer = modelObj.GetComponentInChildren<MeshRenderer>();
 			// Debug.LogError("meshRenderer:" + meshRenderer);
 			meshRenderer.material = modelMaterial;
-			
+
 			Prefabricate(modelObj, "chara" + i + "_prefab.prefab");
 
 			GameObject.DestroyImmediate(modelObj);
