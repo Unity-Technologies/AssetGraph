@@ -866,12 +866,12 @@ namespace AssetGraph {
 					return FileController.FilePathsInFolder(cachedPathBase);
 				}
 				
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					var cachedPathBase = FileController.PathCombine(
 						AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, 
 						nodeId
 					);
-					
 					return FileController.FilePathsInFolder(cachedPathBase);
 				}
 				

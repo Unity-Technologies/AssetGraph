@@ -86,7 +86,7 @@ namespace AssetGraph {
 						AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 						AssetDatabase.SaveAssets();
 					} else {
-						Debug.Log("same prefab already exists:" + newPrefabOutputPath);
+						// cached.
 					}
 
 					// set used.

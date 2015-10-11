@@ -5,12 +5,12 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
+public class SamplePrefabricator_4 : AssetGraph.PrefabricatorBase {
 	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
 
 		// get texture.
-		var textureAssetPath = source[0].assetPath;
-		var textureAssetType = source[0].assetType;
+		var textureAssetPath = source[2].assetPath;
+		var textureAssetType = source[2].assetType;
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
@@ -20,8 +20,8 @@ public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 
 
 		// get material from path.
-		var materialAssetPath = source[1].assetPath;
-		var materialAssetType = source[1].assetType;
+		var materialAssetPath = source[0].assetPath;
+		var materialAssetType = source[0].assetType;
 
 		// load texture from AssetDatabase.
 		var characterMaterial = AssetDatabase.LoadAssetAtPath(materialAssetPath, materialAssetType) as Material;

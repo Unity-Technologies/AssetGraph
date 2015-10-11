@@ -16,13 +16,14 @@ namespace AssetGraph {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 				var inputSources = groupedSources[groupKey];
-				var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
+				var absoluteSourcePaths = inputSources.Select(assetData => assetData.GetAbsolutePathOrImportedPath()).ToList();
 				
 				Action<string, List<string>> _PreOutput = (string label, List<string> outputSources) => {
 					var outputs = new List<InternalAssetData>();
+					
 					foreach (var outputSource in outputSources) {
 						foreach (var inputSource in inputSources) {
-							if (outputSource == inputSource.absoluteSourcePath) {
+							if (outputSource == inputSource.GetAbsolutePathOrImportedPath()) {
 								outputs.Add(inputSource);
 							}
 						}
@@ -45,13 +46,13 @@ namespace AssetGraph {
 
 				var inputSources = groupedSources[groupKey];
 				
-				var absoluteSourcePaths = inputSources.Select(assetData => assetData.absoluteSourcePath).ToList();
-				
+				var absoluteSourcePaths = inputSources.Select(assetData => assetData.GetAbsolutePathOrImportedPath()).ToList();
 				Action<string, List<string>> _Output = (string label, List<string> outputSources) => {
 					var outputs = new List<InternalAssetData>();
+					
 					foreach (var outputSource in outputSources) {
 						foreach (var inputSource in inputSources) {
-							if (outputSource == inputSource.absoluteSourcePath) {
+							if (outputSource == inputSource.GetAbsolutePathOrImportedPath()) {
 								outputs.Add(inputSource);
 							}
 						}

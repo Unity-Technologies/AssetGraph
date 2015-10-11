@@ -38,7 +38,6 @@ namespace AssetGraph {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
-			var localFilePathsBeforeBundlize = FileController.FilePathsInFolder(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 			var assetBundleOptions = BuildAssetBundleOptions.None;
 
 			foreach (var enabled in bundleOptions) {
@@ -70,15 +69,11 @@ namespace AssetGraph {
 				}
 			}
 
-			Debug.LogWarning("AssetDatabase.RemoveAssetBundleNameとかを使って、今回使用しないものに関しては登録を消す。どこで消すかは、ここでは無いけど覚えとくためにここに書いとく。");
-
 			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, EditorUserBuildSettings.activeBuildTarget);
 
-			var localFilePathsAfterBundlize = FileController.FilePathsInFolder(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
-				
 			var outputSources = new List<InternalAssetData>();
 
-			var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
+			var generatedAssetBundlePaths = FileController.FilePathsInFolder(recommendedBundleOutputDir);
 			foreach (var newAssetPath in generatedAssetBundlePaths) {
 				var newAssetData = InternalAssetData.InternalAssetDataGeneratedByBundleBuilder(newAssetPath);
 				outputSources.Add(newAssetData);

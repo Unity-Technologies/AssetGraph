@@ -107,8 +107,8 @@
                 "x": 523,
                 "y": 137
             },
-            "scriptType": "SamplePrefabricator",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
+            "scriptType": "SamplePrefabricator_4",
+            "scriptPath": "Assets/AssetGraphTest/Editor/TestNodeScript/SamplePrefabricator_4.cs"
         },
         {
             "name": "Bundlizer",

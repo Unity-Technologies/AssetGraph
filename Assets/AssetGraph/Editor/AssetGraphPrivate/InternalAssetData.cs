@@ -132,5 +132,10 @@ namespace AssetGraph {
 		public static string GetPathWithBasePath (string localPathWithoutBasePath, string basePath) {
 			return FileController.PathCombine(basePath, localPathWithoutBasePath);
 		}
+
+		public string GetAbsolutePathOrImportedPath () {
+			if (absoluteSourcePath != null) return absoluteSourcePath;
+			return importedPath;
+		}
 	}
 }

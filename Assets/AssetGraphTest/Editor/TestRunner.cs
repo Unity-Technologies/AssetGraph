@@ -8,7 +8,7 @@ using System.Collections.Generic;
 public partial class Test {
 	public void RunTests () {
 		var tests = new List<Action>();
-		
+
 		// non gui node tests.
 		{
 			tests.Add(this._0_0_SetupFilter);

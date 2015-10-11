@@ -57,8 +57,6 @@ public partial class Test {
 		};
 
 		act();
-		
-		Debug.LogError("start execute again.");
 
 		act();
 

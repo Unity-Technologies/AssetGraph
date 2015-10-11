@@ -14,6 +14,8 @@ namespace AssetGraph {
 
 			var first = true;
 
+			if (1 < groupedSources.Keys.Count) Debug.LogError("shrink.");
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
@@ -40,7 +42,7 @@ namespace AssetGraph {
 
 				foreach (var inputSource in inputSources) {
 					var assumedImportedBasePath = inputSource.absoluteSourcePath.Replace(inputSource.sourceBasePath, AssetGraphSettings.IMPORTER_CACHE_PLACE);
-					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId, groupKey);
+					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
 
 					var assumedType = AssumeTypeFromExtension();
 
@@ -87,8 +89,7 @@ namespace AssetGraph {
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var groupDirectoryPath = FileController.PathCombine(nodeDirectoryPath, groupKey);
-				var localFilePathsBeforeImport = FileController.FilePathsInFolder(groupDirectoryPath);
+				var localFilePathsBeforeImport = FileController.FilePathsInFolder(nodeDirectoryPath);
 				usedCache.AddRange(localFilePathsBeforeImport);
 
 				// caution if file is exists already.
@@ -124,7 +125,7 @@ namespace AssetGraph {
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
 
-					var targetFilePath = FileController.PathCombine(groupDirectoryPath, pathUnderSourceBase);
+					var targetFilePath = FileController.PathCombine(nodeDirectoryPath, pathUnderSourceBase);
 
 					// skip if cached.
 					if (GraphStackController.IsCached(alreadyCached, targetFilePath)) continue;
@@ -144,10 +145,10 @@ namespace AssetGraph {
 
 
 				// get files, which are imported or cached assets.
-				var localFilePathsAfterImport = FileController.FilePathsInFolder(groupDirectoryPath);
+				var localFilePathsAfterImport = FileController.FilePathsInFolder(nodeDirectoryPath);
 
 				// modify to local path.
-				var localFilePathsWithoutnodeDirectoryPath = localFilePathsAfterImport.Select(path => InternalAssetData.GetPathWithoutBasePath(path, groupDirectoryPath)).ToList();
+				var localFilePathsWithoutnodeDirectoryPath = localFilePathsAfterImport.Select(path => InternalAssetData.GetPathWithoutBasePath(path, nodeDirectoryPath)).ToList();
 				
 				
 				var outputSources = new List<InternalAssetData>();
@@ -155,7 +156,7 @@ namespace AssetGraph {
 					treat all assets inside node.
 				*/
 				foreach (var newAssetPath in localFilePathsWithoutnodeDirectoryPath) {
-					var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, groupDirectoryPath);
+					var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, nodeDirectoryPath);
 					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						basePathWithNewAssetPath,
 						AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
