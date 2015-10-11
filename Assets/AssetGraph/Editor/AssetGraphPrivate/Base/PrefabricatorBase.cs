@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {			
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			var validation = true;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -31,10 +31,13 @@ namespace AssetGraph {
 				outputDict[groupKey] = inputSources;
 			};
 
-			Output(nodeId, labelToNext, outputDict);
+			Debug.LogWarning("prefabricateのcacheはpredictionとして出してもいい気がする。ほかにimport,bundlizeも。");
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			var usedCache = new List<string>();
+
 			var validation = true;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -47,13 +50,18 @@ namespace AssetGraph {
 
 			if (!validation) return;
 
-			var recommendedPrefabOutputDir = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_TEMP_PLACE, nodeId);
-			FileController.RemakeDirectory(recommendedPrefabOutputDir);
-
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId);
+			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
+
+				var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
+
+				/*
+					ready input resource info for execute. not contains cache in this node.
+				*/
 				var assets = new List<AssetInfo>();
 				foreach (var assetData in inputSources) {
 					var assetName = assetData.fileNameAndExtension;
@@ -63,27 +71,73 @@ namespace AssetGraph {
 					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
 				}
 
-				/*
-					files under "Assets/" before prefabricate.
-				*/
-				var localFilePathsBeforePrefabricate = FileController.FilePathsInFolderWithoutMeta("Assets");
-				
+				var outputSources = new List<InternalAssetData>();
+
+				Func<GameObject, string, string> Prefabricate = (GameObject baseObject, string prefabName) => {
+					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
+					
+					if (!GraphStackController.IsCached(alreadyCached, newPrefabOutputPath)) {
+						UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
+					
+						// export prefab data.
+						PrefabUtility.ReplacePrefab(baseObject, prefabFile);
+
+						// save prefab.
+						AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+						AssetDatabase.SaveAssets();
+					} else {
+						// cached.
+					}
+
+					// set used.
+					PrefabricateIsUsed();
+
+					return newPrefabOutputPath;
+				};
+
+				if (Directory.Exists(recommendedPrefabPath)) {
+					// use exists asset as used cache.
+					usedCache.AddRange(alreadyCached);
+				} else {
+					// create recommended directory.
+					Directory.CreateDirectory(recommendedPrefabPath);
+				}
+
 				/*
 					execute inheritee's input method.
 				*/
 				try {
-					In(groupKey, assets, recommendedPrefabOutputDir);
+					In(groupKey, assets, recommendedPrefabPath, Prefabricate);
 				} catch (Exception e) {
 					Debug.LogError("Prefabricator:" + this + " error:" + e);
 				}
 
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+				if (!isUsed) {
+					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
+				}
+				
+
+				// generate next output.
 
 				/*
-					collect outputs.
+					add assets in this node to next output.
+					it contains "cached" or "generated as prefab" or "else" assets.
+					output all assets.
 				*/
-				var outputSources = new List<InternalAssetData>();
+				var currentAssetsInThisNode = FileController.FilePathsInFolder(recommendedPrefabPath);
+				foreach (var newAssetPath in currentAssetsInThisNode) {
+					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						newAssetPath,
+						AssetDatabase.AssetPathToGUID(newAssetPath),
+						AssetGraphInternalFunctions.GetAssetType(newAssetPath)
+					);
+					outputSources.Add(newAsset);
+				}
 
+
+				/*
+					add current resources to next node's resources.
+				*/
 				foreach (var assetData in inputSources) {
 					var inheritedInternalAssetData = InternalAssetData.InternalAssetDataByImporter(
 						assetData.traceId,
@@ -98,34 +152,19 @@ namespace AssetGraph {
 					outputSources.Add(inheritedInternalAssetData);
 				}
 
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
-				AssetDatabase.SaveAssets();
-
-				/*
-					files under "Assets/" after prefabricated.
-				*/
-				var localFilePathsAfterPrefabricate = FileController.FilePathsInFolderWithoutMeta("Assets");
-				
-				/*
-					check if new Assets are generated, trace it.
-				*/
-				var assetPathsWhichAreNotTraced = localFilePathsAfterPrefabricate.Except(localFilePathsBeforePrefabricate);
-				foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-						newAssetPath,
-						AssetDatabase.AssetPathToGUID(newAssetPath),
-						AssetGraphInternalFunctions.GetAssetType(newAssetPath)
-					);
-					outputSources.Add(newInternalAssetData);
-				}
 
 				outputDict[groupKey] = outputSources;
 			}
 
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 
-		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir) {
+		private bool isUsed = false;
+		private void PrefabricateIsUsed () {
+			isUsed = true;
+		}
+
+		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
 			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
 	}

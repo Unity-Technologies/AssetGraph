@@ -6,17 +6,18 @@ namespace AssetGraph {
 	public class AssetGraphSettings {
 		public const string GUI_TEXT_MENU_OPEN = "AssetGraph/Open...";
 		
-		public const string ASSETGRAPH_TEMP_PATH = "AssetGraph/SettingFiles";
+		public const string ASSETGRAPH_DATA_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
-		public const string APPLICATIONDATAPATH_TEMP_PATH = "Assets/AssetGraph/Cache/";
+		public const string ASSETGRAPH_PATH = "Assets/AssetGraph/";
+		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETGRAPH_PATH + "Cache/";
 		
-		public const string IMPORTER_TEMP_PLACE			= APPLICATIONDATAPATH_TEMP_PATH + "Imported";
-		public const string PREFABRICATOR_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "Prefabricated";
-		public const string BUNDLIZER_TEMP_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Bundlized";
-		public const string BUNDLEBUILDER_TEMP_PLACE	= APPLICATIONDATAPATH_TEMP_PATH + "BundleBuilt";
+		public const string IMPORTER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Imported";
+		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
+		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
+		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= APPLICATIONDATAPATH_TEMP_PATH + "Sampling";
+		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Settings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -110,14 +111,10 @@ namespace AssetGraph {
 		public const string DEFAULT_FILTER_KEYWORD = "set keyword.";
 
 		public enum NodeKind : int {
-			LOADER_SCRIPT,
 			FILTER_SCRIPT,
 			IMPORTER_SCRIPT,
-			GROUPING_SCRIPT,
 			PREFABRICATOR_SCRIPT,
 			BUNDLIZER_SCRIPT,
-			BUNDLEBUILDER_SCRIPT,
-			EXPORTER_SCRIPT,
 
 			LOADER_GUI,
 			FILTER_GUI,

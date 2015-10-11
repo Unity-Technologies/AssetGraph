@@ -14,7 +14,7 @@ namespace AssetGraph {
 			this.bundleOptions = bundleOptions;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
@@ -23,18 +23,21 @@ namespace AssetGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 			
-			Output(nodeId, labelToNext, outputDict);
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
-			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_TEMP_PLACE, nodeId);
-			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, "iOS");
-			FileController.RemakeDirectory(recommendedBundleOutputDir);
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			foreach (var name in alreadyCached) {
+				Debug.LogError("name:" + name);
+			}
+
+			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
+			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
-			var localFilePathsBeforeBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
 			var assetBundleOptions = BuildAssetBundleOptions.None;
 
 			foreach (var enabled in bundleOptions) {
@@ -66,21 +69,20 @@ namespace AssetGraph {
 				}
 			}
 
-			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, BuildTarget.iOS);
+			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, EditorUserBuildSettings.activeBuildTarget);
 
-			var localFilePathsAfterBundlize = FileController.FilePathsInFolderWithoutMeta(AssetGraphSettings.UNITY_LOCAL_DATAPATH);
-				
 			var outputSources = new List<InternalAssetData>();
 
-			var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
+			var generatedAssetBundlePaths = FileController.FilePathsInFolder(recommendedBundleOutputDir);
 			foreach (var newAssetPath in generatedAssetBundlePaths) {
 				var newAssetData = InternalAssetData.InternalAssetDataGeneratedByBundleBuilder(newAssetPath);
 				outputSources.Add(newAssetData);
 			}
 
 			outputDict["0"] = outputSources;
-
-			Output(nodeId, labelToNext, outputDict);
+			
+			var usedCache = new List<string>(alreadyCached);
+			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 	}
 }

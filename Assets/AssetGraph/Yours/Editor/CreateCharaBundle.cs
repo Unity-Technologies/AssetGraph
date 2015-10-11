@@ -33,7 +33,7 @@ public class CreateCharaBundle : AssetGraph.BundlizerBase {
 				BuildTarget.iOS
 			);
 		} catch (Exception e) {
-			Debug.Log("failed to create AssetBundle:" + targetPath);
+			Debug.Log("failed to create AssetBundle:" + targetPath + " error:" + e);
 		}
 	}
 }

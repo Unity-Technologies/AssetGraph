@@ -4,7 +4,7 @@
         {
             "name": "AssetGraph.IntegratedScriptLoader",
             "id": "リソースの呼び込み",
-            "kind": "LOADER_SCRIPT",
+            "kind": "LOADER_GUI",
             "outputLabels": [
                 "+"
             ],
@@ -12,7 +12,7 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_12_SerializedGraphJSON"
+            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
         },
         {
             "name": "SampleFilter_4",
@@ -118,13 +118,13 @@
         {
             "name": "AssetGraph.IntegratedScriptExporter",
             "id": "バンドルをフォルダに出力",
-            "kind": "EXPORTER_SCRIPT",
+            "kind": "EXPORTER_GUI",
             "outputLabels": [],
             "pos": {
                 "x": 1035,
                 "y": 219
             },
-            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
+            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
         }
     ],
     "connections": [

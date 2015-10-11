@@ -4,7 +4,7 @@
         {
             "name": "AssetGraph.IntegratedLoader",
             "id": "リソースの呼び込み",
-            "kind": "LOADER_SCRIPT",
+            "kind": "LOADER_GUI",
             "outputLabels": [
                 "+"
             ],
@@ -12,7 +12,7 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/Users/runnershigh/Desktop/AssetGraph/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
         },
         {
             "name": "FilterAllResources",
@@ -88,6 +88,19 @@
             "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE.cs"
         },
         {
+            "name": "Grouping",
+            "id": "グルーピング",
+            "kind": "GROUPING_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 436,
+                "y": 60
+            },
+            "groupingKeyword": "ID_*/"
+        },
+        {
             "name": "CreateCharaPrefab",
             "id": "画像とモデルを合わせてPrefabつくる",
             "kind": "PREFABRICATOR_SCRIPT",
@@ -132,13 +145,13 @@
         {
             "name": "AssetGraph.IntegratedScriptExporter",
             "id": "バンドルをフォルダに出力",
-            "kind": "EXPORTER_SCRIPT",
+            "kind": "EXPORTER_GUI",
             "outputLabels": [],
             "pos": {
                 "x": 1043,
                 "y": 185
             },
-            "exportPath": "/Users/runnershigh/Desktop/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
+            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
         }
     ],
     "connections": [
@@ -152,12 +165,18 @@
             "label": "+",
             "connectionId": "05f6b811-2686-4c3a-a3fd-065162dd5f88",
             "fromNode": "画像を読み込む",
-            "toNode": "画像とモデルを合わせてPrefabつくる"
+            "toNode": "グルーピング"
         },
         {
             "label": "+",
             "connectionId": "5993f870-bc90-4b1c-ab85-d867b0a6dbd7",
             "fromNode": "モデルを読み込む",
+            "toNode": "グルーピング"
+        },
+        {
+            "label": "+",
+            "connectionId": "grouping",
+            "fromNode": "グルーピング",
             "toNode": "画像とモデルを合わせてPrefabつくる"
         },
         {

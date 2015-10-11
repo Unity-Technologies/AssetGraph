@@ -1,0 +1,250 @@
+{
+    "lastModified": "10/08/2015 16:50:35",
+    "nodes": [
+        {
+            "name": "Loader",
+            "id": "TestLoader",
+            "kind": "LOADER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 7,
+                "y": 5
+            },
+            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_4_0_CacheWithSetup"
+        },
+        {
+            "name": "Filter",
+            "id": "TestFilter",
+            "kind": "FILTER_GUI",
+            "outputLabels": [
+                "images",
+                "models",
+                "bgms",
+                "ses"
+            ],
+            "pos": {
+                "x": 38,
+                "y": 112
+            },
+            "filterContainsKeywords": [
+                "images",
+                "models",
+                "bgms",
+                "ses"
+            ]
+        },
+        {
+            "name": "Importer",
+            "id": "TestImporter0",
+            "kind": "IMPORTER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 282,
+                "y": 37
+            }
+        },
+        {
+            "name": "Importer",
+            "id": "Testimporter1",
+            "kind": "IMPORTER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 283,
+                "y": 116
+            }
+        },
+        {
+            "name": "Importer",
+            "id": "TestImporter2",
+            "kind": "IMPORTER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 284,
+                "y": 195
+            }
+        },
+        {
+            "name": "Importer",
+            "id": "TestImporter3",
+            "kind": "IMPORTER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 285,
+                "y": 273
+            }
+        },
+        {
+            "name": "Grouping",
+            "id": "TestGroup",
+            "kind": "GROUPING_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 453,
+                "y": 72
+            },
+            "groupingKeyword": "/ID_*/"
+        },
+        {
+            "name": "SamplePrefabricator",
+            "id": "TestPrefabricator",
+            "kind": "PREFABRICATOR_SCRIPT",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 523,
+                "y": 137
+            },
+            "scriptType": "SamplePrefabricator_4",
+            "scriptPath": "Assets/AssetGraphTest/Editor/TestNodeScript/SamplePrefabricator_4.cs"
+        },
+        {
+            "name": "Bundlizer",
+            "id": "TestBundlizer",
+            "kind": "BUNDLIZER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 672,
+                "y": 257
+            },
+            "bundleNameTemplate": "b_*.bundle"
+        },
+        {
+            "name": "Exporter",
+            "id": "TestExporter",
+            "kind": "EXPORTER_GUI",
+            "outputLabels": [],
+            "pos": {
+                "x": 968,
+                "y": 292
+            },
+            "exportPath": "AssetGraph/TestExportPlace/TestExportFor_4_0_RunThenCachedGUI"
+        },
+        {
+            "name": "BundleBuilder",
+            "id": "TestBundleBuilder",
+            "kind": "BUNDLEBUILDER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 864,
+                "y": 220
+            },
+            "enabledBundleOptions": []
+        },
+        {
+            "name": "Bundlizer",
+            "id": "TestBundlizer2",
+            "kind": "BUNDLIZER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 674,
+                "y": 195
+            },
+            "bundleNameTemplate": "a_*.assetbundle"
+        }
+    ],
+    "connections": [
+        {
+            "label": "+",
+            "connectionId": "975179e7-60c6-4802-960a-0080491aac2f",
+            "fromNode": "TestLoader",
+            "toNode": "TestFilter"
+        },
+        {
+            "label": "images",
+            "connectionId": "6f508cfb-9df5-449f-ba2d-f370db1503b4",
+            "fromNode": "TestFilter",
+            "toNode": "TestImporter0"
+        },
+        {
+            "label": "models",
+            "connectionId": "81b793a4-febf-4884-a8ca-7a60ee19ed98",
+            "fromNode": "TestFilter",
+            "toNode": "Testimporter1"
+        },
+        {
+            "label": "bgms",
+            "connectionId": "b5ac0ffa-7765-4782-a2c3-daa4110564e3",
+            "fromNode": "TestFilter",
+            "toNode": "TestImporter2"
+        },
+        {
+            "label": "+",
+            "connectionId": "0f052259-4793-4d7b-bc9a-79ff9ca9ab0a",
+            "fromNode": "Testimporter1",
+            "toNode": "TestGroup"
+        },
+        {
+            "label": "+",
+            "connectionId": "7631d220-f7d8-49ef-87d1-43e5003b6591",
+            "fromNode": "TestBundlizer",
+            "toNode": "TestBundleBuilder"
+        },
+        {
+            "label": "+",
+            "connectionId": "e4acf21b-2bf9-4178-82ac-27b2a6ae74d2",
+            "fromNode": "TestBundleBuilder",
+            "toNode": "TestExporter"
+        },
+        {
+            "label": "+",
+            "connectionId": "16044c84-09b2-451a-9766-19cbafe2fa4e",
+            "fromNode": "TestBundlizer2",
+            "toNode": "TestBundleBuilder"
+        },
+        {
+            "label": "+",
+            "connectionId": "05e05221-b496-4958-a9d1-770ed86218e4",
+            "fromNode": "TestImporter0",
+            "toNode": "TestGroup"
+        },
+        {
+            "label": "+",
+            "connectionId": "38925dde-8631-4486-bc0b-eaa8fd2975f2",
+            "fromNode": "TestGroup",
+            "toNode": "TestPrefabricator"
+        },
+        {
+            "label": "+",
+            "connectionId": "4d913a4d-33de-4d04-a449-957e46034e78",
+            "fromNode": "TestPrefabricator",
+            "toNode": "TestBundlizer2"
+        },
+        {
+            "label": "+",
+            "connectionId": "ecad2c49-e9b4-4fe0-91c2-62154d40d6ff",
+            "fromNode": "TestImporter2",
+            "toNode": "TestBundlizer"
+        },
+        {
+            "label": "ses",
+            "connectionId": "8e07fecd-e52b-4ebf-bbba-e591ae7cdbd4",
+            "fromNode": "TestFilter",
+            "toNode": "TestImporter3"
+        },
+        {
+            "label": "+",
+            "connectionId": "c0074af9-b479-4787-84ef-94fbf6d199ef",
+            "fromNode": "TestImporter3",
+            "toNode": "TestBundlizer"
+        }
+    ]
+}

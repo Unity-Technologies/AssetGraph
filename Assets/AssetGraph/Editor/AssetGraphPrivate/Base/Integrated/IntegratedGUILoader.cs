@@ -12,7 +12,7 @@ namespace AssetGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(loadFilePath)) {
 				Debug.LogWarning("no Load Path set.");
 				return;
@@ -25,7 +25,7 @@ namespace AssetGraph {
 
 			var outputSource = new List<InternalAssetData>();
 			try {
-				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
+				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
 					outputSource.Add(
@@ -40,13 +40,13 @@ namespace AssetGraph {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDir);
+				Output(nodeId, labelToNext, outputDir, new List<string>());
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, Action<string, string, Dictionary<string, List<InternalAssetData>>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(loadFilePath)) {
 				Debug.LogWarning("no Load Path set.");
 				return;
@@ -59,7 +59,7 @@ namespace AssetGraph {
 			
 			var outputSource = new List<InternalAssetData>();
 			try {
-				var targetFilePaths = FileController.FilePathsInFolderWithoutMeta(loadFilePath);
+				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
 					outputSource.Add(
@@ -74,7 +74,7 @@ namespace AssetGraph {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDir);
+				Output(nodeId, labelToNext, outputDir, new List<string>());
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}

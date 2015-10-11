@@ -1,0 +1,123 @@
+{
+    "lastModified": "07/16/2015 23:44:42",
+    "nodes": [
+        {
+            "name": "AssetGraph.IntegratedScriptLoader",
+            "id": "リソースの呼び込み",
+            "kind": "LOADER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 13,
+                "y": 11
+            },
+            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_3_0_OrderWithDone0"
+        },
+        {
+            "name": "SampleFilter_3",
+            "id": "リソースの仕分け",
+            "kind": "FILTER_SCRIPT",
+            "outputLabels": [
+                "画像",
+                "モデル",
+                "BGM",
+                "SE"
+            ],
+            "pos": {
+                "x": 63,
+                "y": 123
+            },
+            "scriptType": "SampleFilter_3",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleFilter_3.cs"
+        },
+        {
+            "name": "SampleImporterForImage_1",
+            "id": "画像を読み込む",
+            "kind": "IMPORTER_SCRIPT",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 345,
+                "y": 24
+            },
+            "scriptType": "SampleImporterForImage_1",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForImage_1.cs"
+        },
+        {
+            "name": "SampleImporterForModel_1",
+            "id": "モデルを読み込む",
+            "kind": "IMPORTER_SCRIPT",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 346,
+                "y": 103
+            },
+            "scriptType": "SampleImporterForModel_1",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForModel_1.cs"
+        },
+        {
+            "name": "SampleImporterForBGM_1",
+            "id": "BGMを読み込む",
+            "kind": "IMPORTER_SCRIPT",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 351,
+                "y": 179
+            },
+            "scriptType": "SampleImporterForBGM_1",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForBGM_1.cs"
+        },
+        {
+            "name": "SampleImporterForSE_1",
+            "id": "SEを読み込む",
+            "kind": "IMPORTER_SCRIPT",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 347,
+                "y": 261
+            },
+            "scriptType": "SampleImporterForSE_1",
+            "scriptPath": "Assets/AssetGraph/Yours/Editor/SampleImporterForSE_1.cs"
+        }
+    ],
+    "connections": [
+        {
+            "label": "+",
+            "connectionId": "ロードからフィルタへ",
+            "fromNode": "リソースの呼び込み",
+            "toNode": "リソースの仕分け"
+        },
+        {
+            "label": "画像",
+            "connectionId": "フィルタから画像吐き出し",
+            "fromNode": "リソースの仕分け",
+            "toNode": "画像を読み込む"
+        },
+        {
+            "label": "モデル",
+            "connectionId": "フィルタからモデル吐き出し",
+            "fromNode": "リソースの仕分け",
+            "toNode": "モデルを読み込む"
+        },
+        {
+            "label": "BGM",
+            "connectionId": "フィルタからBGM吐き出し",
+            "fromNode": "リソースの仕分け",
+            "toNode": "BGMを読み込む"
+        },
+        {
+            "label": "SE",
+            "connectionId": "フィルタからSE吐き出し",
+            "fromNode": "リソースの仕分け",
+            "toNode": "SEを読み込む"
+        }
+    ]
+}

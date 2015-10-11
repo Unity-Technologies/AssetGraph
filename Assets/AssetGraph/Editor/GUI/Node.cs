@@ -168,7 +168,6 @@ namespace AssetGraph {
 				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
 				switch (node.kind) {
-					case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						EditorGUILayout.HelpBox("Loader: load files from path.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -276,7 +275,7 @@ namespace AssetGraph {
 
 						var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 						if (Directory.Exists(samplingPath)) {
-							var samplingFiles = FileController.FilePathsInFolderWithoutMetaOnly1Level(samplingPath);
+							var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath);
 							switch (samplingFiles.Count) {
 								case 0: {
 									noFilesFound = true;
@@ -317,12 +316,6 @@ namespace AssetGraph {
 					}
 
 
-					case AssetGraphSettings.NodeKind.GROUPING_SCRIPT: {
-						Debug.LogError("まだ存在してない。");
-						// EditorGUILayout.LabelField("kind", "Grouping:grouping files by script.");
-						// EditorGUILayout.LabelField("Script Path", node.scriptPath);
-						break;
-					}
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						EditorGUILayout.HelpBox("Grouping: grouping files by one keyword.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -351,7 +344,7 @@ namespace AssetGraph {
 						}
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
-						Debug.LogError("うーんType指定のほうが楽だね");
+						Debug.LogError("型指定をしたらScriptPathが決まる、っていうのがいいと思う。型指定の窓が欲しい。");
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
@@ -402,19 +395,6 @@ namespace AssetGraph {
 						break;
 					}
 
-					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT: {
-						Debug.LogError("not yet.");
-						// EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
-						// var newName = EditorGUILayout.TextField("Node Name", node.name);
-						// if (newName != node.name) {
-						// 	node.name = newName;
-						// 	node.UpdateNodeRect();
-						// 	node.Save();
-						// }
-
-						// EditorGUILayout.LabelField("Script Path", node.scriptPath);
-						break;
-					}
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -425,10 +405,6 @@ namespace AssetGraph {
 						}
 
 						var bundleOptions = node.enabledBundleOptions;
-						if (bundleOptions == null) {
-							Debug.LogError("null, なるほど選択してると出るのか。まあ確かにnullになり得るんだよな。");
-							break;
-						}
 						
 						for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
 							var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
@@ -459,8 +435,6 @@ namespace AssetGraph {
 						break;
 					}
 
-
-					case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -542,11 +516,8 @@ namespace AssetGraph {
 			this.baseRect = new Rect(x, y, AssetGraphGUISettings.NODE_BASE_WIDTH, AssetGraphGUISettings.NODE_BASE_HEIGHT);
 			
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
@@ -563,7 +534,6 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
@@ -582,7 +552,6 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
@@ -600,11 +569,8 @@ namespace AssetGraph {
 			Selection.activeObject = nodeInsp;
 
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
@@ -621,7 +587,6 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3 on";
 					break;
@@ -640,7 +605,6 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6 on";
 					break;
@@ -655,11 +619,8 @@ namespace AssetGraph {
 
 		public void SetInactive () {
 			switch (this.kind) {
-				case AssetGraphSettings.NodeKind.LOADER_SCRIPT:
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-				case AssetGraphSettings.NodeKind.EXPORTER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
@@ -676,7 +637,6 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.GROUPING_SCRIPT:
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
@@ -695,7 +655,6 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;

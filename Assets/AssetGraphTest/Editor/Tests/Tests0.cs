@@ -10,61 +10,13 @@ using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
 
-// Test
+// non gui version.
 
 public partial class Test {
 
-	public void _0_0_0_SetupLoader () {
-		// contains 2 resources.
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
-
-		var emptySource = new Dictionary<string, List<InternalAssetData>>();
-
-		var results = new Dictionary<string, List<InternalAssetData>>();
-
-		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
-			results[connectionId] = output["0"];
-		};
-
-		integratedScriptLoader.Setup("ID_0_0_0_SetupLoader", "CONNECTION_0_0_0_SetupLoader", emptySource, Out);
-
-		var outputs = results["CONNECTION_0_0_0_SetupLoader"];
-		if (outputs.Count == 2) {
-			Debug.Log("passed _0_0_0_SetupLoader");
-			return;
-		}
-
-		Debug.LogError("not match 2, actual:" + outputs.Count);
-	}
-
-	public void _0_0_1_RunLoader () {
-		// contains 2 resources.
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
-
-		var emptySource = new Dictionary<string, List<InternalAssetData>>();
-
-		var results = new Dictionary<string, List<InternalAssetData>>();
-
-		var integratedScriptLoader = new IntegratedScriptLoader(definedSourcePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
-			results[connectionId] = output["0"];
-		};
-
-		integratedScriptLoader.Run("ID_0_0_1_RunLoader", "CONNECTION_0_0_1_RunLoader", emptySource, Out);
-
-		var outputs = results["CONNECTION_0_0_1_RunLoader"];
-		if (outputs.Count == 2) {
-			Debug.Log("passed _0_0_1_RunLoader");
-			return;
-		}
-
-		Debug.LogError("not match 2, actual:" + outputs.Count);
-	}
-
 	public void _0_0_SetupFilter () {
+		GraphStackController.CleanCache();
+
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
@@ -77,11 +29,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, Out);
+		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, new List<string>(), Out);
 
 		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
 			var result1 = results["SampleFilter_0_LabelOf1st"];
@@ -99,6 +51,8 @@ public partial class Test {
 		Debug.LogError("failed to split by filter");
 	}
 	public void _0_1_RunFilter () {
+		GraphStackController.CleanCache();
+		
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
@@ -111,11 +65,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sFilter = new SampleFilter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, Out);
+		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, new List<string>(), Out);
 
 		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
 			var result1 = results["SampleFilter_0_LabelOf1st"];
@@ -134,8 +88,10 @@ public partial class Test {
 	}
 
 	public void _0_2_SetupImporter () {
+		GraphStackController.CleanCache();
+		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -149,16 +105,18 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, Out);
+		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, new List<string>(), Out);
 		Debug.Log("passed _0_2_SetupImporter");
 	}
 	public void _0_3_RunImporter () {
+		GraphStackController.CleanCache();
+		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/");
+		var definedSourcePath = Path.Combine(projectFolderPath, "TestResources/TestResources0/");
 		
 		var source = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
@@ -172,11 +130,11 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sImporter = new SampleImporter_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, Out);
+		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
 		if (currentOutputs.Count == 3) {
@@ -188,6 +146,8 @@ public partial class Test {
 	}
 
 	public void _0_4_SetupPrefabricator () {
+		GraphStackController.CleanCache();
+		
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
@@ -210,14 +170,16 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, Out);
+		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, new List<string>(), Out);
 		Debug.Log("passed _0_4_SetupPrefabricator");
 	}
 	public void _0_5_RunPrefabricator () {
+		GraphStackController.CleanCache();
+		
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
@@ -240,25 +202,32 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sPrefabricator = new SamplePrefabricator_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, Out);
+		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"];
 		if (currentOutputs.Count == 3) {
-			// a.png
 			// material.mat
 			// prefab.prefab
+			// a.png
+			
+			if (!currentOutputs[0].fileNameAndExtension.Contains("material.mat")) Debug.LogError("not contained 'material.mat'");
+			if (!currentOutputs[1].fileNameAndExtension.Contains("prefab.prefab")) Debug.LogError("not contained 'prefab.prefab'");
+			if (!currentOutputs[2].fileNameAndExtension.Contains("a.png")) Debug.LogError("not contained 'a.png'");
+			
 			Debug.Log("passed _0_5_RunPrefabricator");
 			return;
 		}
 
-		Debug.LogError("failed to prefabricate");
+		Debug.LogError("failed to prefabricate:" + currentOutputs.Count);
 	}
 
 	public void _0_6_SetupBundlizer () {
+		GraphStackController.CleanCache();
+		
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
@@ -282,14 +251,16 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sBundlizer = new SampleBundlizer_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, Out);
+		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, new List<string>(), Out);
 		Debug.Log("passed _0_6_SetupBundlizer");
 	}
 	public void _0_7_RunBundlizer () {
+		GraphStackController.CleanCache();
+		
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
 		var source = new Dictionary<string, List<InternalAssetData>> {
@@ -312,15 +283,20 @@ public partial class Test {
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
 		var sBundlizer = new SampleBundlizer_0();
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, Out);
+		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
-			// a.bundle
+			// should be bundle.assetbundle
+			if (currentOutputs[0].pathUnderConnectionId != "bundle.assetbundle") {
+				Debug.LogError("failed to bundlize, name not match:" + currentOutputs[0].pathUnderConnectionId);
+				return;
+			}
+
 			Debug.Log("passed _0_7_RunBundlizer");
 			return;
 		}
@@ -329,6 +305,8 @@ public partial class Test {
 	}
 
 	public void _0_8_0_SerializeGraph_hasValidEndpoint () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_8_SerializeGraph.json");
 		
@@ -351,6 +329,8 @@ public partial class Test {
 	}
 
 	public void _0_8_1_SerializeGraph_hasValidOrder () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_8_SerializeGraph.json");
 		
@@ -371,7 +351,8 @@ public partial class Test {
 		var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
 		var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
-		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict);
+		var cacheDict = new Dictionary<string, List<string>>();
+		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict, cacheDict);
 		
 		if (orderedConnectionIds.Count == 0) {
 			Debug.LogError("list is empty");
@@ -388,6 +369,8 @@ public partial class Test {
 	}
 
 	public void _0_9_RunStackedGraph () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_9_RunStackedGraph.json");
 		
@@ -400,95 +383,28 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
 		GraphStackController.RunStackedGraph(graphDict);
-		
+		AssetDatabase.Refresh();
+
+
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
-
-		if (File.Exists(Path.Combine(expectedExportDestPath, "kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "sample.fbx")) &&
+		
+		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
 			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
 		) {
 			Debug.Log("passed _0_9_RunStackedGraph");
 			return;
 		}
 
-		Debug.LogError("not yet");
+		Debug.LogError("failed to generate");
 	}
 
-
-	public void _0_10_SetupExporter () {
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_10_SetupExport");
-
-		// delete all if exist
-		if (Directory.Exists(exportFilePath)) {
-			Directory.Delete(exportFilePath, true);
-		}
-
-		Directory.CreateDirectory(exportFilePath);
-
-		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/SpanTempPath/SpanPath/a.png";
-		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
-		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
-
-		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
-			{"0", 
-				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType),
-				}
-			}
-		};
-		
-		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
-			
-		};
-
-		integratedScriptExporter.Setup("ID_0_10_SetupExport", "CONNECTION_0_10_SetupExport", exportTargets, Out);
-		Debug.Log("passed _0_10_SetupExporter");
-	}
-
-	public void _0_11_RunExporter () {
-		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
-		var exportFilePath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_11_RunExport");
-
-		// delete all if exist
-		if (Directory.Exists(exportFilePath)) {
-			Directory.Delete(exportFilePath, true);
-		}
-
-		Directory.CreateDirectory(exportFilePath);
-
-		var importedPath = "Assets/AssetGraphTest/ExporterTestResource/SpanTempPath/SpanPath/a.png";
-		var assetId = AssetDatabase.AssetPathToGUID(importedPath);
-		var assetType = AssetGraphInternalFunctions.GetAssetType(importedPath);
-		
-		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
-			{"0", 
-				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType),
-				}
-			}
-		};
-		
-		var integratedScriptExporter = new IntegratedScriptExporter(exportFilePath);
-		Action<string, string, Dictionary<string, List<InternalAssetData>>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output) => {
-			
-		};
-
-		integratedScriptExporter.Run("ID_0_11_RunExport", "CONNECTION_0_11_RunExport", exportTargets, Out);
-
-		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
-
-		if (File.Exists(assumeedExportedFilePath)) {
-			Debug.Log("passed _0_11_RunExporter");
-			return;
-		}
-
-		Debug.LogError("failed to export");
-	}
+	//  10 & 11 is blank.
 
 	public void _0_12_RunStackedGraph_FullStacked () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_12_RunStackedGraph_FullStacked.json");
 		
@@ -516,6 +432,8 @@ public partial class Test {
 	}
 
 	public void _0_13_SetupStackedGraph_FullStacked () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_12_RunStackedGraph_FullStacked.json");
 		
@@ -538,6 +456,8 @@ public partial class Test {
 	}
 
 	public void _0_14_SetupStackedGraph_Sample () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_14_RunStackedGraph_Sample.json");
 		
@@ -557,6 +477,8 @@ public partial class Test {
 	}
 
 	public void _0_15_RunStackedGraph_Sample () {
+		GraphStackController.CleanCache();
+		
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_0_14_RunStackedGraph_Sample.json");
 		
