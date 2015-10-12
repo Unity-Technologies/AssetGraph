@@ -74,8 +74,6 @@ namespace AssetGraph {
 
 				outputSources.Add(newAssetData);
 
-				Debug.LogWarning("BundleにResourceを足すかどうかの話、実際にバンドルがこの時点であるわけではないんだけど、ここで考える機会を覚えとく。うーーん、、あ、もうあるからこのへんはなんもせんでいいんだ。");
-			
 				outputDict[groupKey] = outputSources;
 			}
 
