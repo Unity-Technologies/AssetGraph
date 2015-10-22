@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 
 namespace AssetGraph {
@@ -23,23 +24,59 @@ namespace AssetGraph {
 			}
 		}
 
-		/**
-			clean cache. 
-		*/
 		public static void CleanCache () {
 			var targetCachePath = AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH;
 			if (Directory.Exists(targetCachePath)) Directory.Delete(targetCachePath, true);
 			AssetDatabase.Refresh();
 		}
 
+		public static void CleanSetting () {
+			var targetSettingPath = AssetGraphSettings.IMPORTER_SAMPLING_PLACE;
+			if (Directory.Exists(targetSettingPath)) Directory.Delete(targetSettingPath, true);
+			AssetDatabase.Refresh();
+		}
+
 		/**
-			chech if cache is exist at local path.
+			check if cache is exist at local path.
 		*/
-		public static bool IsCached (List<string> alreadyCachedPath, string localAssetPath) {
+		public static bool IsCached (InternalAssetData relatedAsset, List<string> alreadyCachedPath, string localAssetPath) {
 			if (alreadyCachedPath.Contains(localAssetPath)) {
+				// if source is exists, check hash.
+				var sourceHash = GetHash(relatedAsset.absoluteSourcePath);
+				var destHash = GetHash(localAssetPath);
+
+				// completely hit.
+				if (sourceHash.SequenceEqual(destHash)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/**
+			check if cache is exist and nothing changes.
+		*/
+		public static bool IsCachedForEachSource (List<InternalAssetData> relatedAssets, List<string> alreadyCachedPath, string localAssetPath) {
+			if (alreadyCachedPath.Contains(localAssetPath)) {
+				var changed = false;
+				foreach (var relatedAsset in relatedAssets) {
+					if (relatedAsset.isNew) changed = true;
+				}
+
+				if (changed) return false;
 				return true;
 			}
+
 			return false;
+		}
+
+		public static byte[] GetHash (string filePath) {
+			using (var md5 = MD5.Create()) {
+				using (var stream = File.OpenRead(filePath)) {
+					return md5.ComputeHash(stream);
+				}
+			}
 		}
 
 		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
@@ -863,7 +900,84 @@ namespace AssetGraph {
 						nodeId
 					);
 
-					return FileController.FilePathsInFolder(cachedPathBase);
+					// get sampling file.
+					var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+					
+					// if no setting exist, ignore all cache.
+					if (!Directory.Exists(baseSettingPath)) return new List<string>();
+
+					var baseSettingFilePaths = FileController.FilePathsInFolderOnly1Level(baseSettingPath);
+					if (!baseSettingFilePaths.Any()) return new List<string>();
+
+
+					// setting is exists, next, checking about cache.
+
+					// no cache folder, no cache.
+					if (!Directory.Exists(cachedPathBase)) return new List<string>();
+
+					// search cache candidates.
+					var cacheCandidates = FileController.FilePathsInFolder(cachedPathBase);
+
+					if (0 < cacheCandidates.Count) {
+						var baseSettingFilePath = baseSettingFilePaths[0];
+						var baseSettingImporterOrigin = AssetImporter.GetAtPath(baseSettingFilePath);
+
+						var cached = new List<string>();
+
+						foreach (var candidatePath in cacheCandidates) {
+							var importedCandidateImporterOrigin = AssetImporter.GetAtPath(candidatePath);
+							
+							// cancel if importer type does not match. maybe this is not target of this node's importer.
+							// 2 potentials. 
+							// a. this is sub-generated resources of the result of import.
+							// b. garbage.
+							// both will be treat as cached.
+							if (importedCandidateImporterOrigin.GetType() != baseSettingImporterOrigin.GetType()) {
+								cached.Add(candidatePath);
+								continue;
+							}
+
+							if (typeof(TextureImporter).IsAssignableFrom(importedCandidateImporterOrigin.GetType())) {
+								var baseSettingImporter = baseSettingImporterOrigin as TextureImporter;
+								var importedCandidateImporter = importedCandidateImporterOrigin as TextureImporter;
+								if (InternalSamplingImportAdopter.IsSameTextureSetting(importedCandidateImporter, baseSettingImporter)) {
+									cached.Add(candidatePath);
+									continue;
+								}
+
+								// delete for effect import.
+								File.Delete(candidatePath);
+							}
+
+							if (typeof(ModelImporter).IsAssignableFrom(importedCandidateImporterOrigin.GetType())) {
+								var baseSettingImporter = baseSettingImporterOrigin as ModelImporter;
+								var importedCandidateImporter = importedCandidateImporterOrigin as ModelImporter;
+								if (InternalSamplingImportAdopter.IsSameModelSetting(importedCandidateImporter, baseSettingImporter)) {
+									cached.Add(candidatePath);
+									continue;
+								}
+
+								// delete for effect import.
+								File.Delete(candidatePath);
+							}
+
+							if (typeof(AudioImporter).IsAssignableFrom(importedCandidateImporterOrigin.GetType())) {
+								var baseSettingImporter = baseSettingImporterOrigin as AudioImporter;
+								var importedCandidateImporter = importedCandidateImporterOrigin as AudioImporter;
+								if (InternalSamplingImportAdopter.IsSameAudioSetting(importedCandidateImporter, baseSettingImporter)) {
+									cached.Add(candidatePath);
+									continue;
+								}
+
+								// delete for effect import.
+								File.Delete(candidatePath);
+							}
+						}
+
+						return cached;
+					}
+
+					return new List<string>();
 				}
 				
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:

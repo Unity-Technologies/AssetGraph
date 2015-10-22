@@ -13,7 +13,7 @@ using MiniJSONForAssetGraph;
 namespace AssetGraph {
 	public class AssetGraph : EditorWindow {
 		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_OPEN)]
-		public static void Open() {
+		public static void Open () {
 			GetWindow<AssetGraph>();
 		}
 
@@ -47,13 +47,13 @@ namespace AssetGraph {
 			{
 				// json to object.
 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
-				Debug.LogError ("deserialize KeyObject.key:" + s.key);
+				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
 
 				// object to json.
 				var keyObj = new KeyObject("value1");
 
 				var result = JsonUtility.ToJson(keyObj, true);
-				Debug.LogError ("serialize result:" + result);
+				Debug.LogWarning("serialize result:" + result);
 			}
 #endif
 		}
@@ -125,11 +125,18 @@ namespace AssetGraph {
 			Node.outputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT, typeof(Texture2D)) as Texture2D;
 			Node.outputPointMarkConnectedTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED, typeof(Texture2D)) as Texture2D;
 
+			Node.platformButtonTextures = new Texture2D[Enum.GetNames(typeof(BuildTarget)).Length];
+			for (int i = 0; i < Node.platformButtonTextures.Length; i++) {
+				// Node.platformButtonTextures[i] = BuildTarget[i];
+				Debug.LogWarning("BuildTarget[i]:" + Enum.GetNames(typeof(BuildTarget))[i]);
+				// UnityEditor.EditorGUIUtility.IconContent
+			}
+
 			// load shared connection textures
 			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
 
 			// load other textures
-			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent ("d_RotateTool");
+			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent ("RotateTool");
 			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
 			Debug.LogWarning("load platform textures here.");
 		}
