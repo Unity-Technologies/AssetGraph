@@ -1010,6 +1010,10 @@ namespace AssetGraph {
 			}
 			return new List<string>();
 		}
+
+		public static string PlatformFolder () {
+			return EditorUserBuildSettings.activeBuildTarget.ToString().Replace(" ", "_");
+		}
 	}
 
 	public class NodeData {
