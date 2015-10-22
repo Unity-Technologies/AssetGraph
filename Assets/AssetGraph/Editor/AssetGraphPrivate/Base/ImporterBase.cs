@@ -66,7 +66,7 @@ namespace AssetGraph {
 
 					var targetFilePath = FileController.PathCombine(targetDirectoryPath, pathUnderSourceBase);
 
-					if (GraphStackController.IsCached(alreadyCached, targetFilePath)) {
+					if (GraphStackController.IsCached(inputSource, alreadyCached, targetFilePath)) {
 						usedCache.Add(targetFilePath);
 						continue;
 					}
@@ -120,12 +120,23 @@ namespace AssetGraph {
 				var assetPathsWhichAreNotTraced = localFilePathsWithoutTargetDirectoryPath.Except(assetPathsWhichAreAlreadyTraced);
 				foreach (var newAssetPath in assetPathsWhichAreNotTraced) {
 					var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, targetDirectoryPath);
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-						basePathWithNewAssetPath,
-						AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
-						AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath)
-					);
-					outputSources.Add(newInternalAssetData);
+					if (alreadyCached.Contains(basePathWithNewAssetPath)) {
+						var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+							basePathWithNewAssetPath,
+							AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
+							false
+						);
+						outputSources.Add(newInternalAssetData);
+					} else {
+						var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+							basePathWithNewAssetPath,
+							AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
+							true
+						);
+						outputSources.Add(newInternalAssetData);
+					}
 				}
 
 				outputDict[groupKey] = outputSources;

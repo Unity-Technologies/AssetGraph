@@ -47,13 +47,13 @@ namespace AssetGraph {
 			{
 				// json to object.
 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
-				Debug.LogError ("deserialize KeyObject.key:" + s.key);
+				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
 
 				// object to json.
 				var keyObj = new KeyObject("value1");
 
 				var result = JsonUtility.ToJson(keyObj, true);
-				Debug.LogError ("serialize result:" + result);
+				Debug.LogWarning("serialize result:" + result);
 			}
 #endif
 		}
@@ -128,7 +128,7 @@ namespace AssetGraph {
 			Node.platformButtonTextures = new Texture2D[Enum.GetNames(typeof(BuildTarget)).Length];
 			for (int i = 0; i < Node.platformButtonTextures.Length; i++) {
 				// Node.platformButtonTextures[i] = BuildTarget[i];
-				Debug.LogError("BuildTarget[i]:" + Enum.GetNames(typeof(BuildTarget))[i]);
+				Debug.LogWarning("BuildTarget[i]:" + Enum.GetNames(typeof(BuildTarget))[i]);
 				// UnityEditor.EditorGUIUtility.IconContent
 			}
 

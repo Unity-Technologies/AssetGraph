@@ -195,7 +195,7 @@ namespace AssetGraph {
 						case BuildTargetGroup.WebGL:
 							return BuildTarget.WebGL;
 						case BuildTargetGroup.Metro:
-							return BuildTarget.MetroPlayer;
+							return BuildTarget.WSAPlayer;
 						case BuildTargetGroup.WP8:
 							return BuildTarget.WP8Player;
 						case BuildTargetGroup.BlackBerry:
@@ -420,8 +420,8 @@ namespace AssetGraph {
 						return target;
 					case BuildTarget.StandaloneWindows64:
 						return BuildTarget.StandaloneWindows;
-					case BuildTarget.MetroPlayer:
-						return BuildTarget.MetroPlayer;
+					case BuildTarget.WSAPlayer:
+						return BuildTarget.WSAPlayer;
 					case BuildTarget.WP8Player:
 						return BuildTarget.WP8Player;
 					case BuildTarget.StandaloneOSXIntel64:
@@ -592,7 +592,7 @@ namespace AssetGraph {
 						
 						BuildPlatform[] array = GetValidPlatforms().ToArray();
 						foreach (var a in array) {
-							Debug.LogError("a:" + a.name);
+							Debug.LogWarning("a:" + a.name);
 						}
 
 						GUILayout.Space(10f);

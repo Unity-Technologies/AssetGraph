@@ -89,9 +89,6 @@ namespace AssetGraph {
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var localFilePathsBeforeImport = FileController.FilePathsInFolder(nodeDirectoryPath);
-				usedCache.AddRange(localFilePathsBeforeImport);
-
 				// caution if file is exists already.
 				var sampleAssetPath = string.Empty;
 				if (Directory.Exists(samplingDirectoryPath)) {
@@ -117,10 +114,15 @@ namespace AssetGraph {
 
 				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
 				
+
+				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+
+
 				/*
 					copy all sources from outside to inside of Unity.
 				*/
 				InternalSamplingImportAdopter.Attach(samplingAssetImporter);
+
 				foreach (var inputSource in inputSources) {
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
@@ -128,8 +130,11 @@ namespace AssetGraph {
 					var targetFilePath = FileController.PathCombine(nodeDirectoryPath, pathUnderSourceBase);
 
 					// skip if cached.
-					if (GraphStackController.IsCached(alreadyCached, targetFilePath)) continue;
-
+					if (GraphStackController.IsCached(inputSource, alreadyCached, targetFilePath)) {
+						usedCache.Add(targetFilePath);
+						continue;
+					}
+					
 					try {
 						/*
 							copy files into local.
@@ -152,17 +157,32 @@ namespace AssetGraph {
 				
 				
 				var outputSources = new List<InternalAssetData>();
+
 				/*
 					treat all assets inside node.
 				*/
 				foreach (var newAssetPath in localFilePathsWithoutnodeDirectoryPath) {
 					var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, nodeDirectoryPath);
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-						basePathWithNewAssetPath,
-						AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
-						AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath)
-					);
-					outputSources.Add(newInternalAssetData);
+
+					if (alreadyCached.Contains(basePathWithNewAssetPath)) {
+						// already cached, not new.
+						var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+							basePathWithNewAssetPath,
+							AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
+							false
+						);
+						outputSources.Add(newInternalAssetData);
+					} else {
+						// already cached.
+						var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+							basePathWithNewAssetPath,
+							AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
+							true
+						);
+						outputSources.Add(newInternalAssetData);
+					}
 				}
 
 				outputDict[groupKey] = outputSources;
@@ -172,6 +192,7 @@ namespace AssetGraph {
 		}
 		
 		public Type AssumeTypeFromExtension () {
+			// no mean. nobody can predict type of asset before import.
 			return typeof(UnityEngine.Object);
 		}
 	}

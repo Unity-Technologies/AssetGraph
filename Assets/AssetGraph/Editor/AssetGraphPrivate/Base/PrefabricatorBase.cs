@@ -71,12 +71,16 @@ namespace AssetGraph {
 					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
 				}
 
+				// collect generated prefab path.
+				var generated = new List<string>();
+
 				var outputSources = new List<InternalAssetData>();
 
 				Func<GameObject, string, string> Prefabricate = (GameObject baseObject, string prefabName) => {
 					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
 					
-					if (!GraphStackController.IsCached(alreadyCached, newPrefabOutputPath)) {
+					if (!GraphStackController.IsCachedForEachSource(inputSources, alreadyCached, newPrefabOutputPath)) {
+						// not cached, create new.
 						UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
 					
 						// export prefab data.
@@ -85,8 +89,10 @@ namespace AssetGraph {
 						// save prefab.
 						AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 						AssetDatabase.SaveAssets();
+						generated.Add(newPrefabOutputPath);
 					} else {
 						// cached.
+						usedCache.Add(newPrefabOutputPath);
 					}
 
 					// set used.
@@ -95,10 +101,7 @@ namespace AssetGraph {
 					return newPrefabOutputPath;
 				};
 
-				if (Directory.Exists(recommendedPrefabPath)) {
-					// use exists asset as used cache.
-					usedCache.AddRange(alreadyCached);
-				} else {
+				if (!Directory.Exists(recommendedPrefabPath)) {
 					// create recommended directory.
 					Directory.CreateDirectory(recommendedPrefabPath);
 				}
@@ -126,12 +129,23 @@ namespace AssetGraph {
 				*/
 				var currentAssetsInThisNode = FileController.FilePathsInFolder(recommendedPrefabPath);
 				foreach (var newAssetPath in currentAssetsInThisNode) {
-					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-						newAssetPath,
-						AssetDatabase.AssetPathToGUID(newAssetPath),
-						AssetGraphInternalFunctions.GetAssetType(newAssetPath)
-					);
-					outputSources.Add(newAsset);
+					if (generated.Contains(newAssetPath)) {
+						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+							newAssetPath,
+							AssetDatabase.AssetPathToGUID(newAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(newAssetPath),
+							true
+						);
+						outputSources.Add(newAsset);
+					} else {
+						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+							newAssetPath,
+							AssetDatabase.AssetPathToGUID(newAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(newAssetPath),
+							false
+						);
+						outputSources.Add(newAsset);
+					}
 				}
 
 

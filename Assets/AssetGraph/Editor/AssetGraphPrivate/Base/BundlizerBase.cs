@@ -52,11 +52,14 @@ namespace AssetGraph {
 				var outputSources = new List<InternalAssetData>();
 
 				var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
+
+				Debug.LogError("仮に、bundleはすべてisNew = trueで作成する。この後方にprefabが着てると影響を必ずうけてしまうので、そのへんはあとで考える");
 				foreach (var newAssetPath in generatedAssetBundlePaths) {
 					var newAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						newAssetPath,
 						AssetDatabase.AssetPathToGUID(newAssetPath),
-						AssetGraphInternalFunctions.GetAssetType(newAssetPath)
+						AssetGraphInternalFunctions.GetAssetType(newAssetPath),
+						true
 					);
 					outputSources.Add(newAssetData);
 				}

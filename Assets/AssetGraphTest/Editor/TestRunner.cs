@@ -57,6 +57,9 @@ public partial class Test {
 		// cache test by gui & non gui
 		{
 			tests.Add(this._4_0_RunThenCachedGUI);
+			tests.Add(this._4_1_ImporterUnuseCache);
+			tests.Add(this._4_2_PrefabricatorUnuseCache);
+			tests.Add(this._4_3_ImporterFromInside);
 		}
 		
 		
