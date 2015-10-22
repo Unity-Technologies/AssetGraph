@@ -7,7 +7,7 @@ public class TestIgniter {
 		var testContext = new Test();
 
 		// remove comment -> run tests.
-		// testContext.RunTests();
+		testContext.RunTests();
 	}
 
 }
