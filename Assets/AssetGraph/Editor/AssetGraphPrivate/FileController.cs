@@ -45,6 +45,11 @@ namespace AssetGraph {
 			filePaths.AddRange(files);
 		}
 
+		public static List<string> FolderPathsInFolder (string path) {
+			// change platform-depends folder delimiter -> '/'
+			return ConvertSeparater(Directory.GetDirectories(path).ToList());
+		}
+
 		/**
 			returns file paths which are located in the folder.
 
@@ -74,13 +79,17 @@ namespace AssetGraph {
 		*/
 		public static List<string> FilePathsInFolderOnly1Level (string localFolderPath, bool ignoreMeta=true) {
 			// change platform-depends folder delimiter -> '/'
-			var filePaths = Directory.GetFiles(localFolderPath).Select(filePath => filePath.Replace(Path.DirectorySeparatorChar.ToString(), AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())).ToArray();
+			var filePaths = ConvertSeparater(Directory.GetFiles(localFolderPath).ToList());
 			
-			if (ignoreMeta) filePaths = filePaths.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)).ToArray();
+			if (ignoreMeta) filePaths = filePaths.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)).ToList();
 
 			return filePaths
 				.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
 				.ToList();
+		}
+
+		public static List<string> ConvertSeparater (List<string> source) {
+			return source.Select(filePath => filePath.Replace(Path.DirectorySeparatorChar.ToString(), AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())).ToList();
 		}
 
 		/**

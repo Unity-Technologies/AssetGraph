@@ -762,7 +762,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var bundleOptions = currentNodeData.enabledBundleOptions;
-						var executor = new IntegratedGUIBundleBuilder(bundleOptions);
+						var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
 						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -856,7 +856,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var bundleOptions = currentNodeData.enabledBundleOptions;
-						var executor = new IntegratedGUIBundleBuilder(bundleOptions);
+						var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
 						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}

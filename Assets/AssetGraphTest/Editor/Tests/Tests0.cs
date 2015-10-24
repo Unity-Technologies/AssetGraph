@@ -389,9 +389,9 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
 		
-		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
+		if (File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/sample.fbx")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/dummy.png"))
 		) {
 			Debug.Log("passed _0_9_RunStackedGraph");
 			return;

@@ -58,7 +58,7 @@ namespace AssetGraph {
 				var inputSources = groupedSources[groupKey];
 
 				var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
-
+				if (!recommendedPrefabPath.EndsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) recommendedPrefabPath = recommendedPrefabPath + AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
 				/*
 					ready input resource info for execute. not contains cache in this node.
 				*/

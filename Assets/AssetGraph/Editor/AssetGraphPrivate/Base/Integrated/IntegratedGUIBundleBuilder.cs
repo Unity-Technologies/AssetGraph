@@ -9,9 +9,11 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class IntegratedGUIBundleBuilder : INodeBase {
 		private readonly List<string> bundleOptions;
-		
-		public IntegratedGUIBundleBuilder (List<string> bundleOptions) {
+		private readonly List<string> relatedNodeIds;
+
+		public IntegratedGUIBundleBuilder (List<string> bundleOptions, List<string> relatedNodeIds) {
 			this.bundleOptions = bundleOptions;
+			this.relatedNodeIds = relatedNodeIds;
 		}
 
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -22,14 +24,14 @@ namespace AssetGraph {
 				var outputSources = groupedSources[groupKey];
 				outputDict["0"].AddRange(outputSources);
 			}
+
+			RemoveOtherPlatformBundleSettings(relatedNodeIds);
 			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			foreach (var name in alreadyCached) {
-				Debug.LogError("name:" + name);
-			}
+			RemoveOtherPlatformBundleSettings(relatedNodeIds);
 
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
@@ -69,6 +71,8 @@ namespace AssetGraph {
 				}
 			}
 
+
+
 			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, EditorUserBuildSettings.activeBuildTarget);
 
 			var outputSources = new List<InternalAssetData>();
@@ -83,6 +87,41 @@ namespace AssetGraph {
 			
 			var usedCache = new List<string>(alreadyCached);
 			Output(nodeId, labelToNext, outputDict, usedCache);
+		}
+
+		private void RemoveOtherPlatformBundleSettings (List<string> nodeIds) {
+			if (!Directory.Exists(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)) return;
+
+			var cachedNodeKindFolderPaths = FileController.FolderPathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
+			foreach (var cachedNodeKindFolderPath in cachedNodeKindFolderPaths) {
+				var nodeIdFolderPaths = FileController.FolderPathsInFolder(cachedNodeKindFolderPath);
+				foreach (var nodeIdFolderPath in nodeIdFolderPaths) {
+					var nodeIdFromFolder = nodeIdFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
+
+					// remove all bundle settings from resources of unrelated nodes.
+					if (!nodeIds.Contains(nodeIdFromFolder)) {
+						RemoveBundleSettings(nodeIdFolderPath);
+						continue;
+					}
+
+					// remove all bundle settings from resources of unrelated platforms.
+					var platformFolderPaths = FileController.FolderPathsInFolder(nodeIdFolderPath);
+					foreach (var platformFolderPath in platformFolderPaths) {
+						var platformNameFromFolder = platformFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
+						if (platformNameFromFolder == GraphStackController.PlatformFolder()) continue;
+
+						RemoveBundleSettings(platformFolderPath);
+					}		
+				}
+			}
+		}
+
+		private void RemoveBundleSettings (string nodePath) {
+			var filePathsInFolder = FileController.FilePathsInFolder(nodePath);
+			foreach (var filePath in filePathsInFolder) {
+				var assetImporter = AssetImporter.GetAtPath(filePath);
+				assetImporter.assetBundleName = string.Empty;
+			}
 		}
 	}
 }

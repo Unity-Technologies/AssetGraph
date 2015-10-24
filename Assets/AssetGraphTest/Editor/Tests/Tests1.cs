@@ -251,6 +251,7 @@ public partial class Test {
 	}
 	public void _1_7_RunBundlizer () {
 		GraphStackController.CleanCache();
+		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
 
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
@@ -285,12 +286,20 @@ public partial class Test {
 		var currentOutputs = results["CONNECTION_1_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
 			// should be a_0.bundle
-			if (currentOutputs[0].pathUnderConnectionId != "a_0.bundle") {
+			if (currentOutputs[0].pathUnderConnectionId != "iOS/a_0.bundle") {
 				Debug.LogError("failed to bundlize, name not match:" + currentOutputs[0].pathUnderConnectionId);
 				return;
 			}
 
-			Debug.Log("passed _1_7_RunBundlizer");
+			// passed, erase bundle name setting.
+			var bundledAssetSourcePath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
+			if (!File.Exists(bundledAssetSourcePath)) {
+				Debug.LogError("failed to delete bundle setting. bundledAssetSourcePath:" + bundledAssetSourcePath);
+				return;
+			}
+
+			var assetImporter = AssetImporter.GetAtPath(bundledAssetSourcePath);
+			assetImporter.assetBundleName = string.Empty;
 			return;
 		}
 		
@@ -381,9 +390,9 @@ public partial class Test {
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_1_9_SerializedGraphJSONByExporter");
 
-		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
+		if (File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/sample.fbx")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/dummy.png"))
 		) {
 			Debug.Log("passed _1_9_RunStackedGraph");
 			return;

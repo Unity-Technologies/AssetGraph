@@ -90,9 +90,9 @@ public partial class Test {
 			foreach (var basePath in basePaths) {
 
 				// avoid sub-creating assets. sub-creating assets never appear as cached.
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_0/Materials")) continue;
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_1/Materials")) continue;
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_2/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_0/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_1/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_2/Materials")) continue;
 
 				if (!targetPaths.Contains(basePath)) Debug.LogError("contained in result, but not in cached:" + basePath);
 			}
@@ -165,7 +165,15 @@ public partial class Test {
 		*/
 		{
 			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "18139977-3750-4efc-bee0-0351a73f2da7/sample.fbx");
+			if (!File.Exists(targetSettingFile)) {
+				Debug.LogError("failed to read file:" + targetSettingFile);
+				return;
+			}
 			var targetSettingImporter = AssetImporter.GetAtPath(targetSettingFile) as ModelImporter;
+			if (!targetSettingImporter) {
+				Debug.LogError("failed to read targetSettingImporter:" + targetSettingImporter);
+				return;
+			}
 
 			targetSettingImporter.meshCompression = ModelImporterMeshCompression.High;
 		}

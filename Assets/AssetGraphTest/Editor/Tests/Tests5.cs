@@ -12,97 +12,79 @@ using MiniJSONForAssetGraph;
 
 public partial class Test {
 	public void _5_0_PlatformChanging () {
-		// GraphStackController.CleanCache();
+
+		GraphStackController.CleanCache();
+		GraphStackController.CleanSetting();
 		
-		// var cacheDict = new Dictionary<string, List<string>>();
+		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
 
-		// var dataPath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
-		// var graphDataPath = Path.Combine(dataPath, "_4_0_RunThenCachedGUI.json");
+		var dataPath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
+		var graphDataPath = Path.Combine(dataPath, "_5_0_PlatformChanging.json");
 		
-		// // load
-		// var dataStr = string.Empty;
+		// load
+		var dataStr = string.Empty;
 		
-		// using (var sr = new StreamReader(graphDataPath)) {
-		// 	dataStr = sr.ReadToEnd();
-		// }
-		// var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
+		using (var sr = new StreamReader(graphDataPath)) {
+			dataStr = sr.ReadToEnd();
+		}
+		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		// // get cached asset dictionary.
-		// var createdDataDict = new Dictionary<string, List<string>>();
+		Action setup = () => {
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
 		
+			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
+			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
+			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-		// Action act = () => {
-		// 	var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var cacheDict = new Dictionary<string, List<string>>();
+			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
+
+			foreach (var endNodeId in endpointNodeIds) {
+				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+			}
+		};
+
+		Action run = () => {
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
 		
-		// 	var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
-		// 	var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
-		// 	var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
+			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
+			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
+			var connectionDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
-		// 	var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
+			var cacheDict = new Dictionary<string, List<string>>();
+			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
-		// 	foreach (var endNodeId in endpointNodeIds) {
-		// 		GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
-		// 	}
+			foreach (var endNodeId in endpointNodeIds) {
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+			}
+		};
 
-		// 	/*
-		// 		create first data result.
-		// 	*/
-		// 	foreach (var node in nodeDatas) {
-		// 		var nodeId = node.nodeId;
-		// 		var nodeKind = node.nodeKind;
-		// 		var cachedDataPaths = GraphStackController.GetCachedData(nodeKind, nodeId);
+		setup();
+		run();
 
-		// 		createdDataDict[nodeId] = cachedDataPaths;
-		// 	}
-		// };
+		// cache generated.
+		uint before_iOSAssetGUID;
+		BuildPipeline.GetCRCForAssetBundle("Assets/AssetGraph/Cache/BundleBuilt/c464cf25-acf0-4678-aae3-d598e44dcc60/iOS/chara_0.assetbundle", out before_iOSAssetGUID);
 
-		// act();
-
-		// // reset cacheDict for retake.
-		// cacheDict = new Dictionary<string, List<string>>();
+		// change platform.
+		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.StandaloneOSXIntel);
+		setup();
+		run();
 
 
-		// act();
+		// change platform again.
+		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
 
-		// /*
-		// 	check results.
-		// */
-		// foreach (var nodeId in createdDataDict.Keys) {
-		// 	if (!cacheDict.Keys.Contains(nodeId)) {
-		// 		if (nodeId == "TestExporter") continue;
-		// 		Debug.LogError("cacheDict did not contained:" + nodeId);
-		// 	}
-		// }
+		// should cache.
 
-		// foreach (var nodeId in cacheDict.Keys) {
-		// 	if (!createdDataDict.Keys.Contains(nodeId)) {
-		// 		Debug.LogError("createdDataDict did not contained:" + nodeId);
-		// 	}
-		// }
+		setup();
+		run();
+		// the GUID of assetBundle for iOS platform should be keep. = cached.
 
+		uint after_iOSAssetGUID;
+		BuildPipeline.GetCRCForAssetBundle("Assets/AssetGraph/Cache/BundleBuilt/c464cf25-acf0-4678-aae3-d598e44dcc60/iOS/chara_0.assetbundle", out after_iOSAssetGUID);
 
-		// foreach (var key in createdDataDict.Keys) {
-		// 	if (!cacheDict.ContainsKey(key)) continue;
-
-		// 	var basePaths = createdDataDict[key];
-		// 	var targetPaths = cacheDict[key];
-			
-		// 	foreach (var basePath in basePaths) {
-
-		// 		// avoid sub-creating assets. sub-creating assets never appear as cached.
-		// 		if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_0/Materials")) continue;
-		// 		if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_1/Materials")) continue;
-		// 		if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_2/Materials")) continue;
-
-		// 		if (!targetPaths.Contains(basePath)) Debug.LogError("contained in result, but not in cached:" + basePath);
-		// 	}
-
-		// 	foreach (var targetPath in targetPaths) {
-		// 		if (!basePaths.Contains(targetPath)) Debug.LogError("contained in cache, but not in result:" + targetPath);
-		// 	}
-		// }
-
-		Debug.LogError("not yet");
+		if (after_iOSAssetGUID != before_iOSAssetGUID) Debug.LogError("failed to cache after_iOSAssetGUID:" + after_iOSAssetGUID + " before_iOSAssetGUID:" + before_iOSAssetGUID);
 	}
 
 }
