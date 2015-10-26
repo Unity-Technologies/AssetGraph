@@ -37,7 +37,7 @@ public partial class Test {
 		var cacheDict = new Dictionary<string, List<string>>();
 
 		foreach (var endNodeId in endpointNodeIds) {
-			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 		}
 
 		var connectionIds = resultDict.Keys.ToList();

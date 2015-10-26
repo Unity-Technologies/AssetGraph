@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			var validation = true;
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -35,7 +35,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 
 			var validation = true;
@@ -50,7 +50,7 @@ namespace AssetGraph {
 
 			if (!validation) return;
 
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder());
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder(variant));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			

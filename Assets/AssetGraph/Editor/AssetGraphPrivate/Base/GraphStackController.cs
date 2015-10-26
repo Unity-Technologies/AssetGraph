@@ -94,6 +94,7 @@ namespace AssetGraph {
 			((FilterBase)nodeScriptInstance).Setup(
 				"GetLabelsFromSetupFilter_dummy_nodeId", 
 				string.Empty, 
+				string.Empty,
 				new Dictionary<string, List<InternalAssetData>>{
 					{"0", new List<InternalAssetData>()}
 				},
@@ -164,6 +165,7 @@ namespace AssetGraph {
 							((FilterBase)nodeScriptInstance).Setup(
 								nodeId, 
 								string.Empty, 
+								string.Empty,
 								new Dictionary<string, List<InternalAssetData>>{
 									{"0", new List<InternalAssetData>()}
 								},
@@ -298,7 +300,10 @@ namespace AssetGraph {
 			return graphDataDict;
 		}
 		
-		public static Dictionary<string, Dictionary<string, List<string>>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, Dictionary<string, List<string>>> SetupStackedGraph (
+			Dictionary<string, object> graphDataDict,
+			string variant
+		) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -309,7 +314,7 @@ namespace AssetGraph {
 			var cacheDict = new Dictionary<string, List<string>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, variant);
 			}
 			
 			return DictDictList(resultDict);
@@ -317,6 +322,7 @@ namespace AssetGraph {
 
 		public static Dictionary<string, Dictionary<string, List<string>>> RunStackedGraph (
 			Dictionary<string, object> graphDataDict, 
+			string variant,
 			Action<string, float> updateHandler=null
 		) {
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
@@ -329,7 +335,7 @@ namespace AssetGraph {
 			var cacheDict = new Dictionary<string, List<string>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, updateHandler);
+				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, variant, updateHandler);
 			}
 
 			return DictDictList(resultDict);
@@ -555,9 +561,10 @@ namespace AssetGraph {
 			List<NodeData> nodeDatas, 
 			List<ConnectionData> connections, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict,
-			Dictionary<string, List<string>> cacheDict
+			Dictionary<string, List<string>> cacheDict,
+			string variant
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, false);
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, variant, false);
 
 			return resultDict.Keys.ToList();
 		}
@@ -572,9 +579,10 @@ namespace AssetGraph {
 			List<ConnectionData> connections, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict,
 			Dictionary<string, List<string>> cacheDict,
+			string variant,
 			Action<string, float> updateHandler=null
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, true, updateHandler);
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, variant, true, updateHandler);
 
 			return resultDict.Keys.ToList();
 		}
@@ -588,6 +596,7 @@ namespace AssetGraph {
 			List<ConnectionData> connectionDatas, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict, 
 			Dictionary<string, List<string>> cachedDict,
+			string variant,
 			bool isActualRun,
 			Action<string, float> updateHandler=null
 		) {
@@ -603,7 +612,7 @@ namespace AssetGraph {
 			*/
 			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
 			foreach (var parentNodeId in parentNodeIds) {
-				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, isActualRun, updateHandler);
+				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, variant, isActualRun, updateHandler);
 			}
 
 			/*
@@ -692,25 +701,25 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<FilterBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<ImporterBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<BundlizerBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					
@@ -720,25 +729,25 @@ namespace AssetGraph {
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var executor = new IntegratedGUILoader(WithProjectPath(currentNodeData.loadFilePath));
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 						var executor = new IntegratedGUIImporter();
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var executor = new IntegratedGUIGrouping(currentNodeData.groupingKeyword);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -749,27 +758,27 @@ namespace AssetGraph {
 							break;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
 						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var bundleOptions = currentNodeData.enabledBundleOptions;
 						var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
-						executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -786,25 +795,25 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<FilterBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<ImporterBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<BundlizerBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 					
@@ -814,25 +823,25 @@ namespace AssetGraph {
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var executor = new IntegratedGUILoader(WithProjectPath(currentNodeData.loadFilePath));
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 						var executor = new IntegratedGUIImporter();
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var executor = new IntegratedGUIGrouping(currentNodeData.groupingKeyword);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -843,27 +852,27 @@ namespace AssetGraph {
 							break;;
 						}
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = currentNodeData.bundleNameTemplate;
 						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var bundleOptions = currentNodeData.enabledBundleOptions;
 						var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var executor = new IntegratedGUIExporter(WithProjectPath(currentNodeData.exportFilePath));
-						executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(nodeId, labelToChild, variant, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
 
@@ -1011,7 +1020,8 @@ namespace AssetGraph {
 			return new List<string>();
 		}
 
-		public static string PlatformFolder () {
+		public static string PlatformFolder (string variant) {
+			if (!string.IsNullOrEmpty(variant)) return (EditorUserBuildSettings.activeBuildTarget.ToString() + AssetGraphSettings.VARIANT_SEPARATOR + variant).Replace(" ", "_");
 			return EditorUserBuildSettings.activeBuildTarget.ToString().Replace(" ", "_");
 		}
 	}

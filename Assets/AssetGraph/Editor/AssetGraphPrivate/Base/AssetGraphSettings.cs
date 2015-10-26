@@ -35,6 +35,8 @@ namespace AssetGraph {
 			"Append Hash To AssetBundle Name"
 		};
 
+		public const string VARIANT_SEPARATOR = "__";
+
 		public const float WINDOW_SPAN = 20f;
 
 		/*

@@ -40,7 +40,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		};
 
@@ -55,7 +55,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		};
 

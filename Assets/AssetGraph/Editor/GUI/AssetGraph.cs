@@ -555,8 +555,11 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
+			var currentVariant = string.Empty;
+			Debug.LogError("valiantついに入る");
+
 			// ready throughput datas.
-			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
+			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, currentVariant);
 		}
 
 		private void Run () {
@@ -597,9 +600,13 @@ namespace AssetGraph {
 			};
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
+			
+			var currentVariant = string.Empty;
+			Debug.LogError("実際に実行する場合");
+			
 
 			// run datas.
-			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
+			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, currentVariant, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();

@@ -12,7 +12,7 @@ namespace AssetGraph {
 		public UnityEditor.AssetImporter assetImporter;
 		public string assetPath;
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			
@@ -46,12 +46,12 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
-			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder());
+			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder(variant));
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
