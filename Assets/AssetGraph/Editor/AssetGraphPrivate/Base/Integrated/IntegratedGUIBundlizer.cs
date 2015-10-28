@@ -14,7 +14,7 @@ namespace AssetGraph {
 			this.bundleNameTemplate = bundleNameTemplate;
 		}
 
-		public void Setup (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
 				Debug.LogError("no Bundle Name Template set.");
 				return;
@@ -47,7 +47,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
 				Debug.LogError("no Bundle Name Template set.");
 				return;
@@ -58,7 +58,7 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder(variant));
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

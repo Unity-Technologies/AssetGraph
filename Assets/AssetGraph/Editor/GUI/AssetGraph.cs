@@ -4,7 +4,6 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
@@ -555,11 +554,11 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
-			var currentVariant = string.Empty;
-			Debug.LogError("valiantついに入る");
+			var currentPackage = string.Empty;
+			Debug.LogError("package nameついに入る");
 
 			// ready throughput datas.
-			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, currentVariant);
+			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, currentPackage);
 		}
 
 		private void Run () {
@@ -601,12 +600,12 @@ namespace AssetGraph {
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			
-			var currentVariant = string.Empty;
+			var currentPackage = string.Empty;
 			Debug.LogError("実際に実行する場合");
-			
+
 
 			// run datas.
-			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, currentVariant, updateHandler);
+			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, currentPackage, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
@@ -614,18 +613,19 @@ namespace AssetGraph {
 
 
 		public void OnGUI () {
-			EditorGUILayout.BeginHorizontal(GUI.skin.box);
-			{
-
+			using (new EditorGUILayout.HorizontalScope()) {
 				if (GUILayout.Button(reloadButtonTexture)) {
 					Reload();
 				}
-				
+
 				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
 					Run();
 				}
+				
+				if (GUILayout.Button("package:Default", GUILayout.Width(150))) {
+					Run();
+				}
 			}
-			EditorGUILayout.EndHorizontal();
 
 			/*
 				scroll view.

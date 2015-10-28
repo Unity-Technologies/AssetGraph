@@ -164,6 +164,9 @@ namespace AssetGraph {
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
 
+			/*
+				こっから調整中、必要なプラットフォームを仕切るところが難しい。
+			*/
 			public class BuildPlatform
 			{
 				public string name;
@@ -567,7 +570,10 @@ namespace AssetGraph {
 				// }
 				return num2;
 			}
-
+			/*
+				ここまで。結局どんなプラットフォームを出そうか、っていうのは、
+				・その人が使えるやつ　とかあんま関係なくて、文字列で取得できればいい感じなんで、なんていうか全種類必要。
+			*/
 
 			public override void OnInspectorGUI () {
 				var currentTarget = (NodeInspector)target;
@@ -611,6 +617,26 @@ namespace AssetGraph {
 
 								}
 								i++;
+							}
+						}
+
+						using (new EditorGUILayout.HorizontalScope()) {
+							var currentPackage = "Default";
+							GUILayout.Label("Package:");
+
+							if (GUILayout.Button(currentPackage)) {// こいつがタブ
+								Action DefaultSelected = () => {
+									
+								};
+								Action<string> ExistSelected = (string package) => {
+									Debug.LogError("package:" + package);
+								};
+
+								ShowPackageMenu(DefaultSelected, ExistSelected, new List<string>{"a", "b"});
+							}
+
+							if (GUILayout.Button("+", GUILayout.Width(30))) {
+								Debug.LogError("add new package windowを出す、とかかな。終わるまで放置する。");
 							}
 						}
 
@@ -1513,6 +1539,48 @@ namespace AssetGraph {
 			}
 			
 			return containedPoints;
+		}
+
+		public static void ShowPackageMenu (Action NoneSelected, Action<string> ExistSelected, List<string> packages) {
+			List<string> packageList = new List<string>();
+			
+			packageList.Add(AssetGraphSettings.PACKAGE_DEFAULT_NAME);
+
+			// delim
+			packageList.Add(string.Empty);
+
+			packageList.AddRange(packages);
+
+			// delim
+			packageList.Add(string.Empty);
+
+			var menu = new GenericMenu();
+
+			for (var i = 0; i < packageList.Count; i++) {
+				var packageName = packageList[i];
+				switch (i) {
+					case 0: {
+						menu.AddItem(
+							new GUIContent(packageName), 
+							false, // check
+							() => NoneSelected()
+						);
+						continue;
+					}
+					default: {
+						menu.AddItem(
+							new GUIContent(packageName), 
+							false, // check
+							() => {
+								ExistSelected(packageName);
+							}
+						);
+						break;
+					}
+				}
+			}
+			
+			menu.ShowAsContext();
 		}
 	}
 }

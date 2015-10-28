@@ -16,7 +16,7 @@ namespace AssetGraph {
 			this.relatedNodeIds = relatedNodeIds;
 		}
 
-		public void Setup (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
@@ -25,13 +25,13 @@ namespace AssetGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			RemoveOtherPlatformBundleSettings(relatedNodeIds, variant);
+			RemoveOtherPlatformBundleSettings(relatedNodeIds, package);
 			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, string variant, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			RemoveOtherPlatformBundleSettings(relatedNodeIds, variant);
+		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			RemoveOtherPlatformBundleSettings(relatedNodeIds, package);
 
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
@@ -89,7 +89,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 
-		private void RemoveOtherPlatformBundleSettings (List<string> nodeIds, string variant) {
+		private void RemoveOtherPlatformBundleSettings (List<string> nodeIds, string package) {
 			if (!Directory.Exists(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)) return;
 
 			var cachedNodeKindFolderPaths = FileController.FolderPathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
@@ -108,7 +108,7 @@ namespace AssetGraph {
 					var platformFolderPaths = FileController.FolderPathsInFolder(nodeIdFolderPath);
 					foreach (var platformFolderPath in platformFolderPaths) {
 						var platformNameFromFolder = platformFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
-						if (platformNameFromFolder == GraphStackController.PlatformFolder(variant)) continue;
+						if (platformNameFromFolder == GraphStackController.PlatformFolder(package)) continue;
 
 						RemoveBundleSettings(platformFolderPath);
 					}		
