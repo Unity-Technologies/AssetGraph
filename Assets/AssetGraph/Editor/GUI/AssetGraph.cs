@@ -44,6 +44,7 @@ namespace AssetGraph {
 
 #if UNITY_5_3
 			{
+				// できる、、、んだけど、なんというか、、つらい。
 				// json to object.
 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
 				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
@@ -53,6 +54,22 @@ namespace AssetGraph {
 
 				var result = JsonUtility.ToJson(keyObj, true);
 				Debug.LogWarning("serialize result:" + result);
+
+				var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
+				var graphDataPath =FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+				if (File.Exists(graphDataPath)) {
+					Debug.LogError("start loading.");
+
+					// load
+					var dataStr = string.Empty;
+					
+					using (var sr = new StreamReader(graphDataPath)) {
+						dataStr = sr.ReadToEnd();
+					}
+
+					var deserialized = JsonUtility.FromJson<AssetGraphData>(dataStr);
+					Debug.LogError("loaded." + deserialized.lastModified + " vs:" + dataStr);
+				}
 			}
 #endif
 		}
