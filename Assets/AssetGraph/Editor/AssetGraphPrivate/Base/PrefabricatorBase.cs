@@ -31,7 +31,6 @@ namespace AssetGraph {
 				outputDict[groupKey] = inputSources;
 			};
 
-			Debug.LogWarning("prefabricateのcacheはpredictionとして出してもいい気がする。ほかにimport,bundlizeも。");
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
@@ -50,7 +49,7 @@ namespace AssetGraph {
 
 			if (!validation) return;
 
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.PlatformFolder(package));
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			

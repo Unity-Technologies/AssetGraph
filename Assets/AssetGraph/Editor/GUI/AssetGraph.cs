@@ -44,7 +44,6 @@ namespace AssetGraph {
 
 #if UNITY_5_3
 			{
-				// できる、、、んだけど、なんというか、、つらい。
 				// json to object.
 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
 				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
@@ -256,14 +255,18 @@ namespace AssetGraph {
 			
 			wantsMouseMove = true;
 			modifyMode = ModifyMode.CONNECT_ENDED;
+
+			var currentPackage = string.Empty;
+
+			Debug.LogError("package nameついに入る ロード時の処理。");
 			
 			/*
 				load graph data from deserialized data.
 			*/
-			ConstructGraphFromDeserializedData(deserialized);
+			ConstructGraphFromDeserializedData(deserialized, currentPackage);
 		}
 
-		private void ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData) {
+		private void ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData, string package) {
 			nodes = new List<Node>();
 			connections = new List<Connection>();
 
@@ -283,7 +286,8 @@ namespace AssetGraph {
 
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var loadPath = nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] as string;
+						Debug.LogError("このへんを、platform-packageペアをキーにした辞書として扱う。読み込みが変わるな。");
+						var loadPath = nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] as string;
 
 						var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
 
@@ -338,6 +342,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						Debug.LogError("importerの設定も、どのpackageがonになってるか、とかで、参照するimportSampleが変わる、、これ複雑すぎるな、、無しにしたいな、、");
 						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -351,7 +356,11 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var groupingKeyword = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as string;
+						Debug.LogError("このへんを、platform-packageペアをキーにした辞書として扱う。読み込みが変わるな。");
+						var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
+						var groupingKeyword = new Dictionary<string, string>();
+						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
+
 						var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -365,6 +374,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						Debug.LogError("このへんを、platform-packageペアをキーにした辞書として扱う。読み込みが変わるな。");
 						var bundleNameTemplate = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as string;
 						var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
 
@@ -379,19 +389,14 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						var enabledBundleOptionsSource = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as List<object>;
-						if (enabledBundleOptionsSource == null) {
-							Debug.LogError("データからの復帰時、どっからかnullになってる");
-							break;
-						}
-						// load default settings. all options are disabled.
-						var bundleOptions = new List<string>();
+						var bundleOptions = new Dictionary<string, List<string>>();
 
-						
-						if (enabledBundleOptionsSource.Any()) {
-							foreach (var enaledBundleOption in enabledBundleOptionsSource) {
-								bundleOptions.Add(enaledBundleOption as string);
-							}
+						var enabledBundleOptionsDict = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
+						foreach (var platform_package_key in enabledBundleOptionsDict.Keys) {
+							var optionListSource = enabledBundleOptionsDict[platform_package_key] as List<object>;
+							bundleOptions[platform_package_key] = new List<string>();
+
+							foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
 						}
 
 						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
@@ -407,7 +412,9 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPath = nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] as string;
+						Debug.LogError("このへんを、platform-packageペアをキーにした辞書として扱う。読み込みが変わるな。");
+
+						var exportPath = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as string;
 						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
 
 						nodes.Add(newNode);
@@ -472,11 +479,13 @@ namespace AssetGraph {
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						nodeDict[AssetGraphSettings.LOADERNODE_LOAD_PATH] = node.loadPath;
+						Debug.LogError("なんかやるなら書き出しはここ。");
+						nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath;
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						nodeDict[AssetGraphSettings.EXPORTERNODE_EXPORT_PATH] = node.exportPath;
+						Debug.LogError("なんかやるなら書き出しはここ。");
+						nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath;
 						break;
 					}
 					
@@ -495,11 +504,16 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
+						Debug.LogError("なんかやるなら書き出しはここ。");
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+						Debug.LogError("グルーピングの吐き出し、現在のものをすべて吐き出す。ってことは、これreadが完成してからっすね。");
+						var nodePackageDict = new Dictionary<string, string>();
 						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword;
+
+						// nodeDict[]
 						break;
 					}
 
@@ -510,11 +524,13 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						Debug.LogError("なんかやるなら書き出しはここ。");
 						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate;
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						Debug.LogError("なんかやるなら書き出しはここ。");
 						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions;
 						break;
 					}
@@ -571,7 +587,7 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
-			var currentPackage = string.Empty;
+			var currentPackage = string.Empty;// currentPackageが必要。
 			Debug.LogError("package nameついに入る");
 
 			// ready throughput datas.
@@ -1064,7 +1080,8 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
-					newNode = Node.GUINodeForFilter(nodes.Count, nodeName, nodeId, kind, new List<string>(), x, y);
+					var newFilterKeywords = new List<string>();
+					newNode = Node.GUINodeForFilter(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -1077,7 +1094,8 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-					newNode = Node.GUINodeForGrouping(nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
+					var newGroupingKeywords = new Dictionary<string, string>();
+					newNode = Node.GUINodeForGrouping(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1091,14 +1109,15 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, string.Empty, x, y);
+					var newBundlizerKeyword = string.Empty;
+					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					var bundleOptions = new List<string>();
+					var bundleOptions = new Dictionary<string, List<string>>();
 					newNode = Node.GUINodeForBundleBuilder(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));

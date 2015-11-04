@@ -36,9 +36,9 @@ namespace AssetGraph {
 		[SerializeField] public string loadPath;
 		[SerializeField] public string exportPath;
 		[SerializeField] public List<string> filterContainsKeywords;
-		[SerializeField] public string groupingKeyword;
+		[SerializeField] public Dictionary<string, string> groupingKeyword;
 		[SerializeField] public string bundleNameTemplate;
-		[SerializeField] public List<string> enabledBundleOptions;
+		[SerializeField] public Dictionary<string, List<string>> enabledBundleOptions;
 
 		[SerializeField] private string nodeInterfaceTypeStr;
 		[SerializeField] private BuildTarget currentBuildTarget;
@@ -111,7 +111,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForGrouping (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string groupingKeyword, float x, float y) {
+		public static Node GUINodeForGrouping (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -146,7 +146,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, List<string> enabledBundleOptions, float x, float y) {
+		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -791,12 +791,12 @@ namespace AssetGraph {
 							node.UpdateNodeRect();
 							node.Save();
 						}
-
-						var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", node.groupingKeyword);
-						if (groupingKeyword != node.groupingKeyword) {
-							node.groupingKeyword = groupingKeyword;
-							node.Save();
-						}
+						Debug.LogError("調整中、現在のplatform_package_keyを主体として扱う。それの変更も発生する。");
+						// var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", node.groupingKeyword);
+						// if (groupingKeyword != node.groupingKeyword) {
+						// 	node.groupingKeyword = groupingKeyword;
+						// 	node.Save();
+						// }
 						break;
 					}
 					
@@ -872,33 +872,33 @@ namespace AssetGraph {
 						}
 
 						var bundleOptions = node.enabledBundleOptions;
-						
-						for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
-							var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
+						Debug.LogError("データ形式変えたので、あとで対応");
+						// for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
+						// 	var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
 
-							var isEnable = bundleOptions.Contains(enablablekey);
+						// 	var isEnable = bundleOptions.Contains(enablablekey);
 
-							var result = EditorGUILayout.ToggleLeft(enablablekey, isEnable);
-							if (result != isEnable) {
+						// 	var result = EditorGUILayout.ToggleLeft(enablablekey, isEnable);
+						// 	if (result != isEnable) {
 
-								node.enabledBundleOptions.Add(enablablekey);
+						// 		node.enabledBundleOptions.Add(enablablekey);
 
-								/*
-									Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
-								*/
-								if (enablablekey == "Disable Write TypeTree" && result &&
-									node.enabledBundleOptions.Contains("Ignore TypeTree Changes")) {
-									node.enabledBundleOptions.Remove("Ignore TypeTree Changes");
-								}
+						// 		/*
+						// 			Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
+						// 		*/
+						// 		if (enablablekey == "Disable Write TypeTree" && result &&
+						// 			node.enabledBundleOptions.Contains("Ignore TypeTree Changes")) {
+						// 			node.enabledBundleOptions.Remove("Ignore TypeTree Changes");
+						// 		}
 
-								if (enablablekey == "Ignore TypeTree Changes" && result &&
-									node.enabledBundleOptions.Contains("Disable Write TypeTree")) {
-									node.enabledBundleOptions.Remove("Disable Write TypeTree");
-								}
+						// 		if (enablablekey == "Ignore TypeTree Changes" && result &&
+						// 			node.enabledBundleOptions.Contains("Disable Write TypeTree")) {
+						// 			node.enabledBundleOptions.Remove("Disable Write TypeTree");
+						// 		}
 
-								node.Save();
-							}
-						}
+						// 		node.Save();
+						// 	}
+						// }
 						break;
 					}
 
@@ -960,9 +960,9 @@ namespace AssetGraph {
 			string loadPath = null, 
 			string exportPath = null, 
 			List<string> filterContainsKeywords = null, 
-			string groupingKeyword = null,
+			Dictionary<string, string> groupingKeyword = null,
 			string bundleNameTemplate = null,
-			List<string> enabledBundleOptions = null
+			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			nodeInsp.hideFlags = HideFlags.DontSave;
@@ -1544,7 +1544,7 @@ namespace AssetGraph {
 		public static void ShowPackageMenu (Action NoneSelected, Action<string> ExistSelected, List<string> packages) {
 			List<string> packageList = new List<string>();
 			
-			packageList.Add(AssetGraphSettings.PACKAGE_DEFAULT_NAME);
+			packageList.Add(AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME);
 
 			// delim
 			packageList.Add(string.Empty);

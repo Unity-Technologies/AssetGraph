@@ -319,7 +319,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
 			Debug.Log("passed _0_8_0_SerializeGraph_hasValidEndpoint");
 			return;
@@ -344,7 +344,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 
 		var endPoint0 = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds[0];
 		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
