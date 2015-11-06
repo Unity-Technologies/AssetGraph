@@ -49,7 +49,7 @@ namespace AssetGraph {
 
 			if (!validation) return;
 
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Platform_Package_Folder(package));
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			

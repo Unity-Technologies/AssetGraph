@@ -102,6 +102,9 @@ namespace AssetGraph {
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
+		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
+		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
+
 		// connection const.
 		public const string CONNECTION_LABEL = "label";
 		public const string CONNECTION_ID = "connectionId";

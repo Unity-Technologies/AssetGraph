@@ -51,7 +51,7 @@ namespace AssetGraph {
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
-			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Platform_Package_Folder(package));
+			var targetDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];

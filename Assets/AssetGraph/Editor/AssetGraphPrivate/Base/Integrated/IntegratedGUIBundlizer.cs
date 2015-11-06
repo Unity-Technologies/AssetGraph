@@ -58,7 +58,7 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Platform_Package_Folder(package));
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

@@ -108,7 +108,7 @@ namespace AssetGraph {
 					var platformFolderPaths = FileController.FolderPathsInFolder(nodeIdFolderPath);
 					foreach (var platformFolderPath in platformFolderPaths) {
 						var platformNameFromFolder = platformFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
-						if (platformNameFromFolder == GraphStackController.Platform_Package_Folder(package)) continue;
+						if (platformNameFromFolder == GraphStackController.Current_Platform_Package_Folder(package)) continue;
 
 						RemoveBundleSettings(platformFolderPath);
 					}		

@@ -21,7 +21,7 @@ namespace AssetGraph {
 		public static Texture2D outputPointMarkTex;
 		public static Texture2D outputPointMarkConnectedTex;
 		public static Texture2D[] platformButtonTextures;
-
+			
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
 		[SerializeField] private int nodeWindowId;
@@ -33,11 +33,11 @@ namespace AssetGraph {
 
 		[SerializeField] public string scriptType;
 		[SerializeField] public string scriptPath;
-		[SerializeField] public string loadPath;
-		[SerializeField] public string exportPath;
+		[SerializeField] public Dictionary<string, string> loadPath;
+		[SerializeField] public Dictionary<string, string> exportPath;
 		[SerializeField] public List<string> filterContainsKeywords;
 		[SerializeField] public Dictionary<string, string> groupingKeyword;
-		[SerializeField] public string bundleNameTemplate;
+		[SerializeField] public Dictionary<string, string> bundleNameTemplate;
 		[SerializeField] public Dictionary<string, List<string>> enabledBundleOptions;
 
 		[SerializeField] private string nodeInterfaceTypeStr;
@@ -51,7 +51,7 @@ namespace AssetGraph {
 		private float progress;
 		private bool running;
 
-		public static Node LoaderNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string loadPath, float x, float y) {
+		public static Node LoaderNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -63,7 +63,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node ExporterNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string exportPath, float x, float y) {
+		public static Node ExporterNode (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> exportPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -134,7 +134,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, string bundleNameTemplate, float x, float y) {
+		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -163,427 +163,19 @@ namespace AssetGraph {
 		*/
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
-
-			/*
-				こっから調整中、必要なプラットフォームを仕切るところが難しい。
-			*/
-			public class BuildPlatform
-			{
-				public string name;
-				// public GUIContent title;
-				public Texture2D smallIcon;
-				public BuildTargetGroup targetGroup;
-				// public bool forceShowTarget;
-				// public string tooltip;
-				public BuildTarget DefaultTarget
-				{
-					get
-					{
-						switch (this.targetGroup)
-						{
-						case BuildTargetGroup.Standalone:
-							return BuildTarget.StandaloneWindows;
-						case BuildTargetGroup.WebPlayer:
-							return BuildTarget.WebPlayer;
-						case BuildTargetGroup.iOS:
-							return BuildTarget.iOS;
-						case BuildTargetGroup.PS3:
-							return BuildTarget.PS3;
-						case BuildTargetGroup.XBOX360:
-							return BuildTarget.XBOX360;
-						case BuildTargetGroup.Android:
-							return BuildTarget.Android;
-						case BuildTargetGroup.GLESEmu:
-							return BuildTarget.StandaloneGLESEmu;
-						case BuildTargetGroup.WebGL:
-							return BuildTarget.WebGL;
-						case BuildTargetGroup.Metro:
-							return BuildTarget.WSAPlayer;
-						case BuildTargetGroup.WP8:
-							return BuildTarget.WP8Player;
-						case BuildTargetGroup.BlackBerry:
-							return BuildTarget.BlackBerry;
-						case BuildTargetGroup.Tizen:
-							return BuildTarget.Tizen;
-						case BuildTargetGroup.PSP2:
-							return BuildTarget.PSP2;
-						case BuildTargetGroup.PS4:
-							return BuildTarget.PS4;
-						case BuildTargetGroup.XboxOne:
-							return BuildTarget.XboxOne;
-						case BuildTargetGroup.SamsungTV:
-							return BuildTarget.SamsungTV;
-						}
-						return (BuildTarget)(-1);
-					}
-				}
-				public BuildPlatform(string locTitle, BuildTargetGroup targetGroup, bool forceShowTarget) : this(locTitle, string.Empty, targetGroup, forceShowTarget)
-				{
-				}
-				public BuildPlatform(string locTitle, string tooltip, BuildTargetGroup targetGroup, bool forceShowTarget)
-				{
-					this.targetGroup = targetGroup;
-					this.name = locTitle;//((targetGroup == BuildTargetGroup.Unknown) ? string.Empty : BuildPipeline.GetBuildTargetGroupName(this.DefaultTarget));
-					// this.title = new GUIContent("title def");//EditorGUIUtility.TextContent(locTitle);
-					this.smallIcon = (EditorGUIUtility.IconContent(locTitle + ".Small").image as Texture2D);
-					// this.tooltip = tooltip;
-					// this.forceShowTarget = forceShowTarget;
-				}
-			}
-
-			private class BuildPlatforms
-			{
-				public BuildPlatform[] buildPlatforms;
-				public BuildTarget[] standaloneSubtargets;
-				public GUIContent[] standaloneSubtargetStrings;
-				public GUIContent[] webGLOptimizationLevels = new GUIContent[]
-				{
-					// EditorGUIUtility.TextContent("BuildSettings.WebGLOptimizationLevel1"),
-					// EditorGUIUtility.TextContent("BuildSettings.WebGLOptimizationLevel2"),
-					// EditorGUIUtility.TextContent("BuildSettings.WebGLOptimizationLevel3")
-				};
-				internal BuildPlatforms()
-				{
-					List<BuildPlatform> list = new List<BuildPlatform>();
-					list.Add(new BuildPlatform("BuildSettings.Web", BuildTargetGroup.WebPlayer, true));
-					list.Add(new BuildPlatform("BuildSettings.Standalone", BuildTargetGroup.Standalone, true));
-					list.Add(new BuildPlatform("BuildSettings.iPhone", BuildTargetGroup.iOS, true));
-					list.Add(new BuildPlatform("BuildSettings.Android", BuildTargetGroup.Android, true));
-					list.Add(new BuildPlatform("BuildSettings.BlackBerry", BuildTargetGroup.BlackBerry, true));
-					list.Add(new BuildPlatform("BuildSettings.Tizen", BuildTargetGroup.Tizen, false));
-					list.Add(new BuildPlatform("BuildSettings.XBox360", BuildTargetGroup.XBOX360, true));
-					list.Add(new BuildPlatform("BuildSettings.XboxOne", BuildTargetGroup.XboxOne, true));
-					list.Add(new BuildPlatform("BuildSettings.PS3", BuildTargetGroup.PS3, true));
-					list.Add(new BuildPlatform("BuildSettings.PSP2", BuildTargetGroup.PSP2, true));
-					list.Add(new BuildPlatform("BuildSettings.PS4", BuildTargetGroup.PS4, true));
-					list.Add(new BuildPlatform("BuildSettings.StandaloneGLESEmu", BuildTargetGroup.GLESEmu, false));
-					list.Add(new BuildPlatform("BuildSettings.Metro", BuildTargetGroup.Metro, true));
-					list.Add(new BuildPlatform("BuildSettings.WP8", BuildTargetGroup.WP8, true));
-					list.Add(new BuildPlatform("BuildSettings.WebGL", BuildTargetGroup.WebGL, true));
-					list.Add(new BuildPlatform("BuildSettings.SamsungTV", BuildTargetGroup.SamsungTV, false));
-					foreach (BuildPlatform current in list)
-					{
-						// current.tooltip = BuildPipeline.GetBuildTargetGroupDisplayName(current.targetGroup) + " settings";
-					}
-					this.buildPlatforms = list.ToArray();
-					this.SetupStandaloneSubtargets();
-				}
-				private void SetupStandaloneSubtargets()
-				{
-					List<BuildTarget> list = new List<BuildTarget>();
-					List<GUIContent> list2 = new List<GUIContent>();
-					// if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneWindows)))
-					// {
-					// 	list.Add(BuildTarget.StandaloneWindows);
-					// 	list2.Add(EditorGUIUtility.TextContent("BuildSettings.StandaloneWindows"));
-					// }
-					// if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneOSXIntel)))
-					// {
-					// 	list.Add(BuildTarget.StandaloneOSXIntel);
-					// 	list2.Add(EditorGUIUtility.TextContent("BuildSettings.StandaloneOSXIntel"));
-					// }
-					// if (ModuleManager.IsPlatformSupportLoaded(ModuleManager.GetTargetStringFromBuildTarget(BuildTarget.StandaloneLinux)))
-					// {
-					// 	list.Add(BuildTarget.StandaloneLinux);
-					// 	list2.Add(EditorGUIUtility.TextContent("BuildSettings.StandaloneLinux"));
-					// }
-					this.standaloneSubtargets = list.ToArray();
-					this.standaloneSubtargetStrings = list2.ToArray();
-				}
-				// public string GetBuildTargetDisplayName(BuildTarget target)
-				// {
-				// 	BuildPlatform[] array = this.buildPlatforms;
-				// 	for (int i = 0; i < array.Length; i++)
-				// 	{
-				// 		BuildPlatform buildPlatform = array[i];
-				// 		if (buildPlatform.DefaultTarget == target)
-				// 		{
-				// 			return buildPlatform.title.text;
-				// 		}
-				// 	}
-				// 	if (target == BuildTarget.WebPlayerStreamed)
-				// 	{
-				// 		return this.BuildPlatformFromTargetGroup(BuildTargetGroup.WebPlayer).title.text;
-				// 	}
-				// 	for (int j = 0; j < this.standaloneSubtargets.Length; j++)
-				// 	{
-				// 		if (this.standaloneSubtargets[j] == BuildPlatforms.DefaultTargetForPlatform(target))
-				// 		{
-				// 			return this.standaloneSubtargetStrings[j].text;
-				// 		}
-				// 	}
-				// 	return "Unsupported Target";
-				// }
-				public static Dictionary<GUIContent, BuildTarget> GetArchitecturesForPlatform(BuildTarget target)
-				{
-					switch (target)
-					{
-					case BuildTarget.StandaloneOSXUniversal:
-					case BuildTarget.StandaloneOSXIntel:
-						goto IL_B6;
-					case (BuildTarget)3:
-						IL_1A:
-						switch (target)
-						{
-						case BuildTarget.StandaloneLinux64:
-						case BuildTarget.StandaloneLinuxUniversal:
-							goto IL_78;
-						case BuildTarget.WP8Player:
-							IL_33:
-							switch (target)
-							{
-							case BuildTarget.StandaloneLinux:
-								goto IL_78;
-							case BuildTarget.StandaloneWindows64:
-								goto IL_4D;
-							}
-							return null;
-						case BuildTarget.StandaloneOSXIntel64:
-							goto IL_B6;
-						}
-						goto IL_33;
-						IL_78:
-						return new Dictionary<GUIContent, BuildTarget>
-						{
-
-							// {
-							// 	EditorGUIUtility.TextContent("x86"),
-							// 	BuildTarget.StandaloneLinux
-							// },
-
-							// {
-							// 	EditorGUIUtility.TextContent("x86_64"),
-							// 	BuildTarget.StandaloneLinux64
-							// },
-
-							// {
-							// 	EditorGUIUtility.TextContent("x86 + x86_64 (Universal)"),
-							// 	BuildTarget.StandaloneLinuxUniversal
-							// }
-						};
-					case BuildTarget.StandaloneWindows:
-						goto IL_4D;
-					}
-					goto IL_1A;
-					IL_4D:
-					return new Dictionary<GUIContent, BuildTarget>
-					{
-
-						// {
-						// 	EditorGUIUtility.TextContent("x86"),
-						// 	BuildTarget.StandaloneWindows
-						// },
-
-						// {
-						// 	EditorGUIUtility.TextContent("x86_64"),
-						// 	BuildTarget.StandaloneWindows64
-						// }
-					};
-					IL_B6:
-					return new Dictionary<GUIContent, BuildTarget>
-					{
-
-						// {
-						// 	EditorGUIUtility.TextContent("x86"),
-						// 	BuildTarget.StandaloneOSXIntel
-						// },
-
-						// {
-						// 	EditorGUIUtility.TextContent("x86_64"),
-						// 	BuildTarget.StandaloneOSXIntel64
-						// },
-
-						// {
-						// 	EditorGUIUtility.TextContent("Universal"),
-						// 	BuildTarget.StandaloneOSXUniversal
-						// }
-					};
-				}
-				public static BuildTarget DefaultTargetForPlatform(BuildTarget target)
-				{
-					switch (target)
-					{
-					case BuildTarget.StandaloneLinux:
-					case BuildTarget.StandaloneLinux64:
-					case BuildTarget.StandaloneLinuxUniversal:
-						return BuildTarget.StandaloneLinux;
-					case (BuildTarget)18:
-					case BuildTarget.WebGL:
-					case (BuildTarget)22:
-					case (BuildTarget)23:
-						IL_37:
-						switch (target)
-						{
-						case BuildTarget.StandaloneOSXUniversal:
-						case BuildTarget.StandaloneOSXIntel:
-							return BuildTarget.StandaloneOSXIntel;
-						case BuildTarget.StandaloneWindows:
-							return BuildTarget.StandaloneWindows;
-						}
-						return target;
-					case BuildTarget.StandaloneWindows64:
-						return BuildTarget.StandaloneWindows;
-					case BuildTarget.WSAPlayer:
-						return BuildTarget.WSAPlayer;
-					case BuildTarget.WP8Player:
-						return BuildTarget.WP8Player;
-					case BuildTarget.StandaloneOSXIntel64:
-						return BuildTarget.StandaloneOSXIntel;
-					}
-					goto IL_37;
-				}
-				public int BuildPlatformIndexFromTargetGroup(BuildTargetGroup group)
-				{
-					for (int i = 0; i < this.buildPlatforms.Length; i++)
-					{
-						if (group == this.buildPlatforms[i].targetGroup)
-						{
-							return i;
-						}
-					}
-					return -1;
-				}
-				public BuildPlatform BuildPlatformFromTargetGroup(BuildTargetGroup group)
-				{
-					int num = this.BuildPlatformIndexFromTargetGroup(group);
-					return (num == -1) ? null : this.buildPlatforms[num];
-				}
-			}
-
-			static BuildPlatforms s_BuildPlatforms;
-
-			private static void InitBuildPlatforms()
-			{
-				if (s_BuildPlatforms == null)
-				{
-					s_BuildPlatforms = new BuildPlatforms();
-					RepairSelectedBuildTargetGroup();
-				}
-			}
-
-			public static List<BuildPlatform> GetValidPlatforms()
-			{
-				InitBuildPlatforms();
-				List<BuildPlatform> list = new List<BuildPlatform>();
-				BuildPlatform[] buildPlatforms = s_BuildPlatforms.buildPlatforms;
-				for (int i = 0; i < buildPlatforms.Length; i++)
-				{
-					BuildPlatform buildPlatform = buildPlatforms[i];
-					// if (buildPlatform.targetGroup == BuildTargetGroup.Standalone || BuildPipeline.IsBuildTargetSupported(buildPlatform.DefaultTarget))
-					{
-						list.Add(buildPlatform);
-					}
-				}
-				return list;
-			}
-
-			private static void RepairSelectedBuildTargetGroup()
-			{
-				BuildTargetGroup selectedBuildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-				if (selectedBuildTargetGroup == BuildTargetGroup.Unknown || s_BuildPlatforms == null || s_BuildPlatforms.BuildPlatformIndexFromTargetGroup(selectedBuildTargetGroup) < 0)
-				{
-					EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.WebPlayer;
-				}
-			}
-
-			private static int BeginPlatformGrouping(BuildPlatform[] platforms, GUIContent defaultTab)
-			{
-				int num = -1;
-				for (int i = 0; i < platforms.Length; i++)
-				{
-					if (platforms[i].targetGroup == EditorUserBuildSettings.selectedBuildTargetGroup)
-					{
-						num = i;
-					}
-				}
-				if (num == -1)
-				{
-					// EditorGUILayout.s_SelectedDefault.value = true;
-					num = 0;
-				}
-				int num2 = num;//(defaultTab != null) ? ((!EditorGUILayout.s_SelectedDefault.value) ? num : -1) : num;
-				bool enabled = GUI.enabled;
-				GUI.enabled = true;
-				// EditorGUI.BeginChangeCheck();
-				Rect rect = EditorGUILayout.BeginVertical(GUI.skin.box, new GUILayoutOption[0]);
-				rect.width -= 1f;
-				int num3 = platforms.Length;
-				int num4 = 18;
-				
-				// GUIStyle toolbarButton = EditorStyles.toolbarButton;
-				// if (defaultTab != null && GUI.Toggle(new Rect(rect.x, rect.y, rect.width - (float)num3 * 30f, (float)num4), num2 == -1, defaultTab, toolbarButton))
-				// {
-				// 	num2 = -1;
-				// }
-
-
-				// for (int j = 0; j < num3; j++)
-				// {
-				// 	Rect position;
-				// 	if (defaultTab != null)
-				// 	{
-				// 		position = new Rect(rect.xMax - (float)(num3 - j) * 30f, rect.y, 30f, (float)num4);
-				// 	}
-				// 	else
-				// 	{
-				// 		int num5 = Mathf.RoundToInt((float)j * rect.width / (float)num3);
-				// 		int num6 = Mathf.RoundToInt((float)(j + 1) * rect.width / (float)num3);
-				// 		position = new Rect(rect.x + (float)num5, rect.y, (float)(num6 - num5), (float)num4);
-				// 	}
-				// 	// if (GUI.Toggle(position, num2 == j, new GUIContent(platforms[j].smallIcon, platforms[j].tooltip), toolbarButton))
-				// 	// {
-				// 	// 	num2 = j;
-				// 	// }
-				// }
-
-				// GUILayoutUtility.GetRect(10f, (float)num4);
-				// GUI.enabled = enabled;
-
-				
-				// if (EditorGUI.EndChangeCheck())
-				// {
-				// 	if (defaultTab == null)
-				// 	{
-				// 		EditorUserBuildSettings.selectedBuildTargetGroup = platforms[num2].targetGroup;
-				// 	}
-				// 	else
-				// 	{
-				// 		if (num2 < 0)
-				// 		{
-				// 			// EditorGUILayout.s_SelectedDefault.value = true;
-				// 		}
-				// 		else
-				// 		{
-				// 			EditorUserBuildSettings.selectedBuildTargetGroup = platforms[num2].targetGroup;
-				// 			// EditorGUILayout.s_SelectedDefault.value = false;
-				// 		}
-				// 	}
-				// 	// UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(BuildPlayerWindow));
-				// 	// for (int k = 0; k < array.Length; k++)
-				// 	// {
-				// 	// 	BuildPlayerWindow buildPlayerWindow = array[k] as BuildPlayerWindow;
-				// 	// 	if (buildPlayerWindow != null)
-				// 	// 	{
-				// 	// 		buildPlayerWindow.Repaint();
-				// 	// 	}
-				// 	// }
-				// }
-				return num2;
-			}
-			/*
-				ここまで。結局どんなプラットフォームを出そうか、っていうのは、
-				・その人が使えるやつ　とかあんま関係なくて、文字列で取得できればいい感じなんで、なんていうか全種類必要。
-			*/
-
 			public override void OnInspectorGUI () {
 				var currentTarget = (NodeInspector)target;
 				var node = currentTarget.node;
 				if (node == null) return;
+				
+				var currentPlatform = string.Empty;
+				var currentPackage = string.Empty;
 
 				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						
 						EditorGUILayout.HelpBox("Loader: load files from path.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
@@ -596,24 +188,17 @@ namespace AssetGraph {
 						// んで、保存をセットしたら、この項目が特徴的なものとしてセットされるようにする。まずはdefault build target 枠を設けるか。
 						// 設定だけでいいはず。ただし、importerとかにはそれ用のフォルダができちゃう。うむ。
 						
-						BuildPlatform[] array = GetValidPlatforms().ToArray();
-						foreach (var a in array) {
-							Debug.LogWarning("a:" + a.name);
-						}
-
 						GUILayout.Space(10f);
 						using (new EditorGUILayout.HorizontalScope()) {
 							int i = 0;
 
-							foreach (var platformButtonData in array) {
-								var platformButtonTexture = platformButtonData.smallIcon;
-								// var platfornName = platformButtonData.name;
-
+							foreach (var platformButtonTexture in platformButtonTextures) {
 								var onOff = false;
 								if (i == 8) onOff = true;
 
 								if (GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton")) {
 									// 、、、？？毎フレームよばれてしまうっぽいな？
+									// ついにchangedを使う機会が来たか。
 
 								}
 								i++;
@@ -621,10 +206,9 @@ namespace AssetGraph {
 						}
 
 						using (new EditorGUILayout.HorizontalScope()) {
-							var currentPackage = "Default";
 							GUILayout.Label("Package:");
 
-							if (GUILayout.Button(currentPackage)) {// こいつがタブ
+							if (GUILayout.Button(currentPackage, "Popup")) {
 								Action DefaultSelected = () => {
 									
 								};
@@ -636,15 +220,16 @@ namespace AssetGraph {
 							}
 
 							if (GUILayout.Button("+", GUILayout.Width(30))) {
-								Debug.LogError("add new package windowを出す、とかかな。終わるまで放置する。");
+								Debug.LogError("add new package windowを表示。終わるまで放置する。");
 							}
 						}
 
+						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var newLoadPath = EditorGUILayout.TextField("Load Path", node.loadPath);
-							if (newLoadPath != node.loadPath) {
+							var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString());
+							if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString()) {
 								Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
-								node.loadPath = newLoadPath;
+								node.loadPath[GraphStackController.Platform_Package_Key(currentPlatform,currentPackage)] = newLoadPath;
 								node.Save();
 							}
 						}
@@ -854,11 +439,13 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate);
-						if (bundleNameTemplate != node.bundleNameTemplate) {
-							node.bundleNameTemplate = bundleNameTemplate;
-							node.Save();
-						}
+						Debug.LogError("うーん、読み出しが成立してからな。ここでは、このNode上で現在アクティブなPlatformの設定を反映させる必要がある。");
+						// var currentBundleNameTemplate = GraphStackController.Platform_Package_OrDefaultFromDict(node.bundleNameTemplate, platform_package_key);
+						// var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", currentBundleNameTemplate);
+						// if (bundleNameTemplate != node.bundleNameTemplate) {
+						// 	node.bundleNameTemplate = bundleNameTemplate;
+						// 	node.Save();
+						// }
 						break;
 					}
 
@@ -911,12 +498,14 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath);
-						if (newExportPath != node.exportPath) {
-							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
-							node.exportPath = newExportPath;
-							node.Save();
-						}
+						Debug.LogError("データ形状変えたので、あとで対応");
+
+						// var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath);
+						// if (newExportPath != node.exportPath) {
+						// 	Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
+						// 	node.exportPath = newExportPath;
+						// 	node.Save();
+						// }
 						break;
 					}
 
@@ -957,11 +546,11 @@ namespace AssetGraph {
 			float y,
 			string scriptType = null, 
 			string scriptPath = null, 
-			string loadPath = null, 
-			string exportPath = null, 
+			Dictionary<string, string> loadPath = null, 
+			Dictionary<string, string> exportPath = null, 
 			List<string> filterContainsKeywords = null, 
 			Dictionary<string, string> groupingKeyword = null,
-			string bundleNameTemplate = null,
+			Dictionary<string, string> bundleNameTemplate = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();

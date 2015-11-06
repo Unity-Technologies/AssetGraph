@@ -14,7 +14,7 @@ namespace AssetGraph {
 
 			var first = true;
 
-			if (1 < groupedSources.Keys.Count) Debug.LogError("shrink.");
+			if (1 < groupedSources.Keys.Count) Debug.LogError("importer shrinks grouping.");
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
@@ -81,10 +81,11 @@ namespace AssetGraph {
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
-			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, GraphStackController.Platform_Package_Folder(package));
+			Debug.LogWarning("将来 packageごとのimport settingを持ちたい、、ので、そのときはここを拡張することになる。　GraphStackController.Platform_Package_Folder(package)を加える感じ。setupのほうもそう。");
+			var samplingDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
-			var nodeDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Platform_Package_Folder(package));
+			var nodeDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
