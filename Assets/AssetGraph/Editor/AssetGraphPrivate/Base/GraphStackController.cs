@@ -1055,7 +1055,7 @@ namespace AssetGraph {
 			var key = Platform_Package_Key(platform, package);
 			if (packageDict.ContainsKey(key)) return packageDict[key];
 
-			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME];
+			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_DEFAULT_NAME];
 
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}
@@ -1065,7 +1065,7 @@ namespace AssetGraph {
 			
 			if (packageDict.ContainsKey(platform_package_key_candidate)) return packageDict[platform_package_key_candidate];
 			
-			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME];
+			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_DEFAULT_NAME];
 			
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}
@@ -1075,7 +1075,7 @@ namespace AssetGraph {
 			
 			if (packageDict.ContainsKey(platform_package_key_candidate)) return packageDict[platform_package_key_candidate];
 			
-			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME];
+			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_DEFAULT_NAME];
 			
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}

@@ -191,18 +191,17 @@ namespace AssetGraph {
 						GUILayout.Space(10f);
 						using (new EditorGUILayout.HorizontalScope()) {
 							int i = 0;
-
+							Debug.LogError("表示できるプラットフォームを割り出して、対応するテクスチャであれば出す、っていうのが必要。");
+							
 							foreach (var platformButtonTexture in platformButtonTextures) {
-								var onOff = false;
-								if (i == 8) onOff = true;
-
-								if (GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton")) {
-									// 、、、？？毎フレームよばれてしまうっぽいな？
-									// ついにchangedを使う機会が来たか。
-
+								var onOff = true;
+								onOff = GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton");
+								if (GUI.changed) {
+									Debug.LogError("変更あり onOff:" + onOff);
 								}
-								i++;
 							}
+
+							
 						}
 
 						using (new EditorGUILayout.HorizontalScope()) {
@@ -224,7 +223,7 @@ namespace AssetGraph {
 							}
 						}
 
-						
+						if (node.loadPath == null) return;
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString());
 							if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString()) {
@@ -1133,7 +1132,7 @@ namespace AssetGraph {
 		public static void ShowPackageMenu (Action NoneSelected, Action<string> ExistSelected, List<string> packages) {
 			List<string> packageList = new List<string>();
 			
-			packageList.Add(AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME);
+			packageList.Add(AssetGraphSettings.PLATFORM_DEFAULT_NAME);
 
 			// delim
 			packageList.Add(string.Empty);

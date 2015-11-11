@@ -140,24 +140,7 @@ namespace AssetGraph {
 			Node.outputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT, typeof(Texture2D)) as Texture2D;
 			Node.outputPointMarkConnectedTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED, typeof(Texture2D)) as Texture2D;
 
-			var platformList = new List<Texture2D>();
-			platformList.Add(GetPlatformIcon("BuildSettings.Web"));
-			platformList.Add(GetPlatformIcon("BuildSettings.Standalone"));
-			platformList.Add(GetPlatformIcon("BuildSettings.iPhone"));
-			platformList.Add(GetPlatformIcon("BuildSettings.Android"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.Tizen"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.XBox360"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.PS3"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.PSP2"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.PS4"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.Metro"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.WP8"));
-			platformList.Add(GetPlatformIcon("BuildSettings.WebGL"));
-			// platformList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
-			Node.platformButtonTextures = platformList.ToArray();
+			Node.platformButtonTextures = GetPlatformIcons();
 
 			// load shared connection textures
 			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
@@ -166,6 +149,29 @@ namespace AssetGraph {
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent ("RotateTool");
 			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
 			Debug.LogWarning("load platform textures here.");
+		}
+
+		private static Texture2D[] GetPlatformIcons () {
+			var platformList = new List<Texture2D>();
+			
+			platformList.Add(GetPlatformIcon("BuildSettings.Web"));
+			platformList.Add(GetPlatformIcon("BuildSettings.Standalone"));
+			platformList.Add(GetPlatformIcon("BuildSettings.iPhone"));
+			platformList.Add(GetPlatformIcon("BuildSettings.Android"));
+			platformList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
+			platformList.Add(GetPlatformIcon("BuildSettings.Tizen"));
+			platformList.Add(GetPlatformIcon("BuildSettings.XBox360"));
+			platformList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
+			platformList.Add(GetPlatformIcon("BuildSettings.PS3"));
+			platformList.Add(GetPlatformIcon("BuildSettings.PSP2"));
+			platformList.Add(GetPlatformIcon("BuildSettings.PS4"));
+			platformList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
+			platformList.Add(GetPlatformIcon("BuildSettings.Metro"));
+			platformList.Add(GetPlatformIcon("BuildSettings.WP8"));
+			platformList.Add(GetPlatformIcon("BuildSettings.WebGL"));
+			platformList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
+
+			return platformList.ToArray();
 		}
 
 		private static Texture2D GetPlatformIcon(string locTitle) {
@@ -1094,7 +1100,7 @@ namespace AssetGraph {
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
 					var default_platform_package_loadPath = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME, RelativeProjectPath()}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, RelativeProjectPath()}
 					};
 
 					newNode = Node.LoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
@@ -1118,7 +1124,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					var newGroupingKeywords = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME, AssetGraphSettings.GROUPING_KEYWORD_DEFAULT}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, AssetGraphSettings.GROUPING_KEYWORD_DEFAULT}
 					};
 
 					newNode = Node.GUINodeForGrouping(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
@@ -1136,7 +1142,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					var newBundlizerKeyword = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME, AssetGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, AssetGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT}
 					};
 
 					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, x, y);
@@ -1155,7 +1161,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					var default_platform_package_exportPath = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_PACKAGE_DEFAULT_NAME, RelativeProjectPath()}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, RelativeProjectPath()}
 					};
 
 					newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);

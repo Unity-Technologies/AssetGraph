@@ -37,7 +37,7 @@ namespace AssetGraph {
 
 		public const string package_SEPARATOR = "__";
 
-		public const string PLATFORM_PACKAGE_DEFAULT_NAME = "Default";
+		public const string PLATFORM_DEFAULT_NAME = "Default";
 
 		public const float WINDOW_SPAN = 20f;
 
