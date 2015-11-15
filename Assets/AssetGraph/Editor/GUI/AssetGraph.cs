@@ -308,7 +308,6 @@ namespace AssetGraph {
 
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						Debug.LogError("このへんを、platform-packageペアをキーにした辞書として扱う。読み込みが変わるな。");
 						var loadPathSource = nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
 						var loadPath = new Dictionary<string, string>();
 						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
@@ -366,7 +365,6 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						Debug.LogError("importerの設定も、どのpackageがonになってるか、とかで、参照するimportSampleが変わる、、これ複雑すぎるな、、無しにしたいな、、");
 						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -380,7 +378,6 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						Debug.LogError("このへんを、platform-packageペアをキーにした辞書として扱う。読み込みが変わるな。");
 						var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
 						var groupingKeyword = new Dictionary<string, string>();
 						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
@@ -529,16 +526,12 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						Debug.LogError("IMPORTER_GUIなんかやるなら書き出しはここ。");
+						Debug.LogWarning("IMPORTER_GUIなんかやるなら書き出しはここ。現在アクティブなplatformについては依存がはっきりしているので問題無い。");
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						Debug.LogError("グルーピングの吐き出し、現在のものをすべて吐き出す。ってことは、これreadが完成してからっすね。");
-						var nodePackageDict = new Dictionary<string, string>();
 						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword;
-
-						// nodeDict[]
 						break;
 					}
 
@@ -549,13 +542,11 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						Debug.LogError("なんかやるなら書き出しはここ。");
 						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate;
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						Debug.LogError("なんかやるなら書き出しはここ。");
 						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions;
 						break;
 					}
@@ -1152,7 +1143,10 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					var bundleOptions = new Dictionary<string, List<string>>();
+					var bundleOptions = new Dictionary<string, List<string>>{
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, new List<string>()}
+					};
+
 					newNode = Node.GUINodeForBundleBuilder(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));

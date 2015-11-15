@@ -12,7 +12,9 @@
                 "x": 8,
                 "y": 5
             },
-            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
+            "loadPath": {
+                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
+            }
         },
         {
             "name": "SampleFilter_4",
@@ -108,7 +110,9 @@
                 "x": 806,
                 "y": 197
             },
-            "bundleNameTemplate": "chara*.assetbundle"
+            "bundleNameTemplate": {
+                "Default": "chara*.assetbundle"
+            }
         },
         {
             "name": "BundleBuilder",
@@ -121,7 +125,9 @@
                 "x": 883,
                 "y": 256
             },
-            "enabledBundleOptions": []
+            "enabledBundleOptions": {
+                "Default": []
+            }
         },
         {
             "name": "AssetGraph.IntegratedScriptExporter",
@@ -132,7 +138,9 @@
                 "x": 925,
                 "y": 306
             },
-            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_1_12_SerializedGraphJSON"
+            "exportPath": {
+                "Default": "/AssetGraph/TestExportPlace/TestExportFor_1_12_SerializedGraphJSON"
+            }
         },
         {
             "name": "Grouping",
@@ -145,7 +153,9 @@
                 "x": 674,
                 "y": 76
             },
-            "groupingKeyword": "chara*/"
+            "groupingKeyword": {
+                "Default": "chara*/"
+            }
         }
     ],
     "connections": [

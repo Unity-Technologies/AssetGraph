@@ -12,7 +12,9 @@
                 "x": 8,
                 "y": 5
             },
-            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            "loadPath": {
+                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            }
         },
         {
             "name": "SampleFilter_4",
@@ -108,7 +110,9 @@
                 "x": 806,
                 "y": 197
             },
-            "bundleNameTemplate": "chara_*.assetbundle"
+            "bundleNameTemplate": {
+                "Default": "chara_*.assetbundle"
+            }
         },
         {
             "name": "BundleBuilder",
@@ -121,7 +125,9 @@
                 "x": 883,
                 "y": 256
             },
-            "enabledBundleOptions": []
+            "enabledBundleOptions": {
+                "Default": []
+            }
         },
         {
             "name": "AssetGraph.IntegratedScriptExporter",
@@ -132,7 +138,9 @@
                 "x": 925,
                 "y": 306
             },
-            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_1_14_RunStackedGraph_Sample"
+            "exportPath": {
+                "Default": "/AssetGraph/TestExportPlace/TestExportFor_1_14_RunStackedGraph_Sample"
+            }
         },
         {
             "name": "Grouping",
@@ -145,7 +153,9 @@
                 "x": 675,
                 "y": 76
             },
-            "groupingKeyword": "ID_*/"
+            "groupingKeyword": {
+                "Default": "ID_*/"
+            }
         },
         {
             "name": "Bundlizer",
@@ -158,7 +168,9 @@
                 "x": 668,
                 "y": 247
             },
-            "bundleNameTemplate": "sounds_*.assetbundle"
+            "bundleNameTemplate": {
+                "Default": "sounds_*.assetbundle"
+            }
         }
     ],
     "connections": [

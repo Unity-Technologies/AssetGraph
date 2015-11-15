@@ -168,13 +168,15 @@ namespace AssetGraph {
 				var node = currentTarget.node;
 				if (node == null) return;
 				
-				var currentPlatform = string.Empty;
-				var currentPackage = string.Empty;
+				Debug.LogError("仮で、defaultのプラットフォームを設定してる。本当はセーブしてある情報を読み出すべきだな。");
+				var basePlatform = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
+				var basePackage = string.Empty;
 
 				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
+						if (node.loadPath == null) return;
 						
 						EditorGUILayout.HelpBox("Loader: load files from path.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -184,51 +186,16 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						// currentBuildTargetをアクティブなものとしてターゲットに出す。
-						// んで、保存をセットしたら、この項目が特徴的なものとしてセットされるようにする。まずはdefault build target 枠を設けるか。
-						// 設定だけでいいはず。ただし、importerとかにはそれ用のフォルダができちゃう。うむ。
-						
-						GUILayout.Space(10f);
-						using (new EditorGUILayout.HorizontalScope()) {
-							int i = 0;
-							Debug.LogError("表示できるプラットフォームを割り出して、対応するテクスチャであれば出す、っていうのが必要。");
-							
-							foreach (var platformButtonTexture in platformButtonTextures) {
-								var onOff = true;
-								onOff = GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton");
-								if (GUI.changed) {
-									Debug.LogError("変更あり onOff:" + onOff);
-								}
-							}
+						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
+						var currentPlatform = currentPlatformAndCurrentPack.First;
+						var currentPackage = currentPlatformAndCurrentPack.Second;
 
-							
-						}
-
-						using (new EditorGUILayout.HorizontalScope()) {
-							GUILayout.Label("Package:");
-
-							if (GUILayout.Button(currentPackage, "Popup")) {
-								Action DefaultSelected = () => {
-									
-								};
-								Action<string> ExistSelected = (string package) => {
-									Debug.LogError("package:" + package);
-								};
-
-								ShowPackageMenu(DefaultSelected, ExistSelected, new List<string>{"a", "b"});
-							}
-
-							if (GUILayout.Button("+", GUILayout.Width(30))) {
-								Debug.LogError("add new package windowを表示。終わるまで放置する。");
-							}
-						}
-
-						if (node.loadPath == null) return;
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString());
+							
 							if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString()) {
-								Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
-								node.loadPath[GraphStackController.Platform_Package_Key(currentPlatform,currentPackage)] = newLoadPath;
+								Debug.LogWarning("Save発生。本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
+								node.loadPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = newLoadPath;
 								node.Save();
 							}
 						}
@@ -368,6 +335,8 @@ namespace AssetGraph {
 
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+						if (node.groupingKeyword == null) return;
+
 						EditorGUILayout.HelpBox("Grouping: grouping files by one keyword.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
@@ -375,12 +344,16 @@ namespace AssetGraph {
 							node.UpdateNodeRect();
 							node.Save();
 						}
-						Debug.LogError("調整中、現在のplatform_package_keyを主体として扱う。それの変更も発生する。");
-						// var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", node.groupingKeyword);
-						// if (groupingKeyword != node.groupingKeyword) {
-						// 	node.groupingKeyword = groupingKeyword;
-						// 	node.Save();
-						// }
+
+						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
+						var currentPlatform = currentPlatformAndCurrentPack.First;
+						var currentPackage = currentPlatformAndCurrentPack.Second;
+
+						var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, currentPlatform, currentPackage).ToString());
+						if (groupingKeyword != GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, currentPlatform, currentPackage).ToString()) {
+							node.groupingKeyword[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = groupingKeyword;
+							node.Save();
+						}
 						break;
 					}
 					
@@ -430,6 +403,8 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+						if (node.bundleNameTemplate == null) return;
+
 						EditorGUILayout.HelpBox("Bundlizer: bundle resources to AssetBundle by template.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
@@ -438,17 +413,21 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						Debug.LogError("うーん、読み出しが成立してからな。ここでは、このNode上で現在アクティブなPlatformの設定を反映させる必要がある。");
-						// var currentBundleNameTemplate = GraphStackController.Platform_Package_OrDefaultFromDict(node.bundleNameTemplate, platform_package_key);
-						// var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", currentBundleNameTemplate);
-						// if (bundleNameTemplate != node.bundleNameTemplate) {
-						// 	node.bundleNameTemplate = bundleNameTemplate;
-						// 	node.Save();
-						// }
+						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
+						var currentPlatform = currentPlatformAndCurrentPack.First;
+						var currentPackage = currentPlatformAndCurrentPack.Second;
+
+						var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, currentPlatform, currentPackage).ToString());
+						if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, currentPlatform, currentPackage).ToString()) {
+							node.bundleNameTemplate[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = bundleNameTemplate;
+							node.Save();
+						}
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						if (node.enabledBundleOptions == null) return;
+
 						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
@@ -457,38 +436,55 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var bundleOptions = node.enabledBundleOptions;
-						Debug.LogError("データ形式変えたので、あとで対応");
-						// for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
-						// 	var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
+						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
+						var currentPlatform = currentPlatformAndCurrentPack.First;
+						var currentPackage = currentPlatformAndCurrentPack.Second;
 
-						// 	var isEnable = bundleOptions.Contains(enablablekey);
+						var bundleOptions = node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)];
 
-						// 	var result = EditorGUILayout.ToggleLeft(enablablekey, isEnable);
-						// 	if (result != isEnable) {
+						for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
+							var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
 
-						// 		node.enabledBundleOptions.Add(enablablekey);
+							var isEnable = bundleOptions.Contains(enablablekey);
 
-						// 		/*
-						// 			Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
-						// 		*/
-						// 		if (enablablekey == "Disable Write TypeTree" && result &&
-						// 			node.enabledBundleOptions.Contains("Ignore TypeTree Changes")) {
-						// 			node.enabledBundleOptions.Remove("Ignore TypeTree Changes");
-						// 		}
+							var result = EditorGUILayout.ToggleLeft(enablablekey, isEnable);
+							if (result != isEnable) {
 
-						// 		if (enablablekey == "Ignore TypeTree Changes" && result &&
-						// 			node.enabledBundleOptions.Contains("Disable Write TypeTree")) {
-						// 			node.enabledBundleOptions.Remove("Disable Write TypeTree");
-						// 		}
+								if (result) {
+									if (!node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains(enablablekey)) {
+										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Add(enablablekey);
+									}
+								}
 
-						// 		node.Save();
-						// 	}
-						// }
+								if (!result) {
+									if (node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains(enablablekey)) {
+										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Remove(enablablekey);
+									}
+								}
+
+								/*
+									Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
+								*/
+								if (enablablekey == "Disable Write TypeTree" && result &&
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains("Ignore TypeTree Changes")) {
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Remove("Ignore TypeTree Changes");
+								}
+
+								if (enablablekey == "Ignore TypeTree Changes" && result &&
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains("Disable Write TypeTree")) {
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Remove("Disable Write TypeTree");
+								}
+
+								node.Save();
+								return;
+							}
+						}
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						if (node.exportPath == null) return;
+
 						EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
 						if (newName != node.name) {
@@ -497,14 +493,16 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						Debug.LogError("データ形状変えたので、あとで対応");
+						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
+						var currentPlatform = currentPlatformAndCurrentPack.First;
+						var currentPackage = currentPlatformAndCurrentPack.Second;
 
-						// var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath);
-						// if (newExportPath != node.exportPath) {
-						// 	Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
-						// 	node.exportPath = newExportPath;
-						// 	node.Save();
-						// }
+						var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)]);
+						if (newExportPath != node.exportPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)]) {
+							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
+							node.exportPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = newExportPath;
+							node.Save();
+						}
 						break;
 					}
 
@@ -513,6 +511,43 @@ namespace AssetGraph {
 						break;
 					}
 				}
+			}
+
+			private Tuple<string, string> UpdateCurrentPlatformAndPackage (string basePlatfrom, string basePackage) {
+				GUILayout.Space(10f);
+				using (new EditorGUILayout.HorizontalScope()) {
+					int i = 0;
+					Debug.LogError("表示できるプラットフォームを割り出して、対応するテクスチャであれば出す、っていうのが必要。");
+					
+					foreach (var platformButtonTexture in platformButtonTextures) {
+						var onOff = true;
+						onOff = GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton");
+						if (GUI.changed) {
+							Debug.LogError("変更あり onOff:" + onOff);
+						}
+					}
+				}
+
+				using (new EditorGUILayout.HorizontalScope()) {
+					GUILayout.Label("Package:");
+
+					if (GUILayout.Button(basePackage, "Popup")) {
+						Action DefaultSelected = () => {
+							
+						};
+						Action<string> ExistSelected = (string package) => {
+							Debug.LogError("package:" + package);
+						};
+
+						ShowPackageMenu(DefaultSelected, ExistSelected, new List<string>{"a", "b"});
+					}
+
+					if (GUILayout.Button("+", GUILayout.Width(30))) {
+						Debug.LogError("add new package windowを表示。終わるまで放置する。");
+					}
+				}
+				Debug.LogWarning("パラメータを特に変更せずに = 変更を受け付けずに返す。");
+				return Tuple.New(basePlatfrom, basePackage);
 			}
 		}
 

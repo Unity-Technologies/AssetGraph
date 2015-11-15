@@ -61,13 +61,16 @@ namespace AssetGraph {
 			if (alreadyCachedPath.Contains(localAssetPath)) {
 				var changed = false;
 				foreach (var relatedAsset in relatedAssets) {
-					if (relatedAsset.isNew) changed = true;
+					if (relatedAsset.isNew) {
+						changed = true;
+						break;
+					}
 				}
-
+				
 				if (changed) return false;
 				return true;
 			}
-
+			
 			return false;
 		}
 
@@ -1081,12 +1084,12 @@ namespace AssetGraph {
 		}
 
 		public static string Current_Platform_Package_Folder (string package) {
-			Debug.LogError("プラットフォームが特定のものだったらStandaloneに変える");
+			Debug.LogWarning("プラットフォームが特定のものだったらStandaloneに変える");
 			return Platform_Package_Key(EditorUserBuildSettings.activeBuildTarget.ToString(), package);
 		}
 
 		public static string Platform_Package_Key (string platformKey, string packageKey) {
-			if (string.IsNullOrEmpty(packageKey)) return (platformKey + AssetGraphSettings.package_SEPARATOR + packageKey).Replace(" ", "_");
+			if (!string.IsNullOrEmpty(packageKey)) return (platformKey + AssetGraphSettings.package_SEPARATOR + packageKey).Replace(" ", "_");
 			return platformKey.Replace(" ", "_");
 		}
 	}

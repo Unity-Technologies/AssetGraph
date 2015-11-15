@@ -12,7 +12,9 @@
                 "x": 22,
                 "y": 14
             },
-            "loadPath": "AssetGraph/TestResources/TestResourcesFor_5_0_PlatformChanging"
+            "loadPath": {
+                "Default": "AssetGraph/TestResources/TestResourcesFor_5_0_PlatformChanging"
+            }
         },
         {
             "name": "Filter",
@@ -46,7 +48,9 @@
                 "x": 478,
                 "y": 14
             },
-            "groupingKeyword": "/ID_*/"
+            "groupingKeyword": {
+                "Default": "/ID_*/"
+            }
         },
         {
             "name": "Exporter",
@@ -57,7 +61,9 @@
                 "x": 701,
                 "y": 277
             },
-            "exportPath": "AssetGraph/TestExportPlace/TestExportFor_5_0_PlatformChanging"
+            "exportPath": {
+                "Default": "AssetGraph/TestExportPlace/TestExportFor_5_0_PlatformChanging"
+            }
         },
         {
             "name": "Bundlizer",
@@ -70,7 +76,9 @@
                 "x": 567,
                 "y": 140
             },
-            "bundleNameTemplate": "chara_*.assetbundle"
+            "bundleNameTemplate": {
+                "Default": "chara_*.assetbundle"
+            }
         },
         {
             "name": "BundleBuilder",
@@ -83,7 +91,9 @@
                 "x": 620,
                 "y": 202
             },
-            "enabledBundleOptions": []
+            "enabledBundleOptions": {
+                "Default": []
+            }
         },
         {
             "name": "Importer",

@@ -58,6 +58,7 @@ namespace AssetGraph {
 
 				var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
 				if (!recommendedPrefabPath.EndsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) recommendedPrefabPath = recommendedPrefabPath + AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
+				
 				/*
 					ready input resource info for execute. not contains cache in this node.
 				*/
@@ -79,6 +80,7 @@ namespace AssetGraph {
 					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
 					
 					if (!GraphStackController.IsCachedForEachSource(inputSources, alreadyCached, newPrefabOutputPath)) {
+						
 						// not cached, create new.
 						UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
 					

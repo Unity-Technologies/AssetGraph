@@ -12,7 +12,9 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
+            "loadPath": {
+                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
+            }
         },
         {
             "name": "SampleFilter_4",
@@ -124,7 +126,9 @@
                 "x": 1035,
                 "y": 219
             },
-            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
+            "exportPath": {
+                "Default": "/AssetGraph/TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
+            }
         }
     ],
     "connections": [
