@@ -12,7 +12,7 @@ namespace AssetGraph {
 			EVENT_NODE_CONNECTION_RAISED,
 			
 
-			EVENT_NODE_TATCHED,
+			EVENT_NODE_TOUCHED,
 
 			EVENT_CONNECTIONPOINT_UPDATED,
 			
@@ -22,7 +22,7 @@ namespace AssetGraph {
 			EVENT_CLOSE_TAPPED,
 
 			EVENT_SAVE,
-			EVENT_RELOAD,
+			EVENT_SETUPWITHPACKAGE
 		}
 
 		public readonly EventType eventType;

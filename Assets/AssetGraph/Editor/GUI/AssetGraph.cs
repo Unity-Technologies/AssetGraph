@@ -37,40 +37,40 @@ namespace AssetGraph {
 			LoadTextures();
 
 			InitializeGraph();
-			Reload();
+			Setup();
 
 
 			if (nodes.Any()) UpdateSpacerRect();
 
-#if UNITY_5_3
-			{
-				// json to object.
-				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
-				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
+// #if UNITY_5_3
+// 			{
+// 				// json to object.
+// 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
+// 				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
 
-				// object to json.
-				var keyObj = new KeyObject("value1");
+// 				// object to json.
+// 				var keyObj = new KeyObject("value1");
 
-				var result = JsonUtility.ToJson(keyObj, true);
-				Debug.LogWarning("serialize result:" + result);
+// 				var result = JsonUtility.ToJson(keyObj, true);
+// 				Debug.LogWarning("serialize result:" + result);
 
-				var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
-				var graphDataPath =FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
-				if (File.Exists(graphDataPath)) {
-					Debug.LogError("start loading.");
+// 				var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
+// 				var graphDataPath =FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
+// 				if (File.Exists(graphDataPath)) {
+// 					Debug.LogError("start loading.");
 
-					// load
-					var dataStr = string.Empty;
+// 					// load
+// 					var dataStr = string.Empty;
 					
-					using (var sr = new StreamReader(graphDataPath)) {
-						dataStr = sr.ReadToEnd();
-					}
+// 					using (var sr = new StreamReader(graphDataPath)) {
+// 						dataStr = sr.ReadToEnd();
+// 					}
 
-					var deserialized = JsonUtility.FromJson<AssetGraphData>(dataStr);
-					Debug.LogError("loaded." + deserialized.lastModified + " vs:" + dataStr);
-				}
-			}
-#endif
+// 					var deserialized = JsonUtility.FromJson<AssetGraphData>(dataStr);
+// 					Debug.LogError("loaded." + deserialized.lastModified + " vs:" + dataStr);
+// 				}
+// 			}
+// #endif
 		}
 		
 		[Serializable] public struct KeyObject {
@@ -140,7 +140,7 @@ namespace AssetGraph {
 			Node.outputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT, typeof(Texture2D)) as Texture2D;
 			Node.outputPointMarkConnectedTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED, typeof(Texture2D)) as Texture2D;
 
-			Node.platformButtonTextures = GetPlatformIcons();
+			SetupPlatformIconsAndStrings(out Node.platformButtonTextures, out Node.platformStrings);
 
 			// load shared connection textures
 			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
@@ -151,27 +151,82 @@ namespace AssetGraph {
 			Debug.LogWarning("load platform textures here.");
 		}
 
-		private static Texture2D[] GetPlatformIcons () {
-			var platformList = new List<Texture2D>();
+		private static void SetupPlatformIconsAndStrings (out Texture2D[] platformTextures, out string[] platformNames) {
+			var assetGraphPlatformSettings = AssetGraphPlatformSettings.platforms;
 			
-			platformList.Add(GetPlatformIcon("BuildSettings.Web"));
-			platformList.Add(GetPlatformIcon("BuildSettings.Standalone"));
-			platformList.Add(GetPlatformIcon("BuildSettings.iPhone"));
-			platformList.Add(GetPlatformIcon("BuildSettings.Android"));
-			platformList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
-			platformList.Add(GetPlatformIcon("BuildSettings.Tizen"));
-			platformList.Add(GetPlatformIcon("BuildSettings.XBox360"));
-			platformList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
-			platformList.Add(GetPlatformIcon("BuildSettings.PS3"));
-			platformList.Add(GetPlatformIcon("BuildSettings.PSP2"));
-			platformList.Add(GetPlatformIcon("BuildSettings.PS4"));
-			platformList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
-			platformList.Add(GetPlatformIcon("BuildSettings.Metro"));
-			platformList.Add(GetPlatformIcon("BuildSettings.WP8"));
-			platformList.Add(GetPlatformIcon("BuildSettings.WebGL"));
-			platformList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
+			var platformStringList = new List<string>();
+			var platformTexList = new List<Texture2D>();
+			
+			platformStringList.Add("Default");
+			platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));//dummy.
 
-			return platformList.ToArray();
+			if (assetGraphPlatformSettings.Contains("Web")) {
+				platformStringList.Add("Web");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));
+			}
+			if (assetGraphPlatformSettings.Contains("Standalone")) {
+				platformStringList.Add("Standalone");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
+			}
+			if (assetGraphPlatformSettings.Contains("iPhone")) {
+				platformStringList.Add("iPhone");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
+			}
+			if (assetGraphPlatformSettings.Contains("Android")) {
+				platformStringList.Add("Android");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.Android"));
+			}
+			if (assetGraphPlatformSettings.Contains("BlackBerry")) {
+				platformStringList.Add("BlackBerry");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
+			}
+			if (assetGraphPlatformSettings.Contains("Tizen")) {
+				platformStringList.Add("Tizen");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.Tizen"));
+			}
+			if (assetGraphPlatformSettings.Contains("XBox360")) {
+				platformStringList.Add("XBox360");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.XBox360"));
+			}
+			if (assetGraphPlatformSettings.Contains("XboxOne")) {
+				platformStringList.Add("XboxOne");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
+			}
+			if (assetGraphPlatformSettings.Contains("PS3")) {
+				platformStringList.Add("PS3");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.PS3"));
+			}
+			if (assetGraphPlatformSettings.Contains("PSP2")) {
+				platformStringList.Add("PSP2");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.PSP2"));
+			}
+			if (assetGraphPlatformSettings.Contains("PS4")) {
+				platformStringList.Add("PS4");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.PS4"));
+			}
+			if (assetGraphPlatformSettings.Contains("StandaloneGLESEmu")) {
+				platformStringList.Add("StandaloneGLESEmu");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
+			}
+			if (assetGraphPlatformSettings.Contains("Metro")) {
+				platformStringList.Add("Metro");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.Metro"));
+			}
+			if (assetGraphPlatformSettings.Contains("WP8")) {
+				platformStringList.Add("WP8");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.WP8"));
+			}
+			if (assetGraphPlatformSettings.Contains("WebGL")) {
+				platformStringList.Add("WebGL");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.WebGL"));
+			}
+			if (assetGraphPlatformSettings.Contains("SamsungTV")) {
+				platformStringList.Add("SamsungTV");
+				platformTexList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
+			}
+
+			platformTextures = platformTexList.ToArray();
+			platformNames = platformStringList.ToArray();
 		}
 
 		private static Texture2D GetPlatformIcon(string locTitle) {
@@ -365,7 +420,11 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, x, y);
+						var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
+						var defaultPlatformAndPackages = new Dictionary<string, string>();
+						foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
+
+						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, defaultPlatformAndPackages, x, y);
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -526,7 +585,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						Debug.LogWarning("IMPORTER_GUIなんかやるなら書き出しはここ。現在アクティブなplatformについては依存がはっきりしているので問題無い。");
+						nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages;
 						break;
 					}
 
@@ -581,10 +640,12 @@ namespace AssetGraph {
 
 		private void SaveGraphWithReload () {
 			SaveGraph();
-			Reload();
+			Setup();
 		}
 
-		private void Reload () {
+		private void Setup (string package=null) {
+			if (string.IsNullOrEmpty(package)) package = string.Empty;
+
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
@@ -603,14 +664,13 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
-			var currentPackage = string.Empty;// currentPackageが必要。
-			Debug.LogError("package nameついに入る");
-
 			// ready throughput datas.
-			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, currentPackage);
+			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, package);
 		}
 
-		private void Run () {
+		private void Run (string package=null) {
+			if (string.IsNullOrEmpty(package)) package = string.Empty;
+
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
@@ -649,12 +709,8 @@ namespace AssetGraph {
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			
-			var currentPackage = string.Empty;
-			Debug.LogError("実際に実行する場合");
-
-
 			// run datas.
-			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, currentPackage, updateHandler);
+			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
@@ -664,7 +720,7 @@ namespace AssetGraph {
 		public void OnGUI () {
 			using (new EditorGUILayout.HorizontalScope()) {
 				if (GUILayout.Button(reloadButtonTexture)) {
-					Reload();
+					Setup();
 				}
 
 				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
@@ -1107,7 +1163,11 @@ namespace AssetGraph {
 				}
 				
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, x, y);
+					var importerPackages = new Dictionary<string, string> {
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME + AssetGraphSettings.package_SEPARATOR + AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE, string.Empty}
+					};
+
+					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1258,7 +1318,8 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, x, y);
+						var importerPackages = targetNode.importerPackages;
+						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, importerPackages, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
 						foreach (var connectionPoint in connectionPoints) {
@@ -1543,7 +1604,7 @@ namespace AssetGraph {
 								node move over.
 								node tapped.
 						*/
-						case OnNodeEvent.EventType.EVENT_NODE_TATCHED: {
+						case OnNodeEvent.EventType.EVENT_NODE_TOUCHED: {
 							var movedNode = e.eventSourceNode;
 							var movedNodeId = movedNode.nodeId;
 
@@ -1662,6 +1723,11 @@ namespace AssetGraph {
 				case OnNodeEvent.EventType.EVENT_SAVE: {
 					SaveGraphWithReload();
 					Repaint();
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE: {
+					var currentImporterPackage = e.eventSourceNode.currentPackage;
+					Setup(currentImporterPackage);
 					break;
 				}
 			}

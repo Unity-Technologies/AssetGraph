@@ -17,7 +17,7 @@ namespace AssetGraph {
 		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Settings";
+		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "ImportSettings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -35,9 +35,12 @@ namespace AssetGraph {
 			"Append Hash To AssetBundle Name"
 		};
 
-		public const string package_SEPARATOR = "__";
+		public const string package_SEPARATOR = "___";
 
 		public const string PLATFORM_DEFAULT_NAME = "Default";
+		public const string PLATFORM_DEFAULT_PACKAGE = "DefaultPackage";
+		public const string PLATFORM_NEW_PACKAGE = "newPackage";
+		public const string PLATFORM_NONE_PACKAGE = "(None)";
 
 		public const float WINDOW_SPAN = 20f;
 
@@ -98,6 +101,7 @@ namespace AssetGraph {
 		public const string NODE_LOADER_LOAD_PATH = "loadPath";
 		public const string NODE_EXPORTER_EXPORT_PATH = "exportPath";
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
+		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";

@@ -212,6 +212,10 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
+						if (bundleNameTemplateSource == null) {
+							Debug.LogError("bundleNameTemplateSourceがnull");
+							bundleNameTemplateSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
 							var platform_package_bundleNameTemplate = bundleNameTemplateSource[platform_package_key] as string;
 							if (string.IsNullOrEmpty(platform_package_bundleNameTemplate)) {
@@ -413,6 +417,10 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPathSource = nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
 						var loadPath = new Dictionary<string, string>();
+						if (loadPathSource == null) {
+							Debug.LogError("loadPathSourceがnull");
+							loadPathSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
 
 						nodeDatas.Add(
@@ -428,6 +436,11 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
 						var exportPath = new Dictionary<string, string>();
+
+						if (exportPathSource == null) {
+							Debug.LogError("exportPathSourceがnull");
+							exportPathSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
 						nodeDatas.Add(
@@ -478,11 +491,21 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+						var importerPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
+						var importerPackages = new Dictionary<string, string>();
+
+						if (importerPackagesSource == null) {
+							Debug.LogError("importerPackagesがnull2");
+							importerPackagesSource = new Dictionary<string, object>();
+						}
+						foreach (var platform_package_key in importerPackagesSource.Keys) importerPackages[platform_package_key] = string.Empty;
+						
 						nodeDatas.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
-								nodeName:nodeName
+								nodeName:nodeName,
+								importerPackages:importerPackages
 							)
 						);
 						break;
@@ -491,6 +514,11 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
 						var groupingKeyword = new Dictionary<string, string>();
+						
+						if (groupingKeywordSource == null) {
+							Debug.LogError("groupingKeywordSourceがnull2");
+							groupingKeywordSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
 						
 						nodeDatas.Add(
@@ -507,6 +535,10 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 						var bundleNameTemplate = new Dictionary<string, string>();
+						if (bundleNameTemplateSource == null) {
+							Debug.LogError("nullになるエラーがありそう。");
+							bundleNameTemplateSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
 
 						nodeDatas.Add(
@@ -526,6 +558,10 @@ namespace AssetGraph {
 						// default is empty. all settings are disabled.
 						var enabledBundleOptions = new Dictionary<string, List<string>>();
 
+						if (enabledBundleOptionsSource == null) {
+							Debug.LogError("enabledBundleOptionsSourceがnull2");
+							enabledBundleOptionsSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in enabledBundleOptionsSource.Keys) {
 							enabledBundleOptions[platform_package_key] = new List<string>();
 
@@ -673,7 +709,7 @@ namespace AssetGraph {
 			/*
 				load already exist cache from node.
 			*/
-			alreadyCachedPaths.AddRange(GetCachedData(nodeKind, nodeId));
+			alreadyCachedPaths.AddRange(GetCachedData(nodeKind, nodeId, package));
 			
 
 			var inputParentResults = new Dictionary<string, List<InternalAssetData>>();
@@ -730,6 +766,7 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
+						Debug.LogError("なんか必要になる気がしている、Script版のimporterの処理。packageまわりが特に。");
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<ImporterBase>(scriptType);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
@@ -766,7 +803,9 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var executor = new IntegratedGUIImporter();
+						var importerPackageKey = Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, package);
+						if (!currentNodeData.importerPackages.ContainsKey(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
+						var executor = new IntegratedGUIImporter(importerPackageKey);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -862,7 +901,9 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var executor = new IntegratedGUIImporter();
+						var importerPackageKey = Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, package);
+						if (!currentNodeData.importerPackages.ContainsKey(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
+						var executor = new IntegratedGUIImporter(importerPackageKey);
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -929,7 +970,7 @@ namespace AssetGraph {
 			return ((T)nodeScriptInstance);
 		}
 
-		public static List<string> GetCachedData (AssetGraphSettings.NodeKind nodeKind, string nodeId) {
+		public static List<string> GetCachedData (AssetGraphSettings.NodeKind nodeKind, string nodeId, string package) {
 			switch (nodeKind) {
 				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
@@ -939,7 +980,7 @@ namespace AssetGraph {
 					);
 
 					// get sampling file.
-					var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+					var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, package);
 					
 					// if no setting exist, ignore all cache.
 					if (!Directory.Exists(baseSettingPath)) return new List<string>();
@@ -967,8 +1008,8 @@ namespace AssetGraph {
 							
 							// cancel if importer type does not match. maybe this is not target of this node's importer.
 							// 2 potentials. 
-							// a. this is sub-generated resources of the result of import.
-							// b. garbage.
+							// 	a. this is sub-generated resources of the result of import.
+							// 	b. garbage.
 							// both will be treat as cached.
 							if (importedCandidateImporterOrigin.GetType() != baseSettingImporterOrigin.GetType()) {
 								cached.Add(candidatePath);
@@ -1114,6 +1155,9 @@ namespace AssetGraph {
 		public readonly List<string> containsKeywords;
 
 		// for importer GUI data
+		public readonly Dictionary<string, string> importerPackages;
+
+		// for grouping GUI data
 		public readonly Dictionary<string, string> groupingKeyword;
 
 		// for bundlizer GUI data
@@ -1132,6 +1176,7 @@ namespace AssetGraph {
 			Dictionary<string, string> loadPath = null,
 			Dictionary<string, string> exportPath = null,
 			List<string> filterContainsList = null,
+			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
@@ -1144,6 +1189,7 @@ namespace AssetGraph {
 			this.loadFilePath = null;
 			this.exportFilePath = null;
 			this.containsKeywords = null;
+			this.importerPackages = null;
 			this.groupingKeyword = null;
 			this.bundleNameTemplate = null;
 			this.enabledBundleOptions = null;
@@ -1175,7 +1221,7 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					// do nothing.
+					this.importerPackages = importerPackages;
 					break;
 				}
 

@@ -21,6 +21,7 @@ namespace AssetGraph {
 		public static Texture2D outputPointMarkTex;
 		public static Texture2D outputPointMarkConnectedTex;
 		public static Texture2D[] platformButtonTextures;
+		public static string[] platformStrings;
 			
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
@@ -36,15 +37,20 @@ namespace AssetGraph {
 		[SerializeField] public Dictionary<string, string> loadPath;
 		[SerializeField] public Dictionary<string, string> exportPath;
 		[SerializeField] public List<string> filterContainsKeywords;
+		[SerializeField] public Dictionary<string, string> importerPackages;
 		[SerializeField] public Dictionary<string, string> groupingKeyword;
 		[SerializeField] public Dictionary<string, string> bundleNameTemplate;
 		[SerializeField] public Dictionary<string, List<string>> enabledBundleOptions;
+		
+		// for platform-package specified parameter.
+		[SerializeField] public string currentPlatform = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
+		[SerializeField] public string currentPackage = string.Empty;
+		[SerializeField] public List<string> packages = new List<string>();
 
 		[SerializeField] private string nodeInterfaceTypeStr;
 		[SerializeField] private BuildTarget currentBuildTarget;
 
 		[SerializeField] private NodeInspector nodeInsp;
-
 
 
 
@@ -59,7 +65,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				loadPath: loadPath
+				loadPath: loadPath,
+				packages: PackagesFromPlatformPackageDict(loadPath)
 			);
 		}
 
@@ -71,7 +78,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				exportPath: exportPath
+				exportPath: exportPath,
+				packages: PackagesFromPlatformPackageDict(exportPath)
 			);
 		}
 
@@ -100,14 +108,16 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForImport (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, float x, float y) {
+		public static Node GUINodeForImport (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
-				y: y
+				y: y,
+				importerPackages: importerPackages,
+				packages: PackagesFromPlatformPackageDict(importerPackages)
 			);
 		}
 
@@ -119,7 +129,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				groupingKeyword: groupingKeyword
+				groupingKeyword: groupingKeyword,
+				packages: PackagesFromPlatformPackageDict(groupingKeyword)
 			);
 		}
 
@@ -142,7 +153,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				bundleNameTemplate: bundleNameTemplate
+				bundleNameTemplate: bundleNameTemplate,
+				packages: PackagesFromPlatformPackageDict(bundleNameTemplate)
 			);
 		}
 
@@ -154,8 +166,29 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				enabledBundleOptions: enabledBundleOptions
+				enabledBundleOptions: enabledBundleOptions,
+				packages: PackagesFromPlatformPackageDict(enabledBundleOptions)
 			);
+		}
+
+		private static List<string> PackagesFromPlatformPackageDict (Dictionary<string, string> source) {
+			if (0 < source.Count) {
+				return source.Keys
+					.Where(platFormPackageKey => platFormPackageKey.Contains(AssetGraphSettings.package_SEPARATOR))
+					.Select(platFormPackageKey => platFormPackageKey.Split(AssetGraphSettings.package_SEPARATOR.ToArray())[1])
+					.ToList();
+			}
+			return new List<string>();
+		}
+
+		private static List<string> PackagesFromPlatformPackageDict (Dictionary<string, List<string>> source) {
+			if (0 < source.Count) {
+				return source.Keys
+					.Where(platFormPackageKey => platFormPackageKey.Contains(AssetGraphSettings.package_SEPARATOR))
+					.Select(platFormPackageKey => platFormPackageKey.Split(AssetGraphSettings.package_SEPARATOR.ToArray())[1])
+					.ToList();
+			}
+			return new List<string>();
 		}
 
 		/**
@@ -163,14 +196,16 @@ namespace AssetGraph {
 		*/
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
+
+			private bool packageEditMode = false;
+
 			public override void OnInspectorGUI () {
 				var currentTarget = (NodeInspector)target;
 				var node = currentTarget.node;
 				if (node == null) return;
-				
-				Debug.LogError("仮で、defaultのプラットフォームを設定してる。本当はセーブしてある情報を読み出すべきだな。");
-				var basePlatform = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
-				var basePackage = string.Empty;
+
+				var basePlatform = node.currentPlatform;
+				var basePackage = node.currentPackage;
 
 				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
@@ -186,24 +221,31 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
-						var currentPlatform = currentPlatformAndCurrentPack.First;
-						var currentPackage = currentPlatformAndCurrentPack.Second;
+						GUILayout.Space(10f);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString());
-							
-							if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, currentPlatform, currentPackage).ToString()) {
-								Debug.LogWarning("Save発生。本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
-								node.loadPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = newLoadPath;
-								node.Save();
+						/*
+							platform & package
+						*/
+						{
+							if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
+
+							// update platform & package.
+							node.currentPlatform = UpdateCurrentPlatform(basePlatform);
+							UpdateCurrentPackage(node);
+
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+								var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, node.currentPlatform, node.currentPackage).ToString());
+								
+								if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, node.currentPlatform, node.currentPackage).ToString()) {
+									node.loadPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newLoadPath;
+									node.Save();
+								}
 							}
-						}
 
-						
+							if (packageEditMode) EditorGUI.EndDisabledGroup();
+						}
 						break;
 					}
-
 
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						EditorGUILayout.HelpBox("Filter: filtering files by script.", MessageType.Info);
@@ -224,6 +266,7 @@ namespace AssetGraph {
 						}
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						EditorGUILayout.HelpBox("Filter: filtering files by keywords.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -264,7 +307,6 @@ namespace AssetGraph {
 						break;
 					}
 
-
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						EditorGUILayout.HelpBox("Importer: import files by script.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -277,6 +319,7 @@ namespace AssetGraph {
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 						EditorGUILayout.HelpBox("Importer: import files with applying settings from SamplingAssets.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -285,54 +328,71 @@ namespace AssetGraph {
 							node.UpdateNodeRect();
 							node.Save();
 						}
+						
+						GUILayout.Space(10f);
 
-						var nodeId = node.nodeId;
+						if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
 
-						var noFilesFound = false;
-						var tooManyFilesFound = false;
+						/*
+							importer node has no platform key. 
+							platform key is contained by Unity's importer inspector itself.
+						*/
+						UpdateCurrentPackage(node);
 
-						var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
-						if (Directory.Exists(samplingPath)) {
-							var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath);
-							switch (samplingFiles.Count) {
-								case 0: {
+						{
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+								var nodeId = node.nodeId;
+								var noFilesFound = false;
+								var tooManyFilesFound = false;
+
+								var currentImporterPackage = node.currentPackage;
+								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+								
+								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
+								if (Directory.Exists(samplingPath)) {
+									var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath);
+									switch (samplingFiles.Count) {
+										case 0: {
+											noFilesFound = true;
+											break;
+										}
+										case 1: {
+											var samplingAssetPath = samplingFiles[0];
+											EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
+											if (GUILayout.Button("Modify Import Setting")) {
+												var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
+												Selection.activeObject = obj;
+											}
+											if (GUILayout.Button("Reset Import Setting")) {
+												var result = AssetDatabase.DeleteAsset(samplingAssetPath);
+												if (!result) Debug.LogError("failed to delete samplingAsset:" + samplingAssetPath);
+												node.Save();
+											}
+											break;
+										}
+										default: {
+											tooManyFilesFound = true;
+											break;
+										}
+									}
+								} else {
 									noFilesFound = true;
-									break;
 								}
-								case 1: {
-									var samplingAssetPath = samplingFiles[0];
-									EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-									if (GUILayout.Button("Modify Import Setting")) {
-										var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
-										Selection.activeObject = obj;
-									}
-									if (GUILayout.Button("Reset Import Setting")) {
-										var result = AssetDatabase.DeleteAsset(samplingAssetPath);
-										if (!result) Debug.LogError("failed to delete samplingAsset:" + samplingAssetPath);
-										node.Save();
-									}
-									break;
+
+								if (noFilesFound) {
+									EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
 								}
-								default: {
-									tooManyFilesFound = true;
-									break;
+
+								if (tooManyFilesFound) {
+									EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete file at:" + samplingPath);
 								}
 							}
-						} else {
-							noFilesFound = true;
 						}
 
-						if (noFilesFound) {
-							EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
-						}
-
-						if (tooManyFilesFound) {
-							EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete file at:" + samplingPath);
-						}
+						if (packageEditMode) EditorGUI.EndDisabledGroup();
 
 						break;
 					}
-
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						if (node.groupingKeyword == null) return;
@@ -345,19 +405,19 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
-						var currentPlatform = currentPlatformAndCurrentPack.First;
-						var currentPackage = currentPlatformAndCurrentPack.Second;
+						GUILayout.Space(10f);
 
-						var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, currentPlatform, currentPackage).ToString());
-						if (groupingKeyword != GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, currentPlatform, currentPackage).ToString()) {
-							node.groupingKeyword[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = groupingKeyword;
+						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
+						UpdateCurrentPackage(node);
+						
+						var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString());
+						if (groupingKeyword != GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString()) {
+							node.groupingKeyword[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = groupingKeyword;
 							node.Save();
 						}
 						break;
 					}
 					
-
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -371,6 +431,7 @@ namespace AssetGraph {
 						Debug.LogWarning("型指定をしたらScriptPathが決まる、っていうのがいいと思う。型指定の窓が欲しい。");
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -389,7 +450,6 @@ namespace AssetGraph {
 						break;
 					}
 
-
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
 						var newName = EditorGUILayout.TextField("Node Name", node.name);
@@ -402,6 +462,7 @@ namespace AssetGraph {
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
 					}
+
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						if (node.bundleNameTemplate == null) return;
 
@@ -413,13 +474,14 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
-						var currentPlatform = currentPlatformAndCurrentPack.First;
-						var currentPackage = currentPlatformAndCurrentPack.Second;
+						GUILayout.Space(10f);
 
-						var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, currentPlatform, currentPackage).ToString());
-						if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, currentPlatform, currentPackage).ToString()) {
-							node.bundleNameTemplate[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = bundleNameTemplate;
+						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
+						UpdateCurrentPackage(node);
+						
+						var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString());
+						if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString()) {
+							node.bundleNameTemplate[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = bundleNameTemplate;
 							node.Save();
 						}
 						break;
@@ -436,11 +498,12 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
-						var currentPlatform = currentPlatformAndCurrentPack.First;
-						var currentPackage = currentPlatformAndCurrentPack.Second;
+						GUILayout.Space(10f);
 
-						var bundleOptions = node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)];
+						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
+						UpdateCurrentPackage(node);
+
+						var bundleOptions = node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
 
 						for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
 							var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
@@ -451,14 +514,14 @@ namespace AssetGraph {
 							if (result != isEnable) {
 
 								if (result) {
-									if (!node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains(enablablekey)) {
-										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Add(enablablekey);
+									if (!node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
+										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Add(enablablekey);
 									}
 								}
 
 								if (!result) {
-									if (node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains(enablablekey)) {
-										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Remove(enablablekey);
+									if (node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
+										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Remove(enablablekey);
 									}
 								}
 
@@ -466,13 +529,13 @@ namespace AssetGraph {
 									Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
 								*/
 								if (enablablekey == "Disable Write TypeTree" && result &&
-									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains("Ignore TypeTree Changes")) {
-									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Remove("Ignore TypeTree Changes");
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Ignore TypeTree Changes")) {
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Remove("Ignore TypeTree Changes");
 								}
 
 								if (enablablekey == "Ignore TypeTree Changes" && result &&
-									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Contains("Disable Write TypeTree")) {
-									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)].Remove("Disable Write TypeTree");
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Disable Write TypeTree")) {
+									node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Remove("Disable Write TypeTree");
 								}
 
 								node.Save();
@@ -493,14 +556,15 @@ namespace AssetGraph {
 							node.Save();
 						}
 
-						var currentPlatformAndCurrentPack = UpdateCurrentPlatformAndPackage(basePlatform, basePackage);
-						var currentPlatform = currentPlatformAndCurrentPack.First;
-						var currentPackage = currentPlatformAndCurrentPack.Second;
+						GUILayout.Space(10f);
 
-						var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)]);
-						if (newExportPath != node.exportPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)]) {
+						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
+						UpdateCurrentPackage(node);
+
+						var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)]);
+						if (newExportPath != node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)]) {
 							Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
-							node.exportPath[GraphStackController.Platform_Package_Key(currentPlatform, currentPackage)] = newExportPath;
+							node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newExportPath;
 							node.Save();
 						}
 						break;
@@ -513,41 +577,119 @@ namespace AssetGraph {
 				}
 			}
 
-			private Tuple<string, string> UpdateCurrentPlatformAndPackage (string basePlatfrom, string basePackage) {
-				GUILayout.Space(10f);
+			private string UpdateCurrentPlatform (string basePlatfrom) {
+				var newPlatform = basePlatfrom;
+
+				EditorGUI.BeginChangeCheck();
 				using (new EditorGUILayout.HorizontalScope()) {
-					int i = 0;
-					Debug.LogError("表示できるプラットフォームを割り出して、対応するテクスチャであれば出す、っていうのが必要。");
-					
-					foreach (var platformButtonTexture in platformButtonTextures) {
-						var onOff = true;
-						onOff = GUILayout.Toggle(onOff, platformButtonTexture, "toolbarbutton");
-						if (GUI.changed) {
-							Debug.LogError("変更あり onOff:" + onOff);
+					var choosenIndex = -1;
+					for (var i = 0; i < platformButtonTextures.Length; i++) {
+						var onOffBefore = platformStrings[i] == basePlatfrom;
+						var onOffAfter = onOffBefore;
+
+						// index 0 is Default.
+						switch (i) {
+							case 0: {
+								onOffAfter = GUILayout.Toggle(onOffBefore, "Default", "toolbarbutton");
+								break;
+							}
+							default: {
+								// for each platform texture.
+								var platformButtonTexture = platformButtonTextures[i];
+								onOffAfter = GUILayout.Toggle(onOffBefore, platformButtonTexture, "toolbarbutton");
+								break;
+							}
 						}
+
+						if (onOffBefore != onOffAfter) {
+							choosenIndex = i;
+							break;
+						}
+					}
+
+					if (EditorGUI.EndChangeCheck()) {
+						newPlatform = platformStrings[choosenIndex];
 					}
 				}
 
+				if (newPlatform != basePlatfrom) GUI.FocusControl(string.Empty);
+				return newPlatform;
+			}
+
+			private void UpdateCurrentPackage (Node packagesParentNode) {
 				using (new EditorGUILayout.HorizontalScope()) {
 					GUILayout.Label("Package:");
 
-					if (GUILayout.Button(basePackage, "Popup")) {
+					if (GUILayout.Button(packagesParentNode.currentPackage, "Popup")) {
+						
 						Action DefaultSelected = () => {
-							
-						};
-						Action<string> ExistSelected = (string package) => {
-							Debug.LogError("package:" + package);
+							packagesParentNode.PackageUpdated(string.Empty);
 						};
 
-						ShowPackageMenu(DefaultSelected, ExistSelected, new List<string>{"a", "b"});
+						Action<string> ExistSelected = (string package) => {
+							packagesParentNode.PackageUpdated(package);
+						};
+
+						ShowPackageMenu(packagesParentNode.currentPackage, DefaultSelected, ExistSelected, packagesParentNode.packages);
+						GUI.FocusControl(string.Empty);
 					}
 
 					if (GUILayout.Button("+", GUILayout.Width(30))) {
-						Debug.LogError("add new package windowを表示。終わるまで放置する。");
+						packageEditMode = true;
+						GUI.FocusControl(string.Empty);
+						return;
 					}
 				}
-				Debug.LogWarning("パラメータを特に変更せずに = 変更を受け付けずに返す。");
-				return Tuple.New(basePlatfrom, basePackage);
+
+				if (packageEditMode) {
+					GUILayout.Space(10f);
+					EditorGUI.EndDisabledGroup();
+					
+					// package added or deleted.
+					var currentPackages = ConfigurePackages(packagesParentNode.packages);
+					if (packagesParentNode.packages != currentPackages) {
+						packagesParentNode.packages = currentPackages;
+						packagesParentNode.Save();
+					}
+
+					EditorGUI.BeginDisabledGroup(true);
+					GUILayout.Space(10f);
+					return;
+				}
+			}
+
+			private List<string> ConfigurePackages (List<string> packagesSource) {
+				var newPackagesSource = new List<string>(packagesSource);
+				for (int i = 0; i < packagesSource.Count; i++) {
+					GUILayout.BeginHorizontal();
+					{
+						if (GUILayout.Button("-")) {
+							newPackagesSource.RemoveAt(i);
+							break;
+						} else {
+							var newPackage = EditorGUILayout.TextField("Package", packagesSource[i]);
+							if (newPackage != packagesSource[i]) {
+								newPackagesSource[i] = newPackage;
+								break;
+							}
+						}
+					}
+					GUILayout.EndHorizontal();
+				}
+
+				GUILayout.BeginHorizontal();
+				{
+					// add contains keyword interface.
+					if (GUILayout.Button("Add New Package")) {
+						newPackagesSource.Add(AssetGraphSettings.PLATFORM_NEW_PACKAGE);
+					}
+					if (GUILayout.Button("Done", GUILayout.Width(50))) {
+						packageEditMode = false;
+					}
+				}
+				GUILayout.EndHorizontal();
+
+				return newPackagesSource;
 			}
 		}
 
@@ -583,9 +725,11 @@ namespace AssetGraph {
 			Dictionary<string, string> loadPath = null, 
 			Dictionary<string, string> exportPath = null, 
 			List<string> filterContainsKeywords = null, 
+			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
-			Dictionary<string, List<string>> enabledBundleOptions = null
+			Dictionary<string, List<string>> enabledBundleOptions = null,
+			List<string> packages = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
 			nodeInsp.hideFlags = HideFlags.DontSave;
@@ -599,9 +743,12 @@ namespace AssetGraph {
 			this.loadPath = loadPath;
 			this.exportPath = exportPath;
 			this.filterContainsKeywords = filterContainsKeywords;
+			this.importerPackages = importerPackages;
 			this.groupingKeyword = groupingKeyword;
 			this.bundleNameTemplate = bundleNameTemplate;
 			this.enabledBundleOptions = enabledBundleOptions;
+
+			this.packages = packages;
 			
 			this.baseRect = new Rect(x, y, AssetGraphGUISettings.NODE_BASE_WIDTH, AssetGraphGUISettings.NODE_BASE_HEIGHT);
 			
@@ -652,6 +799,20 @@ namespace AssetGraph {
 					break;
 				}
 			}
+		}
+
+		public void PackageUpdated (string newCurrentPackage) {
+			if (kind == AssetGraphSettings.NodeKind.IMPORTER_GUI) {
+				currentPackage = newCurrentPackage;
+				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
+
+				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages[platformPackageKey] = string.Empty;
+				Save();
+
+				Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
+				return;
+			}
+			currentPackage = newCurrentPackage;
 		}
 
 		public void SetActive () {
@@ -844,7 +1005,7 @@ namespace AssetGraph {
 						}
 					}
 
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TATCHED, this, Event.current.mousePosition, null));
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHED, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -1164,10 +1325,11 @@ namespace AssetGraph {
 			return containedPoints;
 		}
 
-		public static void ShowPackageMenu (Action NoneSelected, Action<string> ExistSelected, List<string> packages) {
+		public static void ShowPackageMenu (string currentPackage, Action NoneSelected, Action<string> ExistSelected, List<string> packages) {
 			List<string> packageList = new List<string>();
 			
-			packageList.Add(AssetGraphSettings.PLATFORM_DEFAULT_NAME);
+			// first is None.
+			packageList.Add(AssetGraphSettings.PLATFORM_NONE_PACKAGE);
 
 			// delim
 			packageList.Add(string.Empty);
@@ -1185,7 +1347,7 @@ namespace AssetGraph {
 					case 0: {
 						menu.AddItem(
 							new GUIContent(packageName), 
-							false, // check
+							false,// check!
 							() => NoneSelected()
 						);
 						continue;

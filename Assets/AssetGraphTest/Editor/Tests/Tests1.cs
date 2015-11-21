@@ -173,7 +173,7 @@ public partial class Test {
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedGUIImporter = new IntegratedGUIImporter();
+		var integratedGUIImporter = new IntegratedGUIImporter(AssetGraphSettings.PLATFORM_DEFAULT_NAME);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
@@ -196,7 +196,7 @@ public partial class Test {
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedGUIImporter = new IntegratedGUIImporter();
+		var integratedGUIImporter = new IntegratedGUIImporter(AssetGraphSettings.PLATFORM_DEFAULT_NAME);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};

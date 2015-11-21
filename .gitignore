@@ -42,4 +42,4 @@ AssetGraph-csharp.sln
 
 AssetGraphExport/*
 
-Assets/AssetGraph/Settings/*
+Assets/AssetGraph/ImportSettings/*
