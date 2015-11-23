@@ -58,11 +58,15 @@ namespace AssetGraph {
 			check if cache is exist and nothing changes.
 		*/
 		public static bool IsCachedForEachSource (List<InternalAssetData> relatedAssets, List<string> alreadyCachedPath, string localAssetPath) {
+			// check prefab-out file is exist or not.
 			if (alreadyCachedPath.Contains(localAssetPath)) {
+				
+				// cached. check if 
 				var changed = false;
 				foreach (var relatedAsset in relatedAssets) {
 					if (relatedAsset.isNew) {
 						changed = true;
+						Debug.LogError("このパーツが新規だ、と。:" + relatedAsset.importedPath);
 						break;
 					}
 				}
@@ -70,7 +74,7 @@ namespace AssetGraph {
 				if (changed) return false;
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -709,7 +713,7 @@ namespace AssetGraph {
 			/*
 				load already exist cache from node.
 			*/
-			alreadyCachedPaths.AddRange(GetCachedData(nodeKind, nodeId, package));
+			alreadyCachedPaths.AddRange(GetCachedDataByNodeKind(nodeKind, nodeId, package));
 			
 
 			var inputParentResults = new Dictionary<string, List<InternalAssetData>>();
@@ -803,8 +807,13 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var importerPackageKey = Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, package);
-						if (!currentNodeData.importerPackages.ContainsKey(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
+						var importerPackageKey = package;
+						if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+						/*
+							if nothing match, package will become default setting.
+						*/
+						if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 						var executor = new IntegratedGUIImporter(importerPackageKey);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
@@ -901,8 +910,13 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var importerPackageKey = Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, package);
-						if (!currentNodeData.importerPackages.ContainsKey(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
+						var importerPackageKey = package;
+						if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+						/*
+							if nothing match, package will become default setting.
+						*/
+						if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 						var executor = new IntegratedGUIImporter(importerPackageKey);
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
@@ -970,7 +984,7 @@ namespace AssetGraph {
 			return ((T)nodeScriptInstance);
 		}
 
-		public static List<string> GetCachedData (AssetGraphSettings.NodeKind nodeKind, string nodeId, string package) {
+		public static List<string> GetCachedDataByNodeKind (AssetGraphSettings.NodeKind nodeKind, string nodeId, string package) {
 			switch (nodeKind) {
 				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
@@ -979,8 +993,11 @@ namespace AssetGraph {
 						nodeId
 					);
 
+					var importerPackageKey = package;
+					if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+						
 					// get sampling file.
-					var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, package);
+					var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackageKey);
 					
 					// if no setting exist, ignore all cache.
 					if (!Directory.Exists(baseSettingPath)) return new List<string>();
@@ -1065,6 +1082,7 @@ namespace AssetGraph {
 						AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, 
 						nodeId
 					);
+
 					return FileController.FilePathsInFolder(cachedPathBase);
 				}
 				

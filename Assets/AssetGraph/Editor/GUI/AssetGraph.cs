@@ -335,7 +335,7 @@ namespace AssetGraph {
 
 			var currentPackage = string.Empty;
 
-			Debug.LogError("package nameついに入る ロード時の処理。");
+			Debug.LogError("全体のpackageを集合させる処理が必要。すべてのnodeの");
 			
 			/*
 				load graph data from deserialized data.

@@ -50,7 +50,7 @@ public partial class Test {
 			foreach (var node in nodeDatas) {
 				var nodeId = node.nodeId;
 				var nodeKind = node.nodeKind;
-				var cachedDataPaths = GraphStackController.GetCachedData(nodeKind, nodeId, string.Empty);
+				var cachedDataPaths = GraphStackController.GetCachedDataByNodeKind(nodeKind, nodeId, string.Empty);
 
 				createdDataDict[nodeId] = cachedDataPaths;
 			}

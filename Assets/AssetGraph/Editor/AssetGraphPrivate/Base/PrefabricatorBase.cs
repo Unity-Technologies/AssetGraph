@@ -80,7 +80,6 @@ namespace AssetGraph {
 					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
 					
 					if (!GraphStackController.IsCachedForEachSource(inputSources, alreadyCached, newPrefabOutputPath)) {
-						
 						// not cached, create new.
 						UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
 					

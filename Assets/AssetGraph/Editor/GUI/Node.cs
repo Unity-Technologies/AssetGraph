@@ -349,6 +349,7 @@ namespace AssetGraph {
 								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
 								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
+								
 								if (Directory.Exists(samplingPath)) {
 									var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath);
 									switch (samplingFiles.Count) {

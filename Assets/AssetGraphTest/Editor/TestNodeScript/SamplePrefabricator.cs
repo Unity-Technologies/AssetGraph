@@ -35,9 +35,9 @@ public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 		var meshRenderer = cubeObj.GetComponent<MeshRenderer>();
 		meshRenderer.material = characterMaterial;
 
-		// generate prefab in prefabBaseName folder."SOMEWHERE/prefab.prefab" made from "cubeObj".
+		// generate prefab in prefabBaseName folder. "SOMEWHERE/prefab.prefab". AssetGraph determines this path automatically.
 		var generatedPrefabPath = Prefabricate(cubeObj, "prefab.prefab");
-		Debug.Log("prefab:" + generatedPrefabPath + " is generated.");
+		Debug.Log("prefab:" + generatedPrefabPath + " is generated or already cached.");
 
 		// delete unnecessary cube model from hierarchy.
 		GameObject.DestroyImmediate(cubeObj);
