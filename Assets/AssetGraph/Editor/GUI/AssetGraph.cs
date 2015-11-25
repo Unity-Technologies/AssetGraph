@@ -368,6 +368,7 @@ namespace AssetGraph {
 						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
 
 						var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
+						CollectPackage(loadPath.Keys.ToList());
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -425,6 +426,7 @@ namespace AssetGraph {
 						foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
 						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, defaultPlatformAndPackages, x, y);
+						CollectPackage(defaultPlatformAndPackages.Keys.ToList());
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -442,6 +444,7 @@ namespace AssetGraph {
 						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
 
 						var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
+						CollectPackage(groupingKeyword.Keys.ToList());
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -459,6 +462,7 @@ namespace AssetGraph {
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
 
 						var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
+						CollectPackage(bundleNameTemplate.Keys.ToList());
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -482,6 +486,7 @@ namespace AssetGraph {
 						}
 
 						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
+						CollectPackage(bundleOptions.Keys.ToList());
 
 						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 						foreach (var outputLabelSource in outputLabelsList) {
@@ -499,6 +504,7 @@ namespace AssetGraph {
 						foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
 						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
+						CollectPackage(exportPath.Keys.ToList());
 
 						nodes.Add(newNode);
 						break;
@@ -641,6 +647,17 @@ namespace AssetGraph {
 		private void SaveGraphWithReload () {
 			SaveGraph();
 			Setup();
+		}
+
+		private void CollectPackage (List<string> platform_package_keys) {
+			foreach (var platform_package_key in platform_package_keys) {
+				var packageKey = GraphStackController.PackageKeyFromPlatform_Package_Key(platform_package_key);
+				if (string.IsNullOrEmpty(packageKey)) continue;
+
+				if (!Node.NodeSharedPackages.Contains(packageKey)) {
+					Node.NodeSharedPackages.Add(packageKey);
+				}
+			}
 		}
 
 		private void Setup (string package=null) {
@@ -962,6 +979,7 @@ namespace AssetGraph {
 							() => {
 								AddNodeFromGUI(string.Empty, targetGUINodeNameStr, Guid.NewGuid().ToString(), rightClickPos.x, rightClickPos.y);
 								SaveGraphWithReload();
+								Repaint();
 							}
 						);
 					}
@@ -1259,7 +1277,7 @@ namespace AssetGraph {
 			// add undo record.
 			Undo.RecordObject(this, "Duplicate Node");
 
-						
+			Debug.LogError("パッケージ情報のコピーが必須");
 			var targetNodes = nodes.Where(node => node.nodeId == sourceNodeId).ToList();
 			if (!targetNodes.Any()) return;
 
@@ -1728,6 +1746,15 @@ namespace AssetGraph {
 				case OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE: {
 					var currentImporterPackage = e.eventSourceNode.currentPackage;
 					Setup(currentImporterPackage);
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_UPDATEPACKAGE: {
+					foreach (var node in nodes) {
+						/*
+							if pacakge is deleted & node's current package is that, should change current package to None.
+						*/
+						if (!Node.NodeSharedPackages.Contains(node.currentPackage)) node.currentPackage = string.Empty;
+					}
 					break;
 				}
 			}

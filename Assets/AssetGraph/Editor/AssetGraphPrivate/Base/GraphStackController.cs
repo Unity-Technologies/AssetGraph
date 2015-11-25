@@ -770,7 +770,6 @@ namespace AssetGraph {
 						break;
 					}
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-						Debug.LogError("なんか必要になる気がしている、Script版のimporterの処理。packageまわりが特に。");
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<ImporterBase>(scriptType);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
@@ -1150,6 +1149,13 @@ namespace AssetGraph {
 		public static string Platform_Package_Key (string platformKey, string packageKey) {
 			if (!string.IsNullOrEmpty(packageKey)) return (platformKey + AssetGraphSettings.package_SEPARATOR + packageKey).Replace(" ", "_");
 			return platformKey.Replace(" ", "_");
+		}
+
+		public static string PackageKeyFromPlatform_Package_Key (string platform_package_key) {
+			var candidateArray = platform_package_key.Split(new string[]{AssetGraphSettings.package_SEPARATOR}, StringSplitOptions.None);
+			
+			if (candidateArray.Length == 2) return candidateArray[1];
+			return string.Empty;
 		}
 	}
 
