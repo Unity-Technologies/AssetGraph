@@ -128,6 +128,7 @@ namespace AssetGraph {
 		}
 		private Selection selection;
 
+		private string package = string.Empty;
 
 		private void LoadTextures () {
 			// load shared node textures
@@ -333,17 +334,15 @@ namespace AssetGraph {
 			wantsMouseMove = true;
 			modifyMode = ModifyMode.CONNECT_ENDED;
 
-			var currentPackage = string.Empty;
-
-			Debug.LogError("全体のpackageを集合させる処理が必要。すべてのnodeの");
+			
 			
 			/*
 				load graph data from deserialized data.
 			*/
-			ConstructGraphFromDeserializedData(deserialized, currentPackage);
+			ConstructGraphFromDeserializedData(deserialized, package);
 		}
 
-		private void ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData, string package) {
+		private void ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData, string currentPackage) {
 			nodes = new List<Node>();
 			connections = new List<Connection>();
 
@@ -744,8 +743,18 @@ namespace AssetGraph {
 					Run();
 				}
 				
-				if (GUILayout.Button("package:Default", GUILayout.Width(150))) {
-					Run();
+				var packageStr = package;
+				if (string.IsNullOrEmpty(packageStr)) packageStr = AssetGraphSettings.PLATFORM_NONE_PACKAGE;
+				if (GUILayout.Button("Package:" + packageStr, "Popup", GUILayout.Width(200))) {
+					Action DefaultSelected = () => {
+						package = string.Empty;
+					};
+
+					Action<string> ExistSelected = (string newPackage) => {
+						package = newPackage;
+					};
+					
+					Node.ShowPackageMenu(package, DefaultSelected, ExistSelected);
 				}
 			}
 
@@ -1751,7 +1760,7 @@ namespace AssetGraph {
 				case OnNodeEvent.EventType.EVENT_UPDATEPACKAGE: {
 					foreach (var node in nodes) {
 						/*
-							if pacakge is deleted & node's current package is that, should change current package to None.
+							if package is deleted & node's current package is that, should change current package to None.
 						*/
 						if (!Node.NodeSharedPackages.Contains(node.currentPackage)) node.currentPackage = string.Empty;
 					}

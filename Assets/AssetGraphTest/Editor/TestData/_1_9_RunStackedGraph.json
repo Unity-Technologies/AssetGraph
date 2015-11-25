@@ -39,7 +39,10 @@
             },
             "outputLabels": [
                 "_"
-            ]
+            ],
+            "importerPackages": {
+                "Default": ""
+            }
         },
         {
             "name": "SampleImporter_3",
@@ -51,7 +54,10 @@
             },
             "outputLabels": [
                 "_"
-            ]
+            ],
+            "importerPackages": {
+                "Default": ""
+            }
         },
         {
             "name": "AssetGraph.IntegratedScriptExporter",

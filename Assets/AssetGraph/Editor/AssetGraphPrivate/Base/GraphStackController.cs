@@ -66,7 +66,6 @@ namespace AssetGraph {
 				foreach (var relatedAsset in relatedAssets) {
 					if (relatedAsset.isNew) {
 						changed = true;
-						Debug.LogError("このパーツが新規だ、と。:" + relatedAsset.importedPath);
 						break;
 					}
 				}

@@ -56,7 +56,7 @@ public partial class Test {
 
 		// cache test by gui & non gui
 		{
-			tests.Add(this._4_0_RunThenCachedGUI);
+			// tests.Add(this._4_0_RunThenCachedGUI);
 			tests.Add(this._4_1_ImporterUnuseCache);
 			tests.Add(this._4_2_PrefabricatorUnuseCache);
 			tests.Add(this._4_3_ImporterFromInside);
@@ -64,7 +64,7 @@ public partial class Test {
 
 		// multi platform caching
 		{
-			// tests.Add(this._5_0_PlatformChanging);
+			tests.Add(this._5_0_PlatformChanging);
 		}
 		
 		

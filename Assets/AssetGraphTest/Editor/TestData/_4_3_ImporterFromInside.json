@@ -26,6 +26,9 @@
             "pos": {
                 "x": 247,
                 "y": 16
+            },
+            "importerPackages": {
+                "Default": ""
             }
         },
         {

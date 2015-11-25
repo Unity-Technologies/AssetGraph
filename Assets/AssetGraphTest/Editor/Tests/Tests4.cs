@@ -164,7 +164,7 @@ public partial class Test {
 			change import setting, emulate "setting is changed but old caches are already exists."
 		*/
 		{
-			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "18139977-3750-4efc-bee0-0351a73f2da7/sample.fbx");
+			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "18139977-3750-4efc-bee0-0351a73f2da7", AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE, "sample.fbx");
 			if (!File.Exists(targetSettingFile)) {
 				Debug.LogError("failed to read file:" + targetSettingFile);
 				return;
@@ -250,7 +250,7 @@ public partial class Test {
 
 		// change importer setting of file.
 		{
-			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "1b73b22a-41bc-46d3-bbfb-5fe7fa846881/sample.fbx");
+			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "1b73b22a-41bc-46d3-bbfb-5fe7fa846881", AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE, "sample.fbx");
 			var targetSettingImporter = AssetImporter.GetAtPath(targetSettingFile) as ModelImporter;
 
 			targetSettingImporter.meshCompression = ModelImporterMeshCompression.High;;

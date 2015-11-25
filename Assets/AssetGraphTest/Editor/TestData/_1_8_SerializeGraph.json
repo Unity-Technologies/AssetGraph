@@ -39,7 +39,10 @@
             },
             "outputLabels": [
                 "_"
-            ]
+            ],
+            "importerPackages": {
+                "Default": ""
+            }
         },
         {
             "name": "SampleImporter_2",
@@ -51,7 +54,10 @@
             },
             "outputLabels": [
                 "_"
-            ]
+            ],
+            "importerPackages": {
+                "Default": ""
+            }
         }
     ],
     "connections": [
