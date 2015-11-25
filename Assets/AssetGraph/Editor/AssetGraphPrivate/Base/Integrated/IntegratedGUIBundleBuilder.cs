@@ -25,16 +25,16 @@ namespace AssetGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			RemoveOtherPlatformBundleSettings(relatedNodeIds, package);
+			RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
 			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			RemoveOtherPlatformBundleSettings(relatedNodeIds, package);
+			RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
 
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
-			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, EditorUserBuildSettings.activeBuildTarget.ToString());
+			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.Current_Platform_Package_Folder(package));
 			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -89,29 +89,35 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 
-		private void RemoveOtherPlatformBundleSettings (List<string> nodeIds, string package) {
+		private void RemoveOtherPlatformAndPackageBundleSettings (List<string> nodeIds, string package) {
 			if (!Directory.Exists(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)) return;
 
+			/*
+				get all cache folder of node from cache path.
+			*/
 			var cachedNodeKindFolderPaths = FileController.FolderPathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
 			foreach (var cachedNodeKindFolderPath in cachedNodeKindFolderPaths) {
 				var nodeIdFolderPaths = FileController.FolderPathsInFolder(cachedNodeKindFolderPath);
 				foreach (var nodeIdFolderPath in nodeIdFolderPaths) {
 					var nodeIdFromFolder = nodeIdFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
 
-					// remove all bundle settings from resources of unrelated nodes.
+					// remove all bundle settings from unrelated nodes.
 					if (!nodeIds.Contains(nodeIdFromFolder)) {
 						RemoveBundleSettings(nodeIdFolderPath);
 						continue;
 					}
 
-					// remove all bundle settings from resources of unrelated platforms.
+					// related nodes, 
+					
+					// remove all bundle settings from resources of unrelated platforms + packages.
 					var platformFolderPaths = FileController.FolderPathsInFolder(nodeIdFolderPath);
 					foreach (var platformFolderPath in platformFolderPaths) {
 						var platformNameFromFolder = platformFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
-						if (platformNameFromFolder == GraphStackController.Current_Platform_Package_Folder(package)) continue;
 
+						if (platformNameFromFolder == GraphStackController.Current_Platform_Package_Folder(package)) continue;
+						
 						RemoveBundleSettings(platformFolderPath);
-					}		
+					}
 				}
 			}
 		}

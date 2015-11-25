@@ -331,7 +331,7 @@ namespace AssetGraph {
 				SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, package);
 			}
 			
-			return DictDictList(resultDict);
+			return ConId_Group_Throughput(resultDict);
 		}
 
 		public static Dictionary<string, Dictionary<string, List<string>>> RunStackedGraph (
@@ -352,13 +352,13 @@ namespace AssetGraph {
 				RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, package, updateHandler);
 			}
 
-			return DictDictList(resultDict);
+			return ConId_Group_Throughput(resultDict);
 		}
 
-		private static Dictionary<string, Dictionary<string, List<string>>> DictDictList (Dictionary<string, Dictionary<string, List<InternalAssetData>>> sourceDictDictList) {
+		private static Dictionary<string, Dictionary<string, List<string>>> ConId_Group_Throughput (Dictionary<string, Dictionary<string, List<InternalAssetData>>> sourceConId_Group_Throughput) {
 			var result = new Dictionary<string, Dictionary<string, List<string>>>();
-			foreach (var connectionId in sourceDictDictList.Keys) {
-				var connectionGroupDict = sourceDictDictList[connectionId];
+			foreach (var connectionId in sourceConId_Group_Throughput.Keys) {
+				var connectionGroupDict = sourceConId_Group_Throughput[connectionId];
 
 				var newConnectionGroupDict = new Dictionary<string, List<string>>();
 				foreach (var groupKey in connectionGroupDict.Keys) {
@@ -1133,8 +1133,20 @@ namespace AssetGraph {
 		public static string Current_Platform_Package_OrDefaultFromDict (Dictionary<string, string> packageDict, string package) {
 			var platform_package_key_candidate = Current_Platform_Package_Folder(package);
 			
+			/*
+				check best match for platform + pacakge.
+			*/
 			if (packageDict.ContainsKey(platform_package_key_candidate)) return packageDict[platform_package_key_candidate];
 			
+			/*
+				check next match for defaultPlatform + package.
+			*/
+			var defaultPlatformAndCurrentPackageCandidate = Default_Platform_Package_Folder(package);
+			if (packageDict.ContainsKey(defaultPlatformAndCurrentPackageCandidate)) return packageDict[defaultPlatformAndCurrentPackageCandidate];
+
+			/*
+				check default platform.
+			*/
 			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_DEFAULT_NAME];
 			
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
@@ -1143,6 +1155,10 @@ namespace AssetGraph {
 		public static string Current_Platform_Package_Folder (string package) {
 			Debug.LogWarning("プラットフォームが特定のものだったらStandaloneに変える");
 			return Platform_Package_Key(EditorUserBuildSettings.activeBuildTarget.ToString(), package);
+		}
+
+		public static string Default_Platform_Package_Folder (string package) {
+			return Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, package);
 		}
 
 		public static string Platform_Package_Key (string platformKey, string packageKey) {

@@ -36,8 +36,10 @@ namespace AssetGraph {
 
 			LoadTextures();
 
+			package = string.Empty;
+
 			InitializeGraph();
-			Setup();
+			Setup(package);
 
 
 			if (nodes.Any()) UpdateSpacerRect();
@@ -645,7 +647,7 @@ namespace AssetGraph {
 
 		private void SaveGraphWithReload () {
 			SaveGraph();
-			Setup();
+			Setup(package);
 		}
 
 		private void CollectPackage (List<string> platform_package_keys) {
@@ -659,9 +661,7 @@ namespace AssetGraph {
 			}
 		}
 
-		private void Setup (string package=null) {
-			if (string.IsNullOrEmpty(package)) package = string.Empty;
-
+		private void Setup (string package) {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
@@ -684,9 +684,7 @@ namespace AssetGraph {
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, package);
 		}
 
-		private void Run (string package=null) {
-			if (string.IsNullOrEmpty(package)) package = string.Empty;
-
+		private void Run (string package) {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				Debug.LogError("no data found、初期化してもいいかもしれない。");
@@ -736,11 +734,11 @@ namespace AssetGraph {
 		public void OnGUI () {
 			using (new EditorGUILayout.HorizontalScope()) {
 				if (GUILayout.Button(reloadButtonTexture)) {
-					Setup();
+					Setup(package);
 				}
 
 				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
-					Run();
+					Run(package);
 				}
 				
 				var packageStr = package;
@@ -748,10 +746,12 @@ namespace AssetGraph {
 				if (GUILayout.Button("Package:" + packageStr, "Popup", GUILayout.Width(200))) {
 					Action DefaultSelected = () => {
 						package = string.Empty;
+						Setup(package);
 					};
 
 					Action<string> ExistSelected = (string newPackage) => {
 						package = newPackage;
+						Setup(package);
 					};
 					
 					Node.ShowPackageMenu(package, DefaultSelected, ExistSelected);

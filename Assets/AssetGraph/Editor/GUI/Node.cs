@@ -543,7 +543,7 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var newExportPath = EditorGUILayout.TextField("Export Path", node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)]);
+							var newExportPath = EditorGUILayout.TextField("Export Path", GraphStackController.ValueFromPlatformAndPackage(node.exportPath, node.currentPlatform, node.currentPackage).ToString());
 							if (newExportPath != node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)]) {
 								Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 								node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newExportPath;
@@ -615,7 +615,7 @@ namespace AssetGraph {
 						Action<string> ExistSelected = (string package) => {
 							packagesParentNode.PackageChanged(package);
 						};
-						
+
 						ShowPackageMenu(packagesParentNode.currentPackage, DefaultSelected, ExistSelected);
 						GUI.FocusControl(string.Empty);
 					}
