@@ -107,9 +107,9 @@ namespace AssetGraph {
 						continue;
 					}
 
-					// related nodes, 
+					// related nodes, contains platform_package folder.
 					
-					// remove all bundle settings from resources of unrelated platforms + packages.
+					// remove all bundle settings from unrelated platforms + packages.
 					var platformFolderPaths = FileController.FolderPathsInFolder(nodeIdFolderPath);
 					foreach (var platformFolderPath in platformFolderPaths) {
 						var platformNameFromFolder = platformFolderPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
