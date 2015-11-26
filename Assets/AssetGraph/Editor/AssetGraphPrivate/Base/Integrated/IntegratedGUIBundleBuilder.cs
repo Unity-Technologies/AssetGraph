@@ -25,8 +25,6 @@ namespace AssetGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
-			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
@@ -123,11 +121,13 @@ namespace AssetGraph {
 		}
 
 		private void RemoveBundleSettings (string nodePath) {
+			EditorUtility.DisplayProgressBar("AssetGraph BundleBuilder unbundlize resources...", nodePath, 0);
 			var filePathsInFolder = FileController.FilePathsInFolder(nodePath);
 			foreach (var filePath in filePathsInFolder) {
 				var assetImporter = AssetImporter.GetAtPath(filePath);
 				assetImporter.assetBundleName = string.Empty;
 			}
+			EditorUtility.ClearProgressBar();
 		}
 	}
 }

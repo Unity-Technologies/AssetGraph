@@ -73,7 +73,6 @@ namespace AssetGraph {
 				if (changed) return false;
 				return true;
 			}
-
 			return false;
 		}
 
@@ -713,7 +712,6 @@ namespace AssetGraph {
 				load already exist cache from node.
 			*/
 			alreadyCachedPaths.AddRange(GetCachedDataByNodeKind(nodeKind, nodeId, package));
-			
 
 			var inputParentResults = new Dictionary<string, List<InternalAssetData>>();
 			
@@ -983,37 +981,66 @@ namespace AssetGraph {
 		}
 
 		public static List<string> GetCachedDataByNodeKind (AssetGraphSettings.NodeKind nodeKind, string nodeId, string package) {
+			var platform_package_key_candidate = GraphStackController.Current_Platform_Package_Folder(package);
+
 			switch (nodeKind) {
 				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					
 					var cachedPathBase = FileController.PathCombine(
 						AssetGraphSettings.IMPORTER_CACHE_PLACE, 
-						nodeId
+						nodeId,
+						platform_package_key_candidate
 					);
 
-					var importerPackageKey = package;
-					if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-						
-					// get sampling file.
-					var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackageKey);
-					
-					// if no setting exist, ignore all cache.
-					if (!Directory.Exists(baseSettingPath)) return new List<string>();
-
-					var baseSettingFilePaths = FileController.FilePathsInFolderOnly1Level(baseSettingPath);
-					if (!baseSettingFilePaths.Any()) return new List<string>();
-
-
-					// setting is exists, next, checking about cache.
-
 					// no cache folder, no cache.
-					if (!Directory.Exists(cachedPathBase)) return new List<string>();
+					if (!Directory.Exists(cachedPathBase)) {
+						return new List<string>();
+					}
 
+					
+					/*
+						check importer setting for determine "cache is valid or not."
+						if importer setting is nothing, should generate importer setting then re-import all assets.
+					*/
+					var importerSettingFilePath = string.Empty;
+					{
+						/*
+							1.if package is null or empty, set DefaultPackage.
+							2.if package folder is not exist, change package to DefaultPackage then retry.
+							3.if not hit, no setting exists. means no valid cache exists.
+						*/
+						var importerPackageKey = package;
+						if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+							
+						// get sampling file.
+						var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackageKey);
+						// if no setting file exist, retry with DefaultPackage.
+						if (!Directory.Exists(baseSettingPath)) {
+							importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+							baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackageKey);
+
+							if (!Directory.Exists(baseSettingPath)) {
+								// if DefaultPackage is not exists, no valid cache.
+								return new List<string>();
+							}
+						}
+
+						var baseSettingFilePaths = FileController.FilePathsInFolderOnly1Level(baseSettingPath);
+						if (!baseSettingFilePaths.Any()) return new List<string>();
+
+						importerSettingFilePath = baseSettingFilePaths[0];
+					}
+
+					/*
+						setting is exists, let's check about cached file's setting.
+						if cached file itself is changed manually, should detect it and destroy it.
+					*/
 					// search cache candidates.
 					var cacheCandidates = FileController.FilePathsInFolder(cachedPathBase);
-
 					if (0 < cacheCandidates.Count) {
-						var baseSettingFilePath = baseSettingFilePaths[0];
+
+						var baseSettingFilePath = importerSettingFilePath;
 						var baseSettingImporterOrigin = AssetImporter.GetAtPath(baseSettingFilePath);
 
 						var cached = new List<string>();
@@ -1022,7 +1049,7 @@ namespace AssetGraph {
 							var importedCandidateImporterOrigin = AssetImporter.GetAtPath(candidatePath);
 							
 							// cancel if importer type does not match. maybe this is not target of this node's importer.
-							// 2 potentials. 
+							// there are 2 potentials. 
 							// 	a. this is sub-generated resources of the result of import.
 							// 	b. garbage.
 							// both will be treat as cached.
@@ -1078,23 +1105,32 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					var cachedPathBase = FileController.PathCombine(
 						AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, 
-						nodeId
+						nodeId,
+						platform_package_key_candidate
 					);
+
+					// no cache folder, no cache.
+					if (!Directory.Exists(cachedPathBase)) {
+						// search default platform + package
+						cachedPathBase = FileController.PathCombine(
+							AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, 
+							nodeId,
+							GraphStackController.Default_Platform_Package_Folder(package)
+						);
+
+						if (!Directory.Exists(cachedPathBase)) {
+							return new List<string>();
+						}
+					}
 
 					return FileController.FilePathsInFolder(cachedPathBase);
 				}
 				
 				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: 
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					var cachedPathBase = FileController.PathCombine(
-						AssetGraphSettings.BUNDLIZER_CACHE_PLACE, 
-						nodeId
-					);
-
-					return FileController.FilePathsInFolder(cachedPathBase);
-				}
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: 
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					// nothing to do.
 					break;
 				}
 

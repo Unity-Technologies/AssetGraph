@@ -36,8 +36,6 @@ namespace AssetGraph {
 
 			LoadTextures();
 
-			package = string.Empty;
-
 			InitializeGraph();
 			Setup(package);
 
@@ -264,6 +262,9 @@ namespace AssetGraph {
 			var deserialized = new Dictionary<string, object>();
 			var lastModified = DateTime.Now;
 
+			// default package is empty.
+			package = string.Empty;
+
 			if (File.Exists(graphDataPath)) {
 
 				// load
@@ -282,6 +283,10 @@ namespace AssetGraph {
 
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
+
+				var lastPackageStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE] as string;
+				if (string.IsNullOrEmpty(lastPackageStr)) lastPackageStr = string.Empty;
+				package = lastPackageStr;
 
 				var validatedDataDict = GraphStackController.ValidateStackedGraph(deserialized);
 
@@ -305,15 +310,10 @@ namespace AssetGraph {
 			} else {
 				// renew
 				var graphData = new Dictionary<string, object>{
-					{
-						AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, lastModified.ToString()
-					},
-					{
-						AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<object>()
-					},
-					{
-						AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<object>()
-					}
+					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, lastModified.ToString()},
+					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<object>()},
+					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<object>()},
+					{AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE, string.Empty}
 				};
 
 				// save new empty graph data.
@@ -639,7 +639,8 @@ namespace AssetGraph {
 			var graphData = new Dictionary<string, object>{
 				{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
 				{AssetGraphSettings.ASSETGRAPH_DATA_NODES, nodeList},
-				{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, connectionList}
+				{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, connectionList},
+				{AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE, package}
 			};
 
 			UpdateGraphData(graphData);
@@ -746,11 +747,13 @@ namespace AssetGraph {
 				if (GUILayout.Button("Package:" + packageStr, "Popup", GUILayout.Width(200))) {
 					Action DefaultSelected = () => {
 						package = string.Empty;
+						SaveGraph();
 						Setup(package);
 					};
 
 					Action<string> ExistSelected = (string newPackage) => {
 						package = newPackage;
+						SaveGraph();
 						Setup(package);
 					};
 					

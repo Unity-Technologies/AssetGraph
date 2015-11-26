@@ -76,10 +76,10 @@ namespace AssetGraph {
 
 				var outputSources = new List<InternalAssetData>();
 
-				Func<GameObject, string, string> Prefabricate = (GameObject baseObject, string prefabName) => {
+				Func<GameObject, string, bool, string> Prefabricate = (GameObject baseObject, string prefabName, bool forceGenerate) => {
 					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
 					
-					if (!GraphStackController.IsCachedForEachSource(inputSources, alreadyCached, newPrefabOutputPath)) {
+					if (forceGenerate || !GraphStackController.IsCachedForEachSource(inputSources, alreadyCached, newPrefabOutputPath)) {
 						// not cached, create new.
 						UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
 					
@@ -90,9 +90,11 @@ namespace AssetGraph {
 						AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 						AssetDatabase.SaveAssets();
 						generated.Add(newPrefabOutputPath);
+						Debug.Log("AssetGraph prefab:" + newPrefabOutputPath + " is newly generated.");
 					} else {
 						// cached.
 						usedCache.Add(newPrefabOutputPath);
+						Debug.Log("AssetGraph prefab:" + newPrefabOutputPath + " is already cached. if regenerate forcely, set Prefabricate(baseObject, prefabName, true) <- forcely regenerate prefab.");
 					}
 
 					// set used.
@@ -178,7 +180,7 @@ namespace AssetGraph {
 			isUsed = true;
 		}
 
-		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
+		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
 	}

@@ -166,7 +166,7 @@ namespace AssetGraph {
 				
 				
 				var outputSources = new List<InternalAssetData>();
-
+				
 				/*
 					treat all assets inside node.
 				*/

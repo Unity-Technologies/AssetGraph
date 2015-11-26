@@ -7,7 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 
 public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
-	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, string> Prefabricate) {
+	public override void In (string groupkey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 		/*
 			フォルダ名に入っている"chara"というキーワードを元に複数の素材からセットを作り出し、
 			モデルにテクスチャを貼ってそれをPrefabにする。
@@ -46,7 +46,7 @@ public class SamplePrefabricator_3 : AssetGraph.PrefabricatorBase {
 			// Debug.LogError("meshRenderer:" + meshRenderer);
 			meshRenderer.material = modelMaterial;
 
-			Prefabricate(modelObj, "chara" + i + "_prefab.prefab");
+			Prefabricate(modelObj, "chara" + i + "_prefab.prefab", false);
 
 			GameObject.DestroyImmediate(modelObj);
 		}

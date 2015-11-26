@@ -84,6 +84,7 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_DATA_LASTMODIFIED = "lastModified";
 		public const string ASSETGRAPH_DATA_NODES = "nodes";
 		public const string ASSETGRAPH_DATA_CONNECTIONS = "connections";
+		public const string ASSETGRAPH_DATA_LASTPACKAGE = "lastPackage";
 
 		// node const.
 		public const string NODE_NAME = "name";
