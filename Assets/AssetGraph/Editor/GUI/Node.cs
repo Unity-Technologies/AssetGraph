@@ -339,8 +339,8 @@ namespace AssetGraph {
 												Selection.activeObject = obj;
 											}
 											if (GUILayout.Button("Reset Import Setting")) {
-												var result = AssetDatabase.DeleteAsset(samplingAssetPath);
-												if (!result) Debug.LogError("failed to delete samplingAsset:" + samplingAssetPath);
+												// delete all import setting files.
+												FileController.RemakeDirectory(samplingPath);
 												node.Save();
 											}
 											break;
@@ -359,7 +359,7 @@ namespace AssetGraph {
 								}
 
 								if (tooManyFilesFound) {
-									EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete file at:" + samplingPath);
+									EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
 								}
 							}
 						}
@@ -784,21 +784,17 @@ namespace AssetGraph {
 		}
 
 		public void PackageChanged (string newCurrentPackage) {
+			currentPackage = newCurrentPackage;
+
 			/*
 				if changed node is importer, sould run [new package import] for setting.
 			*/
 			if (kind == AssetGraphSettings.NodeKind.IMPORTER_GUI) {
-				currentPackage = newCurrentPackage;
 				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
-
 				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages[platformPackageKey] = string.Empty;
-				Save();
-
-				Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
-				return;
 			}
-
-			currentPackage = newCurrentPackage;
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
+			Save();
 		}
 
 		public void SetActive () {

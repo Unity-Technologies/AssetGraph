@@ -147,7 +147,7 @@ namespace AssetGraph {
 			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
 
 			// load other textures
-			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent ("RotateTool");
+			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
 			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
 			Debug.LogWarning("load platform textures here.");
 		}
@@ -733,18 +733,18 @@ namespace AssetGraph {
 
 
 		public void OnGUI () {
-			using (new EditorGUILayout.HorizontalScope()) {
-				if (GUILayout.Button(reloadButtonTexture)) {
+			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
+				if (GUILayout.Button(reloadButtonTexture, GUILayout.Height(18))) {
 					Setup(package);
 				}
 
-				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")")) {
+				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")", GUILayout.Height(18))) {
 					Run(package);
 				}
 				
 				var packageStr = package;
 				if (string.IsNullOrEmpty(packageStr)) packageStr = AssetGraphSettings.PLATFORM_NONE_PACKAGE;
-				if (GUILayout.Button("Package:" + packageStr, "Popup", GUILayout.Width(200))) {
+				if (GUILayout.Button("Package:" + packageStr, "Popup", GUILayout.Width(200), GUILayout.Height(18))) {
 					Action DefaultSelected = () => {
 						package = string.Empty;
 						SaveGraph();
@@ -1756,8 +1756,8 @@ namespace AssetGraph {
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE: {
-					var currentImporterPackage = e.eventSourceNode.currentPackage;
-					Setup(currentImporterPackage);
+					package = e.eventSourceNode.currentPackage;
+					Setup(package);
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_UPDATEPACKAGE: {
@@ -1911,11 +1911,6 @@ namespace AssetGraph {
 				return true;
 			}
 			return false;
-		}
-
-		private void DeleteConnectionByRelation (Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
-			connections.Where(con => con.IsSameDetail(startNode, startPoint, endNode, endPoint)).
-				Select(con => connections.Remove(con));
 		}
 
 		private void DeleteConnectionById (string connectionId) {
