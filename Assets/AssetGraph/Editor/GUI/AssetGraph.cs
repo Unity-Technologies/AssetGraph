@@ -170,7 +170,7 @@ namespace AssetGraph {
 				platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
 			}
 			if (assetGraphPlatformSettings.Contains("iPhone")) {
-				platformStringList.Add("iPhone");
+				platformStringList.Add("iOS");
 				platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
 			}
 			if (assetGraphPlatformSettings.Contains("Android")) {

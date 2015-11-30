@@ -299,6 +299,7 @@ public partial class Test {
 		setup();
 		run();
 
+		// fail on this step. without package.
 		
 		// // change platform again.
 		// EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.StandaloneOSXIntel);

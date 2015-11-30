@@ -894,6 +894,7 @@ namespace AssetGraph {
 					*/
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
 						var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath, package);
+
 						var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
@@ -1168,7 +1169,6 @@ namespace AssetGraph {
 
 		public static string Current_Platform_Package_OrDefaultFromDict (Dictionary<string, string> packageDict, string package) {
 			var platform_package_key_candidate = Current_Platform_Package_Folder(package);
-			
 			/*
 				check best match for platform + pacakge.
 			*/
