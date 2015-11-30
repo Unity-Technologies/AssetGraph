@@ -14,7 +14,7 @@ using MiniJSONForAssetGraph;
 
 public partial class Test {
 	public void _3_0_OrderWithDone0 () {
-		// 根っこあたりにフィルタがあり、4つ又のimportの結果が再度読まれないかどうか
+		// contained filter at the root of 4 filter. should not create source again.
 		var basePath = Path.Combine(Application.dataPath, "AssetGraphTest/Editor/TestData");
 		var graphDataPath = Path.Combine(basePath, "_3_0_OrderWithDone0.json");
 		
@@ -26,7 +26,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 		var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 		var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -37,7 +37,7 @@ public partial class Test {
 		var cacheDict = new Dictionary<string, List<string>>();
 
 		foreach (var endNodeId in endpointNodeIds) {
-			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+			GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 		}
 
 		var connectionIds = resultDict.Keys.ToList();

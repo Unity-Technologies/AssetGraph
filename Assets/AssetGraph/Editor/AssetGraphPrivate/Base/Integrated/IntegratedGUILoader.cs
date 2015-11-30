@@ -12,7 +12,7 @@ namespace AssetGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(loadFilePath)) {
 				Debug.LogWarning("no Load Path set.");
 				return;
@@ -46,7 +46,7 @@ namespace AssetGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(loadFilePath)) {
 				Debug.LogWarning("no Load Path set.");
 				return;

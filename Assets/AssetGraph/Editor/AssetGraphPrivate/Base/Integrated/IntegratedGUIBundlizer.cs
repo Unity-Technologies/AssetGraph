@@ -14,7 +14,7 @@ namespace AssetGraph {
 			this.bundleNameTemplate = bundleNameTemplate;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
 				Debug.LogError("no Bundle Name Template set.");
 				return;
@@ -25,14 +25,14 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, false);
+				var reservedBundlePath = BundlizeAssets(package, groupKey, inputSources, recommendedBundleOutputDir, false);
 				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
 
 				var outputSources = new List<InternalAssetData>();
@@ -47,7 +47,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) {
 				Debug.LogError("no Bundle Name Template set.");
 				return;
@@ -58,14 +58,14 @@ namespace AssetGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, true);
+				var reservedBundlePath = BundlizeAssets(package, groupKey, inputSources, recommendedBundleOutputDir, true);
 				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
 
 				var outputSources = new List<InternalAssetData>();
@@ -80,7 +80,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public string BundlizeAssets (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {
+		public string BundlizeAssets (string package, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {
 			var validation = true;
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importedPath)) {
@@ -95,6 +95,7 @@ namespace AssetGraph {
 			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
 			var bundleName = templateHead + groupkey + templateTail;
+			if (!string.IsNullOrEmpty(package)) bundleName = bundleName + "." + package;
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
 
 			if (isRun) {

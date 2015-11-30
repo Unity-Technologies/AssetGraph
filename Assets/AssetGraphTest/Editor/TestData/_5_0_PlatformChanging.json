@@ -1,0 +1,199 @@
+{
+    "lastModified": "10/23/2015 12:17:37",
+    "nodes": [
+        {
+            "name": "Loader",
+            "id": "1433c30f-8ce7-4d9b-864e-f9ca6261befd",
+            "kind": "LOADER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 22,
+                "y": 14
+            },
+            "loadPath": {
+                "Default": "AssetGraph/TestResources/TestResourcesFor_5_0_PlatformChanging"
+            }
+        },
+        {
+            "name": "Filter",
+            "id": "2a7e85c6-4dec-486d-8599-bcaab6304fcc",
+            "kind": "FILTER_GUI",
+            "outputLabels": [
+                "images",
+                "models",
+                "bgms",
+                "ses"
+            ],
+            "pos": {
+                "x": 27,
+                "y": 143
+            },
+            "filterContainsKeywords": [
+                "images",
+                "models",
+                "bgms",
+                "ses"
+            ]
+        },
+        {
+            "name": "Grouping",
+            "id": "4c9746e9-fffb-471f-8be2-eeacf83a0d93",
+            "kind": "GROUPING_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 478,
+                "y": 14
+            },
+            "groupingKeyword": {
+                "Default": "/ID_*/"
+            }
+        },
+        {
+            "name": "Exporter",
+            "id": "21f1935b-3a26-4f3c-9d2a-cc47a606f469",
+            "kind": "EXPORTER_GUI",
+            "outputLabels": [],
+            "pos": {
+                "x": 701,
+                "y": 277
+            },
+            "exportPath": {
+                "Default": "AssetGraph/TestExportPlace/TestExportFor_5_0_PlatformChanging"
+            }
+        },
+        {
+            "name": "Bundlizer",
+            "id": "60f8ff7a-d346-4cb5-9774-207ec5c10b41",
+            "kind": "BUNDLIZER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 567,
+                "y": 140
+            },
+            "bundleNameTemplate": {
+                "Default": "chara_*.assetbundle"
+            }
+        },
+        {
+            "name": "BundleBuilder",
+            "id": "c464cf25-acf0-4678-aae3-d598e44dcc60",
+            "kind": "BUNDLEBUILDER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 620,
+                "y": 202
+            },
+            "enabledBundleOptions": {
+                "Default": []
+            }
+        },
+        {
+            "name": "Importer",
+            "id": "b1fc7462-e227-4484-a1b2-c4a3561daeee",
+            "kind": "IMPORTER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 248,
+                "y": 73
+            },
+            "importerPackages": {
+                "Default": ""
+            }
+        },
+        {
+            "name": "Importer",
+            "id": "07bba9e8-6f05-430c-b447-f7efd677c580",
+            "kind": "IMPORTER_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 258,
+                "y": 133
+            },
+            "importerPackages": {
+                "Default": ""
+            }
+        },
+        {
+            "name": "Prefabricator",
+            "id": "0965914e-80e7-48bc-adbf-1afb148583b7",
+            "kind": "PREFABRICATOR_GUI",
+            "outputLabels": [
+                "+"
+            ],
+            "pos": {
+                "x": 490,
+                "y": 77
+            },
+            "scriptType": "SamplePrefabricator",
+            "scriptPath": null
+        }
+    ],
+    "connections": [
+        {
+            "label": "+",
+            "connectionId": "4cd60a7f-09c4-4cb9-b410-d20c6e570ebd",
+            "fromNode": "1433c30f-8ce7-4d9b-864e-f9ca6261befd",
+            "toNode": "2a7e85c6-4dec-486d-8599-bcaab6304fcc"
+        },
+        {
+            "label": "+",
+            "connectionId": "058b64fb-50c1-4725-9d92-8ef9eba0ba05",
+            "fromNode": "60f8ff7a-d346-4cb5-9774-207ec5c10b41",
+            "toNode": "c464cf25-acf0-4678-aae3-d598e44dcc60"
+        },
+        {
+            "label": "+",
+            "connectionId": "848294d8-8a3d-4910-890c-15945eed5aca",
+            "fromNode": "c464cf25-acf0-4678-aae3-d598e44dcc60",
+            "toNode": "21f1935b-3a26-4f3c-9d2a-cc47a606f469"
+        },
+        {
+            "label": "images",
+            "connectionId": "994d4509-a740-4a22-bc1d-1e5af987ddb4",
+            "fromNode": "2a7e85c6-4dec-486d-8599-bcaab6304fcc",
+            "toNode": "b1fc7462-e227-4484-a1b2-c4a3561daeee"
+        },
+        {
+            "label": "+",
+            "connectionId": "cf96dc02-f1b5-4c13-94f0-c530c45c497e",
+            "fromNode": "b1fc7462-e227-4484-a1b2-c4a3561daeee",
+            "toNode": "4c9746e9-fffb-471f-8be2-eeacf83a0d93"
+        },
+        {
+            "label": "+",
+            "connectionId": "a11e2a14-cd34-4103-b183-1470e803208e",
+            "fromNode": "07bba9e8-6f05-430c-b447-f7efd677c580",
+            "toNode": "4c9746e9-fffb-471f-8be2-eeacf83a0d93"
+        },
+        {
+            "label": "models",
+            "connectionId": "81f9c533-172a-417f-8d26-ec6086bea603",
+            "fromNode": "2a7e85c6-4dec-486d-8599-bcaab6304fcc",
+            "toNode": "07bba9e8-6f05-430c-b447-f7efd677c580"
+        },
+        {
+            "label": "+",
+            "connectionId": "412c5620-559b-4c74-8c1b-a6085da9dfc1",
+            "fromNode": "4c9746e9-fffb-471f-8be2-eeacf83a0d93",
+            "toNode": "0965914e-80e7-48bc-adbf-1afb148583b7"
+        },
+        {
+            "label": "+",
+            "connectionId": "67f1e8f9-fee0-4615-b6ce-8012cb8feed3",
+            "fromNode": "0965914e-80e7-48bc-adbf-1afb148583b7",
+            "toNode": "60f8ff7a-d346-4cb5-9774-207ec5c10b41"
+        }
+    ]
+}

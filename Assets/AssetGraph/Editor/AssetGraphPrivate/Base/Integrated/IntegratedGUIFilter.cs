@@ -11,7 +11,7 @@ namespace AssetGraph {
 			this.containsKeywords = containsKeywords;
 		}
 
-		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -40,7 +40,7 @@ namespace AssetGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string noUseLabel,  Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

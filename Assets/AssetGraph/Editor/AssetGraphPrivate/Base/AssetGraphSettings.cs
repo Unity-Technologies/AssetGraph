@@ -17,7 +17,7 @@ namespace AssetGraph {
 		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "Settings";
+		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "ImportSettings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -34,6 +34,13 @@ namespace AssetGraph {
 			"Ignore TypeTree Changes",
 			"Append Hash To AssetBundle Name"
 		};
+
+		public const string package_SEPARATOR = "___";
+
+		public const string PLATFORM_DEFAULT_NAME = "Default";
+		public const string PLATFORM_DEFAULT_PACKAGE = "DefaultPackage";
+		public const string PLATFORM_NEW_PACKAGE = "newPackage";
+		public const string PLATFORM_NONE_PACKAGE = "(None)";
 
 		public const float WINDOW_SPAN = 20f;
 
@@ -77,26 +84,33 @@ namespace AssetGraph {
 		public const string ASSETGRAPH_DATA_LASTMODIFIED = "lastModified";
 		public const string ASSETGRAPH_DATA_NODES = "nodes";
 		public const string ASSETGRAPH_DATA_CONNECTIONS = "connections";
+		public const string ASSETGRAPH_DATA_LASTPACKAGE = "lastPackage";
 
-		// node const
+		// node const.
 		public const string NODE_NAME = "name";
 		public const string NODE_ID = "id";
 		public const string NODE_KIND = "kind";
-		public const string LOADERNODE_LOAD_PATH = "loadPath";
-		public const string EXPORTERNODE_EXPORT_PATH = "exportPath";
 		public const string NODE_SCRIPT_TYPE = "scriptType";
 		public const string NODE_SCRIPT_PATH = "scriptPath";
 		public const string NODE_POS = "pos";
 		public const string NODE_POS_X = "x";
 		public const string NODE_POS_Y = "y";
 		public const string NODE_OUTPUT_LABELS = "outputLabels";
+		public const string NODE_PACKAGES = "packages";
 
+		// node dependent settings.
+		public const string NODE_LOADER_LOAD_PATH = "loadPath";
+		public const string NODE_EXPORTER_EXPORT_PATH = "exportPath";
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
+		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
-		// connection const
+		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
+		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
+
+		// connection const.
 		public const string CONNECTION_LABEL = "label";
 		public const string CONNECTION_ID = "connectionId";
 		public const string CONNECTION_FROMNODE = "fromNode";

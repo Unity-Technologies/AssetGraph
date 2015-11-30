@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetGraph {
 	public class BundlizerBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -19,7 +19,7 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
@@ -53,7 +53,7 @@ namespace AssetGraph {
 
 				var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
 
-				Debug.LogError("仮に、bundleはすべてisNew = trueで作成する。この後方にprefabが着てると影響を必ずうけてしまうので、そのへんはあとで考える");
+				Debug.LogWarning("仮に、bundleはすべてisNew = trueで作成する。この後方にprefabが着てると影響を必ずうけてしまうので、そのへんはあとで考える");
 				foreach (var newAssetPath in generatedAssetBundlePaths) {
 					var newAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						newAssetPath,

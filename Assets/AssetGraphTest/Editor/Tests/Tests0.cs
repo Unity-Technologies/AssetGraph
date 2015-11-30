@@ -33,7 +33,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", source, new List<string>(), Out);
+		sFilter.Setup("ID_0_0_SetupFilter", "CONNECTION_0_0_SetupFilter", string.Empty, source, new List<string>(), Out);
 
 		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
 			var result1 = results["SampleFilter_0_LabelOf1st"];
@@ -69,7 +69,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", source, new List<string>(), Out);
+		sFilter.Run("ID_0_1_RunFilter", "CONNECTION_0_1_RunFilter", string.Empty, source, new List<string>(), Out);
 
 		if (results.ContainsKey("SampleFilter_0_LabelOf1st")) {
 			var result1 = results["SampleFilter_0_LabelOf1st"];
@@ -109,7 +109,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", source, new List<string>(), Out);
+		sImporter.Setup("ID_0_2_SetupImporter", "CONNECTION_0_2_SetupImporter", string.Empty, source, new List<string>(), Out);
 		Debug.Log("passed _0_2_SetupImporter");
 	}
 	public void _0_3_RunImporter () {
@@ -134,7 +134,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", source, new List<string>(), Out);
+		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", string.Empty, source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
 		if (currentOutputs.Count == 3) {
@@ -174,7 +174,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", source, new List<string>(), Out);
+		sPrefabricator.Setup("ID_0_4_SetupPrefabricator", "CONNECTION_0_4_SetupPrefabricator", string.Empty, source, new List<string>(), Out);
 		Debug.Log("passed _0_4_SetupPrefabricator");
 	}
 	public void _0_5_RunPrefabricator () {
@@ -206,7 +206,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", source, new List<string>(), Out);
+		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", string.Empty, source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"];
 		if (currentOutputs.Count == 3) {
@@ -255,7 +255,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", source, new List<string>(), Out);
+		sBundlizer.Setup("ID_0_6_SetupBundlizer", "CONNECTION_0_6_SetupBundlizer", string.Empty, source, new List<string>(), Out);
 		Debug.Log("passed _0_6_SetupBundlizer");
 	}
 	public void _0_7_RunBundlizer () {
@@ -287,7 +287,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", source, new List<string>(), Out);
+		sBundlizer.Run("ID_0_7_RunBundlizer", "CONNECTION_0_7_RunBundlizer", string.Empty, source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_0_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
@@ -319,7 +319,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
 			Debug.Log("passed _0_8_0_SerializeGraph_hasValidEndpoint");
 			return;
@@ -344,7 +344,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 
 		var endPoint0 = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds[0];
 		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -352,7 +352,7 @@ public partial class Test {
 
 		var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 		var cacheDict = new Dictionary<string, List<string>>();
-		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict, cacheDict);
+		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 		
 		if (orderedConnectionIds.Count == 0) {
 			Debug.LogError("list is empty");
@@ -382,16 +382,16 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		GraphStackController.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict, string.Empty);
 		AssetDatabase.Refresh();
 
 
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_0_9_SerializedGraphJSONByExporter");
 		
-		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
+		if (File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/sample.fbx")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/dummy.png"))
 		) {
 			Debug.Log("passed _0_9_RunStackedGraph");
 			return;
@@ -416,7 +416,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		GraphStackController.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict, string.Empty);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_12_SerializedGraphJSON");
@@ -445,7 +445,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var resultDict = GraphStackController.SetupStackedGraph(graphDict);
+		var resultDict = GraphStackController.SetupStackedGraph(graphDict, string.Empty);
 
 		if (resultDict.Count == 11) {
 			Debug.Log("passed _0_13_SetupStackedGraph_FullStacked");
@@ -471,7 +471,7 @@ public partial class Test {
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
 		// var setupResultDict = 
-		GraphStackController.SetupStackedGraph(graphDict);
+		GraphStackController.SetupStackedGraph(graphDict, string.Empty);
 
 		Debug.Log("passed _0_14_SetupStackedGraph_Sample");
 	}
@@ -490,7 +490,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		GraphStackController.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict, string.Empty);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample");

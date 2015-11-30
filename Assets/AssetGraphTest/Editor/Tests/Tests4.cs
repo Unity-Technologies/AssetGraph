@@ -32,7 +32,7 @@ public partial class Test {
 		
 
 		Action act = () => {
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -41,7 +41,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 
 			/*
@@ -50,7 +50,7 @@ public partial class Test {
 			foreach (var node in nodeDatas) {
 				var nodeId = node.nodeId;
 				var nodeKind = node.nodeKind;
-				var cachedDataPaths = GraphStackController.GetCachedData(nodeKind, nodeId);
+				var cachedDataPaths = GraphStackController.GetCachedDataByNodeKind(nodeKind, nodeId, string.Empty);
 
 				createdDataDict[nodeId] = cachedDataPaths;
 			}
@@ -90,9 +90,9 @@ public partial class Test {
 			foreach (var basePath in basePaths) {
 
 				// avoid sub-creating assets. sub-creating assets never appear as cached.
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_0/Materials")) continue;
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_1/Materials")) continue;
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/models/ID_2/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_0/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_1/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_2/Materials")) continue;
 
 				if (!targetPaths.Contains(basePath)) Debug.LogError("contained in result, but not in cached:" + basePath);
 			}
@@ -122,7 +122,7 @@ public partial class Test {
 		
 		// setup first.
 		{
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -131,13 +131,13 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		}
 
 
 		Action act = () => {
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -146,7 +146,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		};
 
@@ -164,8 +164,16 @@ public partial class Test {
 			change import setting, emulate "setting is changed but old caches are already exists."
 		*/
 		{
-			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "18139977-3750-4efc-bee0-0351a73f2da7/sample.fbx");
+			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "18139977-3750-4efc-bee0-0351a73f2da7", AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE, "sample.fbx");
+			if (!File.Exists(targetSettingFile)) {
+				Debug.LogError("failed to read file:" + targetSettingFile);
+				return;
+			}
 			var targetSettingImporter = AssetImporter.GetAtPath(targetSettingFile) as ModelImporter;
+			if (!targetSettingImporter) {
+				Debug.LogError("failed to read targetSettingImporter:" + targetSettingImporter);
+				return;
+			}
 
 			targetSettingImporter.meshCompression = ModelImporterMeshCompression.High;
 		}
@@ -200,7 +208,7 @@ public partial class Test {
 				dataStr = sr.ReadToEnd();
 			}
 			var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -209,7 +217,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		}
 
@@ -227,7 +235,7 @@ public partial class Test {
 				dataStr = sr.ReadToEnd();
 			}
 			var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -236,13 +244,13 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		}
 
 		// change importer setting of file.
 		{
-			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "1b73b22a-41bc-46d3-bbfb-5fe7fa846881/sample.fbx");
+			var targetSettingFile = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, "1b73b22a-41bc-46d3-bbfb-5fe7fa846881", AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE, "sample.fbx");
 			var targetSettingImporter = AssetImporter.GetAtPath(targetSettingFile) as ModelImporter;
 
 			targetSettingImporter.meshCompression = ModelImporterMeshCompression.High;;
@@ -262,7 +270,7 @@ public partial class Test {
 				dataStr = sr.ReadToEnd();
 			}
 			var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -271,7 +279,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 
 			// all prefabs are new. cached prefabs should not be appeared.
@@ -306,7 +314,7 @@ public partial class Test {
 
 		// setup first.
 		{
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -315,12 +323,12 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.SetupSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		}
 
 		Action act = () => {
-			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
 			var nodeDatas = EndpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -329,7 +337,7 @@ public partial class Test {
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 
 			foreach (var endNodeId in endpointNodeIds) {
-				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict);
+				GraphStackController.RunSerializedRoute(endNodeId, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 			}
 		};
 

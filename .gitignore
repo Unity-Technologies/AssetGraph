@@ -42,4 +42,9 @@ AssetGraph-csharp.sln
 
 AssetGraphExport/*
 
-Assets/AssetGraph/Settings/*
+Assets/AssetGraph/ImportSettings/*
+AssetGraphResources2/*
+
+Assets/Plugins/*
+
+Assembly-CSharp-firstpass.csproj

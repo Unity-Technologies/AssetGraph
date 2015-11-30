@@ -12,7 +12,9 @@
                 "x": 7,
                 "y": 5
             },
-            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_4_0_CacheWithSetup"
+            "loadPath": {
+                "Default": "/AssetGraph/TestResources/TestResourcesFor_4_0_CacheWithSetup"
+            }
         },
         {
             "name": "Filter",
@@ -45,6 +47,9 @@
             "pos": {
                 "x": 282,
                 "y": 37
+            },
+            "importerPackages": {
+                "Default": ""
             }
         },
         {
@@ -57,6 +62,9 @@
             "pos": {
                 "x": 283,
                 "y": 116
+            },
+            "importerPackages": {
+                "Default": ""
             }
         },
         {
@@ -69,6 +77,9 @@
             "pos": {
                 "x": 284,
                 "y": 195
+            },
+            "importerPackages": {
+                "Default": ""
             }
         },
         {
@@ -81,6 +92,9 @@
             "pos": {
                 "x": 285,
                 "y": 273
+            },
+            "importerPackages": {
+                "Default": ""
             }
         },
         {
@@ -94,7 +108,9 @@
                 "x": 453,
                 "y": 72
             },
-            "groupingKeyword": "/ID_*/"
+            "groupingKeyword": {
+                "Default": "/ID_*/"
+            }
         },
         {
             "name": "SamplePrefabricator",
@@ -121,7 +137,9 @@
                 "x": 672,
                 "y": 257
             },
-            "bundleNameTemplate": "b_*.bundle"
+            "bundleNameTemplate": {
+                "Default": "b_*.bundle"
+            }
         },
         {
             "name": "Exporter",
@@ -132,7 +150,9 @@
                 "x": 968,
                 "y": 292
             },
-            "exportPath": "AssetGraph/TestExportPlace/TestExportFor_4_0_RunThenCachedGUI"
+            "exportPath": {
+                "Default": "AssetGraph/TestExportPlace/TestExportFor_4_0_RunThenCachedGUI"
+            }
         },
         {
             "name": "BundleBuilder",
@@ -145,7 +165,9 @@
                 "x": 864,
                 "y": 220
             },
-            "enabledBundleOptions": []
+            "enabledBundleOptions": {
+                "Default": []
+            }
         },
         {
             "name": "Bundlizer",
@@ -158,7 +180,9 @@
                 "x": 674,
                 "y": 195
             },
-            "bundleNameTemplate": "a_*.assetbundle"
+            "bundleNameTemplate": {
+                "Default": "a_*.assetbundle"
+            }
         }
     ],
     "connections": [

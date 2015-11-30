@@ -30,7 +30,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUILoader.Setup("ID_1_0_0_SetupLoader", "CONNECTION_1_0_0_SetupLoader", emptySource, new List<string>(), Out);
+		integratedGUILoader.Setup("ID_1_0_0_SetupLoader", "CONNECTION_1_0_0_SetupLoader", string.Empty, emptySource, new List<string>(), Out);
 
 		var outputs = results["CONNECTION_1_0_0_SetupLoader"];
 		if (outputs.Count == 2) {
@@ -57,7 +57,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUILoader.Run("ID_1_0_1_RunLoader", "CONNECTION_1_0_1_RunLoader", emptySource, new List<string>(), Out);
+		integratedGUILoader.Run("ID_1_0_1_RunLoader", "CONNECTION_1_0_1_RunLoader", string.Empty, emptySource, new List<string>(), Out);
 
 		var outputs = results["CONNECTION_1_0_1_RunLoader"];
 		if (outputs.Count == 2) {
@@ -91,7 +91,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUIFilter.Setup("ID_1_0_SetupFilter", "CONNECTION_1_0_SetupFilter", source, new List<string>(), Out);
+		integratedGUIFilter.Setup("ID_1_0_SetupFilter", "CONNECTION_1_0_SetupFilter", string.Empty, source, new List<string>(), Out);
 
 		/*
 			in GUI Filter, output result connection id is it's keyword.
@@ -135,7 +135,7 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUIFilter.Run("ID_1_1_RunFilter", "CONNECTION_1_1_RunFilter", source, new List<string>(), Out);
+		integratedGUIFilter.Run("ID_1_1_RunFilter", "CONNECTION_1_1_RunFilter", string.Empty, source, new List<string>(), Out);
 
 		/*
 			in GUI Filter, output result connection id is it's keyword.
@@ -173,12 +173,12 @@ public partial class Test {
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedGUIImporter = new IntegratedGUIImporter();
+		var integratedGUIImporter = new IntegratedGUIImporter(AssetGraphSettings.PLATFORM_DEFAULT_NAME);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUIImporter.Setup("ID_1_2_SetupImporter", "CONNECTION_1_2_SetupImporter", source, new List<string>(), Out);
+		integratedGUIImporter.Setup("ID_1_2_SetupImporter", "CONNECTION_1_2_SetupImporter", string.Empty, source, new List<string>(), Out);
 		Debug.Log("passed _1_2_SetupImporter");
 	}
 	public void _1_3_RunImporter () {
@@ -196,12 +196,12 @@ public partial class Test {
 
 		var results = new Dictionary<string, List<InternalAssetData>>();
 
-		var integratedGUIImporter = new IntegratedGUIImporter();
+		var integratedGUIImporter = new IntegratedGUIImporter(AssetGraphSettings.PLATFORM_DEFAULT_NAME);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUIImporter.Run("ID_1_3_RunImporter", "CONNECTION_1_3_RunImporter", source, new List<string>(), Out);
+		integratedGUIImporter.Run("ID_1_3_RunImporter", "CONNECTION_1_3_RunImporter", string.Empty, source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_1_3_RunImporter"];
 		if (currentOutputs.Count == 3) {
@@ -246,11 +246,12 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUIBundlizer.Setup("ID_1_6_SetupBundlizer", "CONNECTION_1_6_SetupBundlizer", source, new List<string>(), Out);
+		integratedGUIBundlizer.Setup("ID_1_6_SetupBundlizer", "CONNECTION_1_6_SetupBundlizer", string.Empty, source, new List<string>(), Out);
 		Debug.Log("passed _1_6_SetupBundlizer");
 	}
 	public void _1_7_RunBundlizer () {
 		GraphStackController.CleanCache();
+		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
 
 		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
 
@@ -280,17 +281,25 @@ public partial class Test {
 			results[connectionId] = output["0"];
 		};
 
-		integratedGUIBundlizer.Run("ID_1_7_RunBundlizer", "CONNECTION_1_7_RunBundlizer", source, new List<string>(), Out);
+		integratedGUIBundlizer.Run("ID_1_7_RunBundlizer", "CONNECTION_1_7_RunBundlizer", string.Empty, source, new List<string>(), Out);
 
 		var currentOutputs = results["CONNECTION_1_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
 			// should be a_0.bundle
-			if (currentOutputs[0].pathUnderConnectionId != "a_0.bundle") {
+			if (currentOutputs[0].pathUnderConnectionId != "iOS/a_0.bundle") {
 				Debug.LogError("failed to bundlize, name not match:" + currentOutputs[0].pathUnderConnectionId);
 				return;
 			}
 
-			Debug.Log("passed _1_7_RunBundlizer");
+			// passed, erase bundle name setting.
+			var bundledAssetSourcePath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
+			if (!File.Exists(bundledAssetSourcePath)) {
+				Debug.LogError("failed to delete bundle setting. bundledAssetSourcePath:" + bundledAssetSourcePath);
+				return;
+			}
+
+			var assetImporter = AssetImporter.GetAtPath(bundledAssetSourcePath);
+			assetImporter.assetBundleName = string.Empty;
 			return;
 		}
 		
@@ -312,7 +321,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 		if (endpointNodeIdsAndNodeDatas.endpointNodeIds.Contains("2nd_Importer")) {
 			Debug.Log("passed _1_8_0_SerializeGraph_hasValidEndpoint");
 			return;
@@ -337,7 +346,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict);
+		var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(graphDict, string.Empty);
 
 		var endPoint0 = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds[0];
 		var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
@@ -345,7 +354,7 @@ public partial class Test {
 
 		var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 		var cacheDict = new Dictionary<string, List<string>>();
-		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict, cacheDict);
+		var orderedConnectionIds = GraphStackController.RunSerializedRoute(endPoint0, nodeDatas, connectionDatas, resultDict, cacheDict, string.Empty);
 		
 		if (orderedConnectionIds.Count == 0) {
 			Debug.LogError("list is empty");
@@ -376,14 +385,14 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		GraphStackController.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict, string.Empty);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/For_1_9_SerializedGraphJSONByExporter");
 
-		if (File.Exists(Path.Combine(expectedExportDestPath, "model/Materials/kiosk_0001.mat")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "model/sample.fbx")) &&
-			File.Exists(Path.Combine(expectedExportDestPath, "dummy.png"))
+		if (File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/Materials/kiosk_0001.mat")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/model/sample.fbx")) &&
+			File.Exists(Path.Combine(expectedExportDestPath, "iOS/dummy.png"))
 		) {
 			Debug.Log("passed _1_9_RunStackedGraph");
 			return;
@@ -423,7 +432,7 @@ public partial class Test {
 			
 		};
 
-		integratedGUIExporter.Setup("ID_1_10_SetupExport", "CONNECTION_1_10_SetupExport", exportTargets, new List<string>(), Out);
+		integratedGUIExporter.Setup("ID_1_10_SetupExport", "CONNECTION_1_10_SetupExport", string.Empty, exportTargets, new List<string>(), Out);
 		Debug.Log("passed _1_10_SetupExporter");
 	}
 
@@ -457,7 +466,7 @@ public partial class Test {
 			
 		};
 
-		integratedGUIExporter.Run("ID_1_11_RunExport", "CONNECTION_1_11_RunExport", exportTargets, new List<string>(), Out);
+		integratedGUIExporter.Run("ID_1_11_RunExport", "CONNECTION_1_11_RunExport", string.Empty, exportTargets, new List<string>(), Out);
 
 		var assumeedExportedFilePath = Path.Combine(exportFilePath, "a.png");
 
@@ -483,7 +492,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		GraphStackController.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict, string.Empty);
 		
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_12_SerializedGraphJSON");
@@ -512,7 +521,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		var resultDict = GraphStackController.SetupStackedGraph(graphDict);
+		var resultDict = GraphStackController.SetupStackedGraph(graphDict, string.Empty);
 
 		if (resultDict.Count == 11) {
 			Debug.Log("passed _1_13_SetupStackedGraph_FullStacked");
@@ -537,7 +546,7 @@ public partial class Test {
 
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
-		GraphStackController.SetupStackedGraph(graphDict);
+		GraphStackController.SetupStackedGraph(graphDict, string.Empty);
 
 		Debug.Log("passed _1_14_SetupStackedGraph_Sample");
 	}
@@ -556,7 +565,7 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		GraphStackController.RunStackedGraph(graphDict);
+		GraphStackController.RunStackedGraph(graphDict, string.Empty);
 
 		var projectFolderPath = Directory.GetParent(Application.dataPath).ToString();
 		var expectedExportDestPath = Path.Combine(projectFolderPath, "TestExportPlace/TestExportFor_1_14_RunStackedGraph_Sample");

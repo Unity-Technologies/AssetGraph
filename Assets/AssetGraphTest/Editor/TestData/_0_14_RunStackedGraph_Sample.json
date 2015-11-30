@@ -12,7 +12,9 @@
                 "x": 13,
                 "y": 11
             },
-            "loadPath": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            "loadPath": {
+                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
+            }
         },
         {
             "name": "FilterAllResources",
@@ -98,7 +100,9 @@
                 "x": 436,
                 "y": 60
             },
-            "groupingKeyword": "ID_*/"
+            "groupingKeyword": {
+                "Default": "ID_*/"
+            }
         },
         {
             "name": "CreateCharaPrefab",
@@ -151,7 +155,9 @@
                 "x": 1043,
                 "y": 185
             },
-            "exportPath": "/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
+            "exportPath": {
+                "Default": "/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
+            }
         }
     ],
     "connections": [
