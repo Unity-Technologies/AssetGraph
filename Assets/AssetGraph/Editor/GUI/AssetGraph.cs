@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
@@ -673,7 +674,7 @@ namespace AssetGraph {
 				node.HideProgress();
 			}
 
-			// reload
+			// reload data from file.
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
 				dataStr = sr.ReadToEnd();
@@ -683,6 +684,8 @@ namespace AssetGraph {
 
 			// ready throughput datas.
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, package);
+
+			Finally(connectionThroughputs, false);
 		}
 
 		private void Run (string package) {
@@ -692,7 +695,7 @@ namespace AssetGraph {
 				return;
 			}
 
-
+			// reload data from file.
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
 				dataStr = sr.ReadToEnd();
@@ -701,7 +704,7 @@ namespace AssetGraph {
 			var currentCount = 0.00f;
 			var totalCount = nodes.Count * 1f;
 
-			Action<string, float>  updateHandler = (nodeId, progress) => {
+			Action<string, float> updateHandler = (nodeId, progress) => {
 				var targetNodes = nodes.Where(node => node.nodeId == nodeId).ToList();
 				
 				var progressPercentage = ((currentCount/totalCount) * 100).ToString();
@@ -719,18 +722,41 @@ namespace AssetGraph {
 						}
 					);
 				}
-				
 			};
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			
+			// setup datas.
+			var currentConnectionThroughputs = GraphStackController.SetupStackedGraph(loadedData, package);
+			if (currentConnectionThroughputs.Any()) {
+				foreach (var currentConnectionThroughput in currentConnectionThroughputs.Keys) {
+					// Dictionary<string, Dictionary<string, List<string>>>
+					// Debug.LogError("currentConnectionThroughput:" + currentConnectionThroughput);
+				}
+			}
+
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
+
+			Finally(connectionThroughputs, true);
 		}
 
+
+		public void Finally (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isRun) {
+			Debug.LogError("connectionIdがキーなのに対して、Nodeに還元して読み出す。");
+			// var finallyBasedTypeRunner = assembly.GetTypes()
+			// 		.Where(currentType => currentType.BaseType == typeof(AssetGraphSettings.FINALLY_BASE_CLASS_NAME))
+			// 		.ToList();
+			var typeStr = "SampleFinally";
+			var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+			if (finallyScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(FinallyBase));
+			var finallyInstance = (FinallyBase)finallyScriptInstance;
+
+			finallyInstance.Run(throughputs, isRun);
+		}
 
 		public void OnGUI () {
 			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
