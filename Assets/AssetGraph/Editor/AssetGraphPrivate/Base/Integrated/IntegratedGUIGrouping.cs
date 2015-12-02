@@ -23,10 +23,15 @@ namespace AssetGraph {
 
 
 		private void GroupingOutput (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (!groupingKeyword.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
-				Debug.LogWarning("grouping keyword does not contain " + AssetGraphSettings.KEYWORD_WILDCARD + ", will return empty throughput.");
-				return;
-			}
+			ValidateGroupingKeyword(
+				groupingKeyword,
+				() => {
+					throw new Exception("groupingKeyword is empty.");
+				},
+				() => {
+					throw new Exception("grouping keyword does not contain " + AssetGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + groupingKeyword);
+				}
+			);
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -51,6 +56,11 @@ namespace AssetGraph {
 			}
 			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
+		}
+
+		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {
+			if (string.IsNullOrEmpty(currentGroupingKeyword)) NullOrEmpty();
+			if (!currentGroupingKeyword.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) ShouldContainWildCardKey();
 		}
 	}
 }

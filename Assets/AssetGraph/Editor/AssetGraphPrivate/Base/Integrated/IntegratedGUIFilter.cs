@@ -12,6 +12,11 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			var duplicated = containsKeywords.GroupBy(x => x)
+				.Where(group => group.Count() > 1)
+				.Select(group => group.Key);
+			if (duplicated.Any()) throw new Exception("filter keywords are duplicated.");
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -41,6 +46,11 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			var duplicated = containsKeywords.GroupBy(x => x)
+				.Where(group => group.Count() > 1)
+				.Select(group => group.Key);
+			if (duplicated.Any()) throw new Exception("filter keywords are duplicated.");
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -74,6 +84,11 @@ namespace AssetGraph {
 				var contains = source.Where(path => path.Contains(containsKeyword)).ToList();
 				Out(containsKeyword, contains);
 			}
+		}
+
+		public static void ValidateFilter (string currentFilterKeyword, List<string> keywords, Action NullOrEmpty, Action AlreadyContained) {
+			if (string.IsNullOrEmpty(currentFilterKeyword)) NullOrEmpty();
+			if (keywords.Contains(currentFilterKeyword)) AlreadyContained();
 		}
 	}
 }

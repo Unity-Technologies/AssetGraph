@@ -728,13 +728,8 @@ namespace AssetGraph {
 			
 			// setup datas.
 			var currentConnectionThroughputs = GraphStackController.SetupStackedGraph(loadedData, package);
-			if (currentConnectionThroughputs.Any()) {
-				foreach (var currentConnectionThroughput in currentConnectionThroughputs.Keys) {
-					// Dictionary<string, Dictionary<string, List<string>>>
-					// Debug.LogError("currentConnectionThroughput:" + currentConnectionThroughput);
-				}
-			}
-
+			Debug.LogError("ここで、最後まで駆動できない条件があれば、それらを列挙して停止、、っていうかエラーが出て止まるようにしよう。");
+			
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
 
@@ -745,17 +740,32 @@ namespace AssetGraph {
 		}
 
 
-		public void Finally (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isRun) {
-			Debug.LogError("connectionIdがキーなのに対して、Nodeに還元して読み出す。");
-			// var finallyBasedTypeRunner = assembly.GetTypes()
-			// 		.Where(currentType => currentType.BaseType == typeof(AssetGraphSettings.FINALLY_BASE_CLASS_NAME))
-			// 		.ToList();
-			var typeStr = "SampleFinally";
-			var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
-			if (finallyScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(FinallyBase));
-			var finallyInstance = (FinallyBase)finallyScriptInstance;
+		public void Finally (Dictionary<string, Dictionary<string, List<string>>> throughputsSource, bool isRun) {
+			var nodeThroughputs = NodeThroughputs(throughputsSource);
 
-			finallyInstance.Run(throughputs, isRun);
+			var finallyBasedTypeRunner = Assembly.GetExecutingAssembly().GetTypes()
+					.Where(currentType => currentType.BaseType == typeof(FinallyBase))
+					.Select(type => type.ToString())
+					.ToList();
+			foreach (var typeStr in finallyBasedTypeRunner) {
+				var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+				if (finallyScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(FinallyBase));
+				var finallyInstance = (FinallyBase)finallyScriptInstance;
+
+				finallyInstance.Run(nodeThroughputs, isRun);
+			}
+		}
+
+		private Dictionary<string, Dictionary<string, List<string>>> NodeThroughputs (Dictionary<string, Dictionary<string, List<string>>> throughputs) {
+			var nodeDatas = new Dictionary<string, Dictionary<string, List<string>>>();
+			var nodeIds = nodes.Select(node => node.nodeId).ToList();
+			foreach (var nodeOrConnectionId in throughputs.Keys) {
+				if (nodeIds.Contains(nodeOrConnectionId)) {
+					var targetNode = nodes.Where(node => node.nodeId == nodeOrConnectionId).FirstOrDefault();
+					nodeDatas[targetNode.name] = throughputs[targetNode.nodeId];
+				}
+			}
+			return nodeDatas;
 		}
 
 		public void OnGUI () {
@@ -1758,22 +1768,24 @@ namespace AssetGraph {
 			}
 
 			switch (e.eventType) {
-				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_UPDATED: {
-					Debug.LogError("auto delete connection if connection point is added. will fix.");
-					var targetNode = e.eventSourceNode;
-
-					var connectionsFromThisNode = connections.Where(con => con.startNodeId == targetNode.nodeId).ToList();
-					var connectionsToThisNode = connections.Where(con => con.endNodeId == targetNode.nodeId).ToList();
+				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
+					var deletedConnectionPoint = e.eventSourceConnectionPoint;
+					var deletedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == deletedConnectionPoint.pointId).ToList();
 					
-					// remove connections from this node.
-					foreach (var con in connectionsFromThisNode) {
-						connections.Remove(con);						
-					}
+					if (!deletedOutputPointConnections.Any()) break;
 
-					// remove connections to this node.
-					foreach (var con in connectionsToThisNode) {
-						connections.Remove(con);						
-					}
+					connections.Remove(deletedOutputPointConnections[0]);
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
+					var labelChangedConnectionPoint = e.eventSourceConnectionPoint;
+					var changedLabel = labelChangedConnectionPoint.label;
+
+					var labelChangedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == labelChangedConnectionPoint.pointId).ToList();
+
+					if (!labelChangedOutputPointConnections.Any()) break;
+
+					labelChangedOutputPointConnections[0].label = changedLabel;
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_SAVE: {

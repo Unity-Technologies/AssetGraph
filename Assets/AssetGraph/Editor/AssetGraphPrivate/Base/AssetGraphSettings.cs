@@ -122,7 +122,7 @@ namespace AssetGraph {
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
 		public const string DUMMY_IMPORTER_LABELTONEXT = "importer_dummy_label";
 
-		public const string DEFAULT_FILTER_KEYWORD = "set keyword.";
+		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 
 		public enum NodeKind : int {
 			FILTER_SCRIPT,

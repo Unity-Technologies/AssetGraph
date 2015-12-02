@@ -13,15 +13,16 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (string.IsNullOrEmpty(loadFilePath)) {
-				Debug.LogWarning("no Load Path set.");
-				return;
-			}
-
-			if (!Directory.Exists(loadFilePath)) {
-				Debug.LogError("no Load Path found, loadFilePath:" + loadFilePath);
-				return;
-			}
+			ValidateLoadPath(
+				loadFilePath,
+				loadFilePath,
+				() => {
+					throw new Exception("load path is empty.");
+				}, 
+				() => {
+					throw new Exception("directory not found:" + loadFilePath);
+				}
+			);
 
 			var outputSource = new List<InternalAssetData>();
 			try {
@@ -47,15 +48,16 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (string.IsNullOrEmpty(loadFilePath)) {
-				Debug.LogWarning("no Load Path set.");
-				return;
-			}
-
-			if (!Directory.Exists(loadFilePath)) {
-				Debug.LogError("no Load Path found, loadFilePath:" + loadFilePath);
-				return;
-			}
+			ValidateLoadPath(
+				loadFilePath,
+				loadFilePath,
+				() => {
+					throw new Exception("load path is empty.");
+				}, 
+				() => {
+					throw new Exception("directory not found:" + loadFilePath);
+				}
+			);
 			
 			var outputSource = new List<InternalAssetData>();
 			try {
@@ -78,6 +80,11 @@ namespace AssetGraph {
 			} catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
+		}
+
+		public static void ValidateLoadPath (string currentLoadPath, string combinedPath, Action NullOrEmpty, Action NotExist) {
+			if (string.IsNullOrEmpty(currentLoadPath)) NullOrEmpty();
+			if (!Directory.Exists(combinedPath)) NotExist();
 		}
 	}
 }

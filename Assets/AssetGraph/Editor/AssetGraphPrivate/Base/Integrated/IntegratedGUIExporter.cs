@@ -13,27 +13,29 @@ namespace AssetGraph {
 		}
 		
 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (string.IsNullOrEmpty(exportFilePath)) {
-				Debug.LogWarning("no Export Path set.");
-				return;
-			}
-
-			if (!Directory.Exists(exportFilePath)) {
-				Debug.LogError("no Export Path found, exportFilePath:" + exportFilePath);
-				return;
-			}
+			ValidateExportPath(
+				exportFilePath,
+				exportFilePath,
+				() => {
+					throw new Exception("no Export Path set.");
+				},
+				() => {
+					throw new Exception("no Export Path found, exportFilePath:" + exportFilePath);
+				}
+			);
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (string.IsNullOrEmpty(exportFilePath)) {
-				Debug.LogWarning("no Export Path set.");
-				return;
-			}
-
-			if (!Directory.Exists(exportFilePath)) {
-				Debug.LogError("no Export Path found, exportFilePath:" + exportFilePath);
-				return;
-			}
+			ValidateExportPath(
+				exportFilePath,
+				exportFilePath,
+				() => {
+					throw new Exception("no Export Path set.");
+				},
+				() => {
+					throw new Exception("no Export Path found, exportFilePath:" + exportFilePath);
+				}
+			);
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
@@ -50,6 +52,11 @@ namespace AssetGraph {
 			}
 
 			// there is no output from this node.
+		}
+
+		public static void ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action NotExist) {
+			if (string.IsNullOrEmpty(currentExportFilePath)) NullOrEmpty();
+			if (!Directory.Exists(combinedPath)) NotExist();
 		}
 	}
 }

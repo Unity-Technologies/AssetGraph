@@ -5,6 +5,7 @@ using UnityEditor;
 
 namespace AssetGraph {
 	[Serializable] public class ConnectionPoint {
+		[SerializeField] public string pointId;
 		[SerializeField] public string label;
 		[SerializeField] public bool isInput;
 		[SerializeField] public bool isOutput;
@@ -13,6 +14,7 @@ namespace AssetGraph {
 		[SerializeField] public string buttonStyle;
 
 		public ConnectionPoint (string label, bool input, bool output) {
+			this.pointId = Guid.NewGuid().ToString();
 			this.label = label;
 			this.isInput = input;
 			this.isOutput = output;

@@ -209,6 +209,17 @@ namespace AssetGraph {
 
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, node.currentPlatform, node.currentPackage).ToString());
+								var loaderNodePath = GraphStackController.WithProjectPath(newLoadPath);
+								IntegratedGUILoader.ValidateLoadPath(
+									newLoadPath,
+									loaderNodePath,
+									() => {
+										EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
+									},
+									() => {
+										EditorGUILayout.HelpBox("directory not found:" + loaderNodePath, MessageType.Error);
+									}
+								);
 								
 								if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, node.currentPlatform, node.currentPackage).ToString()) {
 									node.loadPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newLoadPath;
@@ -250,20 +261,32 @@ namespace AssetGraph {
 							node.Save();
 						}
 						
+
 						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 							GUILayout.BeginHorizontal();
 							{
 								if (GUILayout.Button("-")) {
 									node.filterContainsKeywords.RemoveAt(i);
-									node.UpdateOutputPoints();
-									node.Save();
+									node.FilterOutputPointsDeleted(i);
 								} else {
 									var newContainsKeyword = EditorGUILayout.TextField("Contains", node.filterContainsKeywords[i]);
+									var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
+									currentKeywordsSource.RemoveAt(i);
+									var currentKeywords = new List<string>(currentKeywordsSource);
+									IntegratedGUIFilter.ValidateFilter(
+										newContainsKeyword,
+										currentKeywords,
+										() => {
+											EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
+										},
+										() => {
+											EditorGUILayout.HelpBox("same filter already contained.", MessageType.Error);
+										}
+									);
+
 									if (newContainsKeyword != node.filterContainsKeywords[i]) {
 										node.filterContainsKeywords[i] = newContainsKeyword;
-										node.UpdateOutputPoints();
-										node.UpdateNodeRect();
-										node.Save();
+										node.FilterOutputPointsLabelChanged(i, newContainsKeyword);
 									}
 								}
 							}
@@ -272,10 +295,9 @@ namespace AssetGraph {
 
 						// add contains keyword interface.
 						if (GUILayout.Button("+")) {
+							var addingIndex = node.filterContainsKeywords.Count;
 							node.filterContainsKeywords.Add(AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
-							node.UpdateOutputPoints();
-							node.UpdateNodeRect();
-							node.Save();
+							node.FilterOutputPointsAdded(addingIndex, AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
 						}
 
 						break;
@@ -386,9 +408,19 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var groupingKeyword = EditorGUILayout.TextField("Grouping Keyword", GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString());
-							if (groupingKeyword != GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString()) {
-								node.groupingKeyword[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = groupingKeyword;
+							var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword", GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString());
+							IntegratedGUIGrouping.ValidateGroupingKeyword(
+								newGroupingKeyword,
+								() => {
+									EditorGUILayout.HelpBox("groupingKeyword is empty.", MessageType.Error);
+								},
+								() => {
+									EditorGUILayout.HelpBox("grouping keyword does not contain " + AssetGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + newGroupingKeyword, MessageType.Error);
+								}
+							);
+
+							if (newGroupingKeyword != GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString()) {
+								node.groupingKeyword[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newGroupingKeyword;
 								node.Save();
 							}
 						}
@@ -405,7 +437,6 @@ namespace AssetGraph {
 						}
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
-						Debug.LogWarning("型指定をしたらScriptPathが決まる、っていうのがいいと思う。型指定の窓が欲しい。");
 						break;
 					}
 
@@ -419,6 +450,20 @@ namespace AssetGraph {
 						}
 
 						var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
+
+						/*
+							check prefabricator script-type string.
+						*/
+						if (string.IsNullOrEmpty(newScriptType)) {
+							EditorGUILayout.HelpBox("PrefabricatorBase extended class name is empty.", MessageType.Error);
+						}
+
+						var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(newScriptType);
+						
+						if (loadedType == null) {
+							EditorGUILayout.HelpBox("PrefabricatorBase extended class not found:" + newScriptType, MessageType.Error);
+						}
+
 						if (newScriptType != node.scriptType) {
 							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
 							node.scriptType = newScriptType;
@@ -458,6 +503,17 @@ namespace AssetGraph {
 						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString());
+
+							IntegratedGUIBundlizer.ValidateBundleNameTemplate(
+								bundleNameTemplate,
+								() => {
+									EditorGUILayout.HelpBox("no Bundle Name Template set.", MessageType.Error);
+								},
+								() => {
+									EditorGUILayout.HelpBox("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template:" + bundleNameTemplate, MessageType.Error);
+								}
+							);
+
 							if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString()) {
 								node.bundleNameTemplate[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = bundleNameTemplate;
 								node.Save();
@@ -544,8 +600,19 @@ namespace AssetGraph {
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var newExportPath = EditorGUILayout.TextField("Export Path", GraphStackController.ValueFromPlatformAndPackage(node.exportPath, node.currentPlatform, node.currentPackage).ToString());
+							var exporterrNodePath = GraphStackController.WithProjectPath(newExportPath);
+							IntegratedGUIExporter.ValidateExportPath(
+								newExportPath,
+								exporterrNodePath,
+								() => {
+									EditorGUILayout.HelpBox("export path is empty.", MessageType.Error);
+								},
+								() => {
+									EditorGUILayout.HelpBox("directory not found:" + exporterrNodePath, MessageType.Error);
+								}
+							);
+
 							if (newExportPath != node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)]) {
-								Debug.LogWarning("本当は打ち込み単位の更新ではなくて、Finderからパス、、とかがいいんだと思うけど、今はパス。");
 								node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newExportPath;
 								node.Save();
 							}
@@ -674,18 +741,25 @@ namespace AssetGraph {
 			}
 		}
 
-		public void UpdateOutputPoints () {
-			connectionPoints = new List<ConnectionPoint>();
+		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
+			connectionPoints.Insert(addedIndex, new OutputPoint(keyword));
+			UpdateNodeRect();
+			Save();
+		}
 
-			foreach (var keyword in filterContainsKeywords) {
-				var newPoint = new OutputPoint(keyword);
-				AddConnectionPoint(newPoint);
-			}
+		public void FilterOutputPointsDeleted (int deletedIndex) {
+			var deletedConnectionPoint = connectionPoints[deletedIndex];
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
+			connectionPoints.RemoveAt(deletedIndex);
+			UpdateNodeRect();
+			Save();
+		}
 
-			// add input point
-			AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_UPDATED, this, Vector2.zero, null));
+		public void FilterOutputPointsLabelChanged (int changedIndex, string latestLabel) {
+			connectionPoints[changedIndex].label = latestLabel;
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex]));
+			UpdateNodeRect();
+			Save();
 		}
 
 		public void Save () {
@@ -1179,6 +1253,7 @@ namespace AssetGraph {
 		}
 
 		public void UpdateNodeRect () {
+			Debug.LogError("ここにheight変えるのがないのが原因ぽい");
 			var contentWidth = this.name.Length;
 			if (this.kind == AssetGraphSettings.NodeKind.FILTER_GUI) {
 				var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
