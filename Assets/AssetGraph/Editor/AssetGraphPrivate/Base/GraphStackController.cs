@@ -737,7 +737,10 @@ namespace AssetGraph {
 					.Select(con => con.connectionId)
 					.ToList();
 				
-				if (!targetConnectionIds.Any()) return;
+				if (!targetConnectionIds.Any()) {
+					// if no connection, no results for next.
+					return;
+				}
 				
 				var targetConnectionId = targetConnectionIds[0];
 				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
@@ -1191,9 +1194,14 @@ namespace AssetGraph {
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}
 
-		public static string Current_Platform_Package_Folder (string package) {
+		public static string ShrinkedCurrentPlatform () {
 			var currentPlatformCandidate = EditorUserBuildSettings.activeBuildTarget.ToString();
 			if (currentPlatformCandidate.StartsWith(AssetGraphSettings.PLATFORM_STANDALONE)) currentPlatformCandidate = AssetGraphSettings.PLATFORM_STANDALONE;
+			return currentPlatformCandidate;
+		}
+
+		public static string Current_Platform_Package_Folder (string package) {
+			var currentPlatformCandidate = ShrinkedCurrentPlatform();
 
 			return Platform_Package_Key(currentPlatformCandidate, package);
 		}
@@ -1212,6 +1220,11 @@ namespace AssetGraph {
 			
 			if (candidateArray.Length == 2) return candidateArray[1];
 			return string.Empty;
+		}
+
+		public static string Platform_Dot_Package (string package) {
+			if (!string.IsNullOrEmpty(package)) return ShrinkedCurrentPlatform() + "." + package;
+			return ShrinkedCurrentPlatform();
 		}
 	}
 

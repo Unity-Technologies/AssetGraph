@@ -726,9 +726,8 @@ namespace AssetGraph {
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			
-			// setup datas.
-			var currentConnectionThroughputs = GraphStackController.SetupStackedGraph(loadedData, package);
-			Debug.LogError("ここで、最後まで駆動できない条件があれば、それらを列挙して停止、、っていうかエラーが出て止まるようにしよう。");
+			// setup datas. fail if exception raise.
+			GraphStackController.SetupStackedGraph(loadedData, package);
 			
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);

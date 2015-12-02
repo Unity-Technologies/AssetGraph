@@ -286,7 +286,7 @@ public partial class Test {
 		var currentOutputs = results["CONNECTION_1_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
 			// should be a_0.bundle
-			if (currentOutputs[0].pathUnderConnectionId != "iOS/a_0.bundle") {
+			if (currentOutputs[0].pathUnderConnectionId != "iOS/a_0.bundle.iOS") {
 				Debug.LogError("failed to bundlize, name not match:" + currentOutputs[0].pathUnderConnectionId);
 				return;
 			}

@@ -94,7 +94,7 @@ namespace AssetGraph {
 					} else {
 						// cached.
 						usedCache.Add(newPrefabOutputPath);
-						Debug.Log("AssetGraph prefab:" + newPrefabOutputPath + " is already cached. if regenerate forcely, set Prefabricate(baseObject, prefabName, true) <- forcely regenerate prefab.");
+						Debug.Log("AssetGraph prefab:" + newPrefabOutputPath + " is already cached. if want to regenerate forcely, set Prefabricate(baseObject, prefabName, true) <- forcely regenerate prefab.");
 					}
 
 					// set used.
