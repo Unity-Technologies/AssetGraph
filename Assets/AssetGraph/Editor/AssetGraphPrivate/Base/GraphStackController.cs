@@ -1192,8 +1192,10 @@ namespace AssetGraph {
 		}
 
 		public static string Current_Platform_Package_Folder (string package) {
-			Debug.LogWarning("プラットフォームが特定のものだったらStandaloneに変える");
-			return Platform_Package_Key(EditorUserBuildSettings.activeBuildTarget.ToString(), package);
+			var currentPlatformCandidate = EditorUserBuildSettings.activeBuildTarget.ToString();
+			if (currentPlatformCandidate.StartsWith(AssetGraphSettings.PLATFORM_STANDALONE)) currentPlatformCandidate = AssetGraphSettings.PLATFORM_STANDALONE;
+
+			return Platform_Package_Key(currentPlatformCandidate, package);
 		}
 
 		public static string Default_Platform_Package_Folder (string package) {

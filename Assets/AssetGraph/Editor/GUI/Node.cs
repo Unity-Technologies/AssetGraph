@@ -286,7 +286,7 @@ namespace AssetGraph {
 
 									if (newContainsKeyword != node.filterContainsKeywords[i]) {
 										node.filterContainsKeywords[i] = newContainsKeyword;
-										node.FilterOutputPointsLabelChanged(i, newContainsKeyword);
+										node.FilterOutputPointsLabelChanged(i, node.filterContainsKeywords[i]);
 									}
 								}
 							}
@@ -296,7 +296,8 @@ namespace AssetGraph {
 						// add contains keyword interface.
 						if (GUILayout.Button("+")) {
 							var addingIndex = node.filterContainsKeywords.Count;
-							node.filterContainsKeywords.Add(AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
+							var newKeyword = AssetGraphSettings.DEFAULT_FILTER_KEYWORD;
+							node.filterContainsKeywords.Add(newKeyword);
 							node.FilterOutputPointsAdded(addingIndex, AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
 						}
 
@@ -976,15 +977,6 @@ namespace AssetGraph {
 
 		public void AddConnectionPoint (ConnectionPoint adding) {
 			connectionPoints.Add(adding);
-			
-			// update node size by number of output connectionPoint.
-			var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
-			if (1 < outputPointCount) {
-				this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
-			} else {
-				this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
-			}
-
 			UpdateNodeRect();
 		}
 
@@ -1253,12 +1245,20 @@ namespace AssetGraph {
 		}
 
 		public void UpdateNodeRect () {
-			Debug.LogError("ここにheight変えるのがないのが原因ぽい");
+
 			var contentWidth = this.name.Length;
 			if (this.kind == AssetGraphSettings.NodeKind.FILTER_GUI) {
 				var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
 				if (longestFilterLengths.Any()) {
 					contentWidth = contentWidth + longestFilterLengths[0];
+				}
+
+				// update node height by number of output connectionPoint.
+				var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
+				if (1 < outputPointCount) {
+					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
+				} else {
+					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
 				}
 			}
 

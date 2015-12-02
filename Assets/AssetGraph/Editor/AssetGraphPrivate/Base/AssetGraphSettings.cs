@@ -38,6 +38,7 @@ namespace AssetGraph {
 		public const string package_SEPARATOR = "___";
 
 		public const string PLATFORM_DEFAULT_NAME = "Default";
+		public const string PLATFORM_STANDALONE = "Standalone";
 		public const string PLATFORM_DEFAULT_PACKAGE = "DefaultPackage";
 		public const string PLATFORM_NEW_PACKAGE = "newPackage";
 		public const string PLATFORM_NONE_PACKAGE = "(None)";
