@@ -1244,7 +1244,7 @@ namespace AssetGraph {
 		private void AddNodeFromGUI (string nodeName, AssetGraphSettings.NodeKind kind, string nodeId, float x, float y) {
 			Node newNode = null;
 
-			if (string.IsNullOrEmpty(nodeName)) nodeName = AssetGraphSettings.DEFAULT_NODE_NAME[kind];
+			if (string.IsNullOrEmpty(nodeName)) nodeName = AssetGraphSettings.DEFAULT_NODE_NAME[kind] + nodes.Where(node => node.kind == kind).ToList().Count;
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -1832,6 +1832,7 @@ namespace AssetGraph {
 				case OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE: {
 					package = e.eventSourceNode.currentPackage;
 					Setup(package);
+					Repaint();
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_UPDATEPACKAGE: {

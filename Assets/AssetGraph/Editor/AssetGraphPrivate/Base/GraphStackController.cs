@@ -1009,7 +1009,6 @@ namespace AssetGraph {
 		public static T Executor<T> (string typeStr) where T : INodeBase {
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
-				Debug.LogError("ここ、nullだったらどのNodeがダメだったかわかりやすくすると良い感じ。中止を盛り込むならこの辺か、、");
 				throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
 			}
 			return ((T)nodeScriptInstance);

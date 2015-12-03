@@ -183,5 +183,12 @@ namespace AssetGraph {
 		public virtual void In (string groupKey, List<AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
+
+
+		public static void ValidatePrefabScriptType (string prefabScriptType, Action NullOrEmpty, Action PrefabTypeIsNull) {
+			if (string.IsNullOrEmpty(prefabScriptType)) NullOrEmpty();
+			var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(prefabScriptType);
+			if (loadedType == null) PrefabTypeIsNull();
+		}
 	}
 }
