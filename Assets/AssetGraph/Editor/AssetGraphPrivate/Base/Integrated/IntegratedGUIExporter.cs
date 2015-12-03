@@ -23,6 +23,8 @@ namespace AssetGraph {
 					throw new Exception("no Export Path found, exportFilePath:" + exportFilePath);
 				}
 			);
+
+			Export(nodeId, labelToNext, groupedSources, Output, false);
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -37,21 +39,38 @@ namespace AssetGraph {
 				}
 			);
 
+			Export(nodeId, labelToNext, groupedSources, Output, true);
+		}
+
+		private void Export (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output, bool isRun) {
+			var outputDict = new Dictionary<string, List<InternalAssetData>>();
+			outputDict["0"] = new List<InternalAssetData>();
+
 			foreach (var groupKey in groupedSources.Keys) {
+				var exportedAssets = new List<InternalAssetData>();
 				var inputSources = groupedSources[groupKey];
+
 				foreach (var source in inputSources) {
-					if (!Directory.Exists(exportFilePath)) Directory.CreateDirectory(exportFilePath);
+					if (isRun) {
+						if (!Directory.Exists(exportFilePath)) Directory.CreateDirectory(exportFilePath);
+					}
+
 					var destination = FileController.PathCombine(exportFilePath, source.pathUnderConnectionId);
 					var parentDir = Directory.GetParent(destination).ToString();
 
-					if (!Directory.Exists(parentDir)) Directory.CreateDirectory(parentDir);
+					if (isRun) {
+						if (!Directory.Exists(parentDir)) Directory.CreateDirectory(parentDir);
+						if (File.Exists(destination)) File.Delete(destination);
+						File.Copy(source.importedPath, destination);
+					}
 
-					if (File.Exists(destination)) File.Delete(destination);
-					File.Copy(source.importedPath, destination);
+					var exportedAsset = InternalAssetData.InternalAssetDataGeneratedByExporter(destination);
+					exportedAssets.Add(exportedAsset);
 				}
+				outputDict["0"].AddRange(exportedAssets);
 			}
 
-			// there is no output from this node.
+			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
 		public static void ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action NotExist) {

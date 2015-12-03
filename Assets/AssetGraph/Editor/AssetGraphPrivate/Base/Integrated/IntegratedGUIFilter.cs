@@ -14,8 +14,9 @@ namespace AssetGraph {
 		public void Setup (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var duplicated = containsKeywords.GroupBy(x => x)
 				.Where(group => group.Count() > 1)
-				.Select(group => group.Key);
-			if (duplicated.Any()) throw new Exception("filter keywords are duplicated.");
+				.Select(group => group.Key)
+				.ToList();
+			if (duplicated.Any()) throw new Exception("filter keywords are overlapping:" + duplicated[0]);
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -48,8 +49,9 @@ namespace AssetGraph {
 		public void Run (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var duplicated = containsKeywords.GroupBy(x => x)
 				.Where(group => group.Count() > 1)
-				.Select(group => group.Key);
-			if (duplicated.Any()) throw new Exception("filter keywords are duplicated.");
+				.Select(group => group.Key)
+				.ToList();
+			if (duplicated.Any()) throw new Exception("filter keywords are overlapping:" + duplicated[0]);
 			
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();

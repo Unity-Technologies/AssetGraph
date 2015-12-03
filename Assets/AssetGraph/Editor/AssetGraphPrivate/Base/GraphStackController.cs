@@ -323,6 +323,19 @@ namespace AssetGraph {
 			var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 			var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
+			/*
+				node names should not overlapping.
+			*/
+			{
+				var nodeNames = nodeDatas.Select(node => node.nodeName).ToList();
+				var duplicated = nodeNames.GroupBy(x => x)
+					.Where(group => group.Count() > 1)
+					.Select(group => group.Key)
+					.ToList();
+
+				if (duplicated.Any()) throw new Exception("node names are overlapping:" + duplicated[0]);
+			}
+
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 			var cacheDict = new Dictionary<string, List<string>>();
 
@@ -365,11 +378,20 @@ namespace AssetGraph {
 
 					var sourcePathList = new List<string>();
 					foreach (var assetData in connectionThroughputList) {
-						if (assetData.absoluteSourcePath != null) {
+						if (!string.IsNullOrEmpty(assetData.absoluteSourcePath)) {
 							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(ProjectPathWithSlash(), string.Empty);
 							sourcePathList.Add(relativeAbsolutePath);
-						} else {
+							continue;
+						}
+
+						if (!string.IsNullOrEmpty(assetData.pathUnderConnectionId)) {
 							sourcePathList.Add(assetData.pathUnderConnectionId);
+							continue;
+						}
+
+						if (!string.IsNullOrEmpty(assetData.exportedPath)) {
+							sourcePathList.Add(assetData.exportedPath);
+							continue;
 						}
 					}
 					newConnectionGroupDict[groupKey] = sourcePathList;
@@ -739,6 +761,12 @@ namespace AssetGraph {
 				
 				if (!targetConnectionIds.Any()) {
 					// if no connection, no results for next.
+					// save results to resultDict with endpoint node's id.
+					resultDict[dataSourceNodeId] = new Dictionary<string, List<InternalAssetData>>();
+					foreach (var groupKey in result.Keys) {
+						if (!resultDict[dataSourceNodeId].ContainsKey(groupKey)) resultDict[dataSourceNodeId][groupKey] = new List<InternalAssetData>();
+						resultDict[dataSourceNodeId][groupKey].AddRange(result[groupKey]);
+					}
 					return;
 				}
 				

@@ -12,6 +12,7 @@ namespace AssetGraph {
 		public readonly string pathUnderSourceBase;
 		public readonly string importedPath;
 		public readonly string pathUnderConnectionId;
+		public readonly string exportedPath;
 		public readonly string assetId;
 		public readonly Type assetType;
 		public readonly bool isNew;
@@ -30,7 +31,7 @@ namespace AssetGraph {
 		}
 
 		/**
-			new assets which is Imported(script only).
+			new assets which is Imported.
 		*/
 		public static InternalAssetData InternalAssetDataByImporter (string traceId, string absoluteSourcePath, string sourceBasePath, string fileNameAndExtension, string pathUnderSourceBase, string importedPath, string assetId, Type assetType) {
 			return new InternalAssetData(
@@ -83,6 +84,14 @@ namespace AssetGraph {
 			);
 		}
 
+		public static InternalAssetData InternalAssetDataGeneratedByExporter (string exportedPath) {
+			return new InternalAssetData(
+				traceId:Guid.NewGuid().ToString(),
+				fileNameAndExtension:Path.GetFileName(exportedPath),
+				exportedPath:exportedPath
+			);
+		}
+
 
 		private InternalAssetData (
 			string traceId = null,
@@ -92,6 +101,7 @@ namespace AssetGraph {
 			string pathUnderSourceBase = null,
 			string importedPath = null,
 			string pathUnderConnectionId = null,
+			string exportedPath = null,
 			string assetId = null,
 			Type assetType = null,
 			bool isNew = false
@@ -103,6 +113,7 @@ namespace AssetGraph {
 			this.pathUnderSourceBase = pathUnderSourceBase;
 			this.importedPath = importedPath;
 			this.pathUnderConnectionId = pathUnderConnectionId;
+			this.exportedPath = exportedPath;
 			this.assetId = assetId;
 			this.assetType = assetType;
 			this.isNew = isNew;

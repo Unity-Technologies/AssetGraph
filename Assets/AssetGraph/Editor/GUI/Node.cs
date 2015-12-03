@@ -22,6 +22,8 @@ namespace AssetGraph {
 		public static Texture2D outputPointMarkConnectedTex;
 		public static Texture2D[] platformButtonTextures;
 		public static string[] platformStrings;
+
+		public static List<string> allNodeNames;
 			
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
@@ -188,12 +190,7 @@ namespace AssetGraph {
 						if (node.loadPath == null) return;
 						
 						EditorGUILayout.HelpBox("Loader: load files from path.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						GUILayout.Space(10f);
 
@@ -234,12 +231,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
 						EditorGUILayout.HelpBox("Filter: filtering files by script.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 
@@ -254,12 +246,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						EditorGUILayout.HelpBox("Filter: filtering files by keywords.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 						
 
 						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
@@ -280,7 +267,7 @@ namespace AssetGraph {
 											EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
 										},
 										() => {
-											EditorGUILayout.HelpBox("same filter already contained.", MessageType.Error);
+											EditorGUILayout.HelpBox("already exist.", MessageType.Error);
 										}
 									);
 
@@ -306,12 +293,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
 						EditorGUILayout.HelpBox("Importer: import files by script.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
@@ -319,12 +301,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 						EditorGUILayout.HelpBox("Importer: import files with applying settings from SamplingAssets.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 						
 						GUILayout.Space(10f);
 
@@ -396,12 +373,7 @@ namespace AssetGraph {
 						if (node.groupingKeyword == null) return;
 
 						EditorGUILayout.HelpBox("Grouping: grouping files by one keyword.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						GUILayout.Space(10f);
 
@@ -430,12 +402,7 @@ namespace AssetGraph {
 					
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
@@ -443,12 +410,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
 
@@ -475,12 +437,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
@@ -490,12 +447,7 @@ namespace AssetGraph {
 						if (node.bundleNameTemplate == null) return;
 
 						EditorGUILayout.HelpBox("Bundlizer: bundle resources to AssetBundle by template.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						GUILayout.Space(10f);
 
@@ -503,7 +455,7 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString());
+							var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString()).ToLower();
 
 							IntegratedGUIBundlizer.ValidateBundleNameTemplate(
 								bundleNameTemplate,
@@ -527,12 +479,7 @@ namespace AssetGraph {
 						if (node.enabledBundleOptions == null) return;
 
 						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						GUILayout.Space(10f);
 
@@ -587,12 +534,7 @@ namespace AssetGraph {
 						if (node.exportPath == null) return;
 
 						EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
-						var newName = EditorGUILayout.TextField("Node Name", node.name);
-						if (newName != node.name) {
-							node.name = newName;
-							node.UpdateNodeRect();
-							node.Save();
-						}
+						UpdateNodeName(node);
 
 						GUILayout.Space(10f);
 
@@ -625,6 +567,23 @@ namespace AssetGraph {
 						Debug.LogError("failed to match:" + node.kind);
 						break;
 					}
+				}
+			}
+
+			private void UpdateNodeName (Node node) {
+				var newName = EditorGUILayout.TextField("Node Name", node.name);
+				
+				var overlapping = Node.allNodeNames.GroupBy(x => x)
+					.Where(group => group.Count() > 1)
+					.Select(group => group.Key);
+				if (overlapping.Any() && overlapping.Contains(newName)) {
+					EditorGUILayout.HelpBox("node name is overlapping:" + newName, MessageType.Error);
+				}
+
+				if (newName != node.name) {
+					node.name = newName;
+					node.UpdateNodeRect();
+					node.Save();
 				}
 			}
 

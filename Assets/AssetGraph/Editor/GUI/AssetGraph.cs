@@ -682,6 +682,9 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
+			// update static all node names.
+			Node.allNodeNames = new List<string>(nodes.Select(node => node.name).ToList());
+
 			// ready throughput datas.
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, package);
 
@@ -755,15 +758,49 @@ namespace AssetGraph {
 			}
 		}
 
+		/**
+			collect node's result with node name.
+			structure is:
+
+			nodeNames
+				groups
+					resources
+		*/
 		private Dictionary<string, Dictionary<string, List<string>>> NodeThroughputs (Dictionary<string, Dictionary<string, List<string>>> throughputs) {
 			var nodeDatas = new Dictionary<string, Dictionary<string, List<string>>>();
+
 			var nodeIds = nodes.Select(node => node.nodeId).ToList();
+			var connectionIds = connections.Select(con => con.connectionId).ToList();
+
 			foreach (var nodeOrConnectionId in throughputs.Keys) {
+				// get endpoint node result.
 				if (nodeIds.Contains(nodeOrConnectionId)) {
-					var targetNode = nodes.Where(node => node.nodeId == nodeOrConnectionId).FirstOrDefault();
-					nodeDatas[targetNode.name] = throughputs[targetNode.nodeId];
+					var targetNodeName = nodes.Where(node => node.nodeId == nodeOrConnectionId).Select(node => node.name).FirstOrDefault();
+					
+					var nodeThroughput = throughputs[nodeOrConnectionId];
+
+					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
+					foreach (var groupKey in nodeThroughput.Keys) {
+						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
+						nodeDatas[targetNodeName][groupKey].AddRange(nodeThroughput[groupKey]);
+					}
+				}
+
+				// get connection result.
+				if (connectionIds.Contains(nodeOrConnectionId)) {
+					var targetConnection = connections.Where(con => con.connectionId == nodeOrConnectionId).FirstOrDefault();
+					var targetNodeName = nodes.Where(node => node.nodeId == targetConnection.startNodeId).Select(node => node.name).FirstOrDefault();
+					
+					var nodeThroughput = throughputs[nodeOrConnectionId];
+
+					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
+					foreach (var groupKey in nodeThroughput.Keys) {
+						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
+						nodeDatas[targetNodeName][groupKey].AddRange(nodeThroughput[groupKey]);
+					}
 				}
 			}
+
 			return nodeDatas;
 		}
 
