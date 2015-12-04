@@ -1176,11 +1176,6 @@ namespace AssetGraph {
 			return new List<string>();
 		}
 
-		// stringからプラットフォームのenumを得る、できるはず
-		// public static NodeKind NodeKindFromString (string val) {
-  // 			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
-  // 		}
-
 		public static string ValueFromPlatformAndPackage (Dictionary<string, string> packageDict, string platform, string package) {
 			var key = Platform_Package_Key(platform, package);
 			if (packageDict.ContainsKey(key)) return packageDict[key];

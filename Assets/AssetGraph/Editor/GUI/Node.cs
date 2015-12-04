@@ -36,13 +36,13 @@ namespace AssetGraph {
 
 		[SerializeField] public string scriptType;
 		[SerializeField] public string scriptPath;
-		[SerializeField] public Dictionary<string, string> loadPath;
-		[SerializeField] public Dictionary<string, string> exportPath;
+		[SerializeField] public SerializablePseudoDictionary loadPath;
+		[SerializeField] public SerializablePseudoDictionary exportPath;
 		[SerializeField] public List<string> filterContainsKeywords;
-		[SerializeField] public Dictionary<string, string> importerPackages;
-		[SerializeField] public Dictionary<string, string> groupingKeyword;
-		[SerializeField] public Dictionary<string, string> bundleNameTemplate;
-		[SerializeField] public Dictionary<string, List<string>> enabledBundleOptions;
+		[SerializeField] public SerializablePseudoDictionary importerPackages;
+		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
+		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
+		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
 		
 		// for platform-package specified parameter.
 		[SerializeField] public string currentPlatform = AssetGraphSettings.PLATFORM_DEFAULT_NAME;
@@ -205,7 +205,14 @@ namespace AssetGraph {
 							UpdateCurrentPackage(node);
 
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-								var newLoadPath = EditorGUILayout.TextField("Load Path", GraphStackController.ValueFromPlatformAndPackage(node.loadPath, node.currentPlatform, node.currentPackage).ToString());
+								var newLoadPath = EditorGUILayout.TextField(
+									"Load Path", 
+									GraphStackController.ValueFromPlatformAndPackage(
+										node.loadPath.ReadonlyDict(), 
+										node.currentPlatform, 
+										node.currentPackage
+									).ToString()
+								);
 								var loaderNodePath = GraphStackController.WithProjectPath(newLoadPath);
 								IntegratedGUILoader.ValidateLoadPath(
 									newLoadPath,
@@ -218,8 +225,14 @@ namespace AssetGraph {
 									}
 								);
 								
-								if (newLoadPath != GraphStackController.ValueFromPlatformAndPackage(node.loadPath, node.currentPlatform, node.currentPackage).ToString()) {
-									node.loadPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newLoadPath;
+								if (newLoadPath !=	GraphStackController.ValueFromPlatformAndPackage(
+										node.loadPath.ReadonlyDict(),
+										node.currentPlatform, 
+										node.currentPackage
+									).ToString()
+								) {
+									node.BeforeSave();
+									node.loadPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newLoadPath);
 									node.Save();
 								}
 							}
@@ -248,44 +261,49 @@ namespace AssetGraph {
 						EditorGUILayout.HelpBox("Filter: filtering files by keywords.", MessageType.Info);
 						UpdateNodeName(node);
 						
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
+								GUILayout.BeginHorizontal();
+								{
+									if (GUILayout.Button("-")) {
+										node.BeforeSave();
+										node.filterContainsKeywords.RemoveAt(i);
+										node.FilterOutputPointsDeleted(i);
+									} else {
+										var newContainsKeyword = EditorGUILayout.TextField("Contains", node.filterContainsKeywords[i]);
+										var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
+										currentKeywordsSource.RemoveAt(i);
+										var currentKeywords = new List<string>(currentKeywordsSource);
+										IntegratedGUIFilter.ValidateFilter(
+											newContainsKeyword,
+											currentKeywords,
+											() => {
+												EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
+											},
+											() => {
+												EditorGUILayout.HelpBox("already exist.", MessageType.Error);
+											}
+										);
 
-						for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
-							GUILayout.BeginHorizontal();
-							{
-								if (GUILayout.Button("-")) {
-									node.filterContainsKeywords.RemoveAt(i);
-									node.FilterOutputPointsDeleted(i);
-								} else {
-									var newContainsKeyword = EditorGUILayout.TextField("Contains", node.filterContainsKeywords[i]);
-									var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
-									currentKeywordsSource.RemoveAt(i);
-									var currentKeywords = new List<string>(currentKeywordsSource);
-									IntegratedGUIFilter.ValidateFilter(
-										newContainsKeyword,
-										currentKeywords,
-										() => {
-											EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
-										},
-										() => {
-											EditorGUILayout.HelpBox("already exist.", MessageType.Error);
+										if (newContainsKeyword != node.filterContainsKeywords[i]) {
+											node.BeforeSave();
+											node.filterContainsKeywords[i] = newContainsKeyword;
+											node.FilterOutputPointsLabelChanged(i, node.filterContainsKeywords[i]);
 										}
-									);
-
-									if (newContainsKeyword != node.filterContainsKeywords[i]) {
-										node.filterContainsKeywords[i] = newContainsKeyword;
-										node.FilterOutputPointsLabelChanged(i, node.filterContainsKeywords[i]);
 									}
 								}
+								GUILayout.EndHorizontal();
 							}
-							GUILayout.EndHorizontal();
-						}
 
-						// add contains keyword interface.
-						if (GUILayout.Button("+")) {
-							var addingIndex = node.filterContainsKeywords.Count;
-							var newKeyword = AssetGraphSettings.DEFAULT_FILTER_KEYWORD;
-							node.filterContainsKeywords.Add(newKeyword);
-							node.FilterOutputPointsAdded(addingIndex, AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
+
+							// add contains keyword interface.
+							if (GUILayout.Button("+")) {
+								node.BeforeSave();
+								var addingIndex = node.filterContainsKeywords.Count;
+								var newKeyword = AssetGraphSettings.DEFAULT_FILTER_KEYWORD;
+								node.filterContainsKeywords.Add(newKeyword);
+								node.FilterOutputPointsAdded(addingIndex, AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
+							}
 						}
 
 						break;
@@ -381,7 +399,14 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword", GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString());
+							var newGroupingKeyword = EditorGUILayout.TextField(
+								"Grouping Keyword",
+								GraphStackController.ValueFromPlatformAndPackage(
+									node.groupingKeyword.ReadonlyDict(), 
+									node.currentPlatform,
+									node.currentPackage
+								).ToString()
+							);
 							IntegratedGUIGrouping.ValidateGroupingKeyword(
 								newGroupingKeyword,
 								() => {
@@ -392,8 +417,14 @@ namespace AssetGraph {
 								}
 							);
 
-							if (newGroupingKeyword != GraphStackController.ValueFromPlatformAndPackage(node.groupingKeyword, node.currentPlatform, node.currentPackage).ToString()) {
-								node.groupingKeyword[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newGroupingKeyword;
+							if (newGroupingKeyword != GraphStackController.ValueFromPlatformAndPackage(
+									node.groupingKeyword.ReadonlyDict(), 
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							) {
+								node.BeforeSave();
+								node.groupingKeyword.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newGroupingKeyword);
 								node.Save();
 							}
 						}
@@ -412,25 +443,27 @@ namespace AssetGraph {
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
 						UpdateNodeName(node);
 
-						var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
 
-						/*
-							check prefabricator script-type string.
-						*/
-						if (string.IsNullOrEmpty(newScriptType)) {
-							EditorGUILayout.HelpBox("PrefabricatorBase extended class name is empty.", MessageType.Error);
-						}
+							/*
+								check prefabricator script-type string.
+							*/
+							if (string.IsNullOrEmpty(newScriptType)) {
+								EditorGUILayout.HelpBox("PrefabricatorBase extended class name is empty.", MessageType.Error);
+							}
 
-						var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(newScriptType);
-						
-						if (loadedType == null) {
-							EditorGUILayout.HelpBox("PrefabricatorBase extended class not found:" + newScriptType, MessageType.Error);
-						}
+							var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(newScriptType);
+							
+							if (loadedType == null) {
+								EditorGUILayout.HelpBox("PrefabricatorBase extended class not found:" + newScriptType, MessageType.Error);
+							}
 
-						if (newScriptType != node.scriptType) {
-							Debug.LogWarning("Scriptなんで、 ScriptをAttachできて、勝手に決まった方が良い。");
-							node.scriptType = newScriptType;
-							node.Save();
+							if (newScriptType != node.scriptType) {
+								node.BeforeSave();
+								node.scriptType = newScriptType;
+								node.Save();
+							}
 						}
 						break;
 					}
@@ -455,7 +488,14 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString()).ToLower();
+							var bundleNameTemplate = EditorGUILayout.TextField(
+								"Bundle Name Template", 
+								GraphStackController.ValueFromPlatformAndPackage(
+									node.bundleNameTemplate.ReadonlyDict(), 
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							).ToLower();
 
 							IntegratedGUIBundlizer.ValidateBundleNameTemplate(
 								bundleNameTemplate,
@@ -467,8 +507,14 @@ namespace AssetGraph {
 								}
 							);
 
-							if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(node.bundleNameTemplate, node.currentPlatform, node.currentPackage).ToString()) {
-								node.bundleNameTemplate[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = bundleNameTemplate;
+							if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(
+									node.bundleNameTemplate.ReadonlyDict(), 
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							) {
+								node.BeforeSave();
+								node.bundleNameTemplate.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), bundleNameTemplate);
 								node.Save();
 							}
 						}
@@ -487,7 +533,7 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var bundleOptions = node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+							var bundleOptions = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
 
 							for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
 								var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
@@ -496,16 +542,29 @@ namespace AssetGraph {
 
 								var result = EditorGUILayout.ToggleLeft(enablablekey, isEnable);
 								if (result != isEnable) {
+									node.BeforeSave();
 
 									if (result) {
-										if (!node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
-											node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Add(enablablekey);
+										if (!node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
+											var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+											newEnableds.Add(enablablekey);
+
+											node.enabledBundleOptions.Add(
+												GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+												newEnableds
+											);
 										}
 									}
 
 									if (!result) {
-										if (node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
-											node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Remove(enablablekey);
+										if (node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
+											var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+											newEnableds.Remove(enablablekey);
+											
+											node.enabledBundleOptions.Add(
+												GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+												newEnableds
+											);
 										}
 									}
 
@@ -513,13 +572,27 @@ namespace AssetGraph {
 										Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
 									*/
 									if (enablablekey == "Disable Write TypeTree" && result &&
-										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Ignore TypeTree Changes")) {
-										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Remove("Ignore TypeTree Changes");
+										node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Ignore TypeTree Changes")) {
+
+										var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+										newEnableds.Remove("Ignore TypeTree Changes");
+										
+										node.enabledBundleOptions.Add(
+											GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+											newEnableds
+										);
 									}
 
 									if (enablablekey == "Ignore TypeTree Changes" && result &&
-										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Disable Write TypeTree")) {
-										node.enabledBundleOptions[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Remove("Disable Write TypeTree");
+										node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Disable Write TypeTree")) {
+										
+										var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+										newEnableds.Remove("Disable Write TypeTree");
+										
+										node.enabledBundleOptions.Add(
+											GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+											newEnableds
+										);
 									}
 
 									node.Save();
@@ -542,7 +615,15 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var newExportPath = EditorGUILayout.TextField("Export Path", GraphStackController.ValueFromPlatformAndPackage(node.exportPath, node.currentPlatform, node.currentPackage).ToString());
+							var newExportPath = EditorGUILayout.TextField(
+								"Export Path", 
+								GraphStackController.ValueFromPlatformAndPackage(
+									node.exportPath.ReadonlyDict(), 
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							);
+
 							var exporterrNodePath = GraphStackController.WithProjectPath(newExportPath);
 							IntegratedGUIExporter.ValidateExportPath(
 								newExportPath,
@@ -555,8 +636,14 @@ namespace AssetGraph {
 								}
 							);
 
-							if (newExportPath != node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)]) {
-								node.exportPath[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)] = newExportPath;
+							if (newExportPath != GraphStackController.ValueFromPlatformAndPackage(
+									node.exportPath.ReadonlyDict(),
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							) {
+								node.BeforeSave();
+								node.exportPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newExportPath);
 								node.Save();
 							}
 						}
@@ -581,6 +668,7 @@ namespace AssetGraph {
 				}
 
 				if (newName != node.name) {
+					node.BeforeSave();
 					node.name = newName;
 					node.UpdateNodeRect();
 					node.Save();
@@ -722,6 +810,10 @@ namespace AssetGraph {
 			Save();
 		}
 
+		public void BeforeSave () {
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
+		}
+
 		public void Save () {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
@@ -754,13 +846,13 @@ namespace AssetGraph {
 			this.kind = kind;
 			this.scriptType = scriptType;
 			this.scriptPath = scriptPath;
-			this.loadPath = loadPath;
-			this.exportPath = exportPath;
+			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
+			if (exportPath != null) this.exportPath = new SerializablePseudoDictionary(exportPath);
 			this.filterContainsKeywords = filterContainsKeywords;
-			this.importerPackages = importerPackages;
-			this.groupingKeyword = groupingKeyword;
-			this.bundleNameTemplate = bundleNameTemplate;
-			this.enabledBundleOptions = enabledBundleOptions;
+			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
+			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
+			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
+			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
 			
 			this.baseRect = new Rect(x, y, AssetGraphGUISettings.NODE_BASE_WIDTH, AssetGraphGUISettings.NODE_BASE_HEIGHT);
 			
@@ -821,11 +913,11 @@ namespace AssetGraph {
 			currentPackage = newCurrentPackage;
 
 			/*
-				if changed node is importer, sould run [new package import] for setting.
+				if changed node is importer, should run [new package import] for setting.
 			*/
 			if (kind == AssetGraphSettings.NodeKind.IMPORTER_GUI) {
 				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
-				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages[platformPackageKey] = string.Empty;
+				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages.Add(platformPackageKey, string.Empty);
 			}
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
 			Save();

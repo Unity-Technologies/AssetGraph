@@ -570,11 +570,11 @@ namespace AssetGraph {
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath;
+						nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath;
+						nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
 						break;
 					}
 					
@@ -593,12 +593,12 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages;
+						nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword;
+						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
 						break;
 					}
 
@@ -609,12 +609,12 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate;
+						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions;
+						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
 						break;
 					}
 
@@ -1369,10 +1369,10 @@ namespace AssetGraph {
 				var id = Guid.NewGuid().ToString();
 				var kind = targetNode.kind;
 				var name = targetNode.name;
-
+				Debug.LogWarning(".ReadonlyDict()つける旅");
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var loadPath = targetNode.loadPath;
+						var loadPath = targetNode.loadPath.ReadonlyDict();
 
 						var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
 
@@ -1420,7 +1420,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var importerPackages = targetNode.importerPackages;
+						var importerPackages = targetNode.importerPackages.ReadonlyDict();
 						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, importerPackages, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1433,7 +1433,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var groupingKeyword = targetNode.groupingKeyword;
+						var groupingKeyword = targetNode.groupingKeyword.ReadonlyDict();
 						var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1446,7 +1446,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplate = targetNode.bundleNameTemplate;
+						var bundleNameTemplate = targetNode.bundleNameTemplate.ReadonlyDict();
 						var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1458,8 +1458,21 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						var bundleOptions = targetNode.enabledBundleOptions.ReadonlyDict();
+						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
+
+						var connectionPoints = targetNode.DuplicateConnectionPoints();
+						foreach (var connectionPoint in connectionPoints) {
+							newNode.AddConnectionPoint(connectionPoint);
+						}
+						
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPath = targetNode.exportPath;
+						var exportPath = targetNode.exportPath.ReadonlyDict();
 						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1822,6 +1835,10 @@ namespace AssetGraph {
 					if (!labelChangedOutputPointConnections.Any()) break;
 
 					labelChangedOutputPointConnections[0].label = changedLabel;
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_BEFORESAVE: {
+					Undo.RecordObject(this, "Update Node Setting");
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_SAVE: {
