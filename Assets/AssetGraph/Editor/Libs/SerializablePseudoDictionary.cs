@@ -72,8 +72,6 @@ namespace AssetGraph {
 
 		write -> Add(k,v) -> new dict -> keys, values
 		read <- ReadonlyDict() <- new dict <- keys, values
-
-		んーーーこれだとだめっぽい。どこかで死んでる。
 	*/
 	[Serializable] public class SerializablePseudoDictionary2 {
 		[SerializeField] private List<string> keys = new List<string>();
@@ -95,7 +93,7 @@ namespace AssetGraph {
 			for (var i = 0; i < keys.Count; i++) {
 				var currentKey = keys[i];
 				var currentVal = values[i];
-				dict[currentKey] = currentVal;
+				dict[currentKey] = currentVal.ReadonlyList();
 			}
 
 			// add or update parameter.
@@ -114,7 +112,7 @@ namespace AssetGraph {
 			for (var i = 0; i < keys.Count; i++) {
 				var currentKey = keys[i];
 				var currentVal = values[i];
-				dict[currentKey] = currentVal;
+				dict[currentKey] = currentVal.ReadonlyList();
 			}
 
 			return dict.ContainsKey(key);
@@ -126,17 +124,22 @@ namespace AssetGraph {
 
 			for (var i = 0; i < keys.Count; i++) {
 				var key = keys[i];
-				var val = values[i];
+				var val = values[i].ReadonlyList();
 				dict[key] = val;
 			}
 
 			return dict;
 		}
 
-		[Serializable] public class SerializablePseudoDictionary2Value : List<string> {
-			// たぶんここまでで死んでる
+		[Serializable] public class SerializablePseudoDictionary2Value {
+			[SerializeField] private List<string> values = new List<string>();
+
 			public SerializablePseudoDictionary2Value (List<string> sources) {
-				foreach (var source in sources) this.Add(source);
+				foreach (var source in sources) values.Add(source);
+			}
+
+			public List<string> ReadonlyList () {
+				return values;
 			}
 
 		}
