@@ -119,12 +119,14 @@ namespace AssetGraph {
 			if (!startNodes.Any()) return;
 
 			var start = startNodes[0].GlobalConnectionPointPosition(outputPoint);
+			start = Node.ScaleEffect(start);
 			var startV3 = new Vector3(start.x, start.y, 0f);
 
 			var endNodes = nodes.Where(node => node.nodeId == endNodeId).ToList();
 			if (!endNodes.Any()) return;
 
 			var end = endNodes[0].GlobalConnectionPointPosition(inputPoint);
+			end = Node.ScaleEffect(end);
 			var endV3 = new Vector3(end.x, end.y + 1f, 0f);
 			
 			var centerPoint = start + ((end - start) / 2);
@@ -138,22 +140,26 @@ namespace AssetGraph {
 
 			Handles.DrawBezier(startV3, endV3, startTan, endTan, Color.gray, null, 4f);
 
-			// draw connection label.
-			if (label != AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL) {
-				var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
-				Handles.Label(labelPointV3, label);
+			// draw connection label if connection's label is not normal.
+			if (Node.scaleFactor == Node.SCALE_MAX) {
+				if (label != AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL) {
+					var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
+					Handles.Label(labelPointV3, label);
+				}
 			}
 
 			// draw connection arrow.
-			GUI.DrawTexture(
-				new Rect(
-					endV3.x - AssetGraphGUISettings.CONNECTION_ARROW_WIDTH + 4f, 
-					endV3.y - (AssetGraphGUISettings.CONNECTION_ARROW_HEIGHT / 2f) - 1f, 
-					AssetGraphGUISettings.CONNECTION_ARROW_WIDTH, 
-					AssetGraphGUISettings.CONNECTION_ARROW_HEIGHT
-				), 
-				connectionArrowTex
-			);
+			if (Node.scaleFactor == Node.SCALE_MAX) {
+				GUI.DrawTexture(
+					new Rect(
+						endV3.x - AssetGraphGUISettings.CONNECTION_ARROW_WIDTH + 4f, 
+						endV3.y - (AssetGraphGUISettings.CONNECTION_ARROW_HEIGHT / 2f) - 1f, 
+						AssetGraphGUISettings.CONNECTION_ARROW_WIDTH, 
+						AssetGraphGUISettings.CONNECTION_ARROW_HEIGHT
+					), 
+					connectionArrowTex
+				);
+			}
 
 			/*
 				draw throughtput badge.

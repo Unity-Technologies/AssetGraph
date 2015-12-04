@@ -95,6 +95,7 @@ namespace AssetGraph {
 			CONNECT_STARTED,
 			CONNECT_ENDED,
 			SELECTION_STARTED,
+			SCALING_STARTED,
 		}
 		private ModifyMode modifyMode;
 
@@ -128,6 +129,20 @@ namespace AssetGraph {
 			}
 		}
 		private Selection selection;
+
+		public struct ScalePoint {
+			public readonly float x;
+			public readonly float y;
+			public readonly float startScale;
+
+			public ScalePoint (Vector2 point, float scaleFactor) {
+				this.x = point.x;
+				this.y = point.y;
+				this.startScale = scaleFactor;
+			}
+		}
+		private ScalePoint scalePoint;
+		
 
 		private string package = string.Empty;
 
@@ -899,12 +914,34 @@ namespace AssetGraph {
 					case EventType.MouseDrag: {
 						switch (modifyMode) {
 							case ModifyMode.CONNECT_ENDED: {
-								selection = new Selection(Event.current.mousePosition);
-								modifyMode = ModifyMode.SELECTION_STARTED;
+								switch (Event.current.button) {
+									case 0:{
+										if (Event.current.command) {
+											scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor);
+											modifyMode = ModifyMode.SCALING_STARTED;
+											break;
+										}
+										
+										selection = new Selection(Event.current.mousePosition);
+										modifyMode = ModifyMode.SELECTION_STARTED;
+										break;
+									}
+								}
 								break;
 							}
 							case ModifyMode.SELECTION_STARTED: {
 								// do nothing.
+								break;
+							}
+							case ModifyMode.SCALING_STARTED: {
+								var distance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y)) / Node.SCALE_WIDTH;
+								var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
+
+								if (!direction) distance = -distance;
+
+								Node.scaleFactor = scalePoint.startScale + (distance * Node.SCALE_RATIO);
+								if (Node.scaleFactor < Node.SCALE_MIN) Node.scaleFactor = Node.SCALE_MIN;
+								if (Node.SCALE_MAX < Node.scaleFactor) Node.scaleFactor = Node.SCALE_MAX;
 								break;
 							}
 						}
@@ -950,8 +987,13 @@ namespace AssetGraph {
 								
 								
 								foreach (var node in nodes) {
+									var nodeRect = new Rect(node.GetRect());
+									nodeRect.x = nodeRect.x * Node.scaleFactor;
+									nodeRect.y = nodeRect.y * Node.scaleFactor;
+									nodeRect.width = nodeRect.width * Node.scaleFactor;
+									nodeRect.height = nodeRect.height * Node.scaleFactor;
 									// get containd nodes,
-									if (node.GetRect().Overlaps(selectedRect)) {
+									if (nodeRect.Overlaps(selectedRect)) {
 										activeObjectIds.Add(node.nodeId);
 									}
 								}
@@ -983,6 +1025,11 @@ namespace AssetGraph {
 
 								HandleUtility.Repaint();
 								Event.current.Use();
+								break;
+							}
+
+							case ModifyMode.SCALING_STARTED: {
+								modifyMode = ModifyMode.CONNECT_ENDED;
 								break;
 							}
 						}

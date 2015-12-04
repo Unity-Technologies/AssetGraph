@@ -13,8 +13,7 @@ namespace AssetGraph {
 
 		public static Texture2D inputPointTex;
 		public static Texture2D outputPointTex;
-
-
+		
 		public static Texture2D enablePointMarkTex;
 
 		public static Texture2D inputPointMarkTex;
@@ -24,7 +23,13 @@ namespace AssetGraph {
 		public static string[] platformStrings;
 
 		public static List<string> allNodeNames;
-			
+
+		public static float scaleFactor = 1.0f;
+		public const float SCALE_MIN = 0.3f;
+		public const float SCALE_MAX = 1.0f;
+		public const int SCALE_WIDTH = 30;
+		public const float SCALE_RATIO = 0.3f;
+
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
 		[SerializeField] private int nodeWindowId;
@@ -1072,7 +1077,27 @@ namespace AssetGraph {
 		}
 
 		public void DrawNode () {
-			baseRect = GUI.Window(nodeWindowId, baseRect, UpdateNodeEvent, string.Empty, nodeInterfaceTypeStr);
+			var scaledBaseRect = ScaleEffect(baseRect);
+
+			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, UpdateNodeEvent, string.Empty, nodeInterfaceTypeStr);
+
+			baseRect.position = baseRect.position + (movedRect.position - scaledBaseRect.position);
+		}
+
+		public static Rect ScaleEffect (Rect nonScaledRect) {
+			var scaledRect = new Rect(nonScaledRect);
+			scaledRect.x = scaledRect.x * scaleFactor;
+			scaledRect.y = scaledRect.y * scaleFactor;
+			scaledRect.width = scaledRect.width * scaleFactor;
+			scaledRect.height = scaledRect.height * scaleFactor;
+			return scaledRect;
+		}
+
+		public static Vector2 ScaleEffect (Vector2 nonScaledVector2) {
+			var scaledVector2 = new Vector2(nonScaledVector2.x, nonScaledVector2.y);
+			scaledVector2.x = scaledVector2.x * scaleFactor;
+			scaledVector2.y = scaledVector2.y * scaleFactor;
+			return scaledVector2;
 		}
 
 		/**
@@ -1095,7 +1120,7 @@ namespace AssetGraph {
 					handling release of mouse drag on this node.
 				*/
 				case EventType.MouseUp: {
-					// if mouse position is on the connection point, emit mouse raised event over thr connection.
+					// if mouse position is on the connection point, emit mouse raised event.
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
 						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
@@ -1124,7 +1149,7 @@ namespace AssetGraph {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 
 					if (result != null) {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
+						if (scaleFactor == SCALE_MAX) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
 						break;
 					}
 					break;
@@ -1132,78 +1157,77 @@ namespace AssetGraph {
 			}
 
 			// draw & update connectionPoint button interface.
-			foreach (var point in connectionPoints) {
-				switch (this.kind) {
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var label = point.label;
-						var labelRect = new Rect(point.buttonRect.x - baseRect.width, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
+			if (scaleFactor == SCALE_MAX) {
+				foreach (var point in connectionPoints) {
+					switch (this.kind) {
+						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+						case AssetGraphSettings.NodeKind.FILTER_GUI: {
+							var label = point.label;
+							var labelRect = new Rect(point.buttonRect.x - baseRect.width, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
 
-						var style = EditorStyles.label;
-						var defaultAlignment = style.alignment;
-						style.alignment = TextAnchor.MiddleRight;
-						GUI.Label(labelRect, label, style);
-						style.alignment = defaultAlignment;
-						break;
+							var style = EditorStyles.label;
+							var defaultAlignment = style.alignment;
+							style.alignment = TextAnchor.MiddleRight;
+							GUI.Label(labelRect, label, style);
+							style.alignment = defaultAlignment;
+							break;
+						}
 					}
-				}
 
 
-				if (point.isInput) {
-					// var activeFrameLabel = new GUIStyle("AnimationKeyframeBackground");// そのうちやる。
-					// activeFrameLabel.backgroundColor = Color.clear;
-					// Debug.LogError("contentOffset"+ activeFrameLabel.contentOffset);
-					// Debug.LogError("contentOffset"+ activeFrameLabel.Button);
+					if (point.isInput) {
+						GUI.backgroundColor = Color.clear;
+						GUI.Button(point.buttonRect, inputPointTex, "AnimationKeyframeBackground");
+					}
 
-					GUI.backgroundColor = Color.clear;
-					GUI.Button(point.buttonRect, inputPointTex, "AnimationKeyframeBackground");
-				}
-
-				if (point.isOutput) {
-					GUI.backgroundColor = Color.clear;
-					GUI.Button(point.buttonRect, outputPointTex, "AnimationKeyframeBackground");
+					if (point.isOutput) {
+						GUI.backgroundColor = Color.clear;
+						GUI.Button(point.buttonRect, outputPointTex, "AnimationKeyframeBackground");
+					}
 				}
 			}
 
 			/*
 				right click.
 			*/
-			if (
-				Event.current.type == EventType.ContextClick
-				 || (Event.current.type == EventType.MouseUp && Event.current.button == 1)
-			) {
-				var rightClickPos = Event.current.mousePosition;
-				var menu = new GenericMenu();
-				menu.AddItem(
-					new GUIContent("Delete All Input Connections"),
-					false, 
-					() => {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DELETE_ALL_INPUT_CONNECTIONS, this, rightClickPos, null));
-					}
-				);
-				menu.AddItem(
-					new GUIContent("Delete All Output Connections"),
-					false, 
-					() => {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DELETE_ALL_OUTPUT_CONNECTIONS, this, rightClickPos, null));
-					}
-				);
-				menu.AddItem(
-					new GUIContent("Duplicate"),
-					false, 
-					() => {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED, this, rightClickPos, null));
-					}
-				);
-				menu.AddItem(
-					new GUIContent("Delete"),
-					false, 
-					() => {
-						Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Vector2.zero, null));
-					}
-				);
-				menu.ShowAsContext();
-				Event.current.Use();
+			if (scaleFactor == SCALE_MAX) {
+				if (
+					Event.current.type == EventType.ContextClick
+					 || (Event.current.type == EventType.MouseUp && Event.current.button == 1)
+				) {
+					var rightClickPos = Event.current.mousePosition;
+					var menu = new GenericMenu();
+					menu.AddItem(
+						new GUIContent("Delete All Input Connections"),
+						false, 
+						() => {
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DELETE_ALL_INPUT_CONNECTIONS, this, rightClickPos, null));
+						}
+					);
+					menu.AddItem(
+						new GUIContent("Delete All Output Connections"),
+						false, 
+						() => {
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DELETE_ALL_OUTPUT_CONNECTIONS, this, rightClickPos, null));
+						}
+					);
+					menu.AddItem(
+						new GUIContent("Duplicate"),
+						false, 
+						() => {
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED, this, rightClickPos, null));
+						}
+					);
+					menu.AddItem(
+						new GUIContent("Delete"),
+						false, 
+						() => {
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Vector2.zero, null));
+						}
+					);
+					menu.ShowAsContext();
+					Event.current.Use();
+				}
 			}
 
 
@@ -1213,6 +1237,8 @@ namespace AssetGraph {
 		}
 
 		public void DrawConnectionInputPointMark (OnNodeEvent eventSource, bool justConnecting) {
+			if (scaleFactor != SCALE_MAX) return;
+
 			var defaultPointTex = inputPointMarkTex;
 
 			if (justConnecting && eventSource != null) {
@@ -1239,6 +1265,8 @@ namespace AssetGraph {
 		}
 
 		public void DrawConnectionOutputPointMark (OnNodeEvent eventSource, bool justConnecting, Event current) {
+			if (scaleFactor != SCALE_MAX) return;
+
 			var defaultPointTex = outputPointMarkConnectedTex;
 			
 			if (justConnecting && eventSource != null) {
@@ -1280,6 +1308,8 @@ namespace AssetGraph {
 		}
 
 		private void DrawNodeContents () {
+			if (scaleFactor != SCALE_MAX) return;
+
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
