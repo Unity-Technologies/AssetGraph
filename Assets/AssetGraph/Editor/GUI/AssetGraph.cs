@@ -25,7 +25,7 @@ namespace AssetGraph {
 
 		public void OnEnable () {
 			Debug.LogWarning("should change title setting(with icon");
-			this.title = "AssetGraph";
+			this.titleContent = new GUIContent("AssetGraph");
 
 			Undo.undoRedoPerformed += () => {
 				SaveGraphWithReload();
@@ -42,36 +42,6 @@ namespace AssetGraph {
 
 
 			if (nodes.Any()) UpdateSpacerRect();
-
-// #if UNITY_5_3
-// 			{
-// 				// json to object.
-// 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
-// 				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
-
-// 				// object to json.
-// 				var keyObj = new KeyObject("value1");
-
-// 				var result = JsonUtility.ToJson(keyObj, true);
-// 				Debug.LogWarning("serialize result:" + result);
-
-// 				var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
-// 				var graphDataPath =FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
-// 				if (File.Exists(graphDataPath)) {
-// 					Debug.LogError("start loading.");
-
-// 					// load
-// 					var dataStr = string.Empty;
-					
-// 					using (var sr = new StreamReader(graphDataPath)) {
-// 						dataStr = sr.ReadToEnd();
-// 					}
-
-// 					var deserialized = JsonUtility.FromJson<AssetGraphData>(dataStr);
-// 					Debug.LogError("loaded." + deserialized.lastModified + " vs:" + dataStr);
-// 				}
-// 			}
-// #endif
 		}
 		
 		[Serializable] public struct KeyObject {
@@ -119,6 +89,7 @@ namespace AssetGraph {
 		}
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 		
+		// hold selection start data.
 		public struct Selection {
 			public readonly float x;
 			public readonly float y;
@@ -130,15 +101,18 @@ namespace AssetGraph {
 		}
 		private Selection selection;
 
+		// hold scale start data.
 		public struct ScalePoint {
 			public readonly float x;
 			public readonly float y;
 			public readonly float startScale;
+			public readonly int scaledDistance;
 
-			public ScalePoint (Vector2 point, float scaleFactor) {
+			public ScalePoint (Vector2 point, float scaleFactor, int scaledDistance) {
 				this.x = point.x;
 				this.y = point.y;
 				this.startScale = scaleFactor;
+				this.scaledDistance = scaledDistance;
 			}
 		}
 		private ScalePoint scalePoint;
@@ -165,7 +139,6 @@ namespace AssetGraph {
 			// load other textures
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
 			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
-			Debug.LogWarning("load platform textures here.");
 		}
 
 		private static void SetupPlatformIconsAndStrings (out Texture2D[] platformTextures, out string[] platformNames) {
@@ -185,7 +158,7 @@ namespace AssetGraph {
 				platformStringList.Add("Standalone");
 				platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
 			}
-			if (assetGraphPlatformSettings.Contains("iPhone")) {
+			if (assetGraphPlatformSettings.Contains("iPhone") || assetGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
 				platformStringList.Add("iOS");
 				platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
 			}
@@ -324,16 +297,7 @@ namespace AssetGraph {
 				}
 
 			} else {
-				// renew
-				var graphData = new Dictionary<string, object>{
-					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, lastModified.ToString()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<object>()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<object>()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE, string.Empty}
-				};
-
-				// save new empty graph data.
-				UpdateGraphData(graphData);
+				var graphData = RenewData();
 
 				// set new empty graph data.
 				deserialized = graphData;
@@ -358,6 +322,21 @@ namespace AssetGraph {
 				load graph data from deserialized data.
 			*/
 			ConstructGraphFromDeserializedData(deserialized, package);
+		}
+
+		private Dictionary<string, object> RenewData () {
+			// renew
+			var graphData = new Dictionary<string, object>{
+				{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<object>()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<object>()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE, string.Empty}
+			};
+
+			// save new empty graph data.
+			UpdateGraphData(graphData);
+
+			return graphData;
 		}
 
 		private void ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData, string currentPackage) {
@@ -681,7 +660,8 @@ namespace AssetGraph {
 		private void Setup (string package) {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
-				Debug.LogError("no data found、初期化してもいいかもしれない。");
+				RenewData();
+				Debug.LogError("no data found. new data is generated.");
 				return;
 			}
 
@@ -709,7 +689,8 @@ namespace AssetGraph {
 		private void Run (string package) {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
-				Debug.LogError("no data found、初期化してもいいかもしれない。");
+				RenewData();
+				Debug.LogError("no data found. new data is generated.");
 				return;
 			}
 
@@ -851,9 +832,11 @@ namespace AssetGraph {
 			/*
 				scroll view.
 			*/
+			// var scaledScrollPos = Node.ScaleEffect(scrollPos);
 			scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+			// scrollPos = scrollPos + (movedScrollPos - scaledScrollPos);
 			{
-				ShowEventType(-2, Event.current.type);
+				
 				// draw node window x N.
 				{
 					BeginWindows();
@@ -863,7 +846,7 @@ namespace AssetGraph {
 					EndWindows();
 				}
 
-				ShowEventType(-1, Event.current.type);
+				
 
 				// draw connection input point marks.
 				foreach (var node in nodes) {
@@ -881,7 +864,7 @@ namespace AssetGraph {
 					}
 				}
 
-				ShowEventType(0, Event.current.type);
+				
 
 				// draw connection output point marks.
 				foreach (var node in nodes) {
@@ -917,13 +900,18 @@ namespace AssetGraph {
 								switch (Event.current.button) {
 									case 0:{
 										if (Event.current.command) {
-											scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor);
+											scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
 											modifyMode = ModifyMode.SCALING_STARTED;
 											break;
 										}
-										
+
 										selection = new Selection(Event.current.mousePosition);
 										modifyMode = ModifyMode.SELECTION_STARTED;
+										break;
+									}
+									case 2:{
+										scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
+										modifyMode = ModifyMode.SCALING_STARTED;
 										break;
 									}
 								}
@@ -934,11 +922,13 @@ namespace AssetGraph {
 								break;
 							}
 							case ModifyMode.SCALING_STARTED: {
-								var distance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y)) / Node.SCALE_WIDTH;
+								var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
+								var distance = baseDistance / Node.SCALE_WIDTH;
 								var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
 
 								if (!direction) distance = -distance;
 
+								var before = Node.scaleFactor;
 								Node.scaleFactor = scalePoint.startScale + (distance * Node.SCALE_RATIO);
 								if (Node.scaleFactor < Node.SCALE_MIN) Node.scaleFactor = Node.SCALE_MIN;
 								if (Node.SCALE_MAX < Node.scaleFactor) Node.scaleFactor = Node.SCALE_MAX;
@@ -950,7 +940,9 @@ namespace AssetGraph {
 						Event.current.Use();
 						break;
 					}
+				}
 
+				switch (Event.current.rawType) {
 					case EventType.MouseUp: {
 						switch (modifyMode) {
 							/*
@@ -1227,14 +1219,6 @@ namespace AssetGraph {
 					break;
 				}
 			}
-		}
-
-		private void ShowEventType (int index, EventType type) {
-			if (type == EventType.Repaint) return;
-			if (type == EventType.Layout) return;
-			if (type == EventType.mouseMove) return;
-
-			// Debug.LogError(index + ":" + type);
 		}
 
 		private Type IsAcceptableScriptType (Type type) {
@@ -1705,43 +1689,6 @@ namespace AssetGraph {
 							break;
 						}
 
-						/*
-							connectionPoint tapped.
-						*/
-						case OnNodeEvent.EventType.EVENT_DELETE_ALL_INPUT_CONNECTIONS: 
-						case OnNodeEvent.EventType.EVENT_DELETE_ALL_OUTPUT_CONNECTIONS: {
-							Debug.LogError("あとでなんとかする");
-							// var sourcePoint = e.eventSourceNode;
-
-							// var relatedConnections = connections
-							// 	.Where(
-							// 		con => con.IsStartAtConnectionPoint(sourcePoint) || 
-							// 		con.IsEndAtConnectionPoint(sourcePoint)
-							// 	)
-							// 	.ToList();
-
-							// /*
-							// 	show menuContext for control these connections.
-							// */
-							// var menu = new GenericMenu();
-							// menu.AddItem(
-							// 	new GUIContent("delete all connections"), 
-							// 	false, 
-							// 	() => {
-							// 		Undo.RecordObject(this, "Delete All Connections");
-
-							// 		foreach (var con in relatedConnections) {
-							// 			var conId = con.connectionId;
-							// 			DeleteConnectionById(conId);
-							// 		}
-
-							// 		SaveGraphWithReload();
-							// 	}
-							// );
-							// menu.ShowAsContext();
-							break;
-						}
-
 						case OnNodeEvent.EventType.EVENT_CLOSE_TAPPED: {
 							
 							Undo.RecordObject(this, "Delete Node");
@@ -1911,9 +1858,17 @@ namespace AssetGraph {
 			}
 		}
 
+		/**
+			once expand, keep max size.
+			it's convenience.
+		*/
 		private void UpdateSpacerRect () {
 			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).Select(node => node.GetRightPos()).ToList()[0] + AssetGraphSettings.WINDOW_SPAN;
+			if (rightPoint < spacerRectRightBottom.x) rightPoint = spacerRectRightBottom.x;
+
 			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).Select(node => node.GetBottomPos()).ToList()[0] + AssetGraphSettings.WINDOW_SPAN;
+			if (bottomPoint < spacerRectRightBottom.y) bottomPoint = spacerRectRightBottom.y;
+
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
 

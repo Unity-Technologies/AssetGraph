@@ -13,7 +13,7 @@ namespace AssetGraph {
 
 		public static Texture2D inputPointTex;
 		public static Texture2D outputPointTex;
-		
+
 		public static Texture2D enablePointMarkTex;
 
 		public static Texture2D inputPointMarkTex;
@@ -1101,7 +1101,7 @@ namespace AssetGraph {
 		}
 
 		/**
-			retrieve GUI events for this node.
+			retrieve mouse events for this node in this AssetGraoh window.
 		*/
 		private void UpdateNodeEvent (int id) {
 			switch (Event.current.type) {
@@ -1113,23 +1113,6 @@ namespace AssetGraph {
 				*/
 				case EventType.Ignore: {
 					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED, this, Event.current.mousePosition, null));
-					break;
-				}
-
-				/*
-					handling release of mouse drag on this node.
-				*/
-				case EventType.MouseUp: {
-					// if mouse position is on the connection point, emit mouse raised event.
-					foreach (var connectionPoint in connectionPoints) {
-						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
-						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
-							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, this, Event.current.mousePosition, connectionPoint));
-							return;
-						}
-					}
-
-					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHED, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -1152,6 +1135,25 @@ namespace AssetGraph {
 						if (scaleFactor == SCALE_MAX) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
 						break;
 					}
+					break;
+				}
+			}
+
+			/*
+				retrieve mouse events for this node in|out of this AssetGraoh window.
+			*/
+			switch (Event.current.rawType) {
+				case EventType.MouseUp: {
+					// if mouse position is on the connection point, emit mouse raised event.
+					foreach (var connectionPoint in connectionPoints) {
+						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
+						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, this, Event.current.mousePosition, connectionPoint));
+							return;
+						}
+					}
+
+					Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHED, this, Event.current.mousePosition, null));
 					break;
 				}
 			}
@@ -1197,20 +1199,6 @@ namespace AssetGraph {
 				) {
 					var rightClickPos = Event.current.mousePosition;
 					var menu = new GenericMenu();
-					menu.AddItem(
-						new GUIContent("Delete All Input Connections"),
-						false, 
-						() => {
-							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DELETE_ALL_INPUT_CONNECTIONS, this, rightClickPos, null));
-						}
-					);
-					menu.AddItem(
-						new GUIContent("Delete All Output Connections"),
-						false, 
-						() => {
-							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_DELETE_ALL_OUTPUT_CONNECTIONS, this, rightClickPos, null));
-						}
-					);
 					menu.AddItem(
 						new GUIContent("Duplicate"),
 						false, 
