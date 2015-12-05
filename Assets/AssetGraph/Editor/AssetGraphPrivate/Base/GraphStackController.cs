@@ -323,6 +323,19 @@ namespace AssetGraph {
 			var nodeDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas;
 			var connectionDatas = endpointNodeIdsAndNodeDatasAndConnectionDatas.connectionDatas;
 
+			/*
+				node names should not overlapping.
+			*/
+			{
+				var nodeNames = nodeDatas.Select(node => node.nodeName).ToList();
+				var duplicated = nodeNames.GroupBy(x => x)
+					.Where(group => group.Count() > 1)
+					.Select(group => group.Key)
+					.ToList();
+
+				if (duplicated.Any()) throw new Exception("node names are overlapping:" + duplicated[0]);
+			}
+
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
 			var cacheDict = new Dictionary<string, List<string>>();
 
@@ -365,11 +378,20 @@ namespace AssetGraph {
 
 					var sourcePathList = new List<string>();
 					foreach (var assetData in connectionThroughputList) {
-						if (assetData.absoluteSourcePath != null) {
+						if (!string.IsNullOrEmpty(assetData.absoluteSourcePath)) {
 							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(ProjectPathWithSlash(), string.Empty);
 							sourcePathList.Add(relativeAbsolutePath);
-						} else {
+							continue;
+						}
+
+						if (!string.IsNullOrEmpty(assetData.pathUnderConnectionId)) {
 							sourcePathList.Add(assetData.pathUnderConnectionId);
+							continue;
+						}
+
+						if (!string.IsNullOrEmpty(assetData.exportedPath)) {
+							sourcePathList.Add(assetData.exportedPath);
+							continue;
 						}
 					}
 					newConnectionGroupDict[groupKey] = sourcePathList;
@@ -737,7 +759,16 @@ namespace AssetGraph {
 					.Select(con => con.connectionId)
 					.ToList();
 				
-				if (!targetConnectionIds.Any()) return;
+				if (!targetConnectionIds.Any()) {
+					// if no connection, no results for next.
+					// save results to resultDict with endpoint node's id.
+					resultDict[dataSourceNodeId] = new Dictionary<string, List<InternalAssetData>>();
+					foreach (var groupKey in result.Keys) {
+						if (!resultDict[dataSourceNodeId].ContainsKey(groupKey)) resultDict[dataSourceNodeId][groupKey] = new List<InternalAssetData>();
+						resultDict[dataSourceNodeId][groupKey].AddRange(result[groupKey]);
+					}
+					return;
+				}
 				
 				var targetConnectionId = targetConnectionIds[0];
 				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
@@ -977,7 +1008,9 @@ namespace AssetGraph {
 
 		public static T Executor<T> (string typeStr) where T : INodeBase {
 			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
-			if (nodeScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
+			if (nodeScriptInstance == null) {
+				throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
+			}
 			return ((T)nodeScriptInstance);
 		}
 
@@ -1143,11 +1176,6 @@ namespace AssetGraph {
 			return new List<string>();
 		}
 
-		// stringからプラットフォームのenumを得る、できるはず
-		// public static NodeKind NodeKindFromString (string val) {
-  // 			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
-  // 		}
-
 		public static string ValueFromPlatformAndPackage (Dictionary<string, string> packageDict, string platform, string package) {
 			var key = Platform_Package_Key(platform, package);
 			if (packageDict.ContainsKey(key)) return packageDict[key];
@@ -1188,9 +1216,16 @@ namespace AssetGraph {
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}
 
+		public static string ShrinkedCurrentPlatform () {
+			var currentPlatformCandidate = EditorUserBuildSettings.activeBuildTarget.ToString();
+			if (currentPlatformCandidate.StartsWith(AssetGraphSettings.PLATFORM_STANDALONE)) currentPlatformCandidate = AssetGraphSettings.PLATFORM_STANDALONE;
+			return currentPlatformCandidate;
+		}
+
 		public static string Current_Platform_Package_Folder (string package) {
-			Debug.LogWarning("プラットフォームが特定のものだったらStandaloneに変える");
-			return Platform_Package_Key(EditorUserBuildSettings.activeBuildTarget.ToString(), package);
+			var currentPlatformCandidate = ShrinkedCurrentPlatform();
+
+			return Platform_Package_Key(currentPlatformCandidate, package);
 		}
 
 		public static string Default_Platform_Package_Folder (string package) {
@@ -1207,6 +1242,11 @@ namespace AssetGraph {
 			
 			if (candidateArray.Length == 2) return candidateArray[1];
 			return string.Empty;
+		}
+
+		public static string Platform_Dot_Package (string package) {
+			if (!string.IsNullOrEmpty(package)) return ShrinkedCurrentPlatform() + "." + package;
+			return ShrinkedCurrentPlatform();
 		}
 	}
 
@@ -1226,19 +1266,19 @@ namespace AssetGraph {
 		// for Exporter Script
 		public readonly Dictionary<string, string> exportFilePath;
 
-		// for filter GUI data
+		// for Filter GUI data
 		public readonly List<string> containsKeywords;
 
-		// for importer GUI data
+		// for Importer GUI data
 		public readonly Dictionary<string, string> importerPackages;
 
-		// for grouping GUI data
+		// for Grouping GUI data
 		public readonly Dictionary<string, string> groupingKeyword;
 
-		// for bundlizer GUI data
+		// for Bundlizer GUI data
 		public readonly Dictionary<string, string> bundleNameTemplate;
 
-		// for bundleBuilder GUI data
+		// for BundleBuilder GUI data
 		public readonly Dictionary<string, List<string>> enabledBundleOptions;
 
 		private bool done;

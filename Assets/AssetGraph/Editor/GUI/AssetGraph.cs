@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 
 using MiniJSONForAssetGraph;
@@ -24,7 +25,7 @@ namespace AssetGraph {
 
 		public void OnEnable () {
 			Debug.LogWarning("should change title setting(with icon");
-			this.title = "AssetGraph";
+			this.titleContent = new GUIContent("AssetGraph");
 
 			Undo.undoRedoPerformed += () => {
 				SaveGraphWithReload();
@@ -41,36 +42,6 @@ namespace AssetGraph {
 
 
 			if (nodes.Any()) UpdateSpacerRect();
-
-// #if UNITY_5_3
-// 			{
-// 				// json to object.
-// 				var s = JsonUtility.FromJson<KeyObject>("{\"key\":\"value0\", \"aaa\":\"bbb\"}");
-// 				Debug.LogWarning("deserialize KeyObject.key:" + s.key);
-
-// 				// object to json.
-// 				var keyObj = new KeyObject("value1");
-
-// 				var result = JsonUtility.ToJson(keyObj, true);
-// 				Debug.LogWarning("serialize result:" + result);
-
-// 				var basePath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH);
-// 				var graphDataPath =FileController.PathCombine(basePath, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
-// 				if (File.Exists(graphDataPath)) {
-// 					Debug.LogError("start loading.");
-
-// 					// load
-// 					var dataStr = string.Empty;
-					
-// 					using (var sr = new StreamReader(graphDataPath)) {
-// 						dataStr = sr.ReadToEnd();
-// 					}
-
-// 					var deserialized = JsonUtility.FromJson<AssetGraphData>(dataStr);
-// 					Debug.LogError("loaded." + deserialized.lastModified + " vs:" + dataStr);
-// 				}
-// 			}
-// #endif
 		}
 		
 		[Serializable] public struct KeyObject {
@@ -94,6 +65,7 @@ namespace AssetGraph {
 			CONNECT_STARTED,
 			CONNECT_ENDED,
 			SELECTION_STARTED,
+			SCALING_STARTED,
 		}
 		private ModifyMode modifyMode;
 
@@ -117,6 +89,7 @@ namespace AssetGraph {
 		}
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 		
+		// hold selection start data.
 		public struct Selection {
 			public readonly float x;
 			public readonly float y;
@@ -127,6 +100,23 @@ namespace AssetGraph {
 			}
 		}
 		private Selection selection;
+
+		// hold scale start data.
+		public struct ScalePoint {
+			public readonly float x;
+			public readonly float y;
+			public readonly float startScale;
+			public readonly int scaledDistance;
+
+			public ScalePoint (Vector2 point, float scaleFactor, int scaledDistance) {
+				this.x = point.x;
+				this.y = point.y;
+				this.startScale = scaleFactor;
+				this.scaledDistance = scaledDistance;
+			}
+		}
+		private ScalePoint scalePoint;
+		
 
 		private string package = string.Empty;
 
@@ -149,7 +139,6 @@ namespace AssetGraph {
 			// load other textures
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
 			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
-			Debug.LogWarning("load platform textures here.");
 		}
 
 		private static void SetupPlatformIconsAndStrings (out Texture2D[] platformTextures, out string[] platformNames) {
@@ -169,7 +158,7 @@ namespace AssetGraph {
 				platformStringList.Add("Standalone");
 				platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
 			}
-			if (assetGraphPlatformSettings.Contains("iPhone")) {
+			if (assetGraphPlatformSettings.Contains("iPhone") || assetGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
 				platformStringList.Add("iOS");
 				platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
 			}
@@ -308,16 +297,7 @@ namespace AssetGraph {
 				}
 
 			} else {
-				// renew
-				var graphData = new Dictionary<string, object>{
-					{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, lastModified.ToString()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<object>()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<object>()},
-					{AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE, string.Empty}
-				};
-
-				// save new empty graph data.
-				UpdateGraphData(graphData);
+				var graphData = RenewData();
 
 				// set new empty graph data.
 				deserialized = graphData;
@@ -342,6 +322,21 @@ namespace AssetGraph {
 				load graph data from deserialized data.
 			*/
 			ConstructGraphFromDeserializedData(deserialized, package);
+		}
+
+		private Dictionary<string, object> RenewData () {
+			// renew
+			var graphData = new Dictionary<string, object>{
+				{AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_NODES, new List<object>()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_CONNECTIONS, new List<object>()},
+				{AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE, string.Empty}
+			};
+
+			// save new empty graph data.
+			UpdateGraphData(graphData);
+
+			return graphData;
 		}
 
 		private void ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData, string currentPackage) {
@@ -569,11 +564,11 @@ namespace AssetGraph {
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath;
+						nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
 						break;
 					}
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath;
+						nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
 						break;
 					}
 					
@@ -592,12 +587,12 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages;
+						nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword;
+						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
 						break;
 					}
 
@@ -608,12 +603,12 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate;
+						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
 						break;
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions;
+						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
 						break;
 					}
 
@@ -665,7 +660,8 @@ namespace AssetGraph {
 		private void Setup (string package) {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
-				Debug.LogError("no data found、初期化してもいいかもしれない。");
+				RenewData();
+				Debug.LogError("no data found. new data is generated.");
 				return;
 			}
 
@@ -673,7 +669,7 @@ namespace AssetGraph {
 				node.HideProgress();
 			}
 
-			// reload
+			// reload data from file.
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
 				dataStr = sr.ReadToEnd();
@@ -681,18 +677,24 @@ namespace AssetGraph {
 
 			var reloadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 
+			// update static all node names.
+			Node.allNodeNames = new List<string>(nodes.Select(node => node.name).ToList());
+
 			// ready throughput datas.
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, package);
+
+			Finally(connectionThroughputs, false);
 		}
 
 		private void Run (string package) {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
-				Debug.LogError("no data found、初期化してもいいかもしれない。");
+				RenewData();
+				Debug.LogError("no data found. new data is generated.");
 				return;
 			}
 
-
+			// reload data from file.
 			var dataStr = string.Empty;
 			using (var sr = new StreamReader(graphDataPath)) {
 				dataStr = sr.ReadToEnd();
@@ -701,7 +703,7 @@ namespace AssetGraph {
 			var currentCount = 0.00f;
 			var totalCount = nodes.Count * 1f;
 
-			Action<string, float>  updateHandler = (nodeId, progress) => {
+			Action<string, float> updateHandler = (nodeId, progress) => {
 				var targetNodes = nodes.Where(node => node.nodeId == nodeId).ToList();
 				
 				var progressPercentage = ((currentCount/totalCount) * 100).ToString();
@@ -719,18 +721,84 @@ namespace AssetGraph {
 						}
 					);
 				}
-				
 			};
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
+			
+			// setup datas. fail if exception raise.
+			GraphStackController.SetupStackedGraph(loadedData, package);
 			
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
+
+			Finally(connectionThroughputs, true);
 		}
 
+
+		public void Finally (Dictionary<string, Dictionary<string, List<string>>> throughputsSource, bool isRun) {
+			var nodeThroughputs = NodeThroughputs(throughputsSource);
+
+			var finallyBasedTypeRunner = Assembly.GetExecutingAssembly().GetTypes()
+					.Where(currentType => currentType.BaseType == typeof(FinallyBase))
+					.Select(type => type.ToString())
+					.ToList();
+			foreach (var typeStr in finallyBasedTypeRunner) {
+				var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+				if (finallyScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(FinallyBase));
+				var finallyInstance = (FinallyBase)finallyScriptInstance;
+
+				finallyInstance.Run(nodeThroughputs, isRun);
+			}
+		}
+
+		/**
+			collect node's result with node name.
+			structure is:
+
+			nodeNames
+				groups
+					resources
+		*/
+		private Dictionary<string, Dictionary<string, List<string>>> NodeThroughputs (Dictionary<string, Dictionary<string, List<string>>> throughputs) {
+			var nodeDatas = new Dictionary<string, Dictionary<string, List<string>>>();
+
+			var nodeIds = nodes.Select(node => node.nodeId).ToList();
+			var connectionIds = connections.Select(con => con.connectionId).ToList();
+
+			foreach (var nodeOrConnectionId in throughputs.Keys) {
+				// get endpoint node result.
+				if (nodeIds.Contains(nodeOrConnectionId)) {
+					var targetNodeName = nodes.Where(node => node.nodeId == nodeOrConnectionId).Select(node => node.name).FirstOrDefault();
+					
+					var nodeThroughput = throughputs[nodeOrConnectionId];
+
+					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
+					foreach (var groupKey in nodeThroughput.Keys) {
+						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
+						nodeDatas[targetNodeName][groupKey].AddRange(nodeThroughput[groupKey]);
+					}
+				}
+
+				// get connection result.
+				if (connectionIds.Contains(nodeOrConnectionId)) {
+					var targetConnection = connections.Where(con => con.connectionId == nodeOrConnectionId).FirstOrDefault();
+					var targetNodeName = nodes.Where(node => node.nodeId == targetConnection.startNodeId).Select(node => node.name).FirstOrDefault();
+					
+					var nodeThroughput = throughputs[nodeOrConnectionId];
+
+					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
+					foreach (var groupKey in nodeThroughput.Keys) {
+						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
+						nodeDatas[targetNodeName][groupKey].AddRange(nodeThroughput[groupKey]);
+					}
+				}
+			}
+
+			return nodeDatas;
+		}
 
 		public void OnGUI () {
 			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
@@ -764,9 +832,11 @@ namespace AssetGraph {
 			/*
 				scroll view.
 			*/
+			// var scaledScrollPos = Node.ScaleEffect(scrollPos);
 			scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+			// scrollPos = scrollPos + (movedScrollPos - scaledScrollPos);
 			{
-				ShowEventType(-2, Event.current.type);
+				
 				// draw node window x N.
 				{
 					BeginWindows();
@@ -776,7 +846,7 @@ namespace AssetGraph {
 					EndWindows();
 				}
 
-				ShowEventType(-1, Event.current.type);
+				
 
 				// draw connection input point marks.
 				foreach (var node in nodes) {
@@ -794,7 +864,7 @@ namespace AssetGraph {
 					}
 				}
 
-				ShowEventType(0, Event.current.type);
+				
 
 				// draw connection output point marks.
 				foreach (var node in nodes) {
@@ -827,12 +897,41 @@ namespace AssetGraph {
 					case EventType.MouseDrag: {
 						switch (modifyMode) {
 							case ModifyMode.CONNECT_ENDED: {
-								selection = new Selection(Event.current.mousePosition);
-								modifyMode = ModifyMode.SELECTION_STARTED;
+								switch (Event.current.button) {
+									case 0:{
+										if (Event.current.command) {
+											scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
+											modifyMode = ModifyMode.SCALING_STARTED;
+											break;
+										}
+
+										selection = new Selection(Event.current.mousePosition);
+										modifyMode = ModifyMode.SELECTION_STARTED;
+										break;
+									}
+									case 2:{
+										scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
+										modifyMode = ModifyMode.SCALING_STARTED;
+										break;
+									}
+								}
 								break;
 							}
 							case ModifyMode.SELECTION_STARTED: {
 								// do nothing.
+								break;
+							}
+							case ModifyMode.SCALING_STARTED: {
+								var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
+								var distance = baseDistance / Node.SCALE_WIDTH;
+								var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
+
+								if (!direction) distance = -distance;
+
+								var before = Node.scaleFactor;
+								Node.scaleFactor = scalePoint.startScale + (distance * Node.SCALE_RATIO);
+								if (Node.scaleFactor < Node.SCALE_MIN) Node.scaleFactor = Node.SCALE_MIN;
+								if (Node.SCALE_MAX < Node.scaleFactor) Node.scaleFactor = Node.SCALE_MAX;
 								break;
 							}
 						}
@@ -841,7 +940,9 @@ namespace AssetGraph {
 						Event.current.Use();
 						break;
 					}
+				}
 
+				switch (Event.current.rawType) {
 					case EventType.MouseUp: {
 						switch (modifyMode) {
 							/*
@@ -878,8 +979,13 @@ namespace AssetGraph {
 								
 								
 								foreach (var node in nodes) {
+									var nodeRect = new Rect(node.GetRect());
+									nodeRect.x = nodeRect.x * Node.scaleFactor;
+									nodeRect.y = nodeRect.y * Node.scaleFactor;
+									nodeRect.width = nodeRect.width * Node.scaleFactor;
+									nodeRect.height = nodeRect.height * Node.scaleFactor;
 									// get containd nodes,
-									if (node.GetRect().Overlaps(selectedRect)) {
+									if (nodeRect.Overlaps(selectedRect)) {
 										activeObjectIds.Add(node.nodeId);
 									}
 								}
@@ -911,6 +1017,11 @@ namespace AssetGraph {
 
 								HandleUtility.Repaint();
 								Event.current.Use();
+								break;
+							}
+
+							case ModifyMode.SCALING_STARTED: {
+								modifyMode = ModifyMode.CONNECT_ENDED;
 								break;
 							}
 						}
@@ -1110,14 +1221,6 @@ namespace AssetGraph {
 			}
 		}
 
-		private void ShowEventType (int index, EventType type) {
-			if (type == EventType.Repaint) return;
-			if (type == EventType.Layout) return;
-			if (type == EventType.mouseMove) return;
-
-			// Debug.LogError(index + ":" + type);
-		}
-
 		private Type IsAcceptableScriptType (Type type) {
 			if (typeof(FilterBase).IsAssignableFrom(type)) return typeof(FilterBase);
 			if (typeof(ImporterBase).IsAssignableFrom(type)) return typeof(ImporterBase);
@@ -1172,7 +1275,7 @@ namespace AssetGraph {
 		private void AddNodeFromGUI (string nodeName, AssetGraphSettings.NodeKind kind, string nodeId, float x, float y) {
 			Node newNode = null;
 
-			if (string.IsNullOrEmpty(nodeName)) nodeName = AssetGraphSettings.DEFAULT_NODE_NAME[kind];
+			if (string.IsNullOrEmpty(nodeName)) nodeName = AssetGraphSettings.DEFAULT_NODE_NAME[kind] + nodes.Where(node => node.kind == kind).ToList().Count;
 			
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -1297,10 +1400,10 @@ namespace AssetGraph {
 				var id = Guid.NewGuid().ToString();
 				var kind = targetNode.kind;
 				var name = targetNode.name;
-
+				Debug.LogWarning(".ReadonlyDict()つける旅");
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var loadPath = targetNode.loadPath;
+						var loadPath = targetNode.loadPath.ReadonlyDict();
 
 						var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
 
@@ -1348,7 +1451,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var importerPackages = targetNode.importerPackages;
+						var importerPackages = targetNode.importerPackages.ReadonlyDict();
 						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, importerPackages, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1361,7 +1464,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var groupingKeyword = targetNode.groupingKeyword;
+						var groupingKeyword = targetNode.groupingKeyword.ReadonlyDict();
 						var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1374,7 +1477,7 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplate = targetNode.bundleNameTemplate;
+						var bundleNameTemplate = targetNode.bundleNameTemplate.ReadonlyDict();
 						var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1386,8 +1489,21 @@ namespace AssetGraph {
 						break;
 					}
 
+					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+						var bundleOptions = targetNode.enabledBundleOptions.ReadonlyDict();
+						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
+
+						var connectionPoints = targetNode.DuplicateConnectionPoints();
+						foreach (var connectionPoint in connectionPoints) {
+							newNode.AddConnectionPoint(connectionPoint);
+						}
+						
+						nodes.Add(newNode);
+						break;
+					}
+
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPath = targetNode.exportPath;
+						var exportPath = targetNode.exportPath.ReadonlyDict();
 						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
 
 						var connectionPoints = targetNode.DuplicateConnectionPoints();
@@ -1573,43 +1689,6 @@ namespace AssetGraph {
 							break;
 						}
 
-						/*
-							connectionPoint tapped.
-						*/
-						case OnNodeEvent.EventType.EVENT_DELETE_ALL_INPUT_CONNECTIONS: 
-						case OnNodeEvent.EventType.EVENT_DELETE_ALL_OUTPUT_CONNECTIONS: {
-							Debug.LogError("あとでなんとかする");
-							// var sourcePoint = e.eventSourceNode;
-
-							// var relatedConnections = connections
-							// 	.Where(
-							// 		con => con.IsStartAtConnectionPoint(sourcePoint) || 
-							// 		con.IsEndAtConnectionPoint(sourcePoint)
-							// 	)
-							// 	.ToList();
-
-							// /*
-							// 	show menuContext for control these connections.
-							// */
-							// var menu = new GenericMenu();
-							// menu.AddItem(
-							// 	new GUIContent("delete all connections"), 
-							// 	false, 
-							// 	() => {
-							// 		Undo.RecordObject(this, "Delete All Connections");
-
-							// 		foreach (var con in relatedConnections) {
-							// 			var conId = con.connectionId;
-							// 			DeleteConnectionById(conId);
-							// 		}
-
-							// 		SaveGraphWithReload();
-							// 	}
-							// );
-							// menu.ShowAsContext();
-							break;
-						}
-
 						case OnNodeEvent.EventType.EVENT_CLOSE_TAPPED: {
 							
 							Undo.RecordObject(this, "Delete Node");
@@ -1732,22 +1811,28 @@ namespace AssetGraph {
 			}
 
 			switch (e.eventType) {
-				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_UPDATED: {
-					Debug.LogError("auto delete connection if connection point is added. will fix.");
-					var targetNode = e.eventSourceNode;
-
-					var connectionsFromThisNode = connections.Where(con => con.startNodeId == targetNode.nodeId).ToList();
-					var connectionsToThisNode = connections.Where(con => con.endNodeId == targetNode.nodeId).ToList();
+				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
+					var deletedConnectionPoint = e.eventSourceConnectionPoint;
+					var deletedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == deletedConnectionPoint.pointId).ToList();
 					
-					// remove connections from this node.
-					foreach (var con in connectionsFromThisNode) {
-						connections.Remove(con);						
-					}
+					if (!deletedOutputPointConnections.Any()) break;
 
-					// remove connections to this node.
-					foreach (var con in connectionsToThisNode) {
-						connections.Remove(con);						
-					}
+					connections.Remove(deletedOutputPointConnections[0]);
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
+					var labelChangedConnectionPoint = e.eventSourceConnectionPoint;
+					var changedLabel = labelChangedConnectionPoint.label;
+
+					var labelChangedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == labelChangedConnectionPoint.pointId).ToList();
+
+					if (!labelChangedOutputPointConnections.Any()) break;
+
+					labelChangedOutputPointConnections[0].label = changedLabel;
+					break;
+				}
+				case OnNodeEvent.EventType.EVENT_BEFORESAVE: {
+					Undo.RecordObject(this, "Update Node Setting");
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_SAVE: {
@@ -1758,6 +1843,7 @@ namespace AssetGraph {
 				case OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE: {
 					package = e.eventSourceNode.currentPackage;
 					Setup(package);
+					Repaint();
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_UPDATEPACKAGE: {
@@ -1772,9 +1858,17 @@ namespace AssetGraph {
 			}
 		}
 
+		/**
+			once expand, keep max size.
+			it's convenience.
+		*/
 		private void UpdateSpacerRect () {
 			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).Select(node => node.GetRightPos()).ToList()[0] + AssetGraphSettings.WINDOW_SPAN;
+			if (rightPoint < spacerRectRightBottom.x) rightPoint = spacerRectRightBottom.x;
+
 			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).Select(node => node.GetBottomPos()).ToList()[0] + AssetGraphSettings.WINDOW_SPAN;
+			if (bottomPoint < spacerRectRightBottom.y) bottomPoint = spacerRectRightBottom.y;
+
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
 

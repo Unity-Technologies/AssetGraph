@@ -15,15 +15,15 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (string.IsNullOrEmpty(bundleNameTemplate)) {
-				Debug.LogError("no Bundle Name Template set.");
-				return;
-			}
-
-			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
-				Debug.LogError("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
-				return;
-			}
+			ValidateBundleNameTemplate(
+				bundleNameTemplate,
+				() => {
+					throw new Exception("no Bundle Name Template set.");
+				},
+				() => {
+					throw new Exception("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template:" + bundleNameTemplate);
+				}
+			);
 			
 			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
@@ -48,15 +48,15 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			if (string.IsNullOrEmpty(bundleNameTemplate)) {
-				Debug.LogError("no Bundle Name Template set.");
-				return;
-			}
-
-			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) {
-				Debug.LogError("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template.");
-				return;
-			}
+			ValidateBundleNameTemplate(
+				bundleNameTemplate,
+				() => {
+					throw new Exception("no Bundle Name Template set.");
+				},
+				() => {
+					throw new Exception("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template:" + bundleNameTemplate);
+				}
+			);
 			
 			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
@@ -80,22 +80,17 @@ namespace AssetGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public string BundlizeAssets (string package, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {
-			var validation = true;
+		public string BundlizeAssets (string package, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importedPath)) {
 					Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before bundlize.");
-					validation = false;
 				}
 			}
-
-			if (!validation) return string.Empty;
 
 			var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
 			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
-			var bundleName = templateHead + groupkey + templateTail;
-			if (!string.IsNullOrEmpty(package)) bundleName = bundleName + "." + package;
+			var bundleName = (templateHead + groupkey + templateTail + "." + GraphStackController.Platform_Dot_Package(package)).ToLower();
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
 
 			if (isRun) {
@@ -106,6 +101,11 @@ namespace AssetGraph {
 			}
 
 			return bundlePath;
+		}
+
+		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty, Action UnlessKeyword) {
+			if (string.IsNullOrEmpty(bundleNameTemplate)) NullOrEmpty();
+			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) UnlessKeyword();
 		}
 	}
 }

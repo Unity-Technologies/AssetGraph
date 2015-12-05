@@ -38,6 +38,7 @@ namespace AssetGraph {
 		public const string package_SEPARATOR = "___";
 
 		public const string PLATFORM_DEFAULT_NAME = "Default";
+		public const string PLATFORM_STANDALONE = "Standalone";
 		public const string PLATFORM_DEFAULT_PACKAGE = "DefaultPackage";
 		public const string PLATFORM_NEW_PACKAGE = "newPackage";
 		public const string PLATFORM_NONE_PACKAGE = "(None)";
@@ -122,7 +123,7 @@ namespace AssetGraph {
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
 		public const string DUMMY_IMPORTER_LABELTONEXT = "importer_dummy_label";
 
-		public const string DEFAULT_FILTER_KEYWORD = "set keyword.";
+		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 
 		public enum NodeKind : int {
 			FILTER_SCRIPT,
