@@ -24,7 +24,6 @@ namespace AssetGraph {
 		}
 
 		public void OnEnable () {
-			Debug.LogWarning("should change title setting(with icon");
 			this.titleContent = new GUIContent("AssetGraph");
 
 			Undo.undoRedoPerformed += () => {
@@ -728,6 +727,7 @@ namespace AssetGraph {
 			// setup datas. fail if exception raise.
 			GraphStackController.SetupStackedGraph(loadedData, package);
 			
+
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
 
@@ -1149,6 +1149,9 @@ namespace AssetGraph {
 					break;
 				}
 
+				/*
+					scale up or down by command & + or command & -.
+				*/
 				case EventType.KeyDown: {
 					if (Event.current.command) {
 						if (Event.current.shift && Event.current.keyCode == KeyCode.Semicolon) {
@@ -1424,7 +1427,7 @@ namespace AssetGraph {
 			// add undo record.
 			Undo.RecordObject(this, "Duplicate Node");
 
-			Debug.LogError("パッケージ情報のコピーが必須");
+			Debug.LogError("パッケージ情報のコピーが必須、Nodeによっては実現できてる気がする。");
 			var targetNodes = nodes.Where(node => node.nodeId == sourceNodeId).ToList();
 			if (!targetNodes.Any()) return;
 

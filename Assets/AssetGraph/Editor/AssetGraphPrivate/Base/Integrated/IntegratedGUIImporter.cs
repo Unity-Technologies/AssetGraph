@@ -19,7 +19,7 @@ namespace AssetGraph {
 
 			var first = true;
 
-			if (1 < groupedSources.Keys.Count) Debug.LogError("importer merges all groups to 1 group(\"0\").");
+			if (1 < groupedSources.Keys.Count) Debug.LogWarning("importer merges all groups to 1 group(\"0\") forcely.");
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];

@@ -329,7 +329,7 @@ namespace AssetGraph {
 			{
 				var nodeNames = nodeDatas.Select(node => node.nodeName).ToList();
 				var duplicated = nodeNames.GroupBy(x => x)
-					.Where(group => group.Count() > 1)
+					.Where(group => 1 < group.Count())
 					.Select(group => group.Key)
 					.ToList();
 
@@ -407,9 +407,6 @@ namespace AssetGraph {
 		}
 		
 		public static EndpointNodeIdsAndNodeDatasAndConnectionDatas SerializeNodeRoute (Dictionary<string, object> graphDataDict, string package) {
-			Debug.LogWarning("should check infinite loop.");
-
-
 			var nodeIds = new List<string>();
 			var nodesSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
 			
@@ -629,9 +626,10 @@ namespace AssetGraph {
 				adding parentNode id x n into childNode for run up relationship from childNode.
 			*/
 			foreach (var connection in connections) {
-				// collect parent Ids into child node.
 				var targetNodes = nodeDatas.Where(nodeData => nodeData.nodeId == connection.toNodeId).ToList();
-				foreach (var targetNode in targetNodes) targetNode.AddConnectionData(connection);
+				foreach (var targetNode in targetNodes) {
+					targetNode.AddConnectionData(connection);
+				}
 			}
 			
 			return new EndpointNodeIdsAndNodeDatasAndConnectionDatas(noChildNodeIds, nodeDatas, connections);
@@ -649,8 +647,7 @@ namespace AssetGraph {
 			Dictionary<string, List<string>> cacheDict,
 			string package
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, package, false);
-
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, new List<string>(), package, false);
 			return resultDict.Keys.ToList();
 		}
 
@@ -667,8 +664,8 @@ namespace AssetGraph {
 			string package,
 			Action<string, float> updateHandler=null
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, package, true, updateHandler);
 
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, new List<string>(), package, true, updateHandler);
 			return resultDict.Keys.ToList();
 		}
 
@@ -681,6 +678,7 @@ namespace AssetGraph {
 			List<ConnectionData> connectionDatas, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict, 
 			Dictionary<string, List<string>> cachedDict,
+			List<string> usedConnectionIds,
 			string package,
 			bool isActualRun,
 			Action<string, float> updateHandler=null
@@ -694,10 +692,17 @@ namespace AssetGraph {
 
 			/*
 				run parent nodes of this node.
+				search connection which is incoming to this node.
+				that connection has information of parent node.
 			*/
-			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
-			foreach (var parentNodeId in parentNodeIds) {
-				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, package, isActualRun, updateHandler);
+			foreach (var connectionDataOfParent in currentNodeData.connectionDataOfParents) {
+				var fromNodeId = connectionDataOfParent.fromNodeId;
+				var usedConnectionId = connectionDataOfParent.connectionId;
+				
+				if (usedConnectionIds.Contains(usedConnectionId)) throw new Exception("connection loop detected.");
+				
+				usedConnectionIds.Add(usedConnectionId);
+				ExecuteParent(fromNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, usedConnectionIds, package, isActualRun, updateHandler);
 			}
 
 			/*
