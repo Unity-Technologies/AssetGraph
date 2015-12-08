@@ -24,7 +24,6 @@ namespace AssetGraph {
 		}
 
 		public void OnEnable () {
-			Debug.LogWarning("should change title setting(with icon");
 			this.titleContent = new GUIContent("AssetGraph");
 
 			Undo.undoRedoPerformed += () => {
@@ -272,7 +271,7 @@ namespace AssetGraph {
 
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
-
+				
 				var lastPackageStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE] as string;
 				if (string.IsNullOrEmpty(lastPackageStr)) lastPackageStr = string.Empty;
 				package = lastPackageStr;
@@ -658,6 +657,8 @@ namespace AssetGraph {
 		}
 
 		private void Setup (string package) {
+			EditorUtility.ClearProgressBar();
+
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
@@ -725,8 +726,18 @@ namespace AssetGraph {
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			
+
 			// setup datas. fail if exception raise.
 			GraphStackController.SetupStackedGraph(loadedData, package);
+
+
+			/*
+				remove bundlize setting names from unused Nodes.
+			*/
+			var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(loadedData, package);
+			var usedNodeIds = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas.Select(usedNode => usedNode.nodeId).ToList();
+			UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
+
 			
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
@@ -752,6 +763,41 @@ namespace AssetGraph {
 
 				finallyInstance.Run(nodeThroughputs, isRun);
 			}
+		}
+
+		
+		private void UnbundlizeUnusedNodeBundleSettings (List<string> usedNodeIds) {
+			EditorUtility.DisplayProgressBar("unbundlize unused resources...", "ready", 0);
+			
+			var filePathsInFolder = FileController.FilePathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
+
+			
+			var unusedNodeResourcePaths = new List<string>();
+			foreach (var filePath in filePathsInFolder) {
+				// Assets/AssetGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
+				var splitted = filePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+				var nodeIdInCache = splitted[4];
+
+				if (usedNodeIds.Contains(nodeIdInCache)) continue;
+				unusedNodeResourcePaths.Add(filePath);
+			}
+
+			var max = unusedNodeResourcePaths.Count * 1.0f;
+			var count = 0;
+			foreach (var unusedNodeResourcePath in unusedNodeResourcePaths) {
+				// Assets/AssetGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
+				var splitted = unusedNodeResourcePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+				var underNodeFilePathSource = splitted.Where((v,i) => 5 < i).ToArray();
+				var underNodeFilePath = string.Join(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), underNodeFilePathSource);
+				EditorUtility.DisplayProgressBar("unbundlize unused resources...", count + "/" + max + " " + splitted[3] + " : " + underNodeFilePath, count / max);
+				
+				var assetImporter = AssetImporter.GetAtPath(unusedNodeResourcePath);
+				assetImporter.assetBundleName = string.Empty;
+
+				count = count + 1;
+			}
+
+			EditorUtility.ClearProgressBar();
 		}
 
 		/**
@@ -846,8 +892,6 @@ namespace AssetGraph {
 					EndWindows();
 				}
 
-				
-
 				// draw connection input point marks.
 				foreach (var node in nodes) {
 					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECT_STARTED);
@@ -891,6 +935,9 @@ namespace AssetGraph {
 					}
 				}
 
+				/*
+					mouse drag event handling.
+				*/
 				switch (Event.current.type) {
 
 					// draw line while dragging.
@@ -898,7 +945,7 @@ namespace AssetGraph {
 						switch (modifyMode) {
 							case ModifyMode.CONNECT_ENDED: {
 								switch (Event.current.button) {
-									case 0:{
+									case 0:{// left click
 										if (Event.current.command) {
 											scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
 											modifyMode = ModifyMode.SCALING_STARTED;
@@ -909,7 +956,7 @@ namespace AssetGraph {
 										modifyMode = ModifyMode.SELECTION_STARTED;
 										break;
 									}
-									case 2:{
+									case 2:{// middle click.
 										scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
 										modifyMode = ModifyMode.SCALING_STARTED;
 										break;
@@ -928,8 +975,9 @@ namespace AssetGraph {
 
 								if (!direction) distance = -distance;
 
-								var before = Node.scaleFactor;
+								// var before = Node.scaleFactor;
 								Node.scaleFactor = scalePoint.startScale + (distance * Node.SCALE_RATIO);
+
 								if (Node.scaleFactor < Node.SCALE_MIN) Node.scaleFactor = Node.SCALE_MIN;
 								if (Node.SCALE_MAX < Node.scaleFactor) Node.scaleFactor = Node.SCALE_MAX;
 								break;
@@ -942,6 +990,10 @@ namespace AssetGraph {
 					}
 				}
 
+				/*
+					mouse up event handling.
+					use rawType for detect for detectiong mouse-up which raises outside of window.
+				*/
 				switch (Event.current.rawType) {
 					case EventType.MouseUp: {
 						switch (modifyMode) {
@@ -1037,7 +1089,13 @@ namespace AssetGraph {
 			EditorGUILayout.EndScrollView();
 
 
-
+			/*
+				detect 
+					dragging some script into window.
+					right click.
+					connection end mouse up.
+					command(Delete, Copy, and more)
+			*/
 			switch (Event.current.type) {
 				// detect dragging script then change interface to "(+)" icon.
 				case EventType.DragUpdated: {
@@ -1137,6 +1195,30 @@ namespace AssetGraph {
 					break;
 				}
 
+				/*
+					scale up or down by command & + or command & -.
+				*/
+				case EventType.KeyDown: {
+					if (Event.current.command) {
+						if (Event.current.shift && Event.current.keyCode == KeyCode.Semicolon) {
+							Node.scaleFactor = Node.scaleFactor + 0.1f;
+							if (Node.scaleFactor < Node.SCALE_MIN) Node.scaleFactor = Node.SCALE_MIN;
+							if (Node.SCALE_MAX < Node.scaleFactor) Node.scaleFactor = Node.SCALE_MAX;
+							Event.current.Use();
+							break;
+						}
+
+						if (Event.current.keyCode == KeyCode.Minus) {
+							Node.scaleFactor = Node.scaleFactor - 0.1f;
+							if (Node.scaleFactor < Node.SCALE_MIN) Node.scaleFactor = Node.SCALE_MIN;
+							if (Node.SCALE_MAX < Node.scaleFactor) Node.scaleFactor = Node.SCALE_MAX;
+							Event.current.Use();
+							break;
+						}
+					}
+					break;
+				}
+
 				case EventType.ValidateCommand: {
 					switch (Event.current.commandName) {
 						// Delete active node or connection.
@@ -1212,7 +1294,6 @@ namespace AssetGraph {
 						}
 
 						default: {
-							// Debug.LogError("Event.current.commandName:" + Event.current.commandName);
 							break;
 						}
 					}
@@ -1392,7 +1473,7 @@ namespace AssetGraph {
 			// add undo record.
 			Undo.RecordObject(this, "Duplicate Node");
 
-			Debug.LogError("パッケージ情報のコピーが必須");
+			Debug.LogError("パッケージ情報のコピーが必須、Nodeによっては実現できてる気がする。");
 			var targetNodes = nodes.Where(node => node.nodeId == sourceNodeId).ToList();
 			if (!targetNodes.Any()) return;
 
@@ -1575,7 +1656,7 @@ namespace AssetGraph {
 
 							var label = startConnectionPoint.label;
 							AddConnection(label, startNode, startConnectionPoint, endNode, endConnectionPoint);
-							SaveGraphWithReload();		
+							SaveGraphWithReload();
 							break;
 						}
 

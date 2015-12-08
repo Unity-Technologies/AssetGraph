@@ -24,7 +24,7 @@ namespace AssetGraph {
 
 		public static List<string> allNodeNames;
 
-		public static float scaleFactor = 1.0f;
+		public static float scaleFactor = 1.0f;// 1.0f. 0.7f, 0.4f, 0.3f
 		public const float SCALE_MIN = 0.3f;
 		public const float SCALE_MAX = 1.0f;
 		public const int SCALE_WIDTH = 30;
@@ -529,7 +529,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						if (node.enabledBundleOptions == null) return;
 
-						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle.", MessageType.Info);
+						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle by AssetBundle name settings.", MessageType.Info);
 						UpdateNodeName(node);
 
 						GUILayout.Space(10f);

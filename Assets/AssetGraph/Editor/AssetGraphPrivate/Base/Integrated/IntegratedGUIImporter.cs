@@ -18,9 +18,7 @@ namespace AssetGraph {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			var first = true;
-
-			if (1 < groupedSources.Keys.Count) Debug.LogError("importer merges all groups to 1 group(\"0\").");
-
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
@@ -44,7 +42,20 @@ namespace AssetGraph {
 					}
 				}
 
+				var alreadyImported = new List<string>();
+				var ignoredResource = new List<string>();
+
 				foreach (var inputSource in inputSources) {
+					if (string.IsNullOrEmpty(inputSource.absoluteSourcePath)) {
+						if (!string.IsNullOrEmpty(inputSource.importedPath)) {
+							alreadyImported.Add(inputSource.importedPath);
+							continue;
+						}
+
+						ignoredResource.Add(inputSource.fileNameAndExtension);
+						continue;
+					}
+
 					var assumedImportedBasePath = inputSource.absoluteSourcePath.Replace(inputSource.sourceBasePath, AssetGraphSettings.IMPORTER_CACHE_PLACE);
 					var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
 
@@ -75,6 +86,9 @@ namespace AssetGraph {
 						EditorUtility.ClearProgressBar();
 					}
 				}
+
+				if (alreadyImported.Any()) Debug.LogError("importer:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
+				if (ignoredResource.Any()) Debug.LogError("importer:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
 
 				outputDict[groupKey] = assumedImportedAssetDatas;
 			}
@@ -132,7 +146,20 @@ namespace AssetGraph {
 				*/
 				InternalSamplingImportAdopter.Attach(samplingAssetImporter);
 
+				var alreadyImported = new List<string>();
+				var ignoredResource = new List<string>();
+
 				foreach (var inputSource in inputSources) {
+					if (string.IsNullOrEmpty(inputSource.absoluteSourcePath)) {
+						if (!string.IsNullOrEmpty(inputSource.importedPath)) {
+							alreadyImported.Add(inputSource.importedPath);
+							continue;
+						}
+
+						ignoredResource.Add(inputSource.fileNameAndExtension);
+						continue;
+					}
+
 					var absoluteFilePath = inputSource.absoluteSourcePath;
 					var pathUnderSourceBase = inputSource.pathUnderSourceBase;
 
@@ -143,17 +170,16 @@ namespace AssetGraph {
 						usedCache.Add(targetFilePath);
 						continue;
 					}
-					
-					try {
-						/*
-							copy files into local.
-						*/
-						FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
-					} catch (Exception e) {
-						Debug.LogError("IntegratedGUIImporter:" + this + " error:" + e);
-						return;
-					}
+
+					/*
+						copy files into local.
+					*/
+					FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);					
 				}
+
+				if (alreadyImported.Any()) Debug.LogError("importer:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
+				if (ignoredResource.Any()) Debug.LogError("importer:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
+
 				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 				InternalSamplingImportAdopter.Detach();
 

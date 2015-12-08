@@ -111,7 +111,8 @@ namespace AssetGraph {
 
 		private static string _PathCombine (string head, string tail) {
 			if (!head.EndsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) head = head + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
-
+			
+			if (string.IsNullOrEmpty(tail)) return head;
 			if (tail.StartsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) tail = tail.Substring(1);
 
 			return Path.Combine(head, tail);

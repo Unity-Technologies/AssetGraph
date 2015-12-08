@@ -81,11 +81,13 @@ namespace AssetGraph {
 		}
 
 		public string BundlizeAssets (string package, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
+			var invalids = new List<string>();
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importedPath)) {
-					Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before bundlize.");
+					invalids.Add(source.pathUnderSourceBase);
 				}
 			}
+			if (invalids.Any()) throw new Exception("bundlizer:" + string.Join(", ", invalids.ToArray()) + " is not imported yet, should import before bundlize.");
 
 			var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
 			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];

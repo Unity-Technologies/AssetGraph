@@ -17,6 +17,10 @@ namespace AssetGraph {
 		}
 
 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			/*
+				forcely merge to group ["0"].
+				these are came from bundlizer.
+			*/
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
@@ -35,8 +39,39 @@ namespace AssetGraph {
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.Current_Platform_Package_Folder(package));
 			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
-			var outputDict = new Dictionary<string, List<InternalAssetData>>();
-			outputDict["0"] = new List<InternalAssetData>();
+			
+			/*
+				merge multi group into ["0"] group.
+			*/
+			var intendedAssetNames = new List<string>();
+			foreach (var groupKey in groupedSources.Keys) {
+				var internalAssetsOfCurrentGroup = groupedSources[groupKey];
+				foreach (var internalAsset in internalAssetsOfCurrentGroup) {
+					intendedAssetNames.Add(internalAsset.fileNameAndExtension);
+					intendedAssetNames.Add(internalAsset.fileNameAndExtension + AssetGraphSettings.MANIFEST_FOOTER);
+				}
+			}
+			
+
+
+			/*
+				platform's bundle & manifest. 
+				e.g. iOS & iOS.manifest.
+			*/
+			var currentPlatform_Package_BundleFile = GraphStackController.Current_Platform_Package_Folder(package);
+			var currentPlatform_Package_BundleFileManifest = currentPlatform_Package_BundleFile + AssetGraphSettings.MANIFEST_FOOTER;
+			
+			intendedAssetNames.Add(currentPlatform_Package_BundleFile);
+			intendedAssetNames.Add(currentPlatform_Package_BundleFileManifest);
+
+			/*
+				delete not intended assets.
+			*/
+			foreach (var alreadyCachedPath in alreadyCached) {
+				var cachedFileName = Path.GetFileName(alreadyCachedPath);
+				if (intendedAssetNames.Contains(cachedFileName)) continue;
+				File.Delete(alreadyCachedPath);
+			}
 
 			var assetBundleOptions = BuildAssetBundleOptions.None;
 
@@ -69,18 +104,52 @@ namespace AssetGraph {
 				}
 			}
 
-
-
 			BuildPipeline.BuildAssetBundles(recommendedBundleOutputDir, assetBundleOptions, EditorUserBuildSettings.activeBuildTarget);
 
+
+			/*
+				check assumed bundlized resources and actual generated assetbunles.
+
+				"assuned bundlized resources info from bundlizer" are contained by "actual bundlized resources".
+			*/
+			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			var outputSources = new List<InternalAssetData>();
 
+			var newAssetPaths = new List<string>();
 			var generatedAssetBundlePaths = FileController.FilePathsInFolder(recommendedBundleOutputDir);
 			foreach (var newAssetPath in generatedAssetBundlePaths) {
+				newAssetPaths.Add(newAssetPath);
 				var newAssetData = InternalAssetData.InternalAssetDataGeneratedByBundleBuilder(newAssetPath);
 				outputSources.Add(newAssetData);
 			}
 
+			// compare, erase & notice.
+			var containedAssetBundles = new List<string>();
+			
+			// collect intended output.
+			foreach (var generatedAssetPath in newAssetPaths) {
+				var generatedAssetName = Path.GetFileName(generatedAssetPath);
+
+				// collect intended assetBundle & assetBundleManifest file.
+				foreach (var bundledName in intendedAssetNames) {
+					if (generatedAssetName == bundledName) {
+						containedAssetBundles.Add(generatedAssetPath);
+						continue;
+					}
+				
+					var bundleManifestName = bundledName + AssetGraphSettings.MANIFEST_FOOTER;
+					if (generatedAssetName == bundleManifestName) {
+						containedAssetBundles.Add(generatedAssetPath);
+						continue;
+					}
+				}
+			}
+
+			var diffs = newAssetPaths.Except(containedAssetBundles);
+			foreach (var diff in diffs) {
+				Debug.LogWarning("bundleBuilder:AssetBundle:" + diff + " is not intended bundle. please check if unnecessary importer or prefabricator node is exists in graph.");
+			}
+		
 			outputDict["0"] = outputSources;
 			
 			var usedCache = new List<string>(alreadyCached);

@@ -22,6 +22,7 @@ namespace AssetGraph {
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
+		public const string MANIFEST_FOOTER = ".manifest";
 		public const char UNITY_FOLDER_SEPARATOR = '/';// Mac/Windows/Linux can use '/' in Unity.
 
 		public const char KEYWORD_WILDCARD = '*';

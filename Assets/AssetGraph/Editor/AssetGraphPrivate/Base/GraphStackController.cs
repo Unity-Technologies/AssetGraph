@@ -328,12 +328,12 @@ namespace AssetGraph {
 			*/
 			{
 				var nodeNames = nodeDatas.Select(node => node.nodeName).ToList();
-				var duplicated = nodeNames.GroupBy(x => x)
-					.Where(group => group.Count() > 1)
+				var overlappings = nodeNames.GroupBy(x => x)
+					.Where(group => 1 < group.Count())
 					.Select(group => group.Key)
 					.ToList();
 
-				if (duplicated.Any()) throw new Exception("node names are overlapping:" + duplicated[0]);
+				if (overlappings.Any()) throw new Exception("node names are overlapping:" + overlappings[0]);
 			}
 
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
@@ -407,9 +407,6 @@ namespace AssetGraph {
 		}
 		
 		public static EndpointNodeIdsAndNodeDatasAndConnectionDatas SerializeNodeRoute (Dictionary<string, object> graphDataDict, string package) {
-			Debug.LogWarning("should check infinite loop.");
-
-
 			var nodeIds = new List<string>();
 			var nodesSource = graphDataDict[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
 			
@@ -629,9 +626,10 @@ namespace AssetGraph {
 				adding parentNode id x n into childNode for run up relationship from childNode.
 			*/
 			foreach (var connection in connections) {
-				// collect parent Ids into child node.
 				var targetNodes = nodeDatas.Where(nodeData => nodeData.nodeId == connection.toNodeId).ToList();
-				foreach (var targetNode in targetNodes) targetNode.AddConnectionData(connection);
+				foreach (var targetNode in targetNodes) {
+					targetNode.AddConnectionData(connection);
+				}
 			}
 			
 			return new EndpointNodeIdsAndNodeDatasAndConnectionDatas(noChildNodeIds, nodeDatas, connections);
@@ -649,8 +647,7 @@ namespace AssetGraph {
 			Dictionary<string, List<string>> cacheDict,
 			string package
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, package, false);
-
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, new List<string>(), package, false);
 			return resultDict.Keys.ToList();
 		}
 
@@ -667,8 +664,8 @@ namespace AssetGraph {
 			string package,
 			Action<string, float> updateHandler=null
 		) {
-			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, package, true, updateHandler);
 
+			ExecuteParent(endNodeId, nodeDatas, connections, resultDict, cacheDict, new List<string>(), package, true, updateHandler);
 			return resultDict.Keys.ToList();
 		}
 
@@ -681,6 +678,7 @@ namespace AssetGraph {
 			List<ConnectionData> connectionDatas, 
 			Dictionary<string, Dictionary<string, List<InternalAssetData>>> resultDict, 
 			Dictionary<string, List<string>> cachedDict,
+			List<string> usedConnectionIds,
 			string package,
 			bool isActualRun,
 			Action<string, float> updateHandler=null
@@ -692,12 +690,31 @@ namespace AssetGraph {
 
 			if (currentNodeData.IsAlreadyDone()) return;
 
+			var nodeName = currentNodeData.nodeName;
+			var nodeKind = currentNodeData.nodeKind;
+
 			/*
 				run parent nodes of this node.
+				search connections which are incoming to this node.
+				that connection has information of parent node.
 			*/
-			var parentNodeIds = currentNodeData.connectionDataOfParents.Select(conData => conData.fromNodeId).ToList();
-			foreach (var parentNodeId in parentNodeIds) {
-				ExecuteParent(parentNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, package, isActualRun, updateHandler);
+			foreach (var connectionDataOfParent in currentNodeData.connectionDataOfParents) {
+				var fromNodeId = connectionDataOfParent.fromNodeId;
+				var usedConnectionId = connectionDataOfParent.connectionId;
+				
+				if (usedConnectionIds.Contains(usedConnectionId)) throw new Exception("connection loop detected.");
+				
+				usedConnectionIds.Add(usedConnectionId);
+				
+				var parentNode = nodeDatas.Where(relation => relation.nodeId == fromNodeId).ToList();
+				if (!parentNode.Any()) return;
+
+				var parentNodeKind = parentNode[0].nodeKind;
+				
+				// check node kind order.
+				AssertNodeOrder(parentNodeKind, nodeKind);
+
+				ExecuteParent(fromNodeId, nodeDatas, connectionDatas, resultDict, cachedDict, usedConnectionIds, package, isActualRun, updateHandler);
 			}
 
 			/*
@@ -724,8 +741,6 @@ namespace AssetGraph {
 			/*
 				has next node, run first time.
 			*/
-			var nodeName = currentNodeData.nodeName;
-			var nodeKind = currentNodeData.nodeKind;
 			
 			var alreadyCachedPaths = new List<string>();
 			if (cachedDict.ContainsKey(nodeId)) alreadyCachedPaths.AddRange(cachedDict[nodeId]);
@@ -999,6 +1014,53 @@ namespace AssetGraph {
 			if (updateHandler != null) updateHandler(nodeId, 1f);
 		}
 
+		private static void AssertNodeOrder (AssetGraphSettings.NodeKind fromKind, AssetGraphSettings.NodeKind toKind) {
+			switch (toKind) {
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					switch (fromKind) {
+						case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							// no problem.
+							break;
+						}
+						default: {
+							throw new Exception("cannot connect from " + fromKind + " to bundleBuilder.");
+						}
+					}
+					break;
+				}
+			}
+
+			switch (fromKind) {
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					switch (toKind) {
+						case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							throw new Exception("cannot connect from bundlizer to bundlizer.");
+						}
+					}
+					break;
+				}
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					switch (toKind) {
+						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+						case AssetGraphSettings.NodeKind.FILTER_GUI:
+						case AssetGraphSettings.NodeKind.GROUPING_GUI:
+						case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+							// no problem.
+							break;
+						}
+
+						default: {
+							throw new Exception("cannot connect from bundleBuilder to " + toKind);
+						}
+					}
+					break;
+				}
+			}
+		}
+
 		public static string WithProjectPath (string pathUnderProjectFolder) {
 			var assetPath = Application.dataPath;
 			var projectPath = Directory.GetParent(assetPath).ToString();
@@ -1161,11 +1223,33 @@ namespace AssetGraph {
 				}
 				
 				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: 
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: 
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					// do nothing.
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					// nothing to do.
-					break;
+					var cachedPathBase = FileController.PathCombine(
+						AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, 
+						nodeId,
+						platform_package_key_candidate
+					);
+
+					// no cache folder, no cache.
+					if (!Directory.Exists(cachedPathBase)) {
+						// search default platform + package
+						cachedPathBase = FileController.PathCombine(
+							AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, 
+							nodeId,
+							GraphStackController.Default_Platform_Package_Folder(package)
+						);
+
+						if (!Directory.Exists(cachedPathBase)) {
+							return new List<string>();
+						}
+					}
+
+					return FileController.FilePathsInFolder(cachedPathBase);
 				}
 
 				default: {
