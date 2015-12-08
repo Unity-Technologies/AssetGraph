@@ -2,6 +2,7 @@ using UnityEngine;
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetGraph {
@@ -46,6 +47,8 @@ namespace AssetGraph {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
+			var failedExports = new List<string>();
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var exportedAssets = new List<InternalAssetData>();
 				var inputSources = groupedSources[groupKey];
@@ -61,6 +64,10 @@ namespace AssetGraph {
 					if (isRun) {
 						if (!Directory.Exists(parentDir)) Directory.CreateDirectory(parentDir);
 						if (File.Exists(destination)) File.Delete(destination);
+						if (string.IsNullOrEmpty(source.importedPath)) {
+							failedExports.Add(source.absoluteSourcePath);
+							continue;
+						}
 						File.Copy(source.importedPath, destination);
 					}
 
@@ -68,6 +75,10 @@ namespace AssetGraph {
 					exportedAssets.Add(exportedAsset);
 				}
 				outputDict["0"].AddRange(exportedAssets);
+			}
+
+			if (failedExports.Any()) {
+				Debug.LogError("exporter: " + string.Join(", ", failedExports.ToArray()) + " is not imported yet, should import before export.");
 			}
 
 			Output(nodeId, labelToNext, outputDict, new List<string>());

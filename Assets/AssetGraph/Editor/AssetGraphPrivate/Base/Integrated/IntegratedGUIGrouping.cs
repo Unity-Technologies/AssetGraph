@@ -23,6 +23,9 @@ namespace AssetGraph {
 
 
 		private void GroupingOutput (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+
+			if (1 < groupedSources.Keys.Count()) Debug.LogWarning("grouping merges all input groups to new output groups forcely.");
+
 			ValidateGroupingKeyword(
 				groupingKeyword,
 				() => {
@@ -35,23 +38,25 @@ namespace AssetGraph {
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
+			var mergedGroupedSources = new List<InternalAssetData>();
+
 			foreach (var groupKey in groupedSources.Keys) {
-				var inputSources = groupedSources[groupKey];
+				mergedGroupedSources.AddRange(groupedSources[groupKey]);
+			}
 
-				foreach (var source in inputSources) {
-					var targetPath = source.GetAbsolutePathOrImportedPath();
+			foreach (var source in mergedGroupedSources) {
+				var targetPath = source.GetAbsolutePathOrImportedPath();
 
-					var groupingKeywordPrefix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
-					var groupingKeywordPostfix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
+				var groupingKeywordPrefix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
+				var groupingKeywordPostfix = groupingKeyword.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
-					var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
-					var match = regex.Match(targetPath);
+				var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
+				var match = regex.Match(targetPath);
 
-					if (match.Success) {
-						var newGroupingKey = match.Groups[1].Value;
-						if (!outputDict.ContainsKey(newGroupingKey)) outputDict[newGroupingKey] = new List<InternalAssetData>();
-						outputDict[newGroupingKey].Add(source);
-					}
+				if (match.Success) {
+					var newGroupingKey = match.Groups[1].Value;
+					if (!outputDict.ContainsKey(newGroupingKey)) outputDict[newGroupingKey] = new List<InternalAssetData>();
+					outputDict[newGroupingKey].Add(source);
 				}
 			}
 			

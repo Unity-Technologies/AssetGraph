@@ -271,7 +271,7 @@ namespace AssetGraph {
 
 				var lastModifiedStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
-
+				
 				var lastPackageStr = deserialized[AssetGraphSettings.ASSETGRAPH_DATA_LASTPACKAGE] as string;
 				if (string.IsNullOrEmpty(lastPackageStr)) lastPackageStr = string.Empty;
 				package = lastPackageStr;
@@ -657,6 +657,8 @@ namespace AssetGraph {
 		}
 
 		private void Setup (string package) {
+			EditorUtility.ClearProgressBar();
+
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetGraphSettings.ASSETGRAPH_DATA_PATH, AssetGraphSettings.ASSETGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
@@ -724,10 +726,19 @@ namespace AssetGraph {
 
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			
+
 			// setup datas. fail if exception raise.
 			GraphStackController.SetupStackedGraph(loadedData, package);
-			
 
+
+			/*
+				remove bundlize setting names from unused Nodes.
+			*/
+			var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(loadedData, package);
+			var usedNodeIds = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas.Select(usedNode => usedNode.nodeId).ToList();
+			UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
+
+			
 			// run datas.
 			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
 
@@ -752,6 +763,41 @@ namespace AssetGraph {
 
 				finallyInstance.Run(nodeThroughputs, isRun);
 			}
+		}
+
+		
+		private void UnbundlizeUnusedNodeBundleSettings (List<string> usedNodeIds) {
+			EditorUtility.DisplayProgressBar("unbundlize unused resources...", "ready", 0);
+			
+			var filePathsInFolder = FileController.FilePathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
+
+			
+			var unusedNodeResourcePaths = new List<string>();
+			foreach (var filePath in filePathsInFolder) {
+				// Assets/AssetGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
+				var splitted = filePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+				var nodeIdInCache = splitted[4];
+
+				if (usedNodeIds.Contains(nodeIdInCache)) continue;
+				unusedNodeResourcePaths.Add(filePath);
+			}
+
+			var max = unusedNodeResourcePaths.Count * 1.0f;
+			var count = 0;
+			foreach (var unusedNodeResourcePath in unusedNodeResourcePaths) {
+				// Assets/AssetGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
+				var splitted = unusedNodeResourcePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+				var underNodeFilePathSource = splitted.Where((v,i) => 5 < i).ToArray();
+				var underNodeFilePath = string.Join(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), underNodeFilePathSource);
+				EditorUtility.DisplayProgressBar("unbundlize unused resources...", count + "/" + max + " " + splitted[3] + " : " + underNodeFilePath, count / max);
+				
+				var assetImporter = AssetImporter.GetAtPath(unusedNodeResourcePath);
+				assetImporter.assetBundleName = string.Empty;
+
+				count = count + 1;
+			}
+
+			EditorUtility.ClearProgressBar();
 		}
 
 		/**
@@ -1610,7 +1656,7 @@ namespace AssetGraph {
 
 							var label = startConnectionPoint.label;
 							AddConnection(label, startNode, startConnectionPoint, endNode, endConnectionPoint);
-							SaveGraphWithReload();		
+							SaveGraphWithReload();
 							break;
 						}
 

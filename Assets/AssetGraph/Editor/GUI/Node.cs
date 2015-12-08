@@ -529,7 +529,7 @@ namespace AssetGraph {
 					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						if (node.enabledBundleOptions == null) return;
 
-						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle.", MessageType.Info);
+						EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle by AssetBundle name settings.", MessageType.Info);
 						UpdateNodeName(node);
 
 						GUILayout.Space(10f);

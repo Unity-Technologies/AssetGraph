@@ -9,17 +9,18 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class PrefabricatorBase : INodeBase {
 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
-			var validation = true;
+			var invalids = new List<string>();
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
 					if (string.IsNullOrEmpty(source.importedPath)) {
-						Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before prefabricate.");
-						validation = false;
+						invalids.Add(source.pathUnderSourceBase);
 					}
 				}
 			}
 
-			if (!validation) return;
+			if (invalids.Any()) {
+				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
+			}
 
 			/*
 				through all.
@@ -36,19 +37,20 @@ namespace AssetGraph {
 
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
-
-			var validation = true;
+			
+			var invalids = new List<string>();
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
 					if (string.IsNullOrEmpty(source.importedPath)) {
-						Debug.LogError("resource:" + source.pathUnderSourceBase + " is not imported yet, should import before prefabricate.");
-						validation = false;
+						invalids.Add(source.pathUnderSourceBase);
 					}
 				}
 			}
 
-			if (!validation) return;
-
+			if (invalids.Any()) {
+				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
+			}
+			
 			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
