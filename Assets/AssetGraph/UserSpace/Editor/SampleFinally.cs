@@ -12,7 +12,7 @@ using MiniJSONForAssetGraph;
 /**
 	sample class for finally hookPoint.
 
-	read exported assetBundles & generate assetBundle data json as "EXPORT_PATH/bundleList.json".
+	show results of all nodes.
 */
 public class SampleFinally : AssetGraph.FinallyBase {
 	public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
@@ -23,7 +23,7 @@ public class SampleFinally : AssetGraph.FinallyBase {
 
 			foreach (var groupKey in throughputs[nodeName].Keys) {
 				Debug.Log("	groupKey:" + groupKey);
-				
+
 				foreach (var result in throughputs[nodeName][groupKey]) {
 					Debug.Log("		result:" + result);
 				}
