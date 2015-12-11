@@ -1,0 +1,10 @@
+YamlDotNet for Unity is derived from https://www.assetstore.unity3d.com/en/#!/content/36292
+
+Do not copy “Assets/AssetGraph/UserSpace/Editor/Libralies/YamlDotNet“ for your project.
+Please download from AssetStore.
+
+
+YamlDotNet for Unity
+https://www.assetstore.unity3d.com/en/#!/content/36292
+
+Thanks for Circus.

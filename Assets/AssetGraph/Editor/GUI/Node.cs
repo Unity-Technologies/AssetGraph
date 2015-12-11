@@ -538,7 +538,16 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var bundleOptions = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+							var bundleOptionsDict = node.enabledBundleOptions.ReadonlyDict();
+							var plartform_pakcage_key = GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage);
+							
+							var bundleOptions = new List<string>();
+							
+							if (bundleOptionsDict.ContainsKey(plartform_pakcage_key)) {
+								bundleOptions = bundleOptionsDict[plartform_pakcage_key];
+							} else {
+
+							}
 
 							for (var i = 0; i < AssetGraphSettings.DefaultBundleOptionSettings.Count; i++) {
 								var enablablekey = AssetGraphSettings.DefaultBundleOptionSettings[i];
@@ -549,8 +558,12 @@ namespace AssetGraph {
 								if (result != isEnable) {
 									node.BeforeSave();
 
+									var resultsDict = node.enabledBundleOptions.ReadonlyDict();
+									var resultList = new List<string>();
+									if (resultsDict.ContainsKey(plartform_pakcage_key)) resultList = resultsDict[plartform_pakcage_key];
+
 									if (result) {
-										if (!node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
+										if (!resultList.Contains(enablablekey)) {
 											var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
 											newEnableds.Add(enablablekey);
 
@@ -562,7 +575,7 @@ namespace AssetGraph {
 									}
 
 									if (!result) {
-										if (node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains(enablablekey)) {
+										if (resultList.Contains(enablablekey)) {
 											var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
 											newEnableds.Remove(enablablekey);
 											
