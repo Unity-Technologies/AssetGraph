@@ -51,6 +51,20 @@ namespace AssetGraph {
 			return dict.ContainsKey(key);
 		}
 
+		public void Remove (string key) {
+			var dict = new Dictionary<string, string>();
+			
+			for (var i = 0; i < keys.Count; i++) {
+				var currentKey = keys[i];
+				var currentVal = values[i];
+				dict[currentKey] = currentVal;
+			}
+
+			dict.Remove(key);
+			keys = new List<string>(dict.Keys);
+			values = new List<string>(dict.Values);
+		}
+
 		public Dictionary<string, string> ReadonlyDict () {
 			var dict = new Dictionary<string, string>();
 			if (keys == null) return dict;
@@ -129,6 +143,23 @@ namespace AssetGraph {
 			}
 
 			return dict;
+		}
+
+		public void Remove (string key) {
+			var dict = new Dictionary<string, List<string>>();
+
+			for (var i = 0; i < keys.Count; i++) {
+				var currentKey = keys[i];
+				var currentVal = values[i].ReadonlyList();
+				dict[currentKey] = currentVal;
+			}
+
+			dict.Remove(key);
+			keys = dict.Keys.ToList();
+			values = new List<SerializablePseudoDictionary2Value>();
+			foreach (var dictVal in dict.Values.ToList()) {
+				values.Add(new SerializablePseudoDictionary2Value(dictVal));
+			}
 		}
 
 		[Serializable] public class SerializablePseudoDictionary2Value {

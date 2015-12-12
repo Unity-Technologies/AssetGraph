@@ -5,12 +5,19 @@ using System.IO;
 namespace AssetGraph {
 	public class AssetGraphSettings {
 		public const string GUI_TEXT_MENU_OPEN = "AssetGraph/Open...";
+		public const string GUI_TEXT_MENU_GENERATE = "AssetGraph/Generate Script For Node";
+		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
+		public const string GUI_TEXT_MENU_GENERATE_BUNDLIZER = GUI_TEXT_MENU_GENERATE + "/Bundlizer Script";
+		public const string GUI_TEXT_MENU_GENERATE_FINALLY = GUI_TEXT_MENU_GENERATE + "/Finally Script";
+		public const string GUI_TEXT_MENU_DELETE_CACHE = "AssetGraph/Clear Cache";
 		
 		public const string ASSETGRAPH_DATA_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
 
 		public const string ASSETGRAPH_PATH = "Assets/AssetGraph/";
 		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETGRAPH_PATH + "Cache/";
+		public const string SCRIPTSAMPLE_PATH = ASSETGRAPH_PATH + "Editor/ScriptSample/";
+		public const string USERSPACE_PATH = ASSETGRAPH_PATH + "UserSpace/Editor/";
 		
 		public const string IMPORTER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Imported";
 		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";

@@ -12,10 +12,76 @@ using MiniJSONForAssetGraph;
 
 namespace AssetGraph {
 	public class AssetGraph : EditorWindow {
+		/*
+			menu items
+		*/
 		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_OPEN)]
 		public static void Open () {
 			GetWindow<AssetGraph>();
 		}
+
+		public enum ScriptType : int {
+			SCRIPT_PREFABRICATOR,
+			SCRIPT_BUNDLIZER,
+			SCRIPT_FINALLY
+		}
+
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABRICATOR)]
+		public static void GeneratePrefabricator () {
+			GenerateScript(ScriptType.SCRIPT_PREFABRICATOR);
+		}
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_GENERATE_BUNDLIZER)]
+		public static void GenerateBundlizer () {
+			GenerateScript(ScriptType.SCRIPT_BUNDLIZER);
+		}
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_GENERATE_FINALLY)]
+		public static void GenerateFinally () {
+			GenerateScript(ScriptType.SCRIPT_FINALLY);
+		}
+
+		public static void GenerateScript (ScriptType scriptType) {
+			var destinationBasePath = AssetGraphSettings.USERSPACE_PATH;
+			var destinationPath = string.Empty;
+
+			var sourceFileName = string.Empty;
+
+			switch (scriptType) {
+				case ScriptType.SCRIPT_PREFABRICATOR: {
+					sourceFileName = FileController.PathCombine(AssetGraphSettings.SCRIPTSAMPLE_PATH, "MyPrefabricator.cs.sample");
+					destinationPath = FileController.PathCombine(destinationBasePath, "MyPrefabricator.cs");
+					break;
+				}
+				case ScriptType.SCRIPT_BUNDLIZER: {
+					sourceFileName = FileController.PathCombine(AssetGraphSettings.SCRIPTSAMPLE_PATH, "MyBundlizer.cs.sample");
+					destinationPath = FileController.PathCombine(destinationBasePath, "MyBundlizer.cs");
+					break;
+				}
+				case ScriptType.SCRIPT_FINALLY: {
+					sourceFileName = FileController.PathCombine(AssetGraphSettings.SCRIPTSAMPLE_PATH, "MyFinally.cs.sample");
+					destinationPath = FileController.PathCombine(destinationBasePath, "MyFinally.cs");
+					break;
+				}
+				default: {
+					Debug.LogError("undefined script type:" + scriptType);
+					break;
+				}
+			}
+
+			if (string.IsNullOrEmpty(sourceFileName)) return;
+			
+			FileController.CopyFileFromGlobalToLocal(sourceFileName, destinationPath);
+
+			AssetDatabase.Refresh();
+		}
+
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)]
+		public static void DeleteCache () {
+			FileController.RemakeDirectory(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
+
+			AssetDatabase.Refresh();
+		}
+
+
 
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
@@ -87,6 +153,22 @@ namespace AssetGraph {
 			}
 		}
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
+
+		public enum CopyType : int {
+			COPYTYPE_COPY,
+			COPYTYPE_CUT
+		}
+
+		[Serializable] public struct CopyField {
+			[SerializeField] public List<string> datas;
+			[SerializeField] public CopyType type;
+
+			public CopyField (List<string> datas, CopyType type) {
+				this.datas = datas;
+				this.type = type;
+			}
+		}
+		[SerializeField] private CopyField copyField = new CopyField();
 		
 		// hold selection start data.
 		public struct Selection {
@@ -345,172 +427,7 @@ namespace AssetGraph {
 			var nodesSource = deserializedData[AssetGraphSettings.ASSETGRAPH_DATA_NODES] as List<object>;
 			
 			foreach (var nodeDictSource in nodesSource) {
-				var nodeDict = nodeDictSource as Dictionary<string, object>;
-				var name = nodeDict[AssetGraphSettings.NODE_NAME] as string;
-				var id = nodeDict[AssetGraphSettings.NODE_ID] as string;
-				var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
-
-				var kind = AssetGraphSettings.NodeKindFromString(kindSource);
-				
-				var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
-				var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
-				var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);		
-
-				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var loadPathSource = nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
-						var loadPath = new Dictionary<string, string>();
-						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
-
-						var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
-						CollectPackage(loadPath.Keys.ToList());
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
-						var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
-
-						var newNode = Node.ScriptNode(nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var filterContainsKeywordsSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
-						var filterContainsKeywords = new List<string>();
-						foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
-							filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
-						}
-
-						var newNode = Node.GUINodeForFilter(nodes.Count, name, id, kind, filterContainsKeywords, x, y);
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
-						var defaultPlatformAndPackages = new Dictionary<string, string>();
-						foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
-
-						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, defaultPlatformAndPackages, x, y);
-						CollectPackage(defaultPlatformAndPackages.Keys.ToList());
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
-						var groupingKeyword = new Dictionary<string, string>();
-						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
-
-						var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
-						CollectPackage(groupingKeyword.Keys.ToList());
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
-						var bundleNameTemplate = new Dictionary<string, string>();
-						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-
-						var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
-						CollectPackage(bundleNameTemplate.Keys.ToList());
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						var bundleOptions = new Dictionary<string, List<string>>();
-
-						var enabledBundleOptionsDict = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
-						foreach (var platform_package_key in enabledBundleOptionsDict.Keys) {
-							var optionListSource = enabledBundleOptionsDict[platform_package_key] as List<object>;
-							bundleOptions[platform_package_key] = new List<string>();
-
-							foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
-						}
-
-						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
-						CollectPackage(bundleOptions.Keys.ToList());
-
-						var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-						foreach (var outputLabelSource in outputLabelsList) {
-							var label = outputLabelSource as string;
-							newNode.AddConnectionPoint(new OutputPoint(label));
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
-						var exportPath = new Dictionary<string, string>();
-						foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
-
-						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
-						CollectPackage(exportPath.Keys.ToList());
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					default: {
-						Debug.LogError("kind not found:" + kind);
-						break;
-					}
-
-				}
+				nodes.Add(NodeFromJsonDict(nodeDictSource as Dictionary<string, object>));
 			}
 
 
@@ -546,77 +463,8 @@ namespace AssetGraph {
 		private void SaveGraph () {
 			var nodeList = new List<Dictionary<string, object>>();
 			foreach (var node in nodes) {
-				var nodeDict = new Dictionary<string, object>();
-
-				nodeDict[AssetGraphSettings.NODE_NAME] = node.name;
-				nodeDict[AssetGraphSettings.NODE_ID] = node.nodeId;
-				nodeDict[AssetGraphSettings.NODE_KIND] = node.kind;
-
-				var outputLabels = node.OutputPointLabels();
-				nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = outputLabels;
-
-				var posDict = new Dictionary<string, int>();
-				posDict[AssetGraphSettings.NODE_POS_X] = node.GetX();
-				posDict[AssetGraphSettings.NODE_POS_Y] = node.GetY();
-
-				nodeDict[AssetGraphSettings.NODE_POS] = posDict;
-
-				switch (node.kind) {
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
-						break;
-					}
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
-						break;
-					}
-					
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
-						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-						nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-						nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
-						nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
-						break;
-					}
-
-					default: {
-						Debug.LogError("failed to match:" + node.kind);
-						break;
-					}
-				}
-				nodeList.Add(nodeDict);
+				var jsonRepresentationSourceDict = JsonRepresentationDict(node);
+				nodeList.Add(jsonRepresentationSourceDict);
 			}
 
 			var connectionList = new List<Dictionary<string, string>>();
@@ -642,10 +490,14 @@ namespace AssetGraph {
 
 		private void SaveGraphWithReload () {
 			SaveGraph();
-			Setup(package);
+			try {
+				Setup(package);
+			} catch (Exception e) {
+				Debug.LogError("reload error:" + e);
+			}
 		}
 
-		private void CollectPackage (List<string> platform_package_keys) {
+		private static void CollectPackage (List<string> platform_package_keys) {
 			foreach (var platform_package_key in platform_package_keys) {
 				var packageKey = GraphStackController.PackageKeyFromPlatform_Package_Key(platform_package_key);
 				if (string.IsNullOrEmpty(packageKey)) continue;
@@ -1225,7 +1077,6 @@ namespace AssetGraph {
 						case "Delete": {
 
 							if (!activeObject.idPosDict.Any()) break;
-
 							Undo.RecordObject(this, "Delete Selection");
 
 							foreach (var targetId in activeObject.idPosDict.Keys) {
@@ -1248,9 +1099,12 @@ namespace AssetGraph {
 								break;
 							}
 
+							Undo.RecordObject(this, "Copy Selection");
 
+							var targetNodeIds = activeObject.idPosDict.Keys.ToList();
+							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
+							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_COPY);
 
-							Debug.LogError("copy");
 							Event.current.Use();
 							break;
 						}
@@ -1260,17 +1114,64 @@ namespace AssetGraph {
 								break;
 							}
 
-							Debug.LogError("cut");
+							Undo.RecordObject(this, "Cut Selection");
+							var targetNodeIds = activeObject.idPosDict.Keys.ToList();
+							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
+							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_CUT);
+
+							foreach (var targetId in activeObject.idPosDict.Keys) {
+								DeleteNode(targetId);
+								DeleteConnectionById(targetId);
+							}
+
+							SaveGraphWithReload();
+							InitializeGraph();
+
+							activeObject = RenewActiveObject(new List<string>());
+							UpdateActivationOfObjects(activeObject);
+
 							Event.current.Use();
 							break;
 						}
 
 						case "Paste": {
-							if (!activeObject.idPosDict.Any()) {
-								break;
+							var nodeNames = nodes.Select(node => node.name).ToList();
+							var duplicatingData = new List<Node>();
+
+							if (copyField.datas.Any()) {
+								var pasteType = copyField.type;
+								foreach (var copyFieldData in copyField.datas) {
+									var nodeJsonDict = Json.Deserialize(copyFieldData) as Dictionary<string, object>;
+									var pastingNode = NodeFromJsonDict(nodeJsonDict);
+									var pastingNodeName = pastingNode.name;
+
+									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
+
+  									switch (pasteType) {
+  										case CopyType.COPYTYPE_COPY: {
+  											if (2 <= nameOverlapping.Count) continue;
+  											break;
+  										}
+  										case CopyType.COPYTYPE_CUT: {
+  											if (1 <= nameOverlapping.Count) continue;
+  											break;
+  										}
+  									}
+
+  									duplicatingData.Add(pastingNode);
+								}
 							}
 
-							Debug.LogError("paste");
+							if (!duplicatingData.Any()) break;
+
+							Undo.RecordObject(this, "Paste");
+							foreach (var newNode in duplicatingData) {
+								DuplicateNode(newNode);
+							}
+
+							SaveGraphWithReload();
+							InitializeGraph();
+
 							Event.current.Use();
 							break;
 						}
@@ -1300,6 +1201,247 @@ namespace AssetGraph {
 					break;
 				}
 			}
+		}
+
+		private List<string> JsonRepresentations (List<string> nodeIds) {
+			var jsonRepresentations = new List<string>();
+			var jsonRepsSourceDictList = nodes.Where(node => nodeIds.Contains(node.nodeId)).Select(node => JsonRepresentationDict(node)).ToList();
+			
+			foreach (var jsonRepsSourceDict in jsonRepsSourceDictList) {
+				var jsonString = Json.Serialize(jsonRepsSourceDict);
+				jsonRepresentations.Add(jsonString);
+			}
+			
+			return jsonRepresentations;
+		}
+
+		private static Dictionary<string, object> JsonRepresentationDict (Node node) {
+			var nodeDict = new Dictionary<string, object>();
+
+			nodeDict[AssetGraphSettings.NODE_NAME] = node.name;
+			nodeDict[AssetGraphSettings.NODE_ID] = node.nodeId;
+			nodeDict[AssetGraphSettings.NODE_KIND] = node.kind.ToString();
+
+			var outputLabels = node.OutputPointLabels();
+			nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] = outputLabels;
+
+			var posDict = new Dictionary<string, object>();
+			posDict[AssetGraphSettings.NODE_POS_X] = node.GetX();
+			posDict[AssetGraphSettings.NODE_POS_Y] = node.GetY();
+
+			nodeDict[AssetGraphSettings.NODE_POS] = posDict;
+
+			switch (node.kind) {
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
+					nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
+					break;
+				}
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+					nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
+					nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
+					nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+					nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
+					nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
+					break;
+				}
+
+				default: {
+					Debug.LogError("failed to match:" + node.kind);
+					break;
+				}
+			}
+			return nodeDict;
+		}
+
+		private Node NodeFromJsonDict (Dictionary<string, object> nodeDict) {
+			var name = nodeDict[AssetGraphSettings.NODE_NAME] as string;
+			var id = nodeDict[AssetGraphSettings.NODE_ID] as string;
+			var kindSource = nodeDict[AssetGraphSettings.NODE_KIND] as string;
+
+			var kind = AssetGraphSettings.NodeKindFromString(kindSource);
+			
+			var posDict = nodeDict[AssetGraphSettings.NODE_POS] as Dictionary<string, object>;
+			var x = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_X]);
+			var y = (float)Convert.ToInt32(posDict[AssetGraphSettings.NODE_POS_Y]);		
+
+			switch (kind) {
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
+					var loadPathSource = nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
+					var loadPath = new Dictionary<string, string>();
+					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
+
+					var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
+					CollectPackage(loadPath.Keys.ToList());
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+					var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
+					var scriptPath = nodeDict[AssetGraphSettings.NODE_SCRIPT_PATH] as string;
+
+					var newNode = Node.ScriptNode(nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					var filterContainsKeywordsSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
+					var filterContainsKeywords = new List<string>();
+					foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
+						filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
+					}
+
+					var newNode = Node.GUINodeForFilter(nodes.Count, name, id, kind, filterContainsKeywords, x, y);
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
+					var defaultPlatformAndPackages = new Dictionary<string, string>();
+					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
+
+					var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, defaultPlatformAndPackages, x, y);
+					CollectPackage(defaultPlatformAndPackages.Keys.ToList());
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
+					var groupingKeyword = new Dictionary<string, string>();
+					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
+
+					var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
+					CollectPackage(groupingKeyword.Keys.ToList());
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
+					var bundleNameTemplate = new Dictionary<string, string>();
+					foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
+
+					var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
+					CollectPackage(bundleNameTemplate.Keys.ToList());
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					var bundleOptions = new Dictionary<string, List<string>>();
+
+					var enabledBundleOptionsDict = nodeDict[AssetGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
+					foreach (var platform_package_key in enabledBundleOptionsDict.Keys) {
+						var optionListSource = enabledBundleOptionsDict[platform_package_key] as List<object>;
+						bundleOptions[platform_package_key] = new List<string>();
+
+						foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
+					}
+
+					var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
+					CollectPackage(bundleOptions.Keys.ToList());
+
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
+
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
+					var exportPath = new Dictionary<string, string>();
+					foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
+
+					var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
+					CollectPackage(exportPath.Keys.ToList());
+					return newNode;
+				}
+
+				default: {
+					Debug.LogError("kind not found:" + kind);
+					break;
+				}
+			}
+
+			Debug.LogError("failed to detect." + kindSource);
+			// error. returns empty node.
+			return new Node();
 		}
 
 		private Type IsAcceptableScriptType (Type type) {
@@ -1468,144 +1610,6 @@ namespace AssetGraph {
 			var assetPath = Application.dataPath;
 			return Directory.GetParent(assetPath).Name;
 		}
-
-		private void DuplicateNode (string sourceNodeId, float x, float y) {
-			// add undo record.
-			Undo.RecordObject(this, "Duplicate Node");
-
-			Debug.LogError("パッケージ情報のコピーが必須、Nodeによっては実現できてる気がする。");
-			var targetNodes = nodes.Where(node => node.nodeId == sourceNodeId).ToList();
-			if (!targetNodes.Any()) return;
-
-			foreach (var targetNode in targetNodes) {
-				var id = Guid.NewGuid().ToString();
-				var kind = targetNode.kind;
-				var name = targetNode.name;
-				Debug.LogWarning(".ReadonlyDict()つける旅");
-				switch (kind) {
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var loadPath = targetNode.loadPath.ReadonlyDict();
-
-						var newNode = Node.LoaderNode(nodes.Count, name, id, kind, loadPath, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var scriptType = targetNode.scriptType;
-						var scriptPath = targetNode.scriptPath;
-
-						var newNode = Node.ScriptNode(nodes.Count, name, id, kind, scriptType, scriptPath, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var filterContainsKeywords = targetNode.filterContainsKeywords;
-						
-						var newNode = Node.GUINodeForFilter(nodes.Count, name, id, kind, filterContainsKeywords.ToList(), x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-						var importerPackages = targetNode.importerPackages.ReadonlyDict();
-						var newNode = Node.GUINodeForImport(nodes.Count, name, id, kind, importerPackages, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var groupingKeyword = targetNode.groupingKeyword.ReadonlyDict();
-						var newNode = Node.GUINodeForGrouping(nodes.Count, name, id, kind, groupingKeyword, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplate = targetNode.bundleNameTemplate.ReadonlyDict();
-						var newNode = Node.GUINodeForBundlizer(nodes.Count, name, id, kind, bundleNameTemplate, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						var bundleOptions = targetNode.enabledBundleOptions.ReadonlyDict();
-						var newNode = Node.GUINodeForBundleBuilder(nodes.Count, name, id, kind, bundleOptions, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-						
-						nodes.Add(newNode);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPath = targetNode.exportPath.ReadonlyDict();
-						var newNode = Node.ExporterNode(nodes.Count, name, id, kind, exportPath, x, y);
-
-						var connectionPoints = targetNode.DuplicateConnectionPoints();
-						foreach (var connectionPoint in connectionPoints) {
-							newNode.AddConnectionPoint(connectionPoint);
-						}
-
-						nodes.Add(newNode);
-						break;
-					}
-
-					default: {
-						Debug.LogError("kind not found:" + kind);
-						return;
-					}
-				}
-
-			}
-		}
-
-		
 
 		/**
 			emit event from node-GUI.
@@ -1782,13 +1786,6 @@ namespace AssetGraph {
 							break;
 						}
 
-						case OnNodeEvent.EventType.EVENT_DUPLICATE_TAPPED: {
-							var duplicateNodeId = e.eventSourceNode.nodeId;
-							var duplicatePoint = e.globalMousePosition;
-							DuplicateNode(duplicateNodeId, duplicatePoint.x, duplicatePoint.y);
-							break;
-						}
-
 						/*
 							releasse detected.
 								node move over.
@@ -1951,6 +1948,70 @@ namespace AssetGraph {
 			if (bottomPoint < spacerRectRightBottom.y) bottomPoint = spacerRectRightBottom.y;
 
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
+		}
+
+		public void DuplicateNode (Node node) {
+			var newNode = node.DuplicatedNode(
+				nodes.Count,
+				node.GetX() + 10f,
+				node.GetY() + 10f
+			);
+
+			switch (newNode.kind) {
+				case AssetGraphSettings.NodeKind.LOADER_GUI: {
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.FILTER_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					foreach (var outputPointLabel in newNode.filterContainsKeywords) {
+						newNode.AddConnectionPoint(new OutputPoint(outputPointLabel));
+					}
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:{
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					break;
+				}
+				default: {
+					Debug.LogError("no kind match:" + newNode.kind);
+					break;
+				}
+			}
+
+			nodes.Add(newNode);
 		}
 
 		public void DeleteNode (string deletingNodeId) {

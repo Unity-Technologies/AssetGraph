@@ -9,7 +9,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-
+/**
+	static executor for AssetGraph's data.
+*/
 namespace AssetGraph {
 	public class GraphStackController {
 		public struct EndpointNodeIdsAndNodeDatasAndConnectionDatas {
@@ -1261,6 +1263,15 @@ namespace AssetGraph {
 		}
 
 		public static string ValueFromPlatformAndPackage (Dictionary<string, string> packageDict, string platform, string package) {
+			var key = Platform_Package_Key(platform, package);
+			if (packageDict.ContainsKey(key)) return packageDict[key];
+
+			if (packageDict.ContainsKey(AssetGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetGraphSettings.PLATFORM_DEFAULT_NAME];
+
+			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
+		}
+
+		public static List<string> ValueFromPlatformAndPackage (Dictionary<string, List<string>> packageDict, string platform, string package) {
 			var key = Platform_Package_Key(platform, package);
 			if (packageDict.ContainsKey(key)) return packageDict[key];
 
