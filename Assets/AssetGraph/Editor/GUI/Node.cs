@@ -509,9 +509,6 @@ namespace AssetGraph {
 								bundleNameTemplate,
 								() => {
 									EditorGUILayout.HelpBox("no Bundle Name Template set.", MessageType.Error);
-								},
-								() => {
-									EditorGUILayout.HelpBox("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template:" + bundleNameTemplate, MessageType.Error);
 								}
 							);
 

@@ -19,9 +19,6 @@ namespace AssetGraph {
 				bundleNameTemplate,
 				() => {
 					throw new Exception("no Bundle Name Template set.");
-				},
-				() => {
-					throw new Exception("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template:" + bundleNameTemplate);
 				}
 			);
 			
@@ -52,9 +49,6 @@ namespace AssetGraph {
 				bundleNameTemplate,
 				() => {
 					throw new Exception("no Bundle Name Template set.");
-				},
-				() => {
-					throw new Exception("no " + AssetGraphSettings.KEYWORD_WILDCARD + "found in Bundle Name Template:" + bundleNameTemplate);
 				}
 			);
 			
@@ -89,10 +83,19 @@ namespace AssetGraph {
 			}
 			if (invalids.Any()) throw new Exception("bundlizer:" + string.Join(", ", invalids.ToArray()) + " is not imported yet, should import before bundlize.");
 
-			var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
-			var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
 
-			var bundleName = (templateHead + groupkey + templateTail + "." + GraphStackController.Platform_Dot_Package(package)).ToLower();
+			var bundleName = bundleNameTemplate;
+
+			/*
+				if contains KEYWORD_WILDCARD, use group identifier to bundlize name.
+			*/
+			if (bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD)) {
+				var templateHead = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[0];
+				var templateTail = bundleNameTemplate.Split(AssetGraphSettings.KEYWORD_WILDCARD)[1];
+
+				bundleName = (templateHead + groupkey + templateTail + "." + GraphStackController.Platform_Dot_Package(package)).ToLower();
+			}
+
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
 
 			if (isRun) {
@@ -105,9 +108,8 @@ namespace AssetGraph {
 			return bundlePath;
 		}
 
-		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty, Action UnlessKeyword) {
+		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) NullOrEmpty();
-			if (!bundleNameTemplate.Contains(AssetGraphSettings.KEYWORD_WILDCARD.ToString())) UnlessKeyword();
 		}
 	}
 }

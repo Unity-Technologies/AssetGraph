@@ -1134,7 +1134,15 @@ namespace AssetGraph {
 						setting is exists, let's check about cached file's setting.
 						if cached file itself is changed manually, should detect it and destroy it.
 					*/
-					// search cache candidates.
+					// search cached candidates.
+						Debug.LogError("ここんとこを、事前に用意しておいた「import流入があったものリスト」に書き換えればいい。ってわけじゃないなー、、副産物が予測できないとダメだ。"+
+							"あーでも、副産物は必ずオリジナルとはimporterが異なるので、" + 
+							"よく考えたらsamplingの時点で副産物について検討がついてるんだな。名前とか一緒だといいな〜〜〜って感じで、、ダメか。" +
+							"alreadyCachedを作り出しているのはここなんだ。" + 
+							"importedのリストに対して、流入がなければ、消していい。消すのは、そのファイルが含まれているフォルダ下すべて。" + 
+							"条件は、ネスト不可とか、、Materialだけを狙い撃ちすればいいか。" + 
+							"含まれていなければ該当フォルダとMaterialフォルダを消す"
+							);
 					var cacheCandidates = FileController.FilePathsInFolder(cachedPathBase);
 					if (0 < cacheCandidates.Count) {
 
@@ -1164,7 +1172,7 @@ namespace AssetGraph {
 									continue;
 								}
 
-								// delete for effect import.
+								// delete for adopt import.
 								File.Delete(candidatePath);
 							}
 
@@ -1176,7 +1184,7 @@ namespace AssetGraph {
 									continue;
 								}
 
-								// delete for effect import.
+								// delete for adopt import.
 								File.Delete(candidatePath);
 							}
 
@@ -1188,7 +1196,7 @@ namespace AssetGraph {
 									continue;
 								}
 
-								// delete for effect import.
+								// delete for adopt import.
 								File.Delete(candidatePath);
 							}
 						}
