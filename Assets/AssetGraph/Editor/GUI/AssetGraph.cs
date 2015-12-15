@@ -621,13 +621,17 @@ namespace AssetGraph {
 		private void UnbundlizeUnusedNodeBundleSettings (List<string> usedNodeIds) {
 			EditorUtility.DisplayProgressBar("unbundlize unused resources...", "ready", 0);
 			
-			var filePathsInFolder = FileController.FilePathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
+			var filePathsInFolder = FileController
+				.FilePathsInFolder(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)
+				.Where(path => !GraphStackController.IsMetaFile(path))
+				.ToList();
 
 			
 			var unusedNodeResourcePaths = new List<string>();
 			foreach (var filePath in filePathsInFolder) {
 				// Assets/AssetGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
 				var splitted = filePath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+
 				var nodeIdInCache = splitted[4];
 
 				if (usedNodeIds.Contains(nodeIdInCache)) continue;

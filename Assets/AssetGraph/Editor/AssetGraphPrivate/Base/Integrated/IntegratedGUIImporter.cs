@@ -115,7 +115,10 @@ namespace AssetGraph {
 				// caution if file is exists already.
 				var sampleAssetPath = string.Empty;
 				if (Directory.Exists(samplingDirectoryPath)) {
-					var filesInSampling = FileController.FilePathsInFolderOnly1Level(samplingDirectoryPath);
+					var filesInSampling = FileController.FilePathsInFolderOnly1Level(samplingDirectoryPath)
+						.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION))
+						.ToList();
+
 					switch (filesInSampling.Count) {
 						case 0: {
 							Debug.LogError("no importSetting file found in ImporterSetting directory:" + samplingDirectoryPath + ", please reload first.");

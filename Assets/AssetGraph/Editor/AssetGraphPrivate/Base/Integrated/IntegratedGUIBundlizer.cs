@@ -100,6 +100,7 @@ namespace AssetGraph {
 
 			if (isRun) {
 				foreach (var source in sources) {
+					if (GraphStackController.IsMetaFile(source.importedPath)) continue;
 					var assetImporter = AssetImporter.GetAtPath(source.importedPath);
 					assetImporter.assetBundleName = bundleName;
 				}

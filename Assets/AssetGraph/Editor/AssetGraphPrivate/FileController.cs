@@ -23,25 +23,25 @@ namespace AssetGraph {
 			File.Copy(absoluteSourceFilePath, localTargetFilePath, true);
 		}
 
-		public static List<string> FilePathsInFolder (string localFolderPath, bool ignoreMeta=true) {
+		public static List<string> FilePathsInFolder (string localFolderPath) {
 			var filePaths = new List<string>();
 			
 			if (string.IsNullOrEmpty(localFolderPath)) return filePaths;
 			if (!Directory.Exists(localFolderPath)) return filePaths;
 
-			GetFilePathsRecursive(localFolderPath, filePaths, ignoreMeta);
+			GetFilePathsRecursive(localFolderPath, filePaths);
 
 			return filePaths;
 		}
 
-		private static void GetFilePathsRecursive (string localFolderPath, List<string> filePaths, bool ignoreMeta=true) {
+		private static void GetFilePathsRecursive (string localFolderPath, List<string> filePaths) {
 			var folders = Directory.GetDirectories(localFolderPath);
 			
 			foreach (var folder in folders) {
-				GetFilePathsRecursive(folder, filePaths, ignoreMeta);
+				GetFilePathsRecursive(folder, filePaths);
 			}
 
-			var files = FilePathsInFolderOnly1Level(localFolderPath, ignoreMeta);
+			var files = FilePathsInFolderOnly1Level(localFolderPath);
 			filePaths.AddRange(files);
 		}
 
@@ -77,15 +77,13 @@ namespace AssetGraph {
 
 			this method replaces folder delimiters to '/'.
 		*/
-		public static List<string> FilePathsInFolderOnly1Level (string localFolderPath, bool ignoreMeta=true) {
+		public static List<string> FilePathsInFolderOnly1Level (string localFolderPath) {
 			// change platform-depends folder delimiter -> '/'
-			var filePaths = ConvertSeparater(Directory.GetFiles(localFolderPath).ToList());
-			
-			if (ignoreMeta) filePaths = filePaths.Where(path => !path.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)).ToList();
+			var filePaths = ConvertSeparater(Directory.GetFiles(localFolderPath)
+					.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
+					.ToList());
 
-			return filePaths
-				.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
-				.ToList();
+			return filePaths;
 		}
 
 		public static List<string> ConvertSeparater (List<string> source) {

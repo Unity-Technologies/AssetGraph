@@ -1124,34 +1124,48 @@ namespace AssetGraph {
 							}
 						}
 
-						var baseSettingFilePaths = FileController.FilePathsInFolderOnly1Level(baseSettingPath);
+						var baseSettingFilePaths = FileController.FilePathsInFolderOnly1Level(baseSettingPath)
+							.Where(path => !IsMetaFile(path))
+							.ToList();
+
 						if (!baseSettingFilePaths.Any()) return new List<string>();
 
 						importerSettingFilePath = baseSettingFilePaths[0];
 					}
+					if (string.IsNullOrEmpty(importerSettingFilePath)) throw new Exception("failed to detect importer setting file.");
+
+
+					var cached = new List<string>();
 
 					/*
 						setting is exists, let's check about cached file's setting.
 						if cached file itself is changed manually, should detect it and destroy it.
 					*/
 					// search cached candidates.
-						Debug.LogError("ここんとこを、事前に用意しておいた「import流入があったものリスト」に書き換えればいい。ってわけじゃないなー、、副産物が予測できないとダメだ。"+
-							"あーでも、副産物は必ずオリジナルとはimporterが異なるので、" + 
-							"よく考えたらsamplingの時点で副産物について検討がついてるんだな。名前とか一緒だといいな〜〜〜って感じで、、ダメか。" +
-							"alreadyCachedを作り出しているのはここなんだ。" + 
-							"importedのリストに対して、流入がなければ、消していい。消すのは、そのファイルが含まれているフォルダ下すべて。" + 
-							"条件は、ネスト不可とか、、Materialだけを狙い撃ちすればいいか。" + 
-							"含まれていなければ該当フォルダとMaterialフォルダを消す"
-							);
+						// Debug.LogError("ここんとこを、事前に用意しておいた「import流入があったものリスト」に書き換えればいい。ってわけじゃないなー、、副産物が予測できないとダメだ。"+
+						// 	"あーでも、副産物は必ずオリジナルとはimporterが異なるので、" + 
+						// 	"よく考えたらsamplingの時点で副産物について検討がついてるんだな。名前とか一緒だといいな〜〜〜って感じで、、ダメか。" +
+						// 	"alreadyCachedを作り出しているのはここなんだ。" + 
+						// 	"importedのリストに対して、流入がなければ、消していい。消すのは、そのファイルが含まれているフォルダ下すべて。" + 
+						// 	"条件は、ネスト不可とか、、Materialだけを狙い撃ちすればいいか。" + 
+						// 	"含まれていなければ該当フォルダとMaterialフォルダを消す"
+						// 	);
 					var cacheCandidates = FileController.FilePathsInFolder(cachedPathBase);
 					if (0 < cacheCandidates.Count) {
 
 						var baseSettingFilePath = importerSettingFilePath;
 						var baseSettingImporterOrigin = AssetImporter.GetAtPath(baseSettingFilePath);
 
-						var cached = new List<string>();
+						
 
 						foreach (var candidatePath in cacheCandidates) {
+
+							// meta will be cached.
+							if (IsMetaFile(candidatePath)) {
+								cached.Add(candidatePath);
+								continue;
+							}
+
 							var importedCandidateImporterOrigin = AssetImporter.GetAtPath(candidatePath);
 							
 							// cancel if importer type does not match. maybe this is not target of this node's importer.
@@ -1268,6 +1282,11 @@ namespace AssetGraph {
 				}
 			}
 			return new List<string>();
+		}
+
+		public static bool IsMetaFile (string filePath) {
+			if (filePath.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)) return true;
+			return false;
 		}
 
 		public static string ValueFromPlatformAndPackage (Dictionary<string, string> packageDict, string platform, string package) {

@@ -1387,14 +1387,14 @@ namespace AssetGraph {
 		}
 
 		private void DrawNodeContents () {
-			if (scaleFactor != SCALE_MAX) return;
+			// if ( != SCALE_MAX) return;
 
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
 			
 
-			var nodeTitleRect = new Rect(0, 0, baseRect.width, baseRect.height);
+			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
 			if (this.kind == AssetGraphSettings.NodeKind.PREFABRICATOR_GUI) GUI.contentColor = Color.black;
 			if (this.kind == AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT) GUI.contentColor = Color.black; 
 			GUI.Label(nodeTitleRect, name, style);
