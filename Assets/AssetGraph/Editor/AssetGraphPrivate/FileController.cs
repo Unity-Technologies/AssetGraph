@@ -23,6 +23,12 @@ namespace AssetGraph {
 			File.Copy(absoluteSourceFilePath, localTargetFilePath, true);
 		}
 
+		public static List<string> FilePathsOfFile (string filePath) {
+			var folderPath = Path.GetDirectoryName(filePath);
+			var results = FilePathsInFolder(folderPath);
+			return results;
+		}
+
 		public static List<string> FilePathsInFolder (string localFolderPath) {
 			var filePaths = new List<string>();
 			
@@ -30,7 +36,7 @@ namespace AssetGraph {
 			if (!Directory.Exists(localFolderPath)) return filePaths;
 
 			GetFilePathsRecursive(localFolderPath, filePaths);
-
+			
 			return filePaths;
 		}
 

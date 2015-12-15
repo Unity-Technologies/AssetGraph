@@ -109,6 +109,10 @@ namespace AssetGraph {
 			// this is comes from the spec: importer node contains platform settings in themselves.
 			var nodeDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
+			var oldGeneratedRecord = AssetGraph.LoadImporterRecord(nodeId);
+
+			var generatedAssetDict = new Dictionary<string, List<string>>();
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
@@ -174,16 +178,28 @@ namespace AssetGraph {
 						continue;
 					}
 
+					var before = FileController.FilePathsOfFile(targetFilePath);
+
 					/*
 						copy files into local.
 					*/
 					FileController.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);					
+
+					AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+
+					var after = FileController.FilePathsOfFile(targetFilePath);
+
+					/*
+						record relationship of imported file & generated files.
+					*/
+					var diff = after.Except(before).ToList();
+					generatedAssetDict[targetFilePath] = diff;
 				}
 
 				if (alreadyImported.Any()) Debug.LogError("importer:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
 				if (ignoredResource.Any()) Debug.LogError("importer:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
 
-				AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
+				
 				InternalSamplingImportAdopter.Detach();
 
 
@@ -226,6 +242,8 @@ namespace AssetGraph {
 				outputDict[groupKey] = outputSources;
 			}
 
+			AssetGraph.UpdateImporterRecord(nodeId, generatedAssetDict);
+
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 		
@@ -233,5 +251,6 @@ namespace AssetGraph {
 			// no mean. nobody can predict type of asset before import.
 			return typeof(UnityEngine.Object);
 		}
+
 	}
 }
