@@ -21,11 +21,13 @@ namespace AssetGraph {
 			Unity's import handlers.
 		*/
 		// public void OnPostprocessGameObjectWithUserProperties (GameObject g, string[] propNames, object[] values) {}
+
 		public void OnPreprocessTexture () {
 			if (importerSourceObj == null) return;
 			var importerSource = importerSourceObj as TextureImporter;
+			if (importerSource == null) return;
 
-			var importer = assetImporter as TextureImporter;
+			var importer = this.assetImporter as TextureImporter;
 
 			importer.anisoLevel = importerSource.anisoLevel;
 			importer.borderMipmap = importerSource.borderMipmap;
@@ -110,11 +112,12 @@ namespace AssetGraph {
 		}
 
 		// public void OnPostprocessTexture (Texture2D texture) {}
+
 		public void OnPreprocessAudio () {
 			if (importerSourceObj == null) return;
 			var importerSource = importerSourceObj as AudioImporter;
 
-			var importer = assetImporter as UnityEditor.AudioImporter;
+			var importer = this.assetImporter as UnityEditor.AudioImporter;
 
 			importer.defaultSampleSettings = importerSource.defaultSampleSettings;
 			importer.forceToMono = importerSource.forceToMono;
@@ -138,12 +141,14 @@ namespace AssetGraph {
 		}
 
 		// public void OnPostprocessAudio (AudioClip clip) {}
+
 		public void OnPreprocessModel () {
 			if (importerSourceObj == null) return;
 			var importerSource = importerSourceObj as ModelImporter;
+			if (importerSource == null) return;
 
-			var importer = assetImporter as ModelImporter;
-
+			var importer = this.assetImporter as ModelImporter;
+			
 			importer.addCollider = importerSource.addCollider;
 			importer.animationCompression = importerSource.animationCompression;
 			importer.animationPositionError = importerSource.animationPositionError;

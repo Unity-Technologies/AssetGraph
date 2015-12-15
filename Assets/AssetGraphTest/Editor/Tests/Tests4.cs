@@ -308,9 +308,6 @@ public partial class Test {
 		}
 		var graphDict = Json.Deserialize(dataStr) as Dictionary<string, object>;
 		
-		// get cached asset dictionary.
-		var createdDataDict = new Dictionary<string, List<string>>();
-		
 
 		// setup first.
 		{

@@ -193,6 +193,7 @@ namespace AssetGraph {
 			EditorUtility.DisplayProgressBar("AssetGraph BundleBuilder unbundlize resources...", nodePath, 0);
 			var filePathsInFolder = FileController.FilePathsInFolder(nodePath);
 			foreach (var filePath in filePathsInFolder) {
+				if (GraphStackController.IsMetaFile(filePath)) continue;
 				var assetImporter = AssetImporter.GetAtPath(filePath);
 				assetImporter.assetBundleName = string.Empty;
 			}

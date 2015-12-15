@@ -48,3 +48,11 @@ AssetGraphResources2/*
 Assets/Plugins/*
 
 Assembly-CSharp-firstpass.csproj
+
+
+PreloadExport/*
+
+Preloadability/*
+
+ProjectSettings/*
+
