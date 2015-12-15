@@ -1,14 +1,17 @@
-#ドキュメント 草案みたいなところまで書いたら見せる
+#AssetGraph Document
+document version 0.8.0
 
 ##TOC
+* はじめに
+* 逆引きAssetGraph(how to)
+* Node tips
+* HookPoint tips
 
-document version 1.0.0
 
+#はじめに
+AssetGraphは、様々なファイルをUnityにインポート、プレファブ化したりしたあとAssetBundleにして出力することに特化しているツールです。
 
-##はじめに
-AssetGraphは、Unityの外側に用意した素材をいろいろ調整、プレファブ化したりしたあとAssetBundleにして出力することに特化しているツールです。
-
-特に大量の素材から大量のAssetBundleを作るのに適しています。
+特に大量のファイルから大量のAssetBundleを作ったり、大量のファイルに調整を施すのに適しています。
 これ手作業でやるのしんどいな〜みたいな数までAssetBundleが増えたら、是非試してみてください。
 
 手順：
@@ -21,7 +24,7 @@ NodeのTips
 
 
 
-##how to = 逆引き
+#逆引きAssetGraph(how to)
 
 
 ##複数の素材から一つのAssetBundleを作成する
@@ -78,7 +81,8 @@ bundleNameTemplateに*が含まれていると、グループごとにAssetBundl
 
 
 ##コマンドラインから実行する
-☆
+☆コマンドラインから、platformとpackageを指定して実行する例
+
 
 ##実行後に処理をしたい
 ☆Finally
@@ -86,18 +90,50 @@ bundleNameTemplateに*が含まれていると、グループごとにAssetBundl
 ##作成したAssetBundleの内容をjsonにする
 ☆Finally2の解説
 
+##HD向けなどの調整をしたい
+☆packageに関するやつ
 
 
-#Node Tips
+#Node tips
 ##Loader
+☆loadPathは内部でも外部でも使える
+
 ##Filter
+☆キーワードは被るとまずい
+パスにキーワードを含むファイルを吐き出す
+
 ##Importer
+☆一つ~複数のファイルをImportする。
+セッティングできるのは一つだけ
+できるだけ一種類のものを読み込むのを推奨
+フォルダは事前につくっておかないといけない。
+
 ##Grouping
+☆複数のファイルを適当なグループに分割する
+キーワードとして米を使う。例
+
 ##Prefabricator
+☆プレファブを作成する
+コードを書く必要がある
+
 ##Bundlizer
+☆AssetBundleを作成する
+Scriptから作る場合は、AssetBundleに限らずzipとかを作るコードも扱える。
+
 ##BundleBuilder
+☆すべてのAssetBundleを一気に作成する
+Bundlizer以外のoutputを受けつけない
+
 ##Exporter
+☆生成したファイルやimportしたファイルをAssets内・外にコピーする。
+フォルダは事前につくっておかないといけない。
 
-#HookPoint Tips
+#HookPoint tips
+##Finally
+☆AssetGraphのビルド処理・リロード処理が終わったタイミングで実行する処理を、Scriptで記述できる。
+FinallyBase クラスを拡張したコードで可能。
+すべてのNodeの実行結果をログに出すサンプルはこんな感じ
+SampleFinally
 
-
+作成したAssetBundleのmanifestからjsonリストを作り出すサンプルはこんな感じ
+SampleFinally2
