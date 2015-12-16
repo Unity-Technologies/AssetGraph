@@ -488,6 +488,15 @@ namespace AssetGraph {
 			UpdateGraphData(graphData);
 		}
 
+		private void SaveGraphWithReloadSilent () {
+			SaveGraph();
+			try {
+				Setup(package);
+			} catch (Exception e) {
+				// display nothing.
+			}
+		}
+
 		private void SaveGraphWithReload () {
 			SaveGraph();
 			try {
@@ -1507,7 +1516,7 @@ namespace AssetGraph {
 			switch (kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI: {
 					var default_platform_package_loadPath = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, RelativeProjectPath()}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
 					newNode = Node.LoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
@@ -1575,7 +1584,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					var default_platform_package_exportPath = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, RelativeProjectPath()}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
 					newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
@@ -1608,11 +1617,6 @@ namespace AssetGraph {
 			using (var sw = new StreamWriter(graphDataPath)) {
 				sw.Write(dataStr);
 			}
-		}
-
-		private string RelativeProjectPath () {
-			var assetPath = Application.dataPath;
-			return Directory.GetParent(assetPath).Name;
 		}
 
 		/**
@@ -1918,7 +1922,7 @@ namespace AssetGraph {
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_SAVE: {
-					SaveGraphWithReload();
+					SaveGraphWithReloadSilent();
 					Repaint();
 					break;
 				}
