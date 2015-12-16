@@ -92,9 +92,9 @@ public partial class Test {
 				if (GraphStackController.IsMetaFile(basePath)) continue;
 
 				// avoid sub-creating assets. sub-creating assets never appear as cached.
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_0/Materials")) continue;
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_1/Materials")) continue;
-				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_2/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/" + GraphStackController.Current_Platform_Package_Folder(string.Empty) + "/models/ID_0/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/" + GraphStackController.Current_Platform_Package_Folder(string.Empty) + "/models/ID_1/Materials")) continue;
+				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/" + GraphStackController.Current_Platform_Package_Folder(string.Empty) + "/models/ID_2/Materials")) continue;
 
 				if (!targetPaths.Contains(basePath)) Debug.LogError("contained in result, but not in cached:" + basePath);
 			}

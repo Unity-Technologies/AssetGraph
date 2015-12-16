@@ -136,7 +136,7 @@ public partial class Test {
 
 		sImporter.Run("ID_0_3_RunImporter", "CONNECTION_0_3_RunImporter", string.Empty, source, new List<string>(), Out);
 
-		var currentOutputs = results["CONNECTION_0_3_RunImporter"];
+		var currentOutputs = results["CONNECTION_0_3_RunImporter"].Where(asset => !GraphStackController.IsMetaFile(asset.importedPath)).ToList();
 		if (currentOutputs.Count == 3) {
 			Debug.Log("passed _0_3_RunImporter");
 			return;
