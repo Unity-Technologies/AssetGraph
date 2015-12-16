@@ -203,13 +203,13 @@ public partial class Test {
 
 		integratedGUIImporter.Run("ID_1_3_RunImporter", "CONNECTION_1_3_RunImporter", string.Empty, source, new List<string>(), Out);
 
-		var currentOutputs = results["CONNECTION_1_3_RunImporter"];
+		var currentOutputs = results["CONNECTION_1_3_RunImporter"].Where(path => !GraphStackController.IsMetaFile(path.importedPath)).ToList();
 		if (currentOutputs.Count == 3) {
 			Debug.Log("passed _1_3_RunImporter");
 			return;
 		}
 
-		Debug.LogError("failed to collect importerd resource");
+		Debug.LogError("failed to collect importerd resource:" + currentOutputs.Count);
 	}
 
 	// there is no GUI Prefabricator.
@@ -286,7 +286,7 @@ public partial class Test {
 		var currentOutputs = results["CONNECTION_1_7_RunBundlizer"];
 		if (currentOutputs.Count == 1) {
 			// should be a_0.bundle
-			if (currentOutputs[0].pathUnderConnectionId != "iOS/a_0.bundle.iOS") {
+			if (currentOutputs[0].pathUnderConnectionId != "iOS/a_0.bundle.ios") {
 				Debug.LogError("failed to bundlize, name not match:" + currentOutputs[0].pathUnderConnectionId);
 				return;
 			}
@@ -523,12 +523,13 @@ public partial class Test {
 		
 		var resultDict = GraphStackController.SetupStackedGraph(graphDict, string.Empty);
 
-		if (resultDict.Count == 11) {
+		// 11 is count of connections. 3 is count of end nodes.
+		if (resultDict.Count == 11 + 3) {
 			Debug.Log("passed _1_13_SetupStackedGraph_FullStacked");
 			return;
 		}
 
-		Debug.LogError("shortage of connections");
+		Debug.LogError("shortage or excess of connections:" + resultDict.Count);
 	}
 
 	public void _1_14_SetupStackedGraph_Sample () {

@@ -53,8 +53,8 @@ namespace AssetGraph {
 
 				var generatedAssetBundlePaths = localFilePathsAfterBundlize.Except(localFilePathsBeforeBundlize);
 
-				Debug.LogWarning("仮に、bundleはすべてisNew = trueで作成する。この後方にprefabが着てると影響を必ずうけてしまうので、そのへんはあとで考える");
 				foreach (var newAssetPath in generatedAssetBundlePaths) {
+					if (GraphStackController.IsMetaFile(newAssetPath)) continue;
 					var newAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
 						newAssetPath,
 						AssetDatabase.AssetPathToGUID(newAssetPath),

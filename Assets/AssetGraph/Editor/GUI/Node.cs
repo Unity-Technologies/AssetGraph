@@ -210,8 +210,9 @@ namespace AssetGraph {
 							UpdateCurrentPackage(node);
 
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+								EditorGUILayout.LabelField("Load Path:");
 								var newLoadPath = EditorGUILayout.TextField(
-									"Load Path", 
+									GraphStackController.ProjectName(), 
 									GraphStackController.ValueFromPlatformAndPackage(
 										node.loadPath.ReadonlyDict(), 
 										node.currentPlatform, 
@@ -641,8 +642,9 @@ namespace AssetGraph {
 						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							EditorGUILayout.LabelField("Export Path:");
 							var newExportPath = EditorGUILayout.TextField(
-								"Export Path", 
+								GraphStackController.ProjectName(), 
 								GraphStackController.ValueFromPlatformAndPackage(
 									node.exportPath.ReadonlyDict(), 
 									node.currentPlatform, 
@@ -824,7 +826,7 @@ namespace AssetGraph {
 
 				using (new EditorGUILayout.HorizontalScope()) {
 					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Discard And Use Default", GUILayout.Width(150))) {
+					if (GUILayout.Button("Use Default Setting", GUILayout.Width(150))) {
 						currentNode.BeforeSave();
 						currentNode.DeleteCurrentPackagePlatformKey(currentNodePlatformPackageKey);
 						GUI.FocusControl(string.Empty);

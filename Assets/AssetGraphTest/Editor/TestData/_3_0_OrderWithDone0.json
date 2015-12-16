@@ -13,7 +13,7 @@
                 "y": 11
             },
             "loadPath": {
-                "Default": "/AssetGraph/TestResources/TestResourcesFor_3_0_OrderWithDone0"
+                "Default": "TestResources/TestResourcesFor_3_0_OrderWithDone0"
             }
         },
         {

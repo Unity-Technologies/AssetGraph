@@ -13,7 +13,7 @@
                 "y": 11
             },
             "loadPath": {
-                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
+                "Default": "TestResources/TestResourcesFor_0_14_RunStackedGraph_Sample"
             }
         },
         {
@@ -156,7 +156,7 @@
                 "y": 185
             },
             "exportPath": {
-                "Default": "/AssetGraph/TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
+                "Default": "TestExportPlace/TestExportFor_0_14_RunStackedGraph_Sample"
             }
         }
     ],

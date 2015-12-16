@@ -13,7 +13,7 @@
                 "y": 5
             },
             "loadPath": {
-                "Default": "/AssetGraph/TestResources/TestResourcesFor_4_0_CacheWithSetup"
+                "Default": "TestResources/TestResourcesFor_4_0_CacheWithSetup"
             }
         },
         {
@@ -151,7 +151,7 @@
                 "y": 292
             },
             "exportPath": {
-                "Default": "AssetGraph/TestExportPlace/TestExportFor_4_0_RunThenCachedGUI"
+                "Default": "TestExportPlace/TestExportFor_4_0_RunThenCachedGUI"
             }
         },
         {

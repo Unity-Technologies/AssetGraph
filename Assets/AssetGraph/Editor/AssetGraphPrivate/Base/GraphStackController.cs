@@ -1066,8 +1066,7 @@ namespace AssetGraph {
 		public static string WithProjectPath (string pathUnderProjectFolder) {
 			var assetPath = Application.dataPath;
 			var projectPath = Directory.GetParent(assetPath).ToString();
-			var projectParentPath = Directory.GetParent(projectPath).ToString();
-			return FileController.PathCombine(projectParentPath, pathUnderProjectFolder);
+			return FileController.PathCombine(projectPath, pathUnderProjectFolder);
 		}
 
 		public static T Executor<T> (string typeStr) where T : INodeBase {
@@ -1369,6 +1368,13 @@ namespace AssetGraph {
 		public static string Platform_Dot_Package (string package) {
 			if (!string.IsNullOrEmpty(package)) return ShrinkedCurrentPlatform() + "." + package;
 			return ShrinkedCurrentPlatform();
+		}
+
+		public static string ProjectName () {
+			var assetsPath = Application.dataPath;
+			var projectFolderNameArray = assetsPath.Split(AssetGraphSettings.UNITY_FOLDER_SEPARATOR);
+			var projectFolderName = projectFolderNameArray[projectFolderNameArray.Length - 2] + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
+			return projectFolderName;
 		}
 	}
 

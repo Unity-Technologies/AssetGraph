@@ -13,7 +13,7 @@
                 "y": 5
             },
             "loadPath": {
-                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
+                "Default": "TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
             }
         },
         {
@@ -151,7 +151,7 @@
                 "y": 306
             },
             "exportPath": {
-                "Default": "/AssetGraph/TestExportPlace/TestExportFor_1_12_SerializedGraphJSON"
+                "Default": "TestExportPlace/TestExportFor_1_12_SerializedGraphJSON"
             }
         },
         {
@@ -237,5 +237,6 @@
             "fromNode": "バンドル生成を行う",
             "toNode": "バンドルをフォルダに出力"
         }
-    ]
+    ],
+    "lastPackage": ""
 }
