@@ -301,19 +301,19 @@ public partial class Test {
 
 		// fail on this step. without package.
 		
-		// // change platform again.
-		// EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.StandaloneOSXIntel);
+		// change platform again.
+		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.StandaloneOSXIntel);
 
-		// // should cache.
+		// should cache.
 
-		// setup();
-		// run();
-		// // the GUID of assetBundle for iOS platform should be keep. = cached.
+		setup();
+		run();
+		// the GUID of assetBundle for iOS platform should be keep. = cached.
 
-		// uint after_iOSAssetGUID;
-		// BuildPipeline.GetCRCForAssetBundle("Assets/AssetGraph/Cache/BundleBuilt/05ad002c-5e3a-46e3-97e3-01543516c728/StandaloneOSXIntel/chara_0.assetbundle", out after_iOSAssetGUID);
+		uint after_iOSAssetGUID;
+		BuildPipeline.GetCRCForAssetBundle("Assets/AssetGraph/Cache/BundleBuilt/05ad002c-5e3a-46e3-97e3-01543516c728/StandaloneOSXIntel/chara_0.assetbundle", out after_iOSAssetGUID);
 
-		// if (after_iOSAssetGUID != before_iOSAssetGUID) Debug.LogError("failed to cache after_iOSAssetGUID:" + after_iOSAssetGUID + " before_iOSAssetGUID:" + before_iOSAssetGUID);
+		if (after_iOSAssetGUID != before_iOSAssetGUID) Debug.LogError("failed to cache after_iOSAssetGUID:" + after_iOSAssetGUID + " before_iOSAssetGUID:" + before_iOSAssetGUID);
 	}
 
 }

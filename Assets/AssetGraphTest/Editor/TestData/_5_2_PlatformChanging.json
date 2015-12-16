@@ -116,7 +116,7 @@
 			"y": 251
 		},
 		"exportPath": {
-			"Default": "AssetGraph/AssetGraphExport"
+			"Default": "AssetGraphExport"
 		}
 	}, {
 		"name": "Prefabricator",
@@ -139,7 +139,7 @@
 			"y": 7
 		},
 		"loadPath": {
-			"Default": "AssetGraph/AssetGraphResources",
+			"Default": "AssetGraphResources",
 		}
 	}],
 	"connections": [{

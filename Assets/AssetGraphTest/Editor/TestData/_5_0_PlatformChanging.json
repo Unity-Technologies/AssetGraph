@@ -13,7 +13,7 @@
                 "y": 14
             },
             "loadPath": {
-                "Default": "AssetGraph/TestResources/TestResourcesFor_5_0_PlatformChanging"
+                "Default": "TestResources/TestResourcesFor_5_0_PlatformChanging"
             }
         },
         {
@@ -62,7 +62,7 @@
                 "y": 277
             },
             "exportPath": {
-                "Default": "AssetGraph/TestExportPlace/TestExportFor_5_0_PlatformChanging"
+                "Default": "TestExportPlace/TestExportFor_5_0_PlatformChanging"
             }
         },
         {

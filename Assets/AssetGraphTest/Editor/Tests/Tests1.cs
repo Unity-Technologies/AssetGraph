@@ -203,7 +203,7 @@ public partial class Test {
 
 		integratedGUIImporter.Run("ID_1_3_RunImporter", "CONNECTION_1_3_RunImporter", string.Empty, source, new List<string>(), Out);
 
-		var currentOutputs = results["CONNECTION_1_3_RunImporter"];
+		var currentOutputs = results["CONNECTION_1_3_RunImporter"].Where(path => !GraphStackController.IsMetaFile(path.importedPath)).ToList();
 		if (currentOutputs.Count == 3) {
 			Debug.Log("passed _1_3_RunImporter");
 			return;

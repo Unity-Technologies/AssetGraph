@@ -142,7 +142,7 @@ public partial class Test {
 			return;
 		}
 
-		Debug.LogError("failed to collect importerd resource");
+		Debug.LogError("failed to collect importerd resource currentOutputs.Count:" + currentOutputs.Count);
 	}
 
 	public void _0_4_SetupPrefabricator () {
@@ -208,7 +208,8 @@ public partial class Test {
 
 		sPrefabricator.Run("ID_0_5_RunPrefabricator", "CONNECTION_0_5_RunPrefabricator", string.Empty, source, new List<string>(), Out);
 
-		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"];
+		var currentOutputs = results["CONNECTION_0_5_RunPrefabricator"].Where(assetData => !GraphStackController.IsMetaFile(assetData.importedPath)).ToList();
+
 		if (currentOutputs.Count == 3) {
 			// material.mat
 			// prefab.prefab
@@ -447,12 +448,13 @@ public partial class Test {
 		
 		var resultDict = GraphStackController.SetupStackedGraph(graphDict, string.Empty);
 
-		if (resultDict.Count == 11) {
+		// 11 is count of connection. 1 is count of end node.
+		if (resultDict.Count == 11 + 1) {
 			Debug.Log("passed _0_13_SetupStackedGraph_FullStacked");
 			return;
 		}
 
-		Debug.LogError("shortage of connections");
+		Debug.LogError("excess or shortage of connections resultDict.Count:" + resultDict.Count);
 	}
 
 	public void _0_14_SetupStackedGraph_Sample () {

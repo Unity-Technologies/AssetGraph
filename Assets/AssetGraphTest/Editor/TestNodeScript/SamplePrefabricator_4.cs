@@ -3,14 +3,16 @@ using UnityEditor;
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 public class SamplePrefabricator_4 : AssetGraph.PrefabricatorBase {
-	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+	public override void In (string groupKey, List<AssetGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+		var sourcesWithoutMeta = sources.Where(assetInfo => !assetInfo.assetPath.EndsWith(".meta")).ToList();
 
 		// get texture.
-		var textureAssetPath = source[2].assetPath;
-		var textureAssetType = source[2].assetType;
+		var textureAssetPath = sourcesWithoutMeta[2].assetPath;
+		var textureAssetType = sourcesWithoutMeta[2].assetType;
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
@@ -20,8 +22,8 @@ public class SamplePrefabricator_4 : AssetGraph.PrefabricatorBase {
 
 
 		// get material from path.
-		var materialAssetPath = source[0].assetPath;
-		var materialAssetType = source[0].assetType;
+		var materialAssetPath = sourcesWithoutMeta[0].assetPath;
+		var materialAssetType = sourcesWithoutMeta[0].assetType;
 
 		// load texture from AssetDatabase.
 		var characterMaterial = AssetDatabase.LoadAssetAtPath(materialAssetPath, materialAssetType) as Material;

@@ -6,7 +6,7 @@
             "id": "0_Loader",
             "kind": "LOADER_GUI",
             "loadPath": {
-                "Default": "AssetGraph/TestResources/TestResourcesFor_0_9_SerializedGraphJSON"
+                "Default": "TestResources/TestResourcesFor_0_9_SerializedGraphJSON"
             },
             "outputLabels": [
                 "_"
@@ -64,7 +64,7 @@
             "id": "3rd_Exporter",
             "kind": "EXPORTER_GUI",
             "exportPath": {
-                "Default": "AssetGraph/TestExportPlace/For_1_9_SerializedGraphJSONByExporter"
+                "Default": "TestExportPlace/For_1_9_SerializedGraphJSONByExporter"
             },
             "pos": {
                 "x": 10,

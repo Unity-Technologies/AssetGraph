@@ -6,7 +6,7 @@
             "id": "0_Loader",
             "kind": "LOADER_GUI",
             "loadPath": {
-                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_8_SerializedGraphJSON"
+                "Default": "TestResources/TestResourcesFor_0_8_SerializedGraphJSON"
             },
             "outputLabels": [
                 "_"

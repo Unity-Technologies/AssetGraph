@@ -13,7 +13,7 @@
                 "y": 11
             },
             "loadPath": {
-                "Default": "/AssetGraph/TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
+                "Default": "TestResources/TestResourcesFor_0_12_SerializedGraphJSON"
             }
         },
         {
@@ -127,7 +127,7 @@
                 "y": 219
             },
             "exportPath": {
-                "Default": "/AssetGraph/TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
+                "Default": "TestExportPlace/TestExportFor_0_12_SerializedGraphJSON"
             }
         }
     ],

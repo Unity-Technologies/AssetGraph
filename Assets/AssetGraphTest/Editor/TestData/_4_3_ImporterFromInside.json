@@ -13,7 +13,7 @@
                 "y": 14
             },
             "loadPath": {
-                "Default": "AssetGraph/Assets/AssetGraphTest/ExporterTestResource/ImportFromInside"
+                "Default": "Assets/AssetGraphTest/ExporterTestResource/ImportFromInside"
             }
         },
         {

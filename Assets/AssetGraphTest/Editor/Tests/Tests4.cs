@@ -88,6 +88,8 @@ public partial class Test {
 			var targetPaths = cacheDict[key];
 			
 			foreach (var basePath in basePaths) {
+				// ignore meta files.
+				if (GraphStackController.IsMetaFile(basePath)) continue;
 
 				// avoid sub-creating assets. sub-creating assets never appear as cached.
 				if (basePath.StartsWith("Assets/AssetGraph/Cache/Imported/Testimporter1/iOS/models/ID_0/Materials")) continue;
@@ -98,6 +100,9 @@ public partial class Test {
 			}
 
 			foreach (var targetPath in targetPaths) {
+				// ignore meta files.
+				if (GraphStackController.IsMetaFile(targetPath)) continue;
+
 				if (!basePaths.Contains(targetPath)) Debug.LogError("contained in cache, but not in result:" + targetPath);
 			}
 		}
