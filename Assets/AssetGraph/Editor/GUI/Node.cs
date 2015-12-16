@@ -824,7 +824,7 @@ namespace AssetGraph {
 
 				using (new EditorGUILayout.HorizontalScope()) {
 					GUILayout.FlexibleSpace();
-					if (GUILayout.Button("Discard And Use Default", GUILayout.Width(150))) {
+					if (GUILayout.Button("Use Default Setting", GUILayout.Width(150))) {
 						currentNode.BeforeSave();
 						currentNode.DeleteCurrentPackagePlatformKey(currentNodePlatformPackageKey);
 						GUI.FocusControl(string.Empty);
