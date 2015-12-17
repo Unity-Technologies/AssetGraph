@@ -153,20 +153,92 @@ Bundlizer以外のoutputを受けつけない
 吐き出し先のフォルダは事前につくっておかないといけない。
 
 
-#HookPoint tips
-##Finally
-☆AssetGraphのビルド処理・リロード処理が終わったタイミングで実行する処理を、Scriptで記述できる。
-FinallyBase クラスを拡張したコードで可能。
-すべてのNodeの実行結果をログに出すサンプルはこんな感じ
-SampleFinally
+#HookPoint: Finally tips
+AssetGraphのビルド処理・リロード処理が終わったタイミングで実行する処理を、Scriptで記述することができます。
 
-作成したAssetBundleのmanifestからjsonリストを作り出すサンプルはこんな感じ
-SampleFinally2
+##FinallyBase クラスをextendsする
+FinallyBase クラスを拡張したコードは、ビルド処理・リロード処理が終わったタイミングで自動的に呼ばれます。
+
+public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) メソッドで、すべてのNode、すべてのグループの実行結果を受け取ることができます。
+
+Dictionary<string, Dictionary<string, List<string>>> throughputs
+NodeName, groupKey, AssetPath が格納されています。
+
+bool isBuild
+ビルド処理時はtrue、それ以外ではfalse
+
+
+##すべてのNodeの実行結果をログに出すサンプル
+```C#
+using UnityEngine;
+using UnityEditor;
+
+using System;
+using System.IO;
+using System.Collections.Generic;
+
+/**
+	sample class for finally hookPoint.
+
+	show results of all nodes.
+*/
+public class SampleFinally : AssetGraph.FinallyBase {
+	public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
+		Debug.Log("flnally. isBuild:" + isBuild);
+
+		if (!isBuild) return;
+		
+		foreach (var nodeName in throughputs.Keys) {
+			Debug.Log("nodeName:" + nodeName);
+
+			foreach (var groupKey in throughputs[nodeName].Keys) {
+				Debug.Log("	groupKey:" + groupKey);
+
+				foreach (var result in throughputs[nodeName][groupKey]) {
+					Debug.Log("		result:" + result);
+				}
+			}
+		}
+	}
+}
+```
+[SampleFinally](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally.cs)
+
+##AssetBundleのmanifestからjsonでリストを作り出す
+FinallyはAssetGraphのBuild後に呼ばれるため、AssetBundle作成後にmanifestファイルからAssetBundleの内容を読み込み、json形式に変換する、などといったことができます。
+
+[SampleFinally2](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally2.cs)
 
 
 #Package tips
-☆一つのプラットフォームの中に複数の解像度があって、それぞれに応じたサイズの素材を使ったりしたい、、そう思ったことはないですか。ありますよね。
-Unityにはvariantsという機構があり、
-pacakgeを使えば、「HD向けにはこのサイズの素材」「それ以外にはこのサイズの素材」といった調整をGUIから行うことができます。
+一つのプラットフォームの中に複数の解像度があって、それぞれに応じたサイズの素材を使ってBundleを作成したい、、そう思ったことはないですか。ありますよね。
 
-いろんなNodeにpackageってパラメータがあるんで使ってねみたいな話
+Unityにはvariantsという機構があり、Assetごとに個別にInspectorから指定することで、「同じGUIDで別の内容を持ったAssetを作り出す」ということができます。
+AssetGraphでは、variantsとは少々異なったアプローチで、「同じプラットフォームのフローで、ちょっと違う素材を作り出す」ということができます。
+pacakgeを使えば、「HD向けにはこのサイズの素材」「それ以外にはこのサイズの素材」といった調整を、簡単な操作で様々な素材に対して適応させることができます。
+
+##HD用の素材を新たにつくる
+すでに「通常サイズの素材を使ってAssetBudnleをつくる」というフローがあり、新たにHD用のAssetBundleも作りたくなった場合、LoaderのInspectorから、新たに「HD」packageを追加してみましょう。
+
+☆画像
+
+これで、「特にHD版の素材を作る場合、専用の画像を使ってAssetBundleを作る」ということが可能になります。
+
+ImporterやBundlizerにも同様に「特にこのpackageだったら」というような、特別なケースの処理を行うことができます。
+
+##variantsとの違い
+variantsは、差異のあるAssetを同じGUIDで生成しますが、packageでは、「packageが違うものはすべて別のAsset」として出力します。
+出力されるAssetBundleの拡張子は、必ずBUNDLE_NAME.PLATFORM.PACKAGE となります。
+
+名前が異なることからも分かる通り、packageが異なるAssetBundleの間に、共通性はありません。
+
+##pacakgeで作ったAssetBundleを使う
+使用方法としてはvariantsと違いはなく、次のような手順になります。
+
+1. 端末側で、自分がどのpackageに属するのか、判定を行う
+1. HDを使用する端末の場合、末尾にhdとついたAssetBundleを取得する
+1. 取得したAssetBundleを使用する
+
+variantsと異なる点としては、packageが異なるAssetBundleはcrcなども全て異なるため、HD用の端末はHD用のAssetBundleのcrc情報などを特に指定して取得する必要があります。
+
+
