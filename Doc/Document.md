@@ -108,9 +108,10 @@ PrefabricatorノードにどんなAssetがどのようなグループ名、順�
 
 この場合、groupKey "0"で、dummy.png, kiosk001.mat, sample.fbx の3つが順にsourceに入った状態でInメソッドが呼ばれます。
 
-
-
 Prefabの作成にPrefabricateメソッドを使うと、キャッシュが効いて便利です。
+
+e.g.
+[SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
 
 ##適当なグループごとにPrefabを作成する
 ☆
