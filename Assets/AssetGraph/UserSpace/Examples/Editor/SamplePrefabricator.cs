@@ -8,11 +8,15 @@ using System.Collections.Generic;
 
 public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 	public override void In (string groupKey, List<AssetGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
-		var notMetaAssets = sources.Where(source => !source.assetPath.EndsWith(".meta")).ToList();
+
+		/*
+			you can see what incoming to this Prefabricator at the Inspector between Prefabricator to next node.
+			these codes are based on that information.
+		*/
 
 		// get texture.
-		var textureAssetPath = notMetaAssets[0].assetPath;
-		var textureAssetType = notMetaAssets[0].assetType;
+		var textureAssetPath = sources[0].assetPath;
+		var textureAssetType = sources[0].assetType;
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
@@ -22,13 +26,16 @@ public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 
 
 		// get material from path.
-		var materialAssetPath = notMetaAssets[1].assetPath;
-		var materialAssetType = notMetaAssets[1].assetType;
+		var materialAssetPath = sources[1].assetPath;
+		var materialAssetType = sources[1].assetType;
 
 		// load texture from AssetDatabase.
 		var characterMaterial = AssetDatabase.LoadAssetAtPath(materialAssetPath, materialAssetType) as Material;
+
+		if (characterMaterial) Debug.Log("Prefabricate:loaded:" + materialAssetPath);
+		else Debug.LogError("Prefabricate:failed to load:" + materialAssetPath);
 		
-		// // then set loaded texture to that material.
+		// then set loaded texture to that material.
 		characterMaterial.mainTexture = characterTexture;
 
 		// generate cube then set texture to it.

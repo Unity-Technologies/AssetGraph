@@ -23,6 +23,18 @@ namespace AssetGraph {
 			File.Copy(absoluteSourceFilePath, localTargetFilePath, true);
 		}
 
+		public static void DeleteFileThenDeleteFolderIfEmpty (string localTargetFilePath) {
+			
+			File.Delete(localTargetFilePath);
+			File.Delete(localTargetFilePath + AssetGraphSettings.UNITY_METAFILE_EXTENSION);
+			var directoryPath = Directory.GetParent(localTargetFilePath).FullName;
+			var restFiles = FilePathsInFolder(directoryPath);
+			if (!restFiles.Any()) {
+				Directory.Delete(directoryPath, true);
+				File.Delete(directoryPath + AssetGraphSettings.UNITY_METAFILE_EXTENSION);
+			}
+		}
+
 		public static List<string> FilePathsOfFile (string filePath) {
 			var folderPath = Path.GetDirectoryName(filePath);
 			var results = FilePathsInFolder(folderPath);
@@ -88,6 +100,8 @@ namespace AssetGraph {
 			var filePaths = ConvertSeparater(Directory.GetFiles(localFolderPath)
 					.Where(path => !(Path.GetFileName(path).StartsWith(AssetGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)))
 					.ToList());
+
+			if (AssetGraphSettings.IGNORE_META) filePaths = filePaths.Where(path => !GraphStackController.IsMetaFile(path)).ToList();
 
 			return filePaths;
 		}

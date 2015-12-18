@@ -9,6 +9,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+using MiniJSONForAssetGraph;
+
 /**
 	static executor for AssetGraph's data.
 */
@@ -382,16 +384,19 @@ namespace AssetGraph {
 					foreach (var assetData in connectionThroughputList) {
 						if (!string.IsNullOrEmpty(assetData.absoluteSourcePath)) {
 							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(ProjectPathWithSlash(), string.Empty);
+							// if (IsMetaFile(relativeAbsolutePath)) continue;
 							sourcePathList.Add(relativeAbsolutePath);
 							continue;
 						}
 
 						if (!string.IsNullOrEmpty(assetData.pathUnderConnectionId)) {
+							// if (IsMetaFile(assetData.pathUnderConnectionId)) continue;
 							sourcePathList.Add(assetData.pathUnderConnectionId);
 							continue;
 						}
 
 						if (!string.IsNullOrEmpty(assetData.exportedPath)) {
+							// if (IsMetaFile(assetData.exportedPath)) continue;
 							sourcePathList.Add(assetData.exportedPath);
 							continue;
 						}
@@ -441,7 +446,7 @@ namespace AssetGraph {
 						var loadPathSource = nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
 						var loadPath = new Dictionary<string, string>();
 						if (loadPathSource == null) {
-							Debug.LogError("loadPathSourceがnull");
+							
 							loadPathSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
@@ -461,7 +466,7 @@ namespace AssetGraph {
 						var exportPath = new Dictionary<string, string>();
 
 						if (exportPathSource == null) {
-							Debug.LogError("exportPathSourceがnull");
+							
 							exportPathSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
@@ -518,7 +523,7 @@ namespace AssetGraph {
 						var importerPackages = new Dictionary<string, string>();
 
 						if (importerPackagesSource == null) {
-							Debug.LogError("importerPackagesがnull2");
+							
 							importerPackagesSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in importerPackagesSource.Keys) importerPackages[platform_package_key] = string.Empty;
@@ -539,7 +544,7 @@ namespace AssetGraph {
 						var groupingKeyword = new Dictionary<string, string>();
 						
 						if (groupingKeywordSource == null) {
-							Debug.LogError("groupingKeywordSourceがnull2");
+							
 							groupingKeywordSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
@@ -559,7 +564,7 @@ namespace AssetGraph {
 						var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 						var bundleNameTemplate = new Dictionary<string, string>();
 						if (bundleNameTemplateSource == null) {
-							Debug.LogError("nullになるエラーがありそう。");
+							
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
@@ -582,7 +587,7 @@ namespace AssetGraph {
 						var enabledBundleOptions = new Dictionary<string, List<string>>();
 
 						if (enabledBundleOptionsSource == null) {
-							Debug.LogError("enabledBundleOptionsSourceがnull2");
+							
 							enabledBundleOptionsSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in enabledBundleOptionsSource.Keys) {
@@ -1376,6 +1381,52 @@ namespace AssetGraph {
 			var projectFolderName = projectFolderNameArray[projectFolderNameArray.Length - 2] + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
 			return projectFolderName;
 		}
+
+
+		public static Dictionary<string, List<string>> LoadImporterRecord (string nodeId, string package) {
+			var importRecordPath = FileController.PathCombine(
+				AssetGraphSettings.IMPORTER_CACHE_PLACE, 
+				nodeId, 
+				GraphStackController.Current_Platform_Package_Folder(package),
+				AssetGraphSettings.IMPORTER_RECORDFILE);
+			
+			var importerRecord = new Dictionary<string, List<string>>();
+
+			if (!File.Exists(importRecordPath)) return importerRecord;
+
+			var dataStr = string.Empty;
+			using (var sr = new StreamReader(importRecordPath)) {
+  				dataStr = sr.ReadToEnd();
+  			}
+
+  			var dataDictBase = Json.Deserialize(dataStr) as Dictionary<string, object>;
+  			foreach (var dataDictBaseKey in dataDictBase.Keys) {
+  				var valueSources = dataDictBase[dataDictBaseKey] as List<object>;
+  				var values = valueSources.Select(val => val as string).ToList();
+				importerRecord[dataDictBaseKey] = new List<string>(values);
+  			}
+
+			return importerRecord;
+		}
+
+		public static void UpdateImporterRecord (string nodeId, string package, Dictionary<string, List<string>> generatedRecord) {
+			var serialized = Json.Serialize(generatedRecord);
+
+			var importRecordDirPath = FileController.PathCombine(
+				AssetGraphSettings.IMPORTER_CACHE_PLACE, 
+				nodeId, 
+				GraphStackController.Current_Platform_Package_Folder(package));
+
+			// if no folder found, ignore.
+			if (!Directory.Exists(importRecordDirPath)) return;
+
+			var importRecordPath = FileController.PathCombine(importRecordDirPath, AssetGraphSettings.IMPORTER_RECORDFILE);
+			
+			using (var sw = new StreamWriter(importRecordPath)) {
+   				sw.Write(serialized);
+			}
+		}
+
 	}
 
 	public class NodeData {

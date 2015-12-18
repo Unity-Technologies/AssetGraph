@@ -1,13 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 
-using System.Collections.Generic;
-using System.IO;
-using YamlDotNet.Serialization.NamingConventions;
-using YamlDotNet.Serialization;
 using System;
-
-using MiniJSONForAssetGraph;
+using System.IO;
+using System.Collections.Generic;
 
 /**
 	sample class for finally hookPoint.
