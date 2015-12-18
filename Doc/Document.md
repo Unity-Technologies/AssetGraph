@@ -77,17 +77,40 @@ group Key に /ID_\*/ とセットすると、作成されるグループは"mai
 
 ##素材からPrefabを作成する
 AssetGraphでは、素材を読み込んでPrefabをつくることができます。
-ただし、Assetを指定したりインスタンス化する必要があるため、それらの操作を記述したScriptを書く必要があります。
+ただし、Assetを指定したりインスタンス化する必要があるため、それらの操作をC#Scriptとして記述する必要があります。
 Scriptは次のようなものです。
 
 ```C#
+using UnityEngine;
+using UnityEditor;
 
+using System;
+using System.IO;
+using System.Collections.Generic;
+
+public class MyPrefabricator : AssetGraph.PrefabricatorBase {
+	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+		// let's generate Prefab with "Prefabricate" method.
+	}
+}
 ```
 
-Prefabricatorノードにセットすることができます。
-WindowからのPrefabricatorを案内する。
-入ってくる素材とグループIdについての説明、流入するConnectionの順番の解説が必要
-サンプルコードを示唆
+AssetGraph.PrefabricatorBase クラスを継承し、In メソッドを持つScriptです。
+このScriptは、Window > AssetGraph > Generate Script For Node > Prefabricator Script で自動的にひな形を作成できます。
+
+Scriptを作成したら、その型名をAssetGraph内のPrefabricatorノードにセットすることで、ノードに流れてきたAssetが自動的にScriptを通過するようになります。
+
+☆画像
+
+PrefabricatorノードにどんなAssetがどのようなグループ名、順番で入ってくるかは、PrefabricatorノードにつながっているConnectionから想定することができます。
+
+☆画像 
+
+この場合、groupKey "0"で、dummy.png, kiosk001.mat, sample.fbx の3つが順にsourceに入った状態でInメソッドが呼ばれます。
+
+
+
+Prefabの作成にPrefabricateメソッドを使うと、キャッシュが効いて便利です。
 
 ##適当なグループごとにPrefabを作成する
 ☆

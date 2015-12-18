@@ -116,7 +116,7 @@
                 "y": 63
             },
             "scriptType": "CreateCharaPrefab",
-            "scriptPath": "Assets/AssetGraph/Yours/Editor/SamplePrefabricator.cs"
+            "scriptPath": "_"
         },
         {
             "name": "CreateCharaBundle",

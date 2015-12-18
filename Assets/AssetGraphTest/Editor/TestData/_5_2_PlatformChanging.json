@@ -127,7 +127,7 @@
 			"x": 546,
 			"y": 131
 		},
-		"scriptType": "SamplePrefabricator",
+		"scriptType": "SamplePrefabricator_5",
 		"scriptPath": ""
 	}, {
 		"name": "Loader",
