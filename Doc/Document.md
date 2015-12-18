@@ -7,7 +7,6 @@ document version 0.8.0
 * Node tips
 * HookPoint tips
 * Package tips
-* Meta tips
 
 
 #はじめに
@@ -46,29 +45,46 @@ bundleNameTemplateにbundle名をセット
 
 
 ##一気に大量の素材をimportしたい
-☆
+importしたい素材をAssetGraphのプロジェクトフォルダに置き、そのパスをLoaderで指定、Importerへと繋ぐと一気にimportができます。
 
 1. Loaderで素材が置いてあるパスを指定
-2. Importerを繋いで、ImporterのModify Import Setting ボタンから、import設定をセット
+1. Importerを繋いで、ImporterのインスペクタのModify Import Setting ボタンから、import設定をセット
 
 
-##すでにImport済みの素材を使いたい
-☆
-Assetsフォルダの外部から、すでにimport済みの素材をImportする場合は、.metaファイルが必要になります。
-.metaファイルと一緒に素材ファイルをimportした場合、たぶんそれが優先されます
+複数の種類の素材(e.g. imageとmodelなど)が含まれている場合、Filterを使って素材の種類ごとにImporterを用意すると設定が楽でいいでしょう。
+
+1. Loaderで素材が置いてあるパスを指定
+1. Filterで、素材名やパスから、素材を仕分け
+1. Importerを繋いで、ImporterのModify Import Setting ボタンから、import設定をセット
 
 
 
 ##複数の素材を複数のグループに分ける
-☆
-Groupingを使おう。
-素材のPathを使って、複数の素材を一つのグループとして扱える。
-groupKeyに米を使うと、
+たとえばゲームのキャラクターが複数いて、それらがテクスチャ + モデルで構成されている時、
+複数の素材を、キャラ1の素材の集まり(テクスチャ + モデル)、 キャラ2の素材の集まり(テクスチャ + モデル)　などのようにグループ分けして扱いたい時があります。
+
+具体的には、Prefabを作る際やAssetBundleをつくる際などです。
+Groupingノードを通すと、複数の素材を、複数のグループとして扱うことができます。
+
+GroupingノードのInspectorで、group Key に「グループ分けに使用するキーワード」を指定すると、
+素材のパスから複数のグループが作られます。
+
+group Keyでは、\* 記号をワイルドカードとして使用することができます。
+
+たとえばフォルダ名に /ID_mainChara/、/ID_enemy/ などつけた場合、
+group Key に /ID_\*/ とセットすると、作成されるグループは"mainChara", "enemy"の2つになります。
 
 
 ##素材からPrefabを作成する
-☆
-スクリプトを書こう、みたいな。
+AssetGraphでは、素材を読み込んでPrefabをつくることができます。
+ただし、Assetを指定したりインスタンス化する必要があるため、それらの操作を記述したScriptを書く必要があります。
+Scriptは次のようなものです。
+
+```C#
+
+```
+
+Prefabricatorノードにセットすることができます。
 WindowからのPrefabricatorを案内する。
 入ってくる素材とグループIdについての説明、流入するConnectionの順番の解説が必要
 サンプルコードを示唆
@@ -243,10 +259,3 @@ variantsでは差異のあるAssetを同じGUIDで生成しますが、package�
 variantsと異なる点としては、packageが異なるAssetBundleはcrcなども全て異なるため、HD用の端末はHD用のAssetBundleのcrc情報などを特に指定して取得する必要があります。
 
 
-#Meta tips
-☆AssetGraphでは.metaファイルも扱える。
-
-ExporterでprefabとかをExportすると、.metaファイルも吐き出される。
-.metaファイルをAssetGraph内でも使用したい場合、IGNORE_META = falseにするといい。
-
-今後は、他のプロジェクトで作成したAssetを.metaファイルと一緒にLoaderで読み込むと、Impoter通ってなくても設定が反映される、、みたいなのもあるといいな〜と思う。Future。

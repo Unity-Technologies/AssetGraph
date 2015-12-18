@@ -113,7 +113,7 @@ namespace AssetGraph {
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
 				(string noSampleFolder) => {
-					throw new Exception("importer error:" + noSampleFolder);
+					Debug.LogWarning("importer:" + noSampleFolder);
 				},
 				(string noSampleFile) => {
 					throw new Exception("importer error:" + noSampleFile);
@@ -164,7 +164,7 @@ namespace AssetGraph {
 						// unbundlize unused imported cached asset.
 						var assetImporter = AssetImporter.GetAtPath(deletingCachePath);
 		  				assetImporter.assetBundleName = string.Empty;
-		  				
+
 						FileController.DeleteFileThenDeleteFolderIfEmpty(deletingCachePath);
 					}
 				}
