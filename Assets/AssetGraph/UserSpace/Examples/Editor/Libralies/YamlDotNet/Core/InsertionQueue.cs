@@ -22,7 +22,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Generic queue on which items may be inserted

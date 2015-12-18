@@ -22,7 +22,7 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace YamlDotNet.Core.Events
+namespace AssetGraph.YamlDotNet.Core.Events
 {
 	/// <summary>
 	/// Contains the behavior that is common between node events.

@@ -21,7 +21,7 @@
 
 using System;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Represents a location inside a file

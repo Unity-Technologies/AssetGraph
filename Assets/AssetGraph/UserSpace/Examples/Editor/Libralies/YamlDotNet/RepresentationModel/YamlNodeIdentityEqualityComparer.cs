@@ -21,7 +21,7 @@
 
 using System.Collections.Generic;
 
-namespace YamlDotNet.RepresentationModel
+namespace AssetGraph.YamlDotNet.RepresentationModel
 {
 	/// <summary>
 	/// Comparer that is based on identity comparisons.

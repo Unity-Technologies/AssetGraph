@@ -20,9 +20,9 @@
 //  SOFTWARE.
 
 using System;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	/// <summary>
 	/// Allows to customize how a type is serialized and deserialized.

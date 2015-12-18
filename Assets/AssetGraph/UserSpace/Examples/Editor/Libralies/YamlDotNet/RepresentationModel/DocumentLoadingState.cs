@@ -22,9 +22,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.RepresentationModel
+namespace AssetGraph.YamlDotNet.RepresentationModel
 {
 	/// <summary>
 	/// Manages the state of a <see cref="YamlDocument" /> while it is loading.

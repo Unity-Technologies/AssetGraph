@@ -26,7 +26,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace YamlDotNet
+namespace AssetGraph.YamlDotNet
 {
 	internal static class StandardRegexOptions
 	{

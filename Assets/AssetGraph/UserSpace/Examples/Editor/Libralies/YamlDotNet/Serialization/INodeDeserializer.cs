@@ -20,9 +20,9 @@
 // THE SOFTWARE.
 
 using System;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	public interface INodeDeserializer
 	{

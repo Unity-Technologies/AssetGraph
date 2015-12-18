@@ -21,7 +21,7 @@
 
 using System;
 
-namespace YamlDotNet.Serialization.TypeResolvers
+namespace AssetGraph.YamlDotNet.Serialization.TypeResolvers
 {
 	/// <summary>
 	/// The type returned will always be the static type.

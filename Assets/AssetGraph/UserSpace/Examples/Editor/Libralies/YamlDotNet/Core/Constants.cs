@@ -20,9 +20,9 @@
 //  SOFTWARE.
 
 using System;
-using YamlDotNet.Core.Tokens;
+using AssetGraph.YamlDotNet.Core.Tokens;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Defines constants thar relate to the YAML specification.

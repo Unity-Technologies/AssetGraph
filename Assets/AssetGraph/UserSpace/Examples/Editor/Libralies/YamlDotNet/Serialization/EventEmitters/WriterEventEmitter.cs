@@ -19,10 +19,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Serialization.EventEmitters
+namespace AssetGraph.YamlDotNet.Serialization.EventEmitters
 {
 	public sealed class WriterEventEmitter : IEventEmitter
 	{

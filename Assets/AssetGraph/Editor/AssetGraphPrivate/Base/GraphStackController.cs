@@ -1344,7 +1344,7 @@ namespace AssetGraph {
 
 		public static string ShrinkedCurrentPlatform () {
 			var currentPlatformCandidate = EditorUserBuildSettings.activeBuildTarget.ToString();
-			if (currentPlatformCandidate.StartsWith(AssetGraphSettings.PLATFORM_STANDALONE)) currentPlatformCandidate = AssetGraphSettings.PLATFORM_STANDALONE;
+			// if (currentPlatformCandidate.StartsWith(AssetGraphSettings.PLATFORM_STANDALONE)) currentPlatformCandidate = AssetGraphSettings.PLATFORM_STANDALONE;
 			return currentPlatformCandidate;
 		}
 

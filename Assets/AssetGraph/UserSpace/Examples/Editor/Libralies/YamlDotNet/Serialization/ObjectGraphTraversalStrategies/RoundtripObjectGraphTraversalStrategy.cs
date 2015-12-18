@@ -22,9 +22,9 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using YamlDotNet.Serialization.Utilities;
+using AssetGraph.YamlDotNet.Serialization.Utilities;
 
-namespace YamlDotNet.Serialization.ObjectGraphTraversalStrategies
+namespace AssetGraph.YamlDotNet.Serialization.ObjectGraphTraversalStrategies
 {
 	/// <summary>
 	/// An implementation of <see cref="IObjectGraphTraversalStrategy"/> that traverses

@@ -21,9 +21,9 @@
 
 using System;
 using System.Collections.Generic;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Serialization.NodeTypeResolvers
+namespace AssetGraph.YamlDotNet.Serialization.NodeTypeResolvers
 {
 	public sealed class TagNodeTypeResolver : INodeTypeResolver
 	{

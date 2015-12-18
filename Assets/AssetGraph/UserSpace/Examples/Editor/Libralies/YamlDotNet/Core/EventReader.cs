@@ -21,9 +21,9 @@
 
 using System.IO;
 using System.Globalization;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Reads events from a sequence of <see cref="ParsingEvent" />.

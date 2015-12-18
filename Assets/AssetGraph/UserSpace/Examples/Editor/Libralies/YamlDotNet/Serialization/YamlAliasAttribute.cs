@@ -21,7 +21,7 @@
 
 using System;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	/// <summary>
 	/// Instructs the <see cref="Deserializer"/> to use a different field name for serialization.

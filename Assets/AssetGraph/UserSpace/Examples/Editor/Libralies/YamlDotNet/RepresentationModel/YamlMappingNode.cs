@@ -23,10 +23,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.RepresentationModel
+namespace AssetGraph.YamlDotNet.RepresentationModel
 {
 	/// <summary>
 	/// Represents a mapping node in the YAML document.

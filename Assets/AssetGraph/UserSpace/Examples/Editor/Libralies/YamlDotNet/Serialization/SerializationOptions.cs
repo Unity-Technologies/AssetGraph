@@ -21,7 +21,7 @@
 
 using System;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	/// <summary>
 	/// Options that control the serialization process.

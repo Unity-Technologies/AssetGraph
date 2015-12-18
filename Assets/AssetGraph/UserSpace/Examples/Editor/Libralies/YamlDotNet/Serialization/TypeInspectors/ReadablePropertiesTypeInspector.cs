@@ -23,9 +23,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization.TypeInspectors
+namespace AssetGraph.YamlDotNet.Serialization.TypeInspectors
 {
 	/// <summary>
 	/// Returns the properties of a type that are readable.

@@ -20,7 +20,7 @@
 //  SOFTWARE.
 
  
-namespace YamlDotNet.Serialization.NamingConventions
+namespace AssetGraph.YamlDotNet.Serialization.NamingConventions
 {
 	/// <summary>
 	/// Performs no naming conversion.

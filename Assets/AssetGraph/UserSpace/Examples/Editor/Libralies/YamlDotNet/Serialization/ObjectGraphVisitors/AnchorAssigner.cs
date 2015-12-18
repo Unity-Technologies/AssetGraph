@@ -22,9 +22,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization.ObjectGraphVisitors
+namespace AssetGraph.YamlDotNet.Serialization.ObjectGraphVisitors
 {
 	public sealed class AnchorAssigner : IObjectGraphVisitor, IAliasProvider
 	{

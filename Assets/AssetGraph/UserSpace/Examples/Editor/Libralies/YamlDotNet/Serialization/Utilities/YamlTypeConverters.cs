@@ -20,9 +20,9 @@
 //  SOFTWARE.
 
 using System.Collections.Generic;
-using YamlDotNet.Serialization.Converters;
+using AssetGraph.YamlDotNet.Serialization.Converters;
 
-namespace YamlDotNet.Serialization.Utilities
+namespace AssetGraph.YamlDotNet.Serialization.Utilities
 {
 	internal static class YamlTypeConverters
 	{

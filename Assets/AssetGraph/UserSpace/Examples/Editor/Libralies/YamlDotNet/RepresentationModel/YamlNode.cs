@@ -20,11 +20,11 @@
 //  SOFTWARE.
 
 using System;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core.Events;
 using System.Collections.Generic;
 
-namespace YamlDotNet.RepresentationModel
+namespace AssetGraph.YamlDotNet.RepresentationModel
 {
 	/// <summary>
 	/// Represents a single node in the YAML document.

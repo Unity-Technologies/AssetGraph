@@ -25,7 +25,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Linq;
 
-namespace YamlDotNet.Serialization.Utilities
+namespace AssetGraph.YamlDotNet.Serialization.Utilities
 {
 	internal static class ReflectionUtility
 	{

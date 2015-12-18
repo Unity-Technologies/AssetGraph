@@ -110,15 +110,24 @@ PrefabricatorノードにどんなAssetがどのようなグループ名、順�
 
 Prefabの作成にPrefabricateメソッドを使うと、キャッシュが効いて便利です。
 
-e.g.
+サンプルコードはこちら。
 [SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
 
 ##適当なグループごとにPrefabを作成する
-☆
-スクリプト中で、グループが扱える。
+Groupingノードで複数のグループを作り出しPrefabricatorノードにつなぐと、複数のグルーピングされた素材をPrefab作成に使うことができます。
+複数のグループは、PrefabricatorBaseを拡張したスクリプトの中で、groupKeyの値として使用できます。
 
+次のような素材がPrefabricatorノードに来た場合、
 
+☆スクリーンショット 2015-12-19 2.16.53
+☆スクリーンショット 2015-12-19 2.17.03
 
+Prefabricatorのメソッド
+public override void In (string groupKey, List<AssetGraph.AssetInfo> source, ...)がグループの数だけ実行され、string **groupKey**に、0,1,2が入り、
+List<AssetGraph.AssetInfo> **source**にはそれぞれのグループに含まれる素材が入ります。
+
+サンプルコードはこちら。
+[SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
 
 ##適当なグループ単位でAssetBundleにする
 ☆
@@ -175,12 +184,33 @@ loadPathにはAssetsフォルダの内部も指定できる
 キーワードとして米を使う。例
 
 ##Prefabricator
-☆プレファブを作成する
-コードを書く必要がある
+入力されたAssetから、Prefabを作成することができます。
+出力されるAssetは、入力されたAssetと作成されたPrefabを合わせたものになります。
+
+グルーピングされたAssetから、グルーピングされたPrefabを作成することができます。
+
+２通りの作成方法があります。
+
+* GUIで作成したものにScriptの型を入力する
+* ScriptをD&Dする
+
+ScriptはAssetGraph.PrefabricatorBaseクラスを拡張し、public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate)メソッドをオーバーライドしている必要があります。
+
+☆サンプルスクリプト https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaPrefab.cs
 
 ##Bundlizer
-☆AssetBundleを作成する
-Scriptから作る場合は、AssetBundleに限らずzipとかを作るコードも扱える。
+入力されたAssetから、AssetBundleを作成することができます。
+出力されるAssetは、作成されたAssetBundleのみになります。接続できるのはBundleBuilderのみです。
+
+２通りの作成方法があります。
+
+* GUIで作成したものにAssetBundleの名前のテンプレートを入力する
+* ScriptをD&Dする
+
+ScriptはAssetGraph.PrefabricatorBaseクラスを拡張し、public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate)メソッドをオーバーライドしている必要があります。
+
+☆サンプルスクリプト https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaBundle.cs
+
 
 ##BundleBuilder
 ☆すべてのAssetBundleを一気に作成する
