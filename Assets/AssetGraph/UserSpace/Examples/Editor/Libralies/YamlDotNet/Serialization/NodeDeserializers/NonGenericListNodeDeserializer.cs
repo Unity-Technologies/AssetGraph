@@ -21,10 +21,10 @@
 
 using System;
 using System.Collections;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Serialization.NodeDeserializers
+namespace AssetGraph.YamlDotNet.Serialization.NodeDeserializers
 {
 	public sealed class NonGenericListNodeDeserializer : INodeDeserializer
 	{

@@ -20,9 +20,9 @@
 // THE SOFTWARE.
 
 using System;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	public interface INodeTypeResolver
 	{

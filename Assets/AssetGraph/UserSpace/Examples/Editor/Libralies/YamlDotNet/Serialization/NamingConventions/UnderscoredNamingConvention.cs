@@ -19,9 +19,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-using YamlDotNet.Serialization.Utilities;
+using AssetGraph.YamlDotNet.Serialization.Utilities;
 
-namespace YamlDotNet.Serialization.NamingConventions
+namespace AssetGraph.YamlDotNet.Serialization.NamingConventions
 {
 	/// <summary>
 	/// Convert the string from camelcase (thisIsATest) to a underscored (this_is_a_test) string

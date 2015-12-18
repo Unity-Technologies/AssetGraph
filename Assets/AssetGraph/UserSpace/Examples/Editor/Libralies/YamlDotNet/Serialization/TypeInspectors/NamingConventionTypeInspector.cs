@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace YamlDotNet.Serialization.TypeInspectors
+namespace AssetGraph.YamlDotNet.Serialization.TypeInspectors
 {
 	/// <summary>
 	/// Wraps another <see cref="ITypeInspector"/> and applies a

@@ -21,11 +21,11 @@
 
 using System;
 using System.Collections.Generic;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
-using YamlDotNet.Serialization.Utilities;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Serialization.Utilities;
 
-namespace YamlDotNet.Serialization.ValueDeserializers
+namespace AssetGraph.YamlDotNet.Serialization.ValueDeserializers
 {
 	public sealed class AliasValueDeserializer : IValueDeserializer
 	{

@@ -3,8 +3,8 @@ using UnityEditor;
 
 using System.IO;
 using System.Collections.Generic;
-using YamlDotNet.Serialization.NamingConventions;
-using YamlDotNet.Serialization;
+using AssetGraph.YamlDotNet.Serialization.NamingConventions;
+using AssetGraph.YamlDotNet.Serialization;
 using System;
 
 using MiniJSONForAssetGraph;
@@ -23,7 +23,7 @@ using MiniJSONForAssetGraph;
 // 		var bundleInfos = new List<Dictionary<string, object>>();
 
 // 		// get exported .manifest files from "Exporter" node.
-// 		string targetNodeName = "Exporter";
+// 		string targetNodeName = "Exporter0";
 // 		foreach (var groupKey in throughputs[targetNodeName].Keys) {
 // 			foreach (var result in throughputs[targetNodeName][groupKey]) {
 // 				// ignore SOMETHING.ASSET

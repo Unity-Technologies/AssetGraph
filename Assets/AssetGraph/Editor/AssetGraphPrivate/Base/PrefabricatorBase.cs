@@ -36,10 +36,6 @@ namespace AssetGraph {
 		}
 
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			// foreach (var a in alreadyCached) Debug.LogError("a:" + a);
-			// ここでキャッシュをどう扱うか、って感じか。
-			// 新規で作り出されたもの、っていうのと、キャッシュされたもの、っていうのを集計して、それ以外だったら消す！っていう。
-
 			var usedCache = new List<string>();
 			
 			var invalids = new List<string>();

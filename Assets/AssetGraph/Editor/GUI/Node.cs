@@ -340,53 +340,33 @@ namespace AssetGraph {
 						{
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var nodeId = node.nodeId;
-								var noFilesFound = false;
-								var tooManyFilesFound = false;
-
 								var currentImporterPackage = node.currentPackage;
 								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
 								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
-								Debug.LogError("このへんの基準、Validate関数で一貫化できそう");
-								if (Directory.Exists(samplingPath)) {
-									var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath)
-										.Where(path => !GraphStackController.IsMetaFile(path))
-										.ToList();
-									switch (samplingFiles.Count) {
-										case 0: {
-											noFilesFound = true;
-											break;
+								IntegratedGUIImporter.ValidateImportSample(samplingPath,
+									(string noFolderFound) => {
+										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
+									},
+									(string noFilesFound) => {
+										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
+									},
+									(string samplingAssetPath) => {
+										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
+										if (GUILayout.Button("Modify Import Setting")) {
+											var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
+											Selection.activeObject = obj;
 										}
-										case 1: {
-											var samplingAssetPath = samplingFiles[0];
-											EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-											if (GUILayout.Button("Modify Import Setting")) {
-												var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
-												Selection.activeObject = obj;
-											}
-											if (GUILayout.Button("Reset Import Setting")) {
-												// delete all import setting files.
-												FileController.RemakeDirectory(samplingPath);
-												node.Save();
-											}
-											break;
+										if (GUILayout.Button("Reset Import Setting")) {
+											// delete all import setting files.
+											FileController.RemakeDirectory(samplingPath);
+											node.Save();
 										}
-										default: {
-											tooManyFilesFound = true;
-											break;
-										}
+									},
+									(string tooManyFilesFoundMessage) => {
+										EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
 									}
-								} else {
-									noFilesFound = true;
-								}
-
-								if (noFilesFound) {
-									EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
-								}
-
-								if (tooManyFilesFound) {
-									EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
-								}
+								);
 							}
 						}
 

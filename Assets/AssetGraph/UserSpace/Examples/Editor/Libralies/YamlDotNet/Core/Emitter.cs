@@ -25,12 +25,12 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using YamlDotNet.Core.Events;
-using ParsingEvent = YamlDotNet.Core.Events.ParsingEvent;
-using TagDirective = YamlDotNet.Core.Tokens.TagDirective;
-using VersionDirective = YamlDotNet.Core.Tokens.VersionDirective;
+using AssetGraph.YamlDotNet.Core.Events;
+using ParsingEvent = AssetGraph.YamlDotNet.Core.Events.ParsingEvent;
+using TagDirective = AssetGraph.YamlDotNet.Core.Tokens.TagDirective;
+using VersionDirective = AssetGraph.YamlDotNet.Core.Tokens.VersionDirective;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Emits YAML streams.
@@ -41,8 +41,7 @@ namespace YamlDotNet.Core
 		private const int MaxBestIndent = 9;
 		private const int MaxAliasLength = 128;
 
-		private static readonly Regex uriReplacer = new Regex(@"[^0-9A-Za-z_\-;?@=$~\\\)\]/:&+,\.\*\(\[!]",
-			StandardRegexOptions.Compiled | RegexOptions.Singleline);
+		private static readonly Regex uriReplacer = new Regex(@"[^0-9A-Za-z_\-;?@=$~\\\)\]/:&+,\.\*\(\[!]", StandardRegexOptions.Compiled | RegexOptions.Singleline);
 
 		private readonly TextWriter output;
 

@@ -24,9 +24,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using YamlDotNet.Core.Tokens;
+using AssetGraph.YamlDotNet.Core.Tokens;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Converts a sequence of characters into a sequence of YAML tokens.

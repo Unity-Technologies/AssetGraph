@@ -29,7 +29,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace YamlDotNet.Serialization.Utilities
+namespace AssetGraph.YamlDotNet.Serialization.Utilities
 {
 	/// <summary>
 	/// Performs type conversions using every standard provided by the .NET library.

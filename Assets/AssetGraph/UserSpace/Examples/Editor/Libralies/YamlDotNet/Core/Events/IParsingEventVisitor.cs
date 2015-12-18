@@ -20,7 +20,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-namespace YamlDotNet.Core.Events
+namespace AssetGraph.YamlDotNet.Core.Events
 {
 	/// <summary>
 	/// Callback interface for external event Visitor.

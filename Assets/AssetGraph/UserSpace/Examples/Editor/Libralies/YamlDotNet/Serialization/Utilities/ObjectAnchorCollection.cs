@@ -21,9 +21,9 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization.Utilities
+namespace AssetGraph.YamlDotNet.Serialization.Utilities
 {
 	internal sealed class ObjectAnchorCollection
 	{

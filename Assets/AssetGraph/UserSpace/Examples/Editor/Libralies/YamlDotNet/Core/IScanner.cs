@@ -20,9 +20,9 @@
 //  SOFTWARE.
 
 using System.Collections.Generic;
-using YamlDotNet.Core.Tokens;
+using AssetGraph.YamlDotNet.Core.Tokens;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Defines the interface for a stand-alone YAML scanner that

@@ -20,9 +20,9 @@
 //  SOFTWARE.
 
 using System;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization.ObjectGraphVisitors
+namespace AssetGraph.YamlDotNet.Serialization.ObjectGraphVisitors
 {
 	public sealed class EmittingObjectGraphVisitor : IObjectGraphVisitor
 	{

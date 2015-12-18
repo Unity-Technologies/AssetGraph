@@ -22,7 +22,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Implements an indexer through an IEnumerator&lt;T&gt;.

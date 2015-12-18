@@ -22,7 +22,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	/// <summary>
 	/// Provides access to the properties of a type.

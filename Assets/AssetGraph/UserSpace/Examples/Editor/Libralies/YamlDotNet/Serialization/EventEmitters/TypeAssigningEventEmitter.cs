@@ -21,9 +21,9 @@
 
 using System;
 using System.Globalization;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization.EventEmitters
+namespace AssetGraph.YamlDotNet.Serialization.EventEmitters
 {
 	public sealed class TypeAssigningEventEmitter : ChainedEventEmitter
 	{

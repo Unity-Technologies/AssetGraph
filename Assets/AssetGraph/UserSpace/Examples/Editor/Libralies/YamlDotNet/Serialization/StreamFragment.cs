@@ -22,10 +22,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	/// <summary>
 	/// An object that contains part of a YAML stream.

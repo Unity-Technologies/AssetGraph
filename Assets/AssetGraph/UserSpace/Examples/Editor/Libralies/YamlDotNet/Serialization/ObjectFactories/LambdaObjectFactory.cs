@@ -21,7 +21,7 @@
 
 using System;
 
-namespace YamlDotNet.Serialization.ObjectFactories
+namespace AssetGraph.YamlDotNet.Serialization.ObjectFactories
 {
 	/// <summary>
 	/// Creates objects using a Func{Type,object}"/>.

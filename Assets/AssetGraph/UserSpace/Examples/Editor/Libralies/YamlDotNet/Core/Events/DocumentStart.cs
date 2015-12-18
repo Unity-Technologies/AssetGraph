@@ -20,9 +20,9 @@
 //  SOFTWARE.
 
 using System.Globalization;
-using YamlDotNet.Core.Tokens;
+using AssetGraph.YamlDotNet.Core.Tokens;
 
-namespace YamlDotNet.Core.Events
+namespace AssetGraph.YamlDotNet.Core.Events
 {
 	/// <summary>
 	/// Represents a document start event.

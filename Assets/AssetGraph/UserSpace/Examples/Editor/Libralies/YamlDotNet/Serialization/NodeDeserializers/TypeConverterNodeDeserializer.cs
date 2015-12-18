@@ -22,9 +22,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Core;
 
-namespace YamlDotNet.Serialization.NodeDeserializers
+namespace AssetGraph.YamlDotNet.Serialization.NodeDeserializers
 {
 	public sealed class TypeConverterNodeDeserializer : INodeDeserializer
 	{

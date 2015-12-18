@@ -19,9 +19,9 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-﻿using YamlDotNet.Core.Events;
+﻿using AssetGraph.YamlDotNet.Core.Events;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Represents a YAML stream emitter.

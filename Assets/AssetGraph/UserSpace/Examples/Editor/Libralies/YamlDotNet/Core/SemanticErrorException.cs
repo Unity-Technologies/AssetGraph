@@ -22,7 +22,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace YamlDotNet.Core
+namespace AssetGraph.YamlDotNet.Core
 {
 	/// <summary>
 	/// Exception that is thrown when a semantic error is detected on a YAML stream.

@@ -21,7 +21,7 @@
 
 using System;
 
-namespace YamlDotNet.Core.Tokens
+namespace AssetGraph.YamlDotNet.Core.Tokens
 {
 	/// <summary>
 	/// Represents an anchor token.

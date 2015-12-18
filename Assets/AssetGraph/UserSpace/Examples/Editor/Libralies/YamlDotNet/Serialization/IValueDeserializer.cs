@@ -20,10 +20,10 @@
 // THE SOFTWARE.
 
 using System;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization.Utilities;
+using AssetGraph.YamlDotNet.Core;
+using AssetGraph.YamlDotNet.Serialization.Utilities;
 
-namespace YamlDotNet.Serialization
+namespace AssetGraph.YamlDotNet.Serialization
 {
 	public interface IValueDeserializer
 	{
