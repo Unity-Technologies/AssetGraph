@@ -15,9 +15,14 @@ namespace AssetGraph {
 		/*
 			menu items
 		*/
-		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_OPEN)]
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
 			GetWindow<AssetGraph>();
+		}
+
+		[MenuItem(AssetGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
+		public static void Build () {
+			Debug.LogError("buildのコマンドラインルート、いろいろ引数を分解しなきゃな。");
 		}
 
 		public enum ScriptType : int {

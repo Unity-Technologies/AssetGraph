@@ -10,6 +10,7 @@ namespace AssetGraph {
 		public const bool IGNORE_META = true;
 
 		public const string GUI_TEXT_MENU_OPEN = "Window/AssetGraph/Open...";
+		public const string GUI_TEXT_MENU_BUILD = "Window/AssetGraph/Build Active Platform And Package";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetGraph/Generate Script For Node";
 		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
 		public const string GUI_TEXT_MENU_GENERATE_BUNDLIZER = GUI_TEXT_MENU_GENERATE + "/Bundlizer Script";
