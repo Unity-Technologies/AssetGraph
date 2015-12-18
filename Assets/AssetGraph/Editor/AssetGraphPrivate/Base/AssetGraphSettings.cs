@@ -9,12 +9,12 @@ namespace AssetGraph {
 		*/
 		public const bool IGNORE_META = true;
 
-		public const string GUI_TEXT_MENU_OPEN = "AssetGraph/Open...";
-		public const string GUI_TEXT_MENU_GENERATE = "AssetGraph/Generate Script For Node";
+		public const string GUI_TEXT_MENU_OPEN = "Window/AssetGraph/Open...";
+		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetGraph/Generate Script For Node";
 		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
 		public const string GUI_TEXT_MENU_GENERATE_BUNDLIZER = GUI_TEXT_MENU_GENERATE + "/Bundlizer Script";
 		public const string GUI_TEXT_MENU_GENERATE_FINALLY = GUI_TEXT_MENU_GENERATE + "/Finally Script";
-		public const string GUI_TEXT_MENU_DELETE_CACHE = "AssetGraph/Clear Cache";
+		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetGraph/Clear Cache";
 		
 		public const string ASSETGRAPH_DATA_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
