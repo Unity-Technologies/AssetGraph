@@ -2164,16 +2164,5 @@ namespace AssetGraph {
 				connections.RemoveAt(deletedConnectionIndex);
 			}
 		}
-
-
-		public static Dictionary<string, List<string>> LoadImporterRecord (string nodeId) {
-			var importerRecord = new Dictionary<string, List<string>>();
-			Debug.LogWarning("LoadImporterRecord nodeId:" + nodeId);
-			return importerRecord;
-		}
-
-		public static void UpdateImporterRecord (string nodeId, Dictionary<string, List<string>> generatedRecord) {
-			Debug.LogWarning("UpdateImporterRecord nodeId:" + nodeId);
-		}
 	}
 }

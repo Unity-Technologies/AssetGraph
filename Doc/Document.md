@@ -7,6 +7,7 @@ document version 0.8.0
 * Node tips
 * HookPoint tips
 * Package tips
+* Meta tips
 
 
 #はじめに
@@ -227,10 +228,10 @@ pacakgeを使えば、「HD向けにはこのサイズの素材」「それ以�
 ImporterやBundlizerにも同様に「特にこのpackageだったら」というような、特別なケースの処理を行うことができます。
 
 ##variantsとの違い
-variantsは、差異のあるAssetを同じGUIDで生成しますが、packageでは、「packageが違うものはすべて別のAsset」として出力します。
+variantsでは差異のあるAssetを同じGUIDで生成しますが、packageでは、「packageが違うものはすべて別のAsset」として出力します。
 出力されるAssetBundleの拡張子は、必ずBUNDLE_NAME.PLATFORM.PACKAGE となります。
 
-名前が異なることからも分かる通り、packageが異なるAssetBundleの間に、共通性はありません。
+名前が異なることからも分かる通り、packageが異なるAssetBundleの間に、crcなどの共通性はありません。
 
 ##pacakgeで作ったAssetBundleを使う
 使用方法としてはvariantsと違いはなく、次のような手順になります。
@@ -242,3 +243,10 @@ variantsは、差異のあるAssetを同じGUIDで生成しますが、package�
 variantsと異なる点としては、packageが異なるAssetBundleはcrcなども全て異なるため、HD用の端末はHD用のAssetBundleのcrc情報などを特に指定して取得する必要があります。
 
 
+#Meta tips
+☆AssetGraphでは.metaファイルも扱える。
+
+ExporterでprefabとかをExportすると、.metaファイルも吐き出される。
+.metaファイルをAssetGraph内でも使用したい場合、IGNORE_META = falseにするといい。
+
+今後は、他のプロジェクトで作成したAssetを.metaファイルと一緒にLoaderで読み込むと、Impoter通ってなくても設定が反映される、、みたいなのもあるといいな〜と思う。Future。

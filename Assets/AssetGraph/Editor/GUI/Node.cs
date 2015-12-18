@@ -347,7 +347,7 @@ namespace AssetGraph {
 								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
 								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
-
+								Debug.LogError("このへんの基準、Validate関数で一貫化できそう");
 								if (Directory.Exists(samplingPath)) {
 									var samplingFiles = FileController.FilePathsInFolderOnly1Level(samplingPath)
 										.Where(path => !GraphStackController.IsMetaFile(path))

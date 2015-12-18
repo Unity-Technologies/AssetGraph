@@ -36,6 +36,10 @@ namespace AssetGraph {
 		}
 
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			// foreach (var a in alreadyCached) Debug.LogError("a:" + a);
+			// ここでキャッシュをどう扱うか、って感じか。
+			// 新規で作り出されたもの、っていうのと、キャッシュされたもの、っていうのを集計して、それ以外だったら消す！っていう。
+
 			var usedCache = new List<string>();
 			
 			var invalids = new List<string>();
@@ -54,7 +58,8 @@ namespace AssetGraph {
 			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
-			
+			var cachedOrGenerated = new List<string>();
+
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 
@@ -75,7 +80,6 @@ namespace AssetGraph {
 
 				// collect generated prefab path.
 				var generated = new List<string>();
-
 				var outputSources = new List<InternalAssetData>();
 
 				Func<GameObject, string, bool, string> Prefabricate = (GameObject baseObject, string prefabName, bool forceGenerate) => {
@@ -92,10 +96,12 @@ namespace AssetGraph {
 						AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 						AssetDatabase.SaveAssets();
 						generated.Add(newPrefabOutputPath);
+						cachedOrGenerated.Add(newPrefabOutputPath);
 						Debug.Log("AssetGraph prefab:" + newPrefabOutputPath + " is newly generated.");
 					} else {
 						// cached.
 						usedCache.Add(newPrefabOutputPath);
+						cachedOrGenerated.Add(newPrefabOutputPath);
 						Debug.Log("AssetGraph prefab:" + newPrefabOutputPath + " is already cached. if want to regenerate forcely, set Prefabricate(baseObject, prefabName, true) <- forcely regenerate prefab.");
 					}
 
@@ -123,8 +129,6 @@ namespace AssetGraph {
 					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
 				}
 				
-
-				// generate next output.
 
 				/*
 					add assets in this node to next output.
@@ -170,9 +174,19 @@ namespace AssetGraph {
 					outputSources.Add(inheritedInternalAssetData);
 				}
 
-
 				outputDict[groupKey] = outputSources;
 			}
+
+			// delete unused cached prefabs.
+			var unusedCachePaths = alreadyCached.Except(cachedOrGenerated).Where(path => !GraphStackController.IsMetaFile(path)).ToList();
+			foreach (var unusedCachePath in unusedCachePaths) {
+				// unbundlize unused prefabricated cached asset.
+				var assetImporter = AssetImporter.GetAtPath(unusedCachePath);
+  				assetImporter.assetBundleName = string.Empty;
+
+				FileController.DeleteFileThenDeleteFolderIfEmpty(unusedCachePath);
+			}
+
 
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
