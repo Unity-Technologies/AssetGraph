@@ -63,7 +63,6 @@ importしたい素材をAssetGraphのプロジェクトフォルダに置き、�
 たとえばゲームのキャラクターが複数いて、それらがテクスチャ + モデルで構成されている時、
 複数の素材を、キャラ1の素材の集まり(テクスチャ + モデル)、 キャラ2の素材の集まり(テクスチャ + モデル)　などのようにグループ分けして扱いたい時があります。
 
-具体的には、Prefabを作る際やAssetBundleをつくる際などです。
 Groupingノードを通すと、複数の素材を、複数のグループとして扱うことができます。
 
 GroupingノードのInspectorで、group Key に「グループ分けに使用するキーワード」を指定すると、
@@ -132,8 +131,9 @@ List<AssetGraph.AssetInfo> **source**にはそれぞれのグループに含ま�
 ##適当なグループ単位でAssetBundleにする
 ☆
 groupingされた単位ごとにAssetBundleができる
-bundleNameTemplateに*が含まれていると、グループごとにAssetBundleが作成される。
-名前は、米にグループ名が入ったものになる。
+bundleNameTemplateに\*が含まれていると、グループごとにAssetBundleが作成される。
+作成されるAssetBundle名は、\*にグループ名が入ったものになる。
+含まれていない場合、指定したAssetBundle名のAssetBundleが出来上がる。
 
 
 ##コマンドラインから実行する
