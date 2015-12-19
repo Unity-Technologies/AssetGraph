@@ -1538,7 +1538,7 @@ namespace AssetGraph {
 				
 				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
 					var importerPackages = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_DEFAULT_NAME + AssetGraphSettings.package_SEPARATOR + AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE, string.Empty}
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
 					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
