@@ -71,7 +71,7 @@ using MiniJSONForAssetGraph;
 // 			{"bundle_name", bundle_name},
 // 			{"version", 0},
 // 			{"size", new FileInfo(bundlePath).Length},
-// 			{"crc", crcAndAssetsData.crc},
+// 			{"crc", crcAndAssetsData.CRC},
 // 			{"resource_names", crcAndAssetsData.assets}
 // 		};
 		
@@ -79,7 +79,7 @@ using MiniJSONForAssetGraph;
 // 	}
 
 // 	public class CrcAndAssetsData {
-// 		public long crc { get; set; }
+// 		public long CRC { get; set; }
 // 		public List<string> assets { get; set; }
 // 	}
 // }
