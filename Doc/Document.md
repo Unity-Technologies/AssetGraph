@@ -164,7 +164,7 @@ packageを指定する場合は、プラットフォームのあとにpackage名
 ```
 
 サンプルのshellScriptはこちら。
-[SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
+[build.sh](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/build.sh)
 
 ##Importしたファイルや、作成したPrefab、AssetBundleをAssets/外に吐き出したい
 ☆Exporterの例
@@ -324,7 +324,7 @@ pacakgeを使えば、「HD向けにはこのサイズの素材」「それ以�
 ImporterやBundlizerにも同様に「特にこのpackageだったら」というような、特別なケースの処理を行うことができます。
 
 ##variantsとの違い
-variantsでは差異のあるAssetを同じGUIDで生成しますが、packageでは、「packageが違うものはすべて別のAsset」として出力します。
+variantsでは差異のあるAssetを同じGUIDで生成しますが、packageでは、「packageが違うものはすべて別のAsset」として別のフォルダへと出力します。
 出力されるAssetBundleの拡張子は、必ずBUNDLE_NAME.PLATFORM.PACKAGE となります。
 
 名前が異なることからも分かる通り、packageが異なるAssetBundleの間に、crcなどの共通性はありません。
