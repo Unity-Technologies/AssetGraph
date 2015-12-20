@@ -54,38 +54,40 @@ namespace AssetGraph {
 			var argumentStartIndex = argumentSources.FindIndex(arg => arg == "AssetGraph.AssetGraph.Build") + 1;
 			var currentParams = argumentSources.GetRange(argumentStartIndex, argumentSources.Count - argumentStartIndex).ToList();
 
-			/*
-				change platform for execute.
-			*/
-			switch (currentParams[0]) {
-				case "Web": 
-				case "Standalone": 
-				case "iOS": 
-				case "Android": 
-				case "BlackBerry": 
-				case "Tizen": 
-				case "XBox360": 
-				case "XboxOne": 
-				case "PS3": 
-				case "PSP2": 
-				case "PS4": 
-				case "StandaloneGLESEmu": 
-				case "Metro": 
-				case "WP8": 
-				case "WebGL": 
-				case "SamsungTV": {
-					// valid platform.
-					EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetFromString(currentParams[0]));
-					break;
-				}
-				default: {
-					throw new Exception("AssetGraph error:" + currentParams[0] + " is not valid platform. by default.");
+			if (0 < currentParams.Count) {
+				/*
+					change platform for execute.
+				*/
+				switch (currentParams[0]) {
+					case "Web": 
+					case "Standalone": 
+					case "iOS": 
+					case "Android": 
+					case "BlackBerry": 
+					case "Tizen": 
+					case "XBox360": 
+					case "XboxOne": 
+					case "PS3": 
+					case "PSP2": 
+					case "PS4": 
+					case "StandaloneGLESEmu": 
+					case "Metro": 
+					case "WP8": 
+					case "WebGL": 
+					case "SamsungTV": {
+						// valid platform.
+						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetFromString(currentParams[0]));
+						break;
+					}
+					default: {
+						throw new Exception("AssetGraph error:" + currentParams[0] + " is not valid platform. by default.");
+					}
 				}
 			}
 
 			var packageStr = string.Empty;
 			if (1 < currentParams.Count) packageStr = currentParams[1];
-			
+
 			Run(packageStr);
 		}
 

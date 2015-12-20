@@ -27,17 +27,18 @@ AssetGraphを使うと、面倒な処理を効率良く自動化できます。
 
 **desumasu調に統一する**
 
-**英語化版も作る**
+**英語化版化**
 
 #逆引きAssetGraph(how to)
 
 
-##複数の素材から一つのAssetBundleを作成する
-☆
-loader -> importして
-Bundlizerを使う。
-bundleNameTemplateにbundle名をセット
-*マークは、複数のグループをそれぞれAssetBundleにするときに便利。
+##複数の素材を一つのAssetBundleにする
+1. Loaderで素材の入ったフォルダを指定
+2. Importerで素材をimport
+3. Bundlizerで素材のBundle化
+4. BundleBuilderでAssetBundleの作成
+5. ExporterでAssetBundleの吐き出し
+☆画像？
 
 
 ##大量の素材をAssetBundleにしたい
@@ -137,8 +138,33 @@ bundleNameTemplateに\*が含まれていると、グループごとにAssetBund
 
 
 ##コマンドラインから実行する
-☆コマンドラインから、platformとpackageを指定して実行する例
+AssetGraphはコマンドラインから実行することができる。
+UnityEditorにセットされているプラットフォームを使う場合、次のようなshellScript/batchで実行するといい。
 
+```shellscript
+/Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
+	-projectPath $(pwd)\
+	-executeMethod AssetGraph.AssetGraph.Build
+```
+
+また、次のようなshellScript/batchで、プラットフォームを指定してAssetGraphを実行することができる。
+
+```shellscript
+/Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
+	-projectPath $(pwd)\
+	-executeMethod AssetGraph.AssetGraph.Build iOS
+```
+
+packageを指定する場合は、プラットフォームのあとにpackage名を指定することで実行できる。
+
+```shellscript
+/Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
+	-projectPath $(pwd)\
+	-executeMethod AssetGraph.AssetGraph.Build iOS newPackage
+```
+
+サンプルのshellScriptはこちら。
+[SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
 
 ##Importしたファイルや、作成したPrefab、AssetBundleをAssets/外に吐き出したい
 ☆Exporterの例
