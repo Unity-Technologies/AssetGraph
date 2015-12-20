@@ -216,7 +216,7 @@ namespace AssetGraph {
 			}
 			return false;
 		}
-
+		
 		public void SetActive () {
 			Selection.activeObject = conInsp;
 			connectionButtonStyle = "sv_label_1";
