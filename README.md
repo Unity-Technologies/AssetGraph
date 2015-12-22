@@ -2,7 +2,6 @@
 
 AssetGraph is a visual toolset lets you configure and create Unity's AssetBundles. It is intended to create rule-based configuration in visual form to create and manage efficient workflow around AssetBundle generation. 
 
-**this is still alpha version. under development.**
 
 ##Usage
 ###1.Add Nodes
@@ -30,7 +29,10 @@ Visual editor lets you build AssetBunldes in the way you want to while keeping e
 ##Why Rule Based?
 Because AssetGraph handles AssetBundle build pipeline by rules, programmers can safely build simple workflow with artists or game designers without making them worry about AssetBundle configuration. When they add new assets into project, AssetGraph automatically takes care of them and build necessary AssetBundles by your rule(s). 
 
-##Nodes
+
+
+
+##Nodes tips
 There are several types of nodes you can use to construct AssetBundle building pipeline.
 
 ###Loader
