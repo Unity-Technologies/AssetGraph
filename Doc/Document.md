@@ -496,18 +496,16 @@ LoaderのInspectorで+ボタンを押し、"HD"というpackageを作成しま�
 
 ![SS](/Doc/images/8_0.gif)
 
-Inspector上のpacakgeをHDに切り替え、Loaderのパス設定を切り替えると、Loaderから出てくる素材の数が変わっているのがわかるでしょう。
+Inspector上のpacakgeをHDに切り替え、Loaderのパス設定を切り替えると、Loaderから出てくる素材の数が変わっています。
+
+これで、packageにHDを設定し、通常のLoaderとは別のパスから素材を読み込むように設定できました。
 
 ![SS](/Doc/images/8_1.png)
 
 InspectorでpackageをHDに変更すると、AssetGraphウィンドウに表示されているpackageもHDに変わります。
-実行時には、このインターフェースでビルドするpackageを指定することができます。
+実行時に使用するpackageは、このインターフェースで指定することができます。
 
-このようにpackageを設定、指定すると、そのpackage設定を使ったビルドが行われるようになります。
-
-ノードごとにpackageに関連した設定を行うことができます。
-
-また、そのpackageの設定が存在しないノードは、デフォルトの設定を使って動作します。
+packageごとの設定は各ノードで設定できます。また、ビルド時に指定したpackageの設定が存在しないノードでは、デフォルトの設定を使って動作します。
 
 この例のように、既存のフローにpackageを追加することで、通常の解像度の端末のためのフローはそのまま、特にHD版の素材を作る場合はHD専用の画像を使ってAssetBundleを作る、ということが可能になっています。
 
