@@ -3,13 +3,14 @@ document version 0.8.0
 
 ##TOC
 * 使い方
+* AssetGraphが便利なワケ
 * 逆引きAssetGraph(how to)
-* Node tips
+* Nodeの詳細
 * HookPoint tips
 * Package tips
 
 
-##使い方
+#使い方
 AssetGraphはUnityのAssetBundleとかを作るためのGUIツールです。
 アセットへと設定や変更点を反映させるフローを作成し、AssetBundleの作成やその他のアセット生成/調整などあらゆる処理をだいたいコード無しで行うことができます。
 
@@ -24,7 +25,7 @@ Loaderは、AssetGraph内へとUnityプロジェクト内部のアセットを�
 ノードの左右両端にある丸い部分を、他のノードの丸い部分にドラッグ＆ドロップすると繋がります。
 
 繋ぐとどうなるか？ 左のLoaderノードから、右のFilterノードへと素材が流れるようになります。
-接続線の真ん中にある数字が流れる素材の個数です。数値が出ている部分を押すと、流れている素材一覧がInspectorに表示されます。便利ですね！
+接続線の真ん中にある数字が流れる素材の個数です。数値が出ている部分を押すと、流れている素材一覧がInspectorに表示されます。
 
 ![SS](/Doc/images/2.png)
 
@@ -33,7 +34,7 @@ Loaderは、AssetGraph内へとUnityプロジェクト内部のアセットを�
 ノードの種類ごとにいろいろな項目が設定できます。
 例えばFilterノードでは、流れる素材を名前ごとに複数の流れに分ける、といったことができます。Importerノードでは、アセットのインポート時のセッティングを自在にセットすることができます。
 
-ノードの設定を変更すると、その設定はノードを通過するすべてのアセットに自動的にセットされます。なんて簡単なんでしょう。
+ノードの設定を変更すると、その設定はノードを通過するすべてのアセットに自動的にセットされます。
 
 ![SS](/Doc/images/3.png)
 
@@ -46,22 +47,24 @@ BundlizeノードとBundleBuildノードがあれば、それらのノードに�
 ![SS](/Doc/images/5.png)    
 ![SS](/Doc/images/6.png)
 
-もちろんキャッシュが効くため、２度目以降は差分の時間しかかかりません。
+もちろんキャッシュが効くため、２度目以降は差分の素材を処理する時間しかかかりません。
 
-GUIでノードの設定を変更するだけで、どんな量でも、どんな面倒な処理でも、何度でも実行することができます。ね、簡単でしょう？
+GUIでノードの設定を変更するだけで、どんな量でも、どんな面倒な処理でも、何度でも実行することができます。
+
+ね、簡単でしょう？
 
 
 
 
-##AssetGraphが便利なワケ
-AssetGraphでは、グラフ上を流れるアセットに対して個別に設定をすることが驚くほど簡単にできます。
-これらの調整や設定はほどんどがコードを一切書かずに実現できるため、プログラマーの助けになるだけではなく、アーティストやゲームデザイナーにもグッとくるものになっているハズです。特にAssetBundle周りについて、一切コードを書かなくても作れるようになるワケです。よかったです。
+#AssetGraphが便利な理由
+AssetGraphでは、素材の調整や設定がコードを一切書かずに実現できるため、プログラマーの助けになるだけではなく、アーティストやゲームデザイナーにもグッとくるものになっているハズです。特にAssetBundle周りについて、一切コードを書かなくても作れるようになるというのは素晴らしいことです。
 
-また、ゲームを作っていく過程で素材が増えるのは避けられないことです。
-それらの素材を手で調整しないでも、AssetGraphで素材の調整を自動化してしまえば大丈夫。
-新規に追加された素材も、いままで通りのフローに乗って処理されるため、追加した同じような素材100個を一つずつ手で、、みたいな地獄とはサヨナラできます。
+ゲームを作っていく過程で素材が増えるのは避けられないことですが、それらの素材を手で調整しないでも、AssetGraphで素材の調整を自動化してしまえば大丈夫。
+新規に追加された素材も、いままで通りのフローに乗って処理されるため、余計な手間がいりません。追加した同じような素材100個を一つずつ手で、、みたいな地獄とはサヨナラできます。
 
-おまけにAssetGraphでは、AssetBundle以外にも、自分で作った圧縮、暗号化や、Prefab作成(コードが必須)、インポートしたものをアセットのままどこかに出す、というようなことまでできます。楽をしてください。
+おまけにAssetGraphでは、AssetBundle以外にも、自分で作った圧縮、暗号化や、Prefab作成(コードが必須)、インポートしたものをアセットのままどこかに出す、というようなことまでできるようになります。
+
+ぜひ、楽をしてください。
 
 
 #逆引きAssetGraph(how to)
@@ -76,7 +79,7 @@ AssetGraphでは、グラフ上を流れるアセットに対して個別に設�
 1. BundleBuilderでAssetBundleの設定、生成
 1. ExporterでAssetBundleの吐き出し
 
-☆画像
+![SS](/Doc/images/howto_0.gif)
 
 
 ##複数の素材を複数のAssetBundleにする
@@ -93,7 +96,7 @@ PrefabricatorやBundlizerは、PrefabやAssetBundleを作成する際に、グ�
 1. BundleBuilderでAssetBundleの設定、生成
 1. ExporterでAssetBundleの吐き出し
 
-☆画像
+![SS](/Doc/images/howto_1.gif)
 
 ポイントは3,4で、Groupingで複数の素材からグループを作成、BundlizerでそのグループごとにAssetBundleを作成しています。
 
@@ -104,7 +107,7 @@ PrefabricatorやBundlizerは、PrefabやAssetBundleを作成する際に、グ�
 1. Loaderで素材の入ったフォルダを指定
 1. Importerを繋いで、ImporterのインスペクタのModify Import Setting ボタンから、インポート設定をセットする
 
-☆画像
+![SS](/Doc/images/howto_2.gif)
 
 これだけで、Importerノードを通過した素材すべてにインポート設定をすることができます。
 
@@ -114,13 +117,16 @@ PrefabricatorやBundlizerは、PrefabやAssetBundleを作成する際に、グ�
 1. Filterで、素材名やパスから、素材を仕分け
 1. Importerを繋いで、ImporterのModify Import Setting ボタンから、インポート設定をセット
 
+![SS](/Doc/images/howto_3.gif)
 
 ##素材を複数のグループに分ける
 たとえばゲームのキャラクターが複数いて、それらがテクスチャ + モデルで構成されている時、
 
 Groupingノードを使うと、複数の素材を、キャラ1の素材の集まり(テクスチャ + モデル)、 キャラ2の素材の集まり(テクスチャ + モデル)　などのようにグループ分けすることができます。
 
-☆Groupingへのリンク
+![SS](/Doc/images/howto_4.gif)
+
+[Grouping](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#grouping)
 
 ##素材からPrefabを作成する
 AssetGraphでは、素材を読み込んでPrefabをつくることができます。
@@ -147,35 +153,26 @@ AssetGraph.PrefabricatorBase クラスを継承し、In メソッドを持つScr
 
 スクリプトを作成したら、その型名をAssetGraph内のPrefabricatorノードにセットすることで、ノードに流れてきたAssetが自動的にスクリプトを通過するようになります。
 
-☆画像
+![SS](/Doc/images/howto_5.gif)
+
 
 PrefabricatorノードにどんなAssetがどのようなグループ名、順番で入ってくるかは、PrefabricatorノードにつながっているConnectionから想定することができます。
 
-☆画像 
+![SS](/Doc/images/howto_6.png)
 
-この場合、groupKey "0"で、dummy.png, kiosk001.mat, sample.fbx の3つが順にsourceに入った状態でInメソッドが呼ばれます。
+この場合、groupKey "0"で、dummy.png, kiosk001.mat, sample.fbx の3つが順にsourceに入った状態で、Prefabricatorを拡張したInメソッドが呼ばれます。
+
+![SS](/Doc/images/howto_7.png)
 
 Prefabの作成にPrefabricateメソッドを使うと、キャッシュが効いて便利です。
 
 サンプルコードはこちら。
 [SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
 
-##適当なグループごとにPrefabを作成する
+
+##素材のグループからPrefabを作成する
 Groupingノードで複数のグループを作り出しPrefabricatorノードにつなぐと、複数のグルーピングされた素材をPrefab作成に使うことができます。
 複数のグループは、PrefabricatorBaseを拡張したスクリプトの中で、groupKeyの値として使用できます。
-
-次のような素材がPrefabricatorノードに来た場合、
-
-☆スクリーンショット 2015-12-19 2.16.53
-☆スクリーンショット 2015-12-19 2.17.03
-
-Prefabricatorのメソッド
-public override void In (string groupKey, List<AssetGraph.AssetInfo> source, ...)がグループの数だけ実行され、string **groupKey**に、0,1,2が入り、
-List<AssetGraph.AssetInfo> **source**にはそれぞれのグループに含まれる素材が入ります。
-
-サンプルコードはこちら。
-[SamplePrefabricator](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
-
 
 
 ##コマンドラインから実行する
@@ -214,24 +211,26 @@ Exporterノードでは、インポート済みのファイルやPrefab、AssetB
 ##ビルド実行後に処理をしたい
 AssetGraphでは、Finallyというフックポイントがビルド完了時に起動するFinallyという機構があります。
 
-☆Finallyへのリンク
+[Finally](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#hookpoint-finally-tips)
+
 
 ##作成したAssetBundleのcrcやサイズ情報を簡単に扱いたい
 Unity5から、AssetBundleの情報は.manifestファイルで吐き出されるようになりました。Finally機構を利用してその情報を読み取る方法を紹介します。
 
-☆Finally2へのリンク
+[Finally](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#assetbundleのmanifestからjsonでリストを作り出す)
 
 
 ##一つのプラットフォームの内で、多言語対応、特定端末向けなどの調整をしたい
 作っているゲームの対応端末のディスプレイサイズが多彩だったり、各国版を同じフローで出したい、といった場合がよくあります。そういった場合、AssetGraphではpackage設定を自分で作成することで対処することができます。
 
-☆packageへのリンク
+[package](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#package-tips)
 
 
 ##variantsを設定したい
 variantsそのものは扱いませんが、pacakgeを使って似たようなことがより簡単にできます。
 
-☆packageへのリンク
+[package](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#package-tips)
+
 
 
 ##キャッシュを消したい
@@ -246,13 +245,13 @@ Unity > Window > AssetGraph > Clear Cache
 AssetGraphのウインドウを開くとハングするようになってしまうなど、読み込もうとしたファイルによって具合が悪くなってしまった場合、Assets/AssetGraph/SettingFiles/AssetGraph.json ファイルを削除すると、グラフのデータを消すことができます。
 
 
-#Node tips
+#Nodeの詳細
 ##Loader
 - OUT: 指定したフォルダに含まれているすべての素材
 
 Loader pathに指定したフォルダに入っているAssetをすべて読み込む。
 
-☆画像
+![SS](/Doc/images/7_loader.png)
 
 loadPathはProjectフォルダのパスから下を指定することができる。
 ProjectフォルダにAssetGraph用の素材を置くフォルダを作成するのがオススメ。
@@ -266,7 +265,7 @@ Assets/パスを使って、すでにプロジェクト内で使っているAsse
 
 パスにkeywordを含む素材を、複数の出力に振り分けることができます。
 
-☆画像
+![SS](/Doc/images/7_filter.png)
 
 keywordは複数設定することができます。
 
@@ -278,7 +277,7 @@ keywordは複数設定することができます。
 一つ~複数のファイルをインポートします。
 Inspectorからインポート設定を調整することができます。
 
-☆画像
+![SS](/Doc/images/7_importer.png)
 
 Importerノードですでにインポート済みの素材を再度別のImpoterノードに通した場合、その素材は再度インポートされません。
 
@@ -293,9 +292,9 @@ Importerノードですでにインポート済みの素材を再度別のImpote
 
 キーワードを使って、素材を複数のグループに分けることができます。
 
-☆画像1
-☆画像2
-☆画像3
+![SS](/Doc/images/7_grouping_0.png)
+![SS](/Doc/images/7_grouping_1.png)
+![SS](/Doc/images/7_grouping_2.png)
 
 Inspectorで、group Key に「グループ分けに使用するキーワード」を指定すると、素材のパスから複数のグループが作られます。
 
@@ -313,7 +312,7 @@ group Key に /ID_\*/ とセットすると、"mainChara", "enemy"の2つのグ�
 入力されたAssetから、スクリプトを介してPrefabを作成することができます。
 出力されるAssetは、入力されたAssetと作成されたPrefabを合わせたものになります。
 
-☆画像
+![SS](/Doc/images/7_prefabricator.png)
 
 PrefabricatorBaseを拡張したスクリプトを書き、セットして使用します。
 残念ながら、スクリプト無しでこのノードを使用することはできません。
@@ -336,7 +335,9 @@ Prefabricatorノードには、２通りの作成方法があります。
 入力されたAssetから、AssetBundleを作成することができます。  
 生成されるAssetBundleの名前は、BundleNameTemplateパラメータで指定することができます。
 
-☆画像
+![SS](/Doc/images/7_bundlizer_0.png)
+![SS](/Doc/images/7_bundlizer_1.png)
+![SS](/Doc/images/7_bundlizer_2.png)
 
 この際、BundleNameTemplateに\*が含まれていると、そこにはグループIDが自動的にセットされます。
 
@@ -365,17 +366,19 @@ Bundlizerノードには、２通りの作成方法があります。
 - In: AssetBundleなどのグループ
 - Out: 実際に生成されたAssetBundleなどのグループ
 
-Bundlizer以外から接続することができません。
-コードなしのBundlizerでAssetBundleの作成をした場合、このノードでAssetBundleの設定を行うことができます。
+Bundlizerで設定したAssetBundleを実際に生成します。様々なオプションをセットすることができます。
 
-☆画像
+![SS](/Doc/images/7_bundlebuilder.png)
+
+Bundlizer以外から接続することができません。
+コードなしのBundlizerでAssetBundleの作成をした場合のみ、このノードでAssetBundleの設定を行うことができます。
 
 ##Exporter
 - In: インポート済み or AssetGraph内で作成したアセットのグループ
 
 指定したパスにファイルを出力することができます。
 
-☆画像
+![SS](/Doc/images/7_exporter.png)
 
 指定できるパスは、プロジェクトのフォルダ以下であれば自由に指定できます。
 ただし、指定したフォルダは実行前に作成しておかないといけません。
@@ -387,17 +390,17 @@ AssetGraphのビルド処理・リロード処理が終わったタイミング�
 ##FinallyBase クラスをextendsする
 FinallyBase クラスを拡張したコードは、ビルド処理・リロード処理が終わったタイミングで自動的に呼ばれます。
 
-public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) メソッドで、すべてのNode、すべてのグループの実行結果を受け取ることができます。
+public override void Run (Dictionary\<string, Dictionary\<string, List<string>>> throughputs, bool isBuild) メソッドで、すべてのNode、すべてのグループの実行結果を受け取ることができます。
 
-Dictionary<string, Dictionary<string, List<string>>> throughputs
+Dictionary\<string, Dictionary\<string, List\<string>>> throughputs
 NodeName, groupKey, AssetPath が格納されています。
 
 bool isBuild
 ビルド処理時はtrue、それ以外ではfalse
 
 
-##すべてのノードの生成物をUnityのログに出すサンプル
-Finallyのサンプルとして、ウィンドウ内にあるすべてのノードの生成物をログにだす、というものを作ってみましょう。
+##すべてのノードの生成物のパスをUnityのログに出すサンプル
+Finallyのサンプルとして、ウィンドウ内にあるすべてのノードの生成物のファイルパスをログにだす、というものを作ってみましょう。
 
 ```C#
 using UnityEngine;
@@ -473,7 +476,7 @@ Finallyに書くべきコード(抜粋)は下記のようなものになりま�
 
 Exporterノードの名前を指定することで、特にExporter0という名前のノードの結果だけに注目し、.manifestファイルからAssetBundleのデータを取り出しています。
 
-最終的にはそれらを List<Dictionary<string, object>> bundleInfos に入れ、Json形式のstringにしています。
+最終的にはそれらを List\<Dictionary\<string, object>> bundleInfos に入れ、Json形式のstringにしています。
 
 Jsonにすることで取り回しが楽になるケースなどで役にたつと思います。
 
@@ -481,34 +484,31 @@ Jsonにすることで取り回しが楽になるケースなどで役にたつ�
 
 
 #Package tips
-一つのプラットフォームの中に複数の解像度があって、それぞれに応じたサイズの素材を使ってBundleを作成したい、、そう思ったことはないですか。ありますよね。
+一つのプラットフォームの中に複数の解像度があって、それぞれに応じたサイズの素材を使ってAssetBundleを作成したい、、そう思ったことはないですか。ありますよね。
 
 Unityにはvariantsという機構があり、Assetごとに個別にInspectorから指定することで、「同じGUIDで別の内容を持ったAssetを作り出す」ということができます。
 AssetGraphでは、variantsとは少々異なったアプローチで、「同じプラットフォーム向けに、全く同じフローでちょっと違う素材を作り出す」ということができます。
 pacakgeを使えば、HD向けにはこのサイズの素材を使ってそれ以外にはこのサイズの素材を使う、といった複雑な調整を、一つのフローの中で行うことができます。
 
 ##HD用の素材を新たにつくる例
-Loader,Importer,Grouping,Bundlizer,BundleBuilder,ExporterノードのInspectorでpackageを追加、設定を変更すると、特定のpackageをセットしてビルドした場合はそのpackage用の設定が実行されます。
 
 例えば通常の解像度の端末のためのフローが既に作ってあるとして、HD解像度の端末に向けて素材を作成するため、"HD"というpackageを追加してみましょう。  
 LoaderのInspectorで+ボタンを押し、"HD"というpackageを作成します。
 
-☆画像0
+![SS](/Doc/images/8_0.png)
+![SS](/Doc/images/8_1.png)
+![SS](/Doc/images/8_2.png)
+![SS](/Doc/images/8_3.png)
+![SS](/Doc/images/8_4.png)
 
 Inspector上のpacakgeをHDに切り替え、Loaderのパス設定を切り替えてみます。
-
-☆画像１
-☆画像２
 
 AssetGraphウィンドウに表示されているpackageがHDに変わりました。
 この部分を選択することで、ビルドするpackageを指定することができます。
 
-☆画像3
-
 このようにpackageを設定、使用時に指定すると、そのpackage設定がある場合はその設定を使ったビルドが行われるようになります。
 
 通常の解像度の端末のためのフローはそのままで、特にHD版の素材を作る場合はHD専用の画像を使ってAssetBundleを作る、ということが可能になりました。
-
 
 
 ##variantsとの違い
@@ -516,6 +516,11 @@ variantsでは差異のあるAssetを同じGUIDで生成しますが、package�
 出力されるAssetBundleの拡張子は、必ずBUNDLE_NAME.PLATFORM.PACKAGE となります。
 
 名前が異なることからも分かる通り、packageが異なるAssetBundleの間に、crcなどの共通性はありません。
+
+##packageのメリット
+* ユーザー側で個別に「このAssetにはHDがあるのか」などをランタイムで細かくチェックしないで済む
+* package単位で別フォルダになるため、DLたとえばCDN上で管理する際に扱いが楽です。
+
 
 ##pacakgeで作ったAssetBundleを使う
 使用方法としてはvariantsと違いはなく、次のような手順になります。
@@ -526,5 +531,9 @@ variantsでは差異のあるAssetを同じGUIDで生成しますが、package�
 
 variantsと異なる点としては、packageが異なるAssetBundleはそれぞれ別に作成されているため、crcなども全て異なります。
 そのため、HD用の端末はHD用のAssetBundleのcrc情報などを特に指定して取得する必要があります。
+
+
+##多言語対応のサンプル
+☆To be continued..
 
 

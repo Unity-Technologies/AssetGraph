@@ -14,49 +14,49 @@ using MiniJSONForAssetGraph;
 
 	read exported assetBundles & show assetBundle data json.
 */
-public class SampleFinally2 : AssetGraph.FinallyBase {
-	// public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
+// public class SampleFinally2 : AssetGraph.FinallyBase {
+// 	public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
 		
-	// 	// run only build time.
-	// 	if (!isBuild) return;
+// 		// run only build time.
+// 		if (!isBuild) return;
 
-	// 	var bundleInfos = new List<Dictionary<string, object>>();
+// 		var bundleInfos = new List<Dictionary<string, object>>();
 
-	// 	// get exported .manifest files from "Exporter" node.
-	// 	string targetNodeName = "Exporter0";
-	// 	foreach (var groupKey in throughputs[targetNodeName].Keys) {
-	// 		foreach (var result in throughputs[targetNodeName][groupKey]) {
-	// 			// ignore SOMETHING.ASSET
-	// 			if (!result.EndsWith(".manifest")) continue;
+// 		// get exported .manifest files from "Exporter" node.
+// 		string targetNodeName = "Exporter0";
+// 		foreach (var groupKey in throughputs[targetNodeName].Keys) {
+// 			foreach (var result in throughputs[targetNodeName][groupKey]) {
+// 				// ignore SOMETHING.ASSET
+// 				if (!result.EndsWith(".manifest")) continue;
 
-	// 			// ignore PLATFORM.manifest file.
-	// 			if (result.EndsWith(EditorUserBuildSettings.activeBuildTarget.ToString() + ".manifest")) continue;
+// 				// ignore PLATFORM.manifest file.
+// 				if (result.EndsWith(EditorUserBuildSettings.activeBuildTarget.ToString() + ".manifest")) continue;
 
-	// 			// get bundle info from .manifest file.
-	// 			var bundleInfo = GetBundleInfo(result);
-	// 			bundleInfos.Add(bundleInfo);
-	// 		}
-	// 	}
+// 				// get bundle info from .manifest file.
+// 				var bundleInfo = GetBundleInfo(result);
+// 				bundleInfos.Add(bundleInfo);
+// 			}
+// 		}
 
-	// 	var bundleListJson = Json.Serialize(bundleInfos);
+// 		var bundleListJson = Json.Serialize(bundleInfos);
 
-	// 	Debug.Log(bundleListJson);
-	// }
+// 		Debug.Log(bundleListJson);
+// 	}
 
-	// /**
-	// 	get bundle information from BUNDLE.manifest.
-	// */
-	// private Dictionary<string, object> GetBundleInfo (string manifestPath) {
-	// 	var bundle_name = Path.GetFileNameWithoutExtension(manifestPath);
-	// 	var bundlePath = manifestPath.Replace(".manifest", string.Empty);
+// 	/**
+// 		get bundle information from BUNDLE.manifest.
+// 	*/
+// 	private Dictionary<string, object> GetBundleInfo (string manifestPath) {
+// 		var bundle_name = Path.GetFileNameWithoutExtension(manifestPath);
+// 		var bundlePath = manifestPath.Replace(".manifest", string.Empty);
 
-	// 	/*
-	// 		read SOMETHING.ASSETBUNDLE.manifest file then read manifest yaml data.
-	// 	*/
-	// 	var yamlStr = string.Empty;
-	// 	using (var sr = new StreamReader(manifestPath, true)) {
-	// 		yamlStr = sr.ReadToEnd();
-	// 	}
+// 		/*
+// 			read SOMETHING.ASSETBUNDLE.manifest file then read manifest yaml data.
+// 		*/
+// 		var yamlStr = string.Empty;
+// 		using (var sr = new StreamReader(manifestPath, true)) {
+// 			yamlStr = sr.ReadToEnd();
+// 		}
 
 	// 	// deserialize yaml.
 	// 	var input = new StringReader(yamlStr);
@@ -82,4 +82,4 @@ public class SampleFinally2 : AssetGraph.FinallyBase {
 	// 	public long CRC { get; set; }
 	// 	public List<string> assets { get; set; }
 	// }
-}
+// }
