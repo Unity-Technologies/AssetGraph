@@ -41,7 +41,7 @@ Loaderは、AssetGraph内へとUnityプロジェクト内部のアセットを�
 ###4.ビルドしよう
 AssetGraphウィンドウ内のBuildボタンを押すと、繋がっているノードに素材が流れ処理が行われます。
 
-BundlizeノードとBundleBuildノードがあれば、それらのノードに流れ込んだアセットがAssetBundleになります。
+BundlizerノードとBundleBuildノードがあれば、それらのノードに流れ込んだアセットがAssetBundleになります。
 
 ![SS](/Doc/images/4.png)  
 ![SS](/Doc/images/5.png)    
@@ -62,10 +62,9 @@ AssetGraphでは、素材の調整や設定がコードを一切書かずに実�
 ゲームを作っていく過程で素材が増えるのは避けられないことですが、それらの素材を手で調整しないでも、AssetGraphで素材の調整を自動化してしまえば大丈夫。
 新規に追加された素材も、いままで通りのフローに乗って処理されるため、余計な手間がいりません。追加した同じような素材100個を一つずつ手で、、みたいな地獄とはサヨナラできます。
 
-おまけにAssetGraphでは、AssetBundle以外にも、自分で作った圧縮、暗号化や、Prefab作成(コードが必須)、インポートしたものをアセットのままどこかに出す、というようなことまでできるようになります。
+おまけにAssetGraphでは、AssetBundle以外にも、自分で作った圧縮/暗号化、Prefab作成(コードが必須)、インポートしたものをアセットのままどこかに出す、というようなことまでできるようになります。
 
-ぜひ、楽をしてください。
-
+是非、楽をしてください。
 
 #逆引きAssetGraph(how to)
 
@@ -495,20 +494,20 @@ pacakgeを使えば、HD向けにはこのサイズの素材を使ってそれ�
 例えば通常の解像度の端末のためのフローが既に作ってあるとして、HD解像度の端末に向けて素材を作成するため、"HD"というpackageを追加してみましょう。  
 LoaderのInspectorで+ボタンを押し、"HD"というpackageを作成します。
 
-![SS](/Doc/images/8_0.png)
+![SS](/Doc/images/8_0.gif)
+
+Inspector上のpacakgeをHDに切り替え、Loaderのパス設定を切り替えると、Loaderから出てくる素材の数が変わっています。
+
+これで、packageにHDを設定し、通常のLoaderとは別のパスから素材を読み込むように設定できました。
+
 ![SS](/Doc/images/8_1.png)
-![SS](/Doc/images/8_2.png)
-![SS](/Doc/images/8_3.png)
-![SS](/Doc/images/8_4.png)
 
-Inspector上のpacakgeをHDに切り替え、Loaderのパス設定を切り替えてみます。
+InspectorでpackageをHDに変更すると、AssetGraphウィンドウに表示されているpackageもHDに変わります。
+実行時に使用するpackageは、このインターフェースで指定することができます。
 
-AssetGraphウィンドウに表示されているpackageがHDに変わりました。
-この部分を選択することで、ビルドするpackageを指定することができます。
+packageごとの設定は各ノードで設定できます。また、ビルド時に指定したpackageの設定が存在しないノードでは、デフォルトの設定を使って動作します。
 
-このようにpackageを設定、使用時に指定すると、そのpackage設定がある場合はその設定を使ったビルドが行われるようになります。
-
-通常の解像度の端末のためのフローはそのままで、特にHD版の素材を作る場合はHD専用の画像を使ってAssetBundleを作る、ということが可能になりました。
+この例のように、既存のフローにpackageを追加することで、通常の解像度の端末のためのフローはそのまま、特にHD版の素材を作る場合はHD専用の画像を使ってAssetBundleを作る、ということが可能になっています。
 
 
 ##variantsとの違い
