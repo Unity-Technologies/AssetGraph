@@ -58,28 +58,28 @@ using MiniJSONForAssetGraph;
 // 			yamlStr = sr.ReadToEnd();
 // 		}
 
-// 		// deserialize yaml.
-// 		var input = new StringReader(yamlStr);
-// 		var deserializer = new Deserializer(objectFactory: null, namingConvention: new PascalCaseNamingConvention(), ignoreUnmatched: true);
+	// 	// deserialize yaml.
+	// 	var input = new StringReader(yamlStr);
+	// 	var deserializer = new Deserializer(objectFactory: null, namingConvention: new PascalCaseNamingConvention(), ignoreUnmatched: true);
 
-// 		var crcAndAssetsData = deserializer.Deserialize<CrcAndAssetsData>(input);
+	// 	var crcAndAssetsData = deserializer.Deserialize<CrcAndAssetsData>(input);
 
-// 		/*
-// 			generate bundle info.
-// 		*/
-// 		var bundleInfoDict = new Dictionary<string, object> {
-// 			{"bundle_name", bundle_name},
-// 			{"version", 0},
-// 			{"size", new FileInfo(bundlePath).Length},
-// 			{"crc", crcAndAssetsData.CRC},
-// 			{"resource_names", crcAndAssetsData.assets}
-// 		};
+	// 	/*
+	// 		generate bundle info.
+	// 	*/
+	// 	var bundleInfoDict = new Dictionary<string, object> {
+	// 		{"bundle_name", bundle_name},
+	// 		{"version", 0},
+	// 		{"size", new FileInfo(bundlePath).Length},
+	// 		{"crc", crcAndAssetsData.CRC},
+	// 		{"resource_names", crcAndAssetsData.assets}
+	// 	};
 		
-// 		return bundleInfoDict;
-// 	}
+	// 	return bundleInfoDict;
+	// }
 
-// 	public class CrcAndAssetsData {
-// 		public long CRC { get; set; }
-// 		public List<string> assets { get; set; }
-// 	}
+	// public class CrcAndAssetsData {
+	// 	public long CRC { get; set; }
+	// 	public List<string> assets { get; set; }
+	// }
 // }
