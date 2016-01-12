@@ -47,7 +47,10 @@ namespace AssetGraph {
 			"Deterministic AssetBundle",
 			"Force Rebuild AssetBundle",
 			"Ignore TypeTree Changes",
-			"Append Hash To AssetBundle Name"
+			"Append Hash To AssetBundle Name",
+#if UNITY_5_3
+            "ChunkBased Compression"
+#endif
 		};
 
 		public const string package_SEPARATOR = "___";
