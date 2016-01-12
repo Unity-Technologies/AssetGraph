@@ -19,21 +19,21 @@ AssetGraph 창에서 마우스 오른쪽 클릭하여 노드를 추가합니다.
 ![SS](/Doc/images/1.png)
 
 ###2.노드의 연결
-2 개 이상의 노드를 만들면, 그들을 이어갑니다. 노드의 좌우 양쪽의 둥근 부분을 다른 노드의 둥근 부분에 드래그 앤 드롭하면 연결 됩니다.
+두 개 이상의 노드를 만들어서 이들을 연결해 나갑니다. 노드의 좌우 양쪽의 둥근 부분을 다른 노드의 둥근 부분에 드래그 앤 드롭하면 두 노드가 연결됩니다.
 
 연결하면 어떻게 될까요? 왼쪽 Loader 노드에서 오른쪽 Filter 노드로 에셋의 처리가 이루어 집니다. 연결선의 중간에 숫자는 에셋의 개수입니다. 수치가 나와있는 부분을 누르면 처리할 에셋들의 목록이 Inspector 뷰에 표시됩니다.
 
 ![SS](/Doc/images/2.png)
 
 ###3.노드 설정 변경
-노드를 왼쪽 클릭하면 Inspector 뷰에 노드 설정 정보가 표시 됩니다. 노드의 종류마다 다양한 항목을 설정할 수 있습니다. 예를 들면 Filter 노드는 흐르는 소재를 이름마다 여러 흐름으로 나눌, 같은 수 있습니다. Importer 노드에서는 자산을 가져올 때의 설정을 자유 자재로 정할 수 있습니다.
+노드를 왼쪽 클릭하면 Inspector 뷰에 노드 설정 정보가 표시 됩니다. 노드의 종류마다 노드에 따른 다양한 항목의 설정들이 나타납니다. 예를 들면 Filter 노드는 노드로 입력되는 에셋들의 이름에 따라 여러개의 출력 흐름으로 나눌 수 있습니다. Importer 노드에서는 에셋에 대한 '가져오기 설정'을 자유 자재로 변경할 수 있습니다.
 
-노드의 설정을 변경하면 해당 설정은 노드를 통과하는 모든 에셋들에 자동으로 설정됩니다.
+노드의 설정을 변경하면 해당 설정은 노드를 통과하는 모든 에셋들에 대해서 자동으로 설정됩니다.
 
 ![SS](/Doc/images/3.png)
 
 ###4.빌드
-AssetGraph 창에서 Build 버튼을 누르면 연결 되어있는 노드들 설정대로 에셋들을 처리합니다.
+AssetGraph 창에서 Build 버튼을 누르면 연결 되어있는 노드들의 설정대로 에셋들을 처리합니다.
 
 Bundlizer 노드와 BundleBuild 노드를 통해 에셋들은 AssetBundle로 만들어 지게 됩니다.
 
@@ -52,9 +52,9 @@ AssetGraph 창에서 노드의 설정을 변경만 하면 에셋들을 원하는
 
 AssetGraph는 에셋의 조정과 설정에 대한 코드를 작성하지 않고도 에셋 번들을 만들 수 있기 때문에 프로그래머의 도움 없이도 아티스트와 게임 디자이너가 손쉽게 에셋번들을 만들 수 있는 툴입니다. 특히 AssetBundle과 관련한 어떠한 코드도 작성하지 않고 에셋번들을 만들 수 있다는 점이 가장 큰 장점입니다.
 
-게임을 만들어가는 과정에서 에셋이 늘어나는 것은 피할 수 없는 일이지만, 그 에셋들을 손으로 조정하지 않아도, AssetGraph에서 에셋들의 조정을 자동화 해서 처리하기 때문에 빠르게 작업할 수 있습니다. 에셋들을 새로 추가하는 경우에도 설정된 노드의 정보로 처리되므로 에셋별로 번들과 관련한 작업이 필요가 없습니다. 에셋 100개가 새롭게 추가된 경우 이들 에셋 100 개에 대해서 하나씩 수동으로 번들을 지정하는 일과 같은 지옥과 작별 할 수 있다는 이야기입니다.
+게임을 만들어가는 과정에서 에셋이 늘어나는 것은 피할 수 없는 일이지만, 그 에셋들을 매번 일일이 직접 설정하지 않아도, AssetGraph에서 에셋들의 조정을 자동화 해서 처리하기 때문에 빠르게 작업할 수 있습니다. 에셋들을 새로 추가하는 경우에도 설정된 노드의 정보를 사용해서 처리하므로 에셋별로 번들과 관련한 작업을 따로 할 필요가 없습니다. 예를 들면 에셋 100개가 새롭게 추가된 경우 이들 에셋 100 개에 대해서 하나씩 수동으로 번들을 지정하는 일과 같은 지옥과 작별 할 수 있다는 이야기입니다.
 
-뿐만 아니라 AssetGraph에서 AssetBundle 이외에도 직접 만든 압축, 암호화, Prefab 만들기 (코드 작성 필요) 와 같은 다른 작업에 대한 처리도 가능합니다.
+뿐만 아니라 AssetGraph에서 AssetBundle 이외에도 직접 만든 압축, 암호화, Prefab 만들기 (코드 작성 필요)와 같은 다양한 처리도 가능합니다.
 
 
 #역방향 AssetGraph(how to)
@@ -64,10 +64,10 @@ AssetGraph는 에셋의 조정과 설정에 대한 코드를 작성하지 않고
 전혀 코드를 작성하지 않고 폴더에 들어있는 자료를 AssetGraph에 로드한 다음 AssetBundle로 만들 수 있습니다.
 
 1. Loader에서 에셋들이 있는 폴더를 지정
-1. Importer에서 에셋를을 가져 오기
-1. Bundlizer에서 소재의 AssetBundle화
-1. BundleBuilder에서 AssetBundle 설정을 생성
-1. Exporter에서 AssetBundle 내보내기
+1. Importer로 에셋를을 가져 오기
+1. Bundlizer로 에셋들을 AssetBundle로 만들기
+1. BundleBuilder로 AssetBundle 설정을 생성
+1. Exporter로 AssetBundle 내보내기
 
 ![SS](/Doc/images/howto_0.gif)
 
@@ -80,11 +80,11 @@ Prefabricator과 Bundlizer 노드를 이용하면 Prefab과 AssetBundle을 만�
 다음의 방법을 이용하면 그룹 단위로 AssetBundle을 만들 수 있습니다.
 
 1. Loader에서 에셋들이 있는 폴더를 지정
-1. Importer에서 에셋들을 가져 오기
-1. Grouping에서 에셋들을 그룹화
-1. Bundlizer으로 그룹화 된 에셋들을 AssetBundle화
-1. BundleBuilder에서 AssetBundle 설정을 생성
-1. Exporter에서 AssetBundle 내보내기
+1. Importer로 에셋들을 가져 오기
+1. Grouping로 에셋들을 그룹화
+1. Bundlizer로 그룹화 된 에셋들을 AssetBundle로 만들기
+1. BundleBuilder로 AssetBundle 설정을 생성
+1. Exporter로 AssetBundle 내보내기
 
 ![SS](/Doc/images/howto_1.gif)
 
@@ -117,7 +117,7 @@ Prefabricator과 Bundlizer 노드를 이용하면 Prefab과 AssetBundle을 만�
 [Grouping](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#grouping)
 
 ##에셋으로부터 Prefab 만들기
-AssetGraph에서 에셋을 읽어 들여 Prefab을 만들 수 있습니다. 그런데 이 처리를 위해서는 Asset을 지정하거나 인스턴스화 할 필요가 있기 때문에 C# 스크립트를 작성할 필요가 있습니다. 스크립트의 작성법은 다음과 같습니다.
+AssetGraph에서 에셋을 읽어 들여 Prefab을 만들 수 있습니다. 그런데 이 처리를 위해서는 Asset을 지정하거나 인스턴스화 할 필요가 있기 때문에 C# 스크립트의 작성이 필요합니다. 스크립트의 작성법은 다음과 같습니다.
 
 ```C#
 using UnityEngine;
@@ -134,7 +134,7 @@ public class MyPrefabricator : AssetGraph.PrefabricatorBase {
 }
 ```
 
-AssetGraph.PrefabricatorBase 클래스를 상속하고 In 가상 메소드를 오버라이딩하는 스크립트입니다. 이 스크립트는 Window> AssetGraph> Generate Script For Node> Prefabricator Script 메뉴를 선택하여 자동으로 생성할 수 있습니다.
+AssetGraph.PrefabricatorBase 클래스를 상속하고 In 가상 메소드를 오버라이딩 합니다. 이 스크립트는 Window> AssetGraph> Generate Script For Node> Prefabricator Script 메뉴를 선택하여 자동으로 생성할 수 있습니다.
 
 생성된 스크립트 파일의 이름은 AssetGraph의 Prefabricator 노드의 Script Type에 설정한 이름과 같아야지 Prefabricator 노드를 통한 에셋의 Prefab만들기가 정상적으로 처리됩니다.
 
@@ -160,7 +160,7 @@ Grouping 노드에서 여러 그룹을 만들어 Prefabricator 노드에 연결�
 
 
 ##커맨드 라인에서의 실행
-AssetGraph는 명령 줄에서 실행할 수 있습니다. UnityEditor에 설정되어있는 플랫폼을 사용하는 경우 다음과 같은 shellScript / batch 실행하면 좋을 것입니다.
+AssetGraph는 명령줄에서 실행할 수 있습니다. UnityEditor에 설정되어 있는 플랫폼을 사용하는 경우 다음과 같은 shellScript / batch 실행하면 좋을 것입니다.
 
 ```shellscript
 /Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
@@ -168,7 +168,7 @@ AssetGraph는 명령 줄에서 실행할 수 있습니다. UnityEditor에 설정
 	-executeMethod AssetGraph.AssetGraph.Build
 ```
 
-또한 다음과 같은 shellScript / batch에서 플랫폼을 사용하여 AssetGraph를 수행 할 수 있습니다.
+또한 다음과 같은 shellScript / batch에서 플랫폼을 지정하여 AssetGraph를 수행 할 수도 있습니다.
 
 ```shellscript
 /Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
@@ -176,7 +176,7 @@ AssetGraph는 명령 줄에서 실행할 수 있습니다. UnityEditor에 설정
 	-executeMethod AssetGraph.AssetGraph.Build iOS
 ```
 
-package를 지정하는 경우는 플랫폼의 뒤에 package 이름을 지정하여 실행할 수 있습니다.
+package를 지정하는 경우는 플랫폼 뒤에 package 이름을 지정하여 실행할 수 있습니다.
 
 ```shellscript
 /Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
@@ -184,32 +184,32 @@ package를 지정하는 경우는 플랫폼의 뒤에 package 이름을 지정�
 	-executeMethod AssetGraph.AssetGraph.Build iOS newPackage
 ```
 
-샘플 shellScript 보기
+샘플 쉘스크립트 보기
 [build.sh](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/build.sh)
 
 ##가져온 파일이나 작성한 Prefab, AssetBundle을 'Assets/'' 폴더 밖으로 내보내기
 Exporter 노드의 Export Path 경로는 가져온 파일이나 생성한 Prefab, AssetBundle 파일들의 내보내기에 사용하는 경로입니다.
 
 
-##빌드 실행 후의 처리 작업
-AssetGraph는 Finally라는 훅 포인트가 빌드 완료되면 시작 Finally라는 기구가 있습니다.
+##빌드 실행 후의 처리 작업 방법
+AssetGraph는 Finally라고 불리는 빌드가 완료되면 시작하는 훅포인트가 있습니다.
 
 [Finally](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#hookpoint-finally-tips)
 
 
-##작성한 AssetBundle의 crc 및 크기 정보의 확인
+##작성한 AssetBundle의 crc 및 크기 정보의 확인 방법
 Unity5에서 AssetBundle 정보는 .manifest 파일로 토출되게 되었습니다. Finally기구를 이용하여 정보를 읽는 방법을 소개합니다.
 
 [Finally](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#assetBundle의 manifest-파일로부터-json형식의-목록-생성하기)
 
 
-##나의 플랫폼 안에, 다 언어 특정 단말 용 등의 조정을 원하는
-만들고있는 게임의 대응 단말의 디스플레이 크기가 다양하기도하고, 각국 버전을 같은 흐름으로 내고 싶다,라고하는 경우가 많습니다. 그런 경우 AssetGraph에서는 package 설정을 직접 생성하여 처리 할 수​​ 있습니다.
+##하나의 플랫폼 안에 여러 언어 혹은 특정 단말용 등의 조정이 필요한 경우
+만들고 있는 게임에 대응하는 단말의 디스플레이 크기가 다양한 경우나 각국 버전을 같은 흐름으로 만들고 싶은 경우 AssetGraph에서는 package를 사용하여 처리 할 수​​ 있습니다.
 
 [package](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#package-tips)
 
 
-##variants를 설정하고 싶은
+##variants를 설정하고 싶은 경우
 variants 그 것은 취급하지 않지만, pacakge를 사용하여 유사한 것이 더 쉽게 할 수 있습니다.
 
 [package](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#package-tips)
