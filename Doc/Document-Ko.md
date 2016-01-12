@@ -280,24 +280,24 @@ group Key는 * 기호를 와일드 카드로 사용할 수 있습니다.
 
 예를 들어 폴더 이름 / ID_mainChara / / ID_enemy / 등이 붙어있는 경우 group Key에 / ID _ * / 세트하면 "mainChara", "enemy"의 두 그룹을 생성합니다.
 
-이미 그룹화된 Asset을 Grouping 노드에 통과 시키면 일단 그룹화가 해제되어 다시 그룹화 됩니다.
+이미 그룹화된 Asset을 Grouping 노드에 통과 시키면 먼저 그룹화가 해제된 다음 다시 그룹화가 이루어 집니다.
 
 ##Prefabricator
-- IN:  Prefab의 소재에 원하는 Asset 그룹
-- OUT: 생성 된 Prefab을 포함 Asset 그룹
+- IN:  Prefab 제작에 필요한 에셋들
+- OUT: 생성된 Prefab들
 
-입력 된 Asset에서 스크립트를 통해 Prefab을 만들 수 있습니다. 출력되는 Asset 입력된 Asset로 작성된 Prefab을 맞춘 것입니다.
+입력된 에셋들로부터 작성한 스크립트를 통해 Prefab을 만들 수 있습니다. 출력되는 에셋은 입력된 에셋으로부터 생성한 Prefab입니다.
 
 ![SS](/Doc/images/7_prefabricator.png)
 
-PrefabricatorBase을 확장 한 스크립트를 쓰고 설정하여 사용합니다. 불행히도, 스크립트없이 이 노드를 사용 할 수 없습니다.
+PrefabricatorBase을 상속한 스크립트를 만들어서 사용합니다. 불행히도 이 스크립트의 생성 없이는 이 노드를 사용 할 수 없습니다.
 
-Prefabricator 노드에는 두 가지의 만드는 방법이 있습니다.
+Prefabricator 노드는 다음의 두 가지 방법 중 하나로 만들 수 있습니다.
 
-1. GUI에서 만든 것에 스크립트 이름을 입력
-1. 스크립트를 AssetGraph 창에 드래그 앤 드롭하기
+1. AssetGraph 창에서 Prefabricator 노드 생성 후 Script Type에 스크립트 이름을 입력
+1. PrefabricatorBase를 상속한 확장 스크립트 파일을 AssetGraph 창에 드래그 앤 드롭하기
 
-스크립트는 AssetGraph.PrefabricatorBase 클래스를 확장하고 public override void In (string groupKey, List source, string recommendedPrefabOutputDir, Func Prefabricate) 메소드를 재정의해야 합니다.
+스크립트는 AssetGraph.PrefabricatorBase 클래스를 상속한 다음 public override void In (string groupKey, List source, string recommendedPrefabOutputDir, Func Prefabricate) 메소드를 재정의해야 합니다.
 
 샘플 스크립트 [CreateCharaPrefab.cs](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaPrefab.cs)
 
@@ -318,57 +318,57 @@ Prefabricator 노드에는 두 가지의 만드는 방법이 있습니다.
 
 *가 포함되지 않은 경우 AssetBundle에는 BundleNameTemplate 거리 이름이 붙습니다.
 
-이 기능은 예를 들어 캐릭터의 AssetBundle을 그 캐릭터의 ID를 포함한 이름으로 만들고 싶어 같은 경우에 그룹 ID = 캐릭터 ID가되는 것 같은 흐름을 짜두면 자동으로 AssetBundle가 명명 될 수 되기 때문에 매우 효과적입니다.
+이 기능은 예를 들어 캐릭터의 AssetBundle을 그 캐릭터의 ID를 포함한 이름으로 만들고 싶은 경우에 그룹 ID = 캐릭터 ID가 되도록 설정해 두면 자동으로 AssetBundle의 이름을 지정할 수 있기 때문에 매우 효과적입니다.
 
-또한이 노드로부터 출력되는 Asset은 작성된 AssetBundle 만합니다. 이 노드에서 연결 노드는 1 종류, BundleBuilder 노드뿐입니다.
+또한 이 노드로부터 출력되는 Asset은 작성된 AssetBundle 만합니다. 이 노드에서 연결 노드는 1 종류, BundleBuilder 노드뿐입니다.
 
-Bundlizer 노드에는 두 가지 만드는 방법이 있습니다.
+Bundlizer 노드는 다음의 두 가지 방법 중 하나로 만들 수 있습니다.
 
-1. GUI에서 만든 것으로 AssetBundle 이름의 템플릿을 입력
-1. BundlizerBase을 확장 한 스크립트를 AssetGraph 창에 드래그 앤 드롭하기
+1. AssetGraph 창에서 Bundlizer 노드 생성후 AssetBundle 이름의 템플릿을 입력
+1. BundlizerBase을 상속한 확장 스크립트 파일을 AssetGraph 창에 드래그 앤 드롭하기
 
-두 번째 방법은 직접 준비한 스크립트를 실행 할 수 있습니다. 스크립트는 AssetGraph.PrefabricatorBase 클래스를 확장하고 public override void In (string groupKey, List source, string recommendedPrefabOutputDir, Func Prefabricate) 메소드를 재정의해야합니다.
+두 번째 방법을 사용하면 직접 준비한 스크립트를 실행할 수 있습니다. 스크립트는 AssetGraph.BundlizerBase 클래스를 상속하고 public override void In (string groupKey, List source, string recommendedPrefabOutputDir, Func Prefabricate) 메소드를 재정의해야 합니다.
 
 샘플 스크립트 [CreateCharaBundle.cs](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaBundle.cs)
 
-이 방법은 AssetBundle을 만드는 코드를 수 세세하게 쓰고 실행할 수 있으며 스스로 생각한 압축 및 암호화 등을 할 수 있습니다.
+이 방법은 AssetBundle을 만드는 코드를 설정할 수 있기 때문에 스스로 생각한 압축 및 암호화 등을 할 수 있습니다.
 
-그러나 Bundlizer에서 BundleBuilder 노드 이외에 연결할 수 없기 때문에 스스로 AssetBundle을 만드는 코드를 쓴 경우라도 BundleBuilder로 연결해야합니다
+그러나 Bundlizer에서 BundleBuilder 노드 이외에는 연결할 수 없기 때문에 스스로 AssetBundle을 만드는 코드를 쓴 경우라도 BundleBuilder로 연결해야 합니다.
 
 ##BundleBuilder
 - In: AssetBundle 등 그룹
 - Out: 실제로 생성 된 AssetBundle 등 그룹
 
-Bundlizer에서 설정 한 AssetBundle을 실제로 생성합니다. 다양한 옵션을 설정할 수 있습니다.
+Bundlizer에서 설정한 AssetBundle을 실제로 생성하며 번들에 대한 다양한 옵션을 설정할 수 있습니다.
 
 ![SS](/Doc/images/7_bundlebuilder.png)
 
-Bundlizer 이외에서 연결할 수 없습니다. 코드없이 Bundlizer에서 AssetBundle 만들기를 한 경우에만이 노드에서 AssetBundle의 설정을 할 수 있습니다.
+이 노드는 Bundlizer 이외의 노드로부터는 연결할 수 없습니다. 코드없이 Bundlizer에서 AssetBundle 만들기를 한 경우에만 이 노드에서 AssetBundle의 설정을 할 수 있습니다.
 
 ##Exporter
 - In: 가져온 or AssetGraph에서 개발 된 자산 그룹
 
-지정한 경로에 파일을 출력 할 수 있습니다.
+지정한 경로로 파일 내보내기를 실행합니다.
 
 ![SS](/Doc/images/7_exporter.png)
 
-지정할 수있는 경로는 프로젝트 폴더 이하이면 자유롭게 지정할 수 있습니다. 그러나 지정한 폴더는 실행 전에 만들어 두지 않으면 안됩니다.
+지정할 수 있는 경로는 프로젝트 폴더 아래면 자유롭게 지정할 수 있습니다. 지정한 폴더는 실행 전에 반드시 만들어 두어야 합니다.
 
 
 #HookPoint: Finally tips
 지정할 수 있는 경로는 프로젝트 폴더 이하이면 자유롭게 지정할 수 있습니다. 그러나 지정한 폴더는 실행 전에 만들어 두지 않으면 안됩니다.
 
-##FinallyBase 클래스를 extends하기
-FinallyBase 클래스를 확장 한 코드는 빌드 프로세스 · 장전 처리가 끝난 시점에서 자동으로 호출됩니다.
+##FinallyBase 클래스 확장하기
+FinallyBase 클래스를 확장한 코드는 빌드 프로세스·장전 처리가 끝난 시점에서 자동으로 호출됩니다.
 
-public override void Run (Dictionary\<string, Dictionary\<string, List<string>>> throughputs, bool isBuild) 메소드에서 모든 Node 모든 그룹의 실행 결과를받을 수 있습니다.
+public override void Run (Dictionary\<string, Dictionary\<string, List<string>>> throughputs, bool isBuild) 메소드에서 모든 Node 모든 그룹의 실행 결과를 받을 수 있습니다.
 
-Dictionary\<string, Dictionary\<string, List\<string>>> 메소드에서 모든 Node 모든 그룹의 실행 결과를 받을 수 있습니다.
+Dictionary\<string, Dictionary\<string, List\<string>>> 인자에 모든 Node, 모든 그룹의 실행 결과를 받을 수 있습니다.
 
-bool isBuild 빌드 처리시는 true, 그 이외는 false
+bool형의 isBuild 인자는 빌드 처리시는 true, 그 이외는 false가 넘어 오게 됩니다.
 
 ##모든 노드의 생성물의 경로를 Unity 로그로 출력하는 샘플 코드
-Finally 샘플로 윈도우 내에 있는 모든 노드의 생성물의 파일 경로를 로그에 기록하는 스크립트를 작성해 보겠습니다.
+다음의 스크립트는 Finally 샘플로 윈도우 내에 있는 모든 노드 생성물의 파일 경로를 로그에 기록하는 코드입니다.
 
 ```C#
 using UnityEngine;
@@ -406,9 +406,9 @@ public class SampleFinally : AssetGraph.FinallyBase {
 [SampleFinally](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally.cs)
 
 ##AssetBundle의 manifest 파일로부터 json형식의 목록 생성하기
-Finally 예제 2로 AssetBundle 생성시 만들어진 .manifest 파일에서 AssetBundle 정보를 읽어 json 해 봅시다.
+Finally와 관련한 두번째 예제로 AssetBundle 생성시 만들어진 .manifest 파일에서 AssetBundle 정보를 읽어 json 목록을 생성하는 방법을 살펴 봅니다.
 
-Bundlizer, BundleBuilder에서 AssetBundle을 만들고 Exporter에서 AssetBundle을 출력하고 그 AssetBundle의 내용을 json 형식의 목록하겠다는 전제입니다.
+Bundlizer, BundleBuilder에서 AssetBundle을 만들고 Exporter에서 AssetBundle을 출력하고 그 AssetBundle의 내용을 json 형식의 목록을 생성한다고 가정합니다.
 
 Finally에 써야 코드 (발췌)는 다음과 같은 것입니다.
 
@@ -444,26 +444,26 @@ Finally에 써야 코드 (발췌)는 다음과 같은 것입니다.
 
 Exporter 노드의 이름을 지정하는 것으로, 특히 Exporter0라는 노드의 결과에만 주목하고 .manifest 파일에서 AssetBundle의 데이터를 검색하고 있습니다.
 
-결국 그들을 List <Dictionary <string, object >> bundleInfos에 넣고 Json 형식의 string하고 있습니다.
+검색한 결과값은 List <Dictionary <string, object >> bundleInfos에 넣고 Json 형식의 문자열을 얻습니다.
 
-Json함으로써 처리가 편해지 케이스 등으로 쓸만한 생각합니다.
+Json 형식으로의 처리가 편리한 케이스에 쓸만한 방법입니다.
 
-전체 예제는 여기 [SampleFinally2](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally2.cs)
+전체 예제는 여기 [SampleFinally2](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally2.cs) 에서 볼 수 있습니다. 
 
 
 #Package tips
 하나의 플랫폼에서 여러 해상도가 있고, 각각에 맞는 크기의 에셋를 사용하여 AssetBundle을 만들어야 하는 경우가 있습니다.
 
-Unity는 variants라는 기구가 있고, 에셋에 대해 개별적으로 Inspector에서 지정하는 것으로 "동일한 GUID로 다른 내용을 가진 Asset을 일으킨다"라고 할 수 있습니다. AssetGraph는 variants과 약간 다른 접근에서 "동일한 플랫폼에 똑같은 흐름에서 조금 다른 소재를 일으킨다"라고 할 수 있습니다. pacakge를 사용하면 HD 용으로이 크기의 소재를 사용하고 그 외에는이 크기의 소재를 사용하여 같은 복잡한 조정을 하나의 흐름 속에서 할 수 있습니다.
+Unity에는 이를 위해 variants라는 기능이 있는데, 에셋에 대해 개별적으로 Inspector에서 지정하는 것으로 "동일한 GUID로 다른 내용을 가진 에셋을 만드는 방법"입니다. AssetGraph는 variants과 약간 다른 접근 방법으로 package라는 기능이 있으며 이는 "동일한 플랫폼에서 똑같은 흐름으로 조금 다른 에셋을 만드는 방법"이라고 정의할 수 있습니다. pacakge를 사용하면 HD 용으로 HD용 크기의 에셋을 사용하고 그 외에는 다른 크기의 소재를 사용하는 것과 같은 복잡한 조정을 하나의 흐름 속에서 처리할 수 있습니다.
 
 ##HD용 소재를 창출하는 예
 
-예를 들어 일반 해상도의 단말에 대한 흐름을 이미 만들고 있기로 HD 해상도의 단말에 대해 소재를 만들기 위한 "HD"라는 package를 추가하자. 
+예를 들어 일반 해상도의 단말에 대한 흐름을 이미 만들어 둔 경우 HD 해상도의 단말에 대해 소재를 만들기 위한 "HD"라는 package를 추가하는 방법에 대해 살펴 보겠습니다. 
 Loader의 Inspector에서 + 버튼을 눌러 "HD"라는 package를 만듭니다.
 
 ![SS](/Doc/images/8_0.gif)
 
-Inspector에서 pacakge를 HD로 전환 Loader의 경로 설정을 전환하면 Loader에서 나오는 소재의 수가 변화하고 있습니다.
+Inspector에서 pacakge를 HD로 전환하여 Loader의 경로 설정을 전환하면 Loader에서 나오는 에셋의 수가 변화하고 있습니다.
 
 이제 package에 HD를 설정하고 일반 Loader와는 다른 경로에서 소재를 읽도록 설정했습니다.
 
@@ -477,11 +477,11 @@ package 별 설정은 각 노드에서 설정할 수 있습니다. 또한 빌드
 
 
 ##variants의 차이
-variants는 차이가 있는 Asset을 동일한 GUID에서 생성 되지만 package는 "package가 다른 것은 모두 다른 Asset"다른 폴더로 출력합니다. 출력되는 AssetBundle의 확장자는 반드시 BUNDLE_NAME.PLATFORM.PACKAGE입니다.
+variants는 차이가 있는 Asset을 동일한 GUID에서 생성 되지만 package는 "package가 다른 것은 모두 다른 Asset"으로 간주하여 다른 폴더로 출력합니다. 출력되는 AssetBundle의 확장자는 반드시 BUNDLE_NAME.PLATFORM.PACKAGE입니다.
 
 이름이 다른 것에서도 알 수 있듯, package가 다른 AssetBundle 사이에 crc 등의 공통성은 없습니다.
 
-##package의 혜택
+##package의 장점
 * 사용자 측에서 개별적으로 "이 Asset에는 HD가 있느냐"등의 정보를 실행 시점에서 일일이 검사할 필요가 없다.
 * package 단위로 폴더가 다르기 때문에 CDN로부터의 다운로드 관리가 편리하다.
 
