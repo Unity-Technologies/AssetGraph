@@ -114,7 +114,7 @@ Prefabricator과 Bundlizer 노드를 이용하면 Prefab과 AssetBundle을 만�
 
 ![SS](/Doc/images/howto_4.gif)
 
-[Grouping](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#grouping)
+[Grouping](https://github.com/kimsama/AssetGraph/blob/master/Doc/Document-Ko.md#grouping)
 
 ##에셋으로부터 Prefab 만들기
 AssetGraph에서 에셋을 읽어 들여 Prefab을 만들 수 있습니다. 그런데 이 처리를 위해서는 Asset을 지정하거나 인스턴스화 할 필요가 있기 때문에 C# 스크립트의 작성이 필요합니다. 스크립트의 작성법은 다음과 같습니다.
@@ -194,25 +194,25 @@ Exporter 노드의 Export Path 경로는 가져온 파일이나 생성한 Prefab
 ##빌드 실행 후의 처리 작업 방법
 AssetGraph는 Finally라고 불리는 빌드가 완료되면 시작하는 훅포인트가 있습니다.
 
-[Finally](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#hookpoint-finally-tips)
+[Finally](https://github.com/kimsama/AssetGraph/blob/master/Doc/Document-Ko.md#hookpoint-finally-tips)
 
 
 ##작성한 AssetBundle의 crc 및 크기 정보의 확인 방법
 Unity5에서 AssetBundle 정보는 .manifest 파일로 토출되게 되었습니다. Finally기구를 이용하여 정보를 읽는 방법을 소개합니다.
 
-[Finally](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#assetBundle의 manifest-파일로부터-json형식의-목록-생성하기)
+[Finally](https://github.com/kimsama/AssetGraph/blob/master/Doc/Document-Ko.md#assetBundle의 manifest-파일로부터-json형식의-목록-생성하기)
 
 
 ##하나의 플랫폼 안에 여러 언어 혹은 특정 단말용 등의 조정이 필요한 경우
 만들고 있는 게임에 대응하는 단말의 디스플레이 크기가 다양한 경우나 각국 버전을 같은 흐름으로 만들고 싶은 경우 AssetGraph에서는 package를 사용하여 처리 할 수​​ 있습니다.
 
-[package](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#package-tips)
+[package](https://github.com/kimsama/AssetGraph/blob/master/Doc/Document-Ko.md#package-tips)
 
 
 ##variants를 설정하고 싶은 경우
 variants 그 것은 취급하지 않지만, pacakge를 사용하여 유사한 것이 더 쉽게 할 수 있습니다.
 
-[package](https://github.com/unity3d-jp/AssetGraph/blob/master/Doc/Document.md#package-tips)
+[package](https://github.com/kimsama/AssetGraph/blob/master/Doc/Document-Ko.md#package-tips)
 
 
 
@@ -299,7 +299,7 @@ Prefabricator 노드에는 두 가지의 만드는 방법이 있습니다.
 
 스크립트는 AssetGraph.PrefabricatorBase 클래스를 확장하고 public override void In (string groupKey, List source, string recommendedPrefabOutputDir, Func Prefabricate) 메소드를 재정의해야 합니다.
 
-샘플 스크립트 [CreateCharaPrefab.cs](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaPrefab.cs)
+샘플 스크립트 [CreateCharaPrefab.cs](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaPrefab.cs)
 
 
 
@@ -329,7 +329,7 @@ Bundlizer 노드에는 두 가지 만드는 방법이 있습니다.
 
 두 번째 방법은 직접 준비한 스크립트를 실행 할 수 있습니다. 스크립트는 AssetGraph.PrefabricatorBase 클래스를 확장하고 public override void In (string groupKey, List source, string recommendedPrefabOutputDir, Func Prefabricate) 메소드를 재정의해야합니다.
 
-샘플 스크립트 [CreateCharaBundle.cs](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaBundle.cs)
+샘플 스크립트 [CreateCharaBundle.cs](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/CreateCharaBundle.cs)
 
 이 방법은 AssetBundle을 만드는 코드를 수 세세하게 쓰고 실행할 수 있으며 스스로 생각한 압축 및 암호화 등을 할 수 있습니다.
 
@@ -403,7 +403,7 @@ public class SampleFinally : AssetGraph.FinallyBase {
 	}
 }
 ```
-[SampleFinally](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally.cs)
+[SampleFinally](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally.cs)
 
 ##AssetBundle의 manifest 파일로부터 json형식의 목록 생성하기
 Finally 예제 2로 AssetBundle 생성시 만들어진 .manifest 파일에서 AssetBundle 정보를 읽어 json 해 봅시다.
@@ -448,7 +448,7 @@ Exporter 노드의 이름을 지정하는 것으로, 특히 Exporter0라는 노�
 
 Json함으로써 처리가 편해지 케이스 등으로 쓸만한 생각합니다.
 
-전체 예제는 여기 [SampleFinally2](https://github.com/unity3d-jp/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally2.cs)
+전체 예제는 여기 [SampleFinally2](https://github.com/kimsama/AssetGraph/blob/master/Assets/AssetGraph/UserSpace/Examples/Editor/SampleFinally2.cs)
 
 
 #Package tips
