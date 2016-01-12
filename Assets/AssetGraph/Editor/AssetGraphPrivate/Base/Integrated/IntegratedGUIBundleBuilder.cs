@@ -101,6 +101,12 @@ namespace AssetGraph {
 						assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.AppendHashToAssetBundleName;
 						break;
 					}
+#if UNITY_5_3
+                    case "ChunkBased Compression": {
+                        assetBundleOptions = assetBundleOptions | BuildAssetBundleOptions.ChunkBasedCompression;
+                        break;
+                    }
+#endif
 				}
 			}
 
