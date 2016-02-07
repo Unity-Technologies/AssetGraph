@@ -120,3 +120,7 @@ Exporter saves given assets into given directory.  You can also select directory
 - IN: list of assets (or AssetBundle files)
 
 ![SS](/Doc/900.png)
+
+
+#License
+MIT
