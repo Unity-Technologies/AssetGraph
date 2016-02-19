@@ -24,45 +24,44 @@ using System.Runtime.Serialization;
 
 namespace AssetGraph.YamlDotNet.Core
 {
-	/// <summary>
-	/// The exception that is thrown when an alias references an anchor that does not exist.
-	/// </summary>
-	[Serializable]
-	public class AnchorNotFoundException : YamlException
-	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
-		/// </summary>
-		public AnchorNotFoundException()
-		{
-		}
+    /// <summary>
+    /// The exception that is thrown when an alias references an anchor that does not exist.
+    /// </summary>
+    [Serializable]
+    public class AnchorNotFoundException : YamlException
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
+        /// </summary>
+        public AnchorNotFoundException()
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		public AnchorNotFoundException(string message)
-			: base(message)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public AnchorNotFoundException(string message)
+            : base(message)
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
-		/// </summary>
-		public AnchorNotFoundException(Mark start, Mark end, string message)
-			: base(start, end, message)
-		{
-		}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
+        /// </summary>
+        public AnchorNotFoundException(Mark start, Mark end, string message)
+            : base(start, end, message)
+        {
+        }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
-		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="inner">The inner.</param>
-		public AnchorNotFoundException(string message, Exception inner)
-			: base(message, inner)
-		{
-		}
-
-	}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnchorNotFoundException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="inner">The inner.</param>
+        public AnchorNotFoundException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
+    }
 }

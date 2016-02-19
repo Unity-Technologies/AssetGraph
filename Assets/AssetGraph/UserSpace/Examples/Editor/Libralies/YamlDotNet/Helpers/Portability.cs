@@ -28,105 +28,115 @@ using System.Text.RegularExpressions;
 
 namespace AssetGraph.YamlDotNet
 {
-	internal static class StandardRegexOptions
-	{
-		public const RegexOptions Compiled = RegexOptions.None;
-	}
+    internal static class StandardRegexOptions
+    {
+        public const RegexOptions Compiled = RegexOptions.None;
+    }
 
-	internal static class ReflectionExtensions
-	{
-		public static bool IsValueType(this Type type)
-		{
-			return type.IsValueType;
-		}
+    internal static class ReflectionExtensions
+    {
+        public static bool IsValueType(this Type type)
+        {
+            return type.IsValueType;
+        }
 
-		public static bool IsGenericType(this Type type)
-		{
-			return type.IsGenericType;
-		}
+        public static bool IsGenericType(this Type type)
+        {
+            return type.IsGenericType;
+        }
 
-		public static bool IsInterface(this Type type)
-		{
-			return type.IsInterface;
-		}
+        public static bool IsInterface(this Type type)
+        {
+            return type.IsInterface;
+        }
 
-		public static bool IsEnum(this Type type)
-		{
-			return type.IsEnum;
-		}
+        public static bool IsEnum(this Type type)
+        {
+            return type.IsEnum;
+        }
 
-		/// <summary>
-		/// Determines whether the specified type has a default constructor.
-		/// </summary>
-		/// <param name="type">The type.</param>
-		/// <returns>
-		/// 	<c>true</c> if the type has a default constructor; otherwise, <c>false</c>.
-		/// </returns>
-		public static bool HasDefaultConstructor(this Type type)
-		{
-			return type.IsValueType || type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null) != null;
-		}
+        /// <summary>
+        /// Determines whether the specified type has a default constructor.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>
+        ///     <c>true</c> if the type has a default constructor; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasDefaultConstructor(this Type type)
+        {
+            return type.IsValueType || type.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null) != null;
+        }
 
-		public static TypeCode GetTypeCode(this Type type)
-		{
-			return Type.GetTypeCode(type);
-		}
+        public static TypeCode GetTypeCode(this Type type)
+        {
+            return Type.GetTypeCode(type);
+        }
+  
+        public static PropertyInfo GetPublicProperty(this Type type, string name)
+        {
+            return type.GetProperty(name);
+        }
  
-		public static IEnumerable<PropertyInfo> GetPublicProperties(this Type type)
-		{
-			var instancePublic = BindingFlags.Instance | BindingFlags.Public;
-			return type.IsInterface
-				? (new Type[] { type })
-					.Concat(type.GetInterfaces())
-					.SelectMany(i => i.GetProperties(instancePublic))
-				: type.GetProperties(instancePublic);
-		}
+        public static IEnumerable<PropertyInfo> GetPublicProperties(this Type type)
+        {
+            var instancePublic = BindingFlags.Instance | BindingFlags.Public;
+            return type.IsInterface
+                ? (new Type[] { type })
+                    .Concat(type.GetInterfaces())
+                    .SelectMany(i => i.GetProperties(instancePublic))
+                : type.GetProperties(instancePublic);
+        }
 
-		public static IEnumerable<MethodInfo> GetPublicStaticMethods(this Type type)
-		{
-			return type.GetMethods(BindingFlags.Static | BindingFlags.Public);
-		}
+        public static IEnumerable<MethodInfo> GetPublicStaticMethods(this Type type)
+        {
+            return type.GetMethods(BindingFlags.Static | BindingFlags.Public);
+        }
 
-		public static MethodInfo GetPublicStaticMethod(this Type type, string name, params Type[] parameterTypes)
-		{
-			return type.GetMethod(name, BindingFlags.Public | BindingFlags.Static, null, parameterTypes, null);
-		}
+        public static MethodInfo GetPublicStaticMethod(this Type type, string name, params Type[] parameterTypes)
+        {
+            return type.GetMethod(name, BindingFlags.Public | BindingFlags.Static, null, parameterTypes, null);
+        }
 
-		private static readonly FieldInfo remoteStackTraceField = typeof(Exception)
-				.GetField("_remoteStackTraceString", BindingFlags.Instance | BindingFlags.NonPublic);
+        public static MethodInfo GetPublicInstanceMethod(this Type type, string name)
+        {
+            return type.GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
+        }
 
-		public static Exception Unwrap(this TargetInvocationException ex)
-		{
-			var result = ex.InnerException;
-			if (remoteStackTraceField != null)
-			{
-				remoteStackTraceField.SetValue(ex.InnerException, ex.InnerException.StackTrace + "\r\n");
-			}
-			return result;
-		}
-	}
+        private static readonly FieldInfo remoteStackTraceField = typeof(Exception)
+                .GetField("_remoteStackTraceString", BindingFlags.Instance | BindingFlags.NonPublic);
 
-	internal sealed class CultureInfoAdapter : CultureInfo
-	{
-		private readonly IFormatProvider _provider;
+        public static Exception Unwrap(this TargetInvocationException ex)
+        {
+            var result = ex.InnerException;
+            if (remoteStackTraceField != null)
+            {
+                remoteStackTraceField.SetValue(ex.InnerException, ex.InnerException.StackTrace + "\r\n");
+            }
+            return result;
+        }
+    }
 
-		public CultureInfoAdapter(CultureInfo baseCulture, IFormatProvider provider)
-			: base(baseCulture.LCID)
-		{
-			_provider = provider;
-		}
+    internal sealed class CultureInfoAdapter : CultureInfo
+    {
+        private readonly IFormatProvider _provider;
 
-		public override object GetFormat(Type formatType)
-		{
-			return _provider.GetFormat(formatType);
-		}
-	}
+        public CultureInfoAdapter(CultureInfo baseCulture, IFormatProvider provider)
+            : base(baseCulture.LCID)
+        {
+            _provider = provider;
+        }
 
-	internal static class PropertyInfoExtensions
-	{
-		public static object ReadValue(this PropertyInfo property, object target)
-		{
-			return property.GetGetMethod().Invoke(target, null);
-		}
-	}
+        public override object GetFormat(Type formatType)
+        {
+            return _provider.GetFormat(formatType);
+        }
+    }
+
+    internal static class PropertyInfoExtensions
+    {
+        public static object ReadValue(this PropertyInfo property, object target)
+        {
+            return property.GetGetMethod().Invoke(target, null);
+        }
+    }
 }

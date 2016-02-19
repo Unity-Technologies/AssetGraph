@@ -24,22 +24,22 @@ using AssetGraph.YamlDotNet.Core.Events;
 
 namespace AssetGraph.YamlDotNet.Serialization.NodeTypeResolvers
 {
-	public sealed class TypeNameInTagNodeTypeResolver : INodeTypeResolver
-	{
-		bool INodeTypeResolver.Resolve(NodeEvent nodeEvent, ref Type currentType)
-		{
-			if (!string.IsNullOrEmpty(nodeEvent.Tag))
-			{
-				// If type could not be loaded, make sure to pass resolving
-				// to the next resolver
-				try
-				{
-					currentType = Type.GetType(nodeEvent.Tag.Substring(1), true);
-					return true;
-				}
-				catch { }
-			}
-			return false;
-		}
-	}
+    public sealed class TypeNameInTagNodeTypeResolver : INodeTypeResolver
+    {
+        bool INodeTypeResolver.Resolve(NodeEvent nodeEvent, ref Type currentType)
+        {
+            if (!string.IsNullOrEmpty(nodeEvent.Tag))
+            {
+                // If type could not be loaded, make sure to pass resolving
+                // to the next resolver
+                try
+                {
+                    currentType = Type.GetType(nodeEvent.Tag.Substring(1), true);
+                    return true;
+                }
+                catch { }
+            }
+            return false;
+        }
+    }
 }

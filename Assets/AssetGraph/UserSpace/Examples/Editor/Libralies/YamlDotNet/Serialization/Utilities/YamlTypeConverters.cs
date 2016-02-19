@@ -24,13 +24,13 @@ using AssetGraph.YamlDotNet.Serialization.Converters;
 
 namespace AssetGraph.YamlDotNet.Serialization.Utilities
 {
-	internal static class YamlTypeConverters
-	{
-		private static readonly IEnumerable<IYamlTypeConverter> _builtInTypeConverters = new IYamlTypeConverter[]
-		{
-			new GuidConverter(),
-		};
+    internal static class YamlTypeConverters
+    {
+        private static readonly IEnumerable<IYamlTypeConverter> _builtInTypeConverters = new IYamlTypeConverter[]
+        {
+            new GuidConverter(),
+        };
 
-		public static IEnumerable<IYamlTypeConverter> BuiltInConverters { get { return _builtInTypeConverters; } }
-	}
+        public static IEnumerable<IYamlTypeConverter> BuiltInConverters { get { return _builtInTypeConverters; } }
+    }
 }
