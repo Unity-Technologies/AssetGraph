@@ -83,6 +83,5 @@ namespace AssetGraph.YamlDotNet.Core
             : base(message, inner)
         {
         }
-
     }
 }
