@@ -229,7 +229,8 @@ namespace AssetGraph {
 								break;
 							}
 						}
-
+						
+						Debug.LogError("実行時にこのへんを通過するはず");
 						break;
 					}
 
@@ -564,17 +565,24 @@ namespace AssetGraph {
 						var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 						var bundleNameTemplate = new Dictionary<string, string>();
 						if (bundleNameTemplateSource == null) {
-							
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-
+						
+						var bundleUseOutputSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
+						var bundleUseOutput = new Dictionary<string, string>();
+						if (bundleUseOutputSource == null) {
+							bundleUseOutputSource = new Dictionary<string, object>();
+						}
+						foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string;
+						
 						nodeDatas.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
-								bundleNameTemplate:bundleNameTemplate
+								bundleNameTemplate:bundleNameTemplate,
+								bundleUseOutput:bundleUseOutput
 							)
 						);
 						break;
@@ -1449,6 +1457,7 @@ namespace AssetGraph {
 
 		// for Bundlizer GUI data
 		public readonly Dictionary<string, string> bundleNameTemplate;
+		public readonly Dictionary<string, string> bundleUseOutput;
 
 		// for BundleBuilder GUI data
 		public readonly Dictionary<string, List<string>> enabledBundleOptions;
@@ -1466,6 +1475,7 @@ namespace AssetGraph {
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
+			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			this.nodeId = nodeId;
@@ -1479,6 +1489,7 @@ namespace AssetGraph {
 			this.importerPackages = null;
 			this.groupingKeyword = null;
 			this.bundleNameTemplate = null;
+			this.bundleUseOutput = null;
 			this.enabledBundleOptions = null;
 
 			switch (nodeKind) {
@@ -1519,6 +1530,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.bundleNameTemplate = bundleNameTemplate;
+					this.bundleUseOutput = bundleUseOutput;
 					break;
 				}
 

@@ -47,6 +47,7 @@ namespace AssetGraph {
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
+		[SerializeField] public SerializablePseudoDictionary bundleUseOutput;
 		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
 		
 		// for platform-package specified parameter.
@@ -148,7 +149,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, float x, float y) {
+		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -156,7 +157,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				bundleNameTemplate: bundleNameTemplate
+				bundleNameTemplate: bundleNameTemplate,
+				bundleUseOutput: bundleUseOutput
 			);
 		}
 
@@ -505,6 +507,28 @@ namespace AssetGraph {
 								node.bundleNameTemplate.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), bundleNameTemplate);
 								node.Save();
 							}
+							
+							var isUseOutputResoruces = GraphStackController.ValueFromPlatformAndPackage(
+								node.bundleUseOutput.ReadonlyDict(), 
+								node.currentPlatform, 
+								node.currentPackage
+							).ToString().ToLower();
+							
+							var useOrNot = false;
+							switch (isUseOutputResoruces) {
+								case "true": {
+									useOrNot = true;
+									break;
+								}
+							}
+							
+							var result = EditorGUILayout.ToggleLeft("Output Resources", useOrNot);
+							
+							if (result != useOrNot) {
+								node.BeforeSave();
+								node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), result.ToString());
+								node.Save();
+							} 
 						}
 
 						UpdateDeleteSetting(node);
@@ -862,6 +886,7 @@ namespace AssetGraph {
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
+			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
@@ -878,6 +903,7 @@ namespace AssetGraph {
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
+			if (bundleUseOutput != null) this.bundleUseOutput = new SerializablePseudoDictionary(bundleUseOutput);
 			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
 			
 			this.baseRect = new Rect(x, y, AssetGraphGUISettings.NODE_BASE_WIDTH, AssetGraphGUISettings.NODE_BASE_HEIGHT);
@@ -947,6 +973,7 @@ namespace AssetGraph {
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
+				(this.bundleUseOutput != null) ? this.bundleUseOutput.ReadonlyDict() : null,
 				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
 			);
 			return duplicatedNode;

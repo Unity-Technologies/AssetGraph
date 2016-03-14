@@ -655,7 +655,7 @@ namespace AssetGraph {
 			using (var sr = new StreamReader(graphDataPath)) {
 				dataStr = sr.ReadToEnd();
 			}
-
+			
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
 			var nodesAndConnections = ConstructGraphFromDeserializedData(loadedData, package);
 			var currentNodes = nodesAndConnections.currentNodes;
@@ -1392,6 +1392,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
+					nodeDict[AssetGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] = node.bundleUseOutput.ReadonlyDict();
 					break;
 				}
 
@@ -1503,13 +1504,18 @@ namespace AssetGraph {
 					}
 					return newNode;
 				}
-
+				
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					
 					var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 					var bundleNameTemplate = new Dictionary<string, string>();
 					foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-
-					var newNode = Node.GUINodeForBundlizer(currentNodesCount, name, id, kind, bundleNameTemplate, x, y);
+					
+					var bundleUseOutputSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
+					var bundleUseOutput = new Dictionary<string, string>();
+					foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string; 
+					
+					var newNode = Node.GUINodeForBundlizer(currentNodesCount, name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
 					CollectPackage(bundleNameTemplate.Keys.ToList());
 
 					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -1670,8 +1676,12 @@ namespace AssetGraph {
 					var newBundlizerKeyword = new Dictionary<string, string> {
 						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, AssetGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT}
 					};
+					
+					var newBundleUseOutput = new Dictionary<string, string> {
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, AssetGraphSettings.BUNDLIZER_USEOUTPUT_DEFAULT}	
+					};
 
-					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, x, y);
+					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
