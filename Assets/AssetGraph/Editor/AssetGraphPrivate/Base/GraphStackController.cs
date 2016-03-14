@@ -230,7 +230,11 @@ namespace AssetGraph {
 							}
 						}
 						
-						Debug.LogError("実行時にこのへんを通過するはず");
+						var bundleUseOutputSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
+						if (bundleUseOutputSource == null) {
+							Debug.LogError("bundleUseOutputSource is null. maybe deserialize error.");
+							bundleUseOutputSource = new Dictionary<string, object>();
+						}
 						break;
 					}
 
@@ -895,7 +899,17 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
+						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package).ToLower();
+						
+						var useOutputResources = false;
+						switch (bundleUseOutputResources) {
+							case "true" :{
+								useOutputResources = true;
+								break;
+							}
+						}
+						
+						var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -999,7 +1013,17 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
+						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package).ToLower();
+						
+						var useOutputResources = false;
+						switch (bundleUseOutputResources) {
+							case "true" :{
+								useOutputResources = true;
+								break;
+							}
+						}
+						
+						var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}

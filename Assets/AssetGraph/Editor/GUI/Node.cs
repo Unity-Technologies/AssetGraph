@@ -303,8 +303,8 @@ namespace AssetGraph {
 								}
 								GUILayout.EndHorizontal();
 							}
-
-
+							
+							Debug.LogWarning("ここで、キーワードの数とConPo差し込む箇所が不整合起こしてそうな気がする。");
 							// add contains keyword interface.
 							if (GUILayout.Button("+")) {
 								node.BeforeSave();
@@ -526,6 +526,10 @@ namespace AssetGraph {
 							
 							if (result != useOrNot) {
 								node.BeforeSave();
+								
+								if (result) node.BundlizerUseOutputResources();
+								else node.BundlizerUnuseOutputResources(); 
+								
 								node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), result.ToString());
 								node.Save();
 							} 
@@ -839,7 +843,9 @@ namespace AssetGraph {
 				}
 			}
 		}
-
+		
+		
+		
 		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
 			connectionPoints.Insert(addedIndex, new OutputPoint(keyword));
 			UpdateNodeRect();
@@ -860,6 +866,26 @@ namespace AssetGraph {
 			UpdateNodeRect();
 			Save();
 		}
+		
+		
+		
+		public void BundlizerUseOutputResources () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+			if (outputResurceLabelIndex != -1) return;
+			
+			connectionPoints.Add(new OutputPoint(AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL));
+			UpdateNodeRect();
+		}
+		
+		public void BundlizerUnuseOutputResources () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+			if (outputResurceLabelIndex == -1) return;
+			
+			connectionPoints.RemoveAt(outputResurceLabelIndex);
+			UpdateNodeRect();
+		}
+		
+		
 
 		public void BeforeSave () {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
@@ -1146,15 +1172,6 @@ namespace AssetGraph {
 			UpdateNodeRect();
 		}
 
-		public List<ConnectionPoint> DuplicateConnectionPoints () {
-			var copiedConnectionList = new List<ConnectionPoint>();
-			foreach (var connectionPoint in connectionPoints) {
-				if (connectionPoint.isOutput) copiedConnectionList.Add(new OutputPoint(connectionPoint.label));
-				if (connectionPoint.isInput) copiedConnectionList.Add(new InputPoint(connectionPoint.label));
-			}
-			return copiedConnectionList;
-		}
-
 		private void RefreshConnectionPos () {
 			var inputPoints = connectionPoints.Where(p => p.isInput).ToList();
 			var outputPoints = connectionPoints.Where(p => p.isOutput).ToList();
@@ -1273,7 +1290,8 @@ namespace AssetGraph {
 				foreach (var point in connectionPoints) {
 					switch (this.kind) {
 						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-						case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						case AssetGraphSettings.NodeKind.FILTER_GUI:
+						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 							var label = point.label;
 							var labelRect = new Rect(point.buttonRect.x - baseRect.width, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
 
@@ -1418,18 +1436,22 @@ namespace AssetGraph {
 		public void UpdateNodeRect () {
 
 			var contentWidth = this.name.Length;
-			if (this.kind == AssetGraphSettings.NodeKind.FILTER_GUI) {
-				var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
-				if (longestFilterLengths.Any()) {
-					contentWidth = contentWidth + longestFilterLengths[0];
-				}
+			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.FILTER_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
+					if (longestFilterLengths.Any()) {
+						contentWidth = contentWidth + longestFilterLengths[0];
+					}
 
-				// update node height by number of output connectionPoint.
-				var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
-				if (1 < outputPointCount) {
-					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
-				} else {
-					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
+					// update node height by number of output connectionPoint.
+					var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
+					if (1 < outputPointCount) {
+						this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
+					} else {
+						this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
+					}
+					break;
 				}
 			}
 

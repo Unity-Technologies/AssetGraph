@@ -141,8 +141,9 @@ namespace AssetGraph {
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
-		public const string DUMMY_IMPORTER_LABELTONEXT = "importer_dummy_label";
-
+		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
+		public const string BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL = "resources";
+		
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 
 		public enum NodeKind : int {

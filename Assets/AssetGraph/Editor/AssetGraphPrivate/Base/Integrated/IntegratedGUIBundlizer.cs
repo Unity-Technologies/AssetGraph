@@ -9,12 +9,16 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class IntegratedGUIBundlizer : INodeBase {
 		private readonly string bundleNameTemplate;
+		private readonly bool outputResource;
 		
-		public IntegratedGUIBundlizer (string bundleNameTemplate) {
+		public IntegratedGUIBundlizer (string bundleNameTemplate, bool outputResource) {
 			this.bundleNameTemplate = bundleNameTemplate;
+			this.outputResource = outputResource;
 		}
 
 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			Debug.LogError("labelToNext:" + labelToNext);
+			
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
@@ -40,7 +44,7 @@ namespace AssetGraph {
 			
 				outputDict[groupKey] = outputSources;
 			}
-
+			Debug.LogError("setup outputResource:" + outputResource + " groupKeyを生かした状態で、出力をもう1系統増やす。ラベルがもう一個くるから、ラベルで吐き出す内容を入れ替えればよさげ。");
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
@@ -70,7 +74,7 @@ namespace AssetGraph {
 
 				outputDict[groupKey] = outputSources;
 			}
-
+			Debug.LogError("run outputResource:" + outputResource);
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 

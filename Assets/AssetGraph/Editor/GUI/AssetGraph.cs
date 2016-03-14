@@ -1683,7 +1683,8 @@ namespace AssetGraph {
 
 					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					Debug.LogError("作成時にここにも付けとくかどうか、、");
 					break;
 				}
 
@@ -2121,7 +2122,8 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					Debug.LogError("コピー時かあ、、うーーん、、全部表示しちゃったほうが楽な気がしてきたなあ、、");
 					break;
 				}
 
