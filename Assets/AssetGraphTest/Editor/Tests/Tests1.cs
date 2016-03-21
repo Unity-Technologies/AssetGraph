@@ -241,7 +241,7 @@ public partial class Test {
 
 		var bundleNameTemplate = "a_*.bundle";
 
-		var integratedGUIBundlizer = new IntegratedGUIBundlizer(bundleNameTemplate);
+		var integratedGUIBundlizer = new IntegratedGUIBundlizer(bundleNameTemplate, false);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
@@ -249,6 +249,45 @@ public partial class Test {
 		integratedGUIBundlizer.Setup("ID_1_6_SetupBundlizer", "CONNECTION_1_6_SetupBundlizer", string.Empty, source, new List<string>(), Out);
 		Debug.Log("passed _1_6_SetupBundlizer");
 	}
+	
+	public void _1_6_1_SetupBundlizerWithOutputResources () {
+		GraphStackController.CleanCache();
+
+		var importedPath = "Assets/AssetGraphTest/PrefabricatorTestResource/SpanPath/a.png";
+
+		var source = new Dictionary<string, List<InternalAssetData>> {
+			{"0", 
+				new List<InternalAssetData> {
+					InternalAssetData.InternalAssetDataByImporter(
+						"traceId_1_6_SetupBundlizer",
+						Path.Combine(Application.dataPath, importedPath),
+						Application.dataPath,
+						Path.GetFileName(importedPath),
+						string.Empty,
+						importedPath,
+						AssetDatabase.AssetPathToGUID(importedPath),
+						AssetGraphInternalFunctions.GetAssetType(importedPath)
+					)
+				}
+
+			}
+		};
+
+		var results = new Dictionary<string, List<InternalAssetData>>();
+
+		var bundleNameTemplate = "a_*.bundle";
+		var integratedGUIBundlizer = new IntegratedGUIBundlizer(bundleNameTemplate, true);
+		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
+			results[connectionId] = output["0"];
+		};
+
+		integratedGUIBundlizer.Setup("ID_1_6_SetupBundlizer", "CONNECTION_1_6_SetupBundlizer", string.Empty, source, new List<string>(), Out);
+		// んー、、
+		// 接線をもう一つ出す
+		// 実行時のOutをもう一本だす(Bundlizerの仕様に左右されそうな気がする、グループどうしてたっけ。)
+		Debug.LogError("failed.");
+	}
+		
 	public void _1_7_RunBundlizer () {
 		GraphStackController.CleanCache();
 		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
@@ -276,7 +315,7 @@ public partial class Test {
 
 		var bundleNameTemplate = "a_*.bundle";
 
-		var integratedGUIBundlizer = new IntegratedGUIBundlizer(bundleNameTemplate);
+		var integratedGUIBundlizer = new IntegratedGUIBundlizer(bundleNameTemplate, false);
 		Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Out = (string nodeId, string connectionId, Dictionary<string, List<InternalAssetData>> output, List<string> cached) => {
 			results[connectionId] = output["0"];
 		};
@@ -304,6 +343,10 @@ public partial class Test {
 		}
 		
 		Debug.LogError("failed to bundlize");
+	}
+	
+	public void _1_7_1_RunBundlizerWithOutputResources () {
+		Debug.LogError("failed.");
 	}
 
 	public void _1_8_0_SerializeGraph_hasValidEndpoint () {
@@ -422,7 +465,7 @@ public partial class Test {
 		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true),
+					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true, false),
 				}
 			}
 		};
@@ -456,7 +499,7 @@ public partial class Test {
 		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true),
+					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true, false),
 				}
 			}
 		};

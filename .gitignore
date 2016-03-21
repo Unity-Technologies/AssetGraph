@@ -56,3 +56,9 @@ Preloadability/*
 
 ProjectSettings/*
 
+
+Assets/VSCode/*
+
+.vscode/launch.json
+
+Assets/VSCode.meta

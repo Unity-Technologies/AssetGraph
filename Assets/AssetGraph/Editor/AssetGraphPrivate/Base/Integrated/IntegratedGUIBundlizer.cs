@@ -9,12 +9,14 @@ using System.Collections.Generic;
 namespace AssetGraph {
 	public class IntegratedGUIBundlizer : INodeBase {
 		private readonly string bundleNameTemplate;
+		private readonly bool outputResource;
 		
-		public IntegratedGUIBundlizer (string bundleNameTemplate) {
+		public IntegratedGUIBundlizer (string bundleNameTemplate, bool outputResource) {
 			this.bundleNameTemplate = bundleNameTemplate;
+			this.outputResource = outputResource;
 		}
 
-		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
@@ -40,8 +42,16 @@ namespace AssetGraph {
 			
 				outputDict[groupKey] = outputSources;
 			}
-
+			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
+			
+			/*
+				generate additional output:
+				output bundle resources for next node, for generate another AssetBundles with dependency.
+			*/
+			if (outputResource) {
+				Output(nodeId, AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+			}
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -70,8 +80,16 @@ namespace AssetGraph {
 
 				outputDict[groupKey] = outputSources;
 			}
-
+			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
+			
+			/*
+				generate additional output:
+				output bundle resources for next node, for generate another AssetBundles with dependency.
+			*/
+			if (outputResource) {
+				Output(nodeId, AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+			}
 		}
 
 		public string BundlizeAssets (string package, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
@@ -97,13 +115,19 @@ namespace AssetGraph {
 			}
 
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
-
-			if (isRun) {
-				foreach (var source in sources) {
-					if (GraphStackController.IsMetaFile(source.importedPath)) continue;
+			
+			foreach (var source in sources) {
+				// if already bundled, avoid changing that name.
+				if (source.isBundled) continue;
+				
+				if (isRun) {
+					if (GraphStackController.IsMetaFile(source.importedPath)) continue;	
 					var assetImporter = AssetImporter.GetAtPath(source.importedPath);
 					assetImporter.assetBundleName = bundleName;
 				}
+				
+				// set as this resource is already bundled.
+				source.isBundled = true;
 			}
 
 			return bundlePath;

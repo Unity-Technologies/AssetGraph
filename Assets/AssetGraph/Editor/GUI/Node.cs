@@ -47,6 +47,7 @@ namespace AssetGraph {
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
+		[SerializeField] public SerializablePseudoDictionary bundleUseOutput;
 		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
 		
 		// for platform-package specified parameter.
@@ -148,7 +149,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, float x, float y) {
+		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -156,7 +157,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				bundleNameTemplate: bundleNameTemplate
+				bundleNameTemplate: bundleNameTemplate,
+				bundleUseOutput: bundleUseOutput
 			);
 		}
 
@@ -188,7 +190,7 @@ namespace AssetGraph {
 
 				var basePlatform = node.currentPlatform;
 				
-				// EditorGUILayout.LabelField("nodeId:", node.nodeId);
+				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -301,8 +303,8 @@ namespace AssetGraph {
 								}
 								GUILayout.EndHorizontal();
 							}
-
-
+							
+							Debug.LogWarning("ここで、キーワードの数とConPo差し込む箇所が不整合起こしてそうな気がする。");
 							// add contains keyword interface.
 							if (GUILayout.Button("+")) {
 								node.BeforeSave();
@@ -505,6 +507,32 @@ namespace AssetGraph {
 								node.bundleNameTemplate.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), bundleNameTemplate);
 								node.Save();
 							}
+							
+							var isUseOutputResoruces = GraphStackController.ValueFromPlatformAndPackage(
+								node.bundleUseOutput.ReadonlyDict(), 
+								node.currentPlatform, 
+								node.currentPackage
+							).ToString().ToLower();
+							
+							var useOrNot = false;
+							switch (isUseOutputResoruces) {
+								case "true": {
+									useOrNot = true;
+									break;
+								}
+							}
+							
+							var result = EditorGUILayout.ToggleLeft("Output Resources", useOrNot);
+							
+							if (result != useOrNot) {
+								node.BeforeSave();
+								
+								if (result) node.BundlizerUseOutputResources();
+								else node.BundlizerUnuseOutputResources(); 
+								
+								node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), result.ToString());
+								node.Save();
+							} 
 						}
 
 						UpdateDeleteSetting(node);
@@ -815,7 +843,9 @@ namespace AssetGraph {
 				}
 			}
 		}
-
+		
+		
+		
 		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
 			connectionPoints.Insert(addedIndex, new OutputPoint(keyword));
 			UpdateNodeRect();
@@ -836,6 +866,28 @@ namespace AssetGraph {
 			UpdateNodeRect();
 			Save();
 		}
+		
+		
+		
+		public void BundlizerUseOutputResources () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+			if (outputResurceLabelIndex != -1) return;
+			
+			connectionPoints.Add(new OutputPoint(AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL));
+			UpdateNodeRect();
+		}
+		
+		public void BundlizerUnuseOutputResources () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+			if (outputResurceLabelIndex == -1) return;
+			
+			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
+			connectionPoints.RemoveAt(outputResurceLabelIndex);
+			UpdateNodeRect();
+		}
+		
+		
 
 		public void BeforeSave () {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
@@ -862,6 +914,7 @@ namespace AssetGraph {
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
+			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			nodeInsp = ScriptableObject.CreateInstance<NodeInspector>();
@@ -878,6 +931,7 @@ namespace AssetGraph {
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
+			if (bundleUseOutput != null) this.bundleUseOutput = new SerializablePseudoDictionary(bundleUseOutput);
 			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
 			
 			this.baseRect = new Rect(x, y, AssetGraphGUISettings.NODE_BASE_WIDTH, AssetGraphGUISettings.NODE_BASE_HEIGHT);
@@ -947,6 +1001,7 @@ namespace AssetGraph {
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
+				(this.bundleUseOutput != null) ? this.bundleUseOutput.ReadonlyDict() : null,
 				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
 			);
 			return duplicatedNode;
@@ -1119,15 +1174,6 @@ namespace AssetGraph {
 			UpdateNodeRect();
 		}
 
-		public List<ConnectionPoint> DuplicateConnectionPoints () {
-			var copiedConnectionList = new List<ConnectionPoint>();
-			foreach (var connectionPoint in connectionPoints) {
-				if (connectionPoint.isOutput) copiedConnectionList.Add(new OutputPoint(connectionPoint.label));
-				if (connectionPoint.isInput) copiedConnectionList.Add(new InputPoint(connectionPoint.label));
-			}
-			return copiedConnectionList;
-		}
-
 		private void RefreshConnectionPos () {
 			var inputPoints = connectionPoints.Where(p => p.isInput).ToList();
 			var outputPoints = connectionPoints.Where(p => p.isOutput).ToList();
@@ -1246,7 +1292,8 @@ namespace AssetGraph {
 				foreach (var point in connectionPoints) {
 					switch (this.kind) {
 						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-						case AssetGraphSettings.NodeKind.FILTER_GUI: {
+						case AssetGraphSettings.NodeKind.FILTER_GUI:
+						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 							var label = point.label;
 							var labelRect = new Rect(point.buttonRect.x - baseRect.width, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
 
@@ -1391,18 +1438,22 @@ namespace AssetGraph {
 		public void UpdateNodeRect () {
 
 			var contentWidth = this.name.Length;
-			if (this.kind == AssetGraphSettings.NodeKind.FILTER_GUI) {
-				var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
-				if (longestFilterLengths.Any()) {
-					contentWidth = contentWidth + longestFilterLengths[0];
-				}
+			switch (this.kind) {
+				case AssetGraphSettings.NodeKind.FILTER_GUI:
+				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
+					if (longestFilterLengths.Any()) {
+						contentWidth = contentWidth + longestFilterLengths[0];
+					}
 
-				// update node height by number of output connectionPoint.
-				var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
-				if (1 < outputPointCount) {
-					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
-				} else {
-					this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
+					// update node height by number of output connectionPoint.
+					var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
+					if (1 < outputPointCount) {
+						this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT + (AssetGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
+					} else {
+						this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetGraphGUISettings.NODE_BASE_HEIGHT);
+					}
+					break;
 				}
 			}
 

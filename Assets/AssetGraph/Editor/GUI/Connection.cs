@@ -142,9 +142,28 @@ namespace AssetGraph {
 
 			// draw connection label if connection's label is not normal.
 			if (Node.scaleFactor == Node.SCALE_MAX) {
-				if (label != AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL) {
-					var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
-					Handles.Label(labelPointV3, label);
+				switch (label){
+					case AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL: {
+						// show nothing
+						break;
+					}
+					
+					case AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL: {
+						var labelPointV3 = new Vector3(centerPointV3.x - ((AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL.Length * 6f) / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL);
+						break;
+					}
+					case AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL: {
+						var labelPointV3 = new Vector3(centerPointV3.x - ((AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL.Length * 6f) / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+						break;
+					}
+					
+					default: {
+						var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, label);
+						break;
+					}
 				}
 			}
 

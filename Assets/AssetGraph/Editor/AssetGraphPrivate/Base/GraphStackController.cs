@@ -229,7 +229,12 @@ namespace AssetGraph {
 								break;
 							}
 						}
-
+						
+						var bundleUseOutputSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
+						if (bundleUseOutputSource == null) {
+							Debug.LogError("bundleUseOutputSource is null. maybe deserialize error.");
+							bundleUseOutputSource = new Dictionary<string, object>();
+						}
 						break;
 					}
 
@@ -564,17 +569,24 @@ namespace AssetGraph {
 						var bundleNameTemplateSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 						var bundleNameTemplate = new Dictionary<string, string>();
 						if (bundleNameTemplateSource == null) {
-							
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-
+						
+						var bundleUseOutputSource = nodeDict[AssetGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
+						var bundleUseOutput = new Dictionary<string, string>();
+						if (bundleUseOutputSource == null) {
+							bundleUseOutputSource = new Dictionary<string, object>();
+						}
+						foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string;
+						
 						nodeDatas.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
-								bundleNameTemplate:bundleNameTemplate
+								bundleNameTemplate:bundleNameTemplate,
+								bundleUseOutput:bundleUseOutput
 							)
 						);
 						break;
@@ -717,7 +729,7 @@ namespace AssetGraph {
 				if (!parentNode.Any()) return;
 
 				var parentNodeKind = parentNode[0].nodeKind;
-				
+
 				// check node kind order.
 				AssertNodeOrder(parentNodeKind, nodeKind);
 
@@ -795,11 +807,12 @@ namespace AssetGraph {
 				var targetConnectionId = targetConnectionIds[0];
 				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
 				
-				var connectionResult = resultDict[targetConnectionId];
-
+				/*
+					merge connection result by group key.
+				*/
 				foreach (var groupKey in result.Keys) {
-					if (!connectionResult.ContainsKey(groupKey)) connectionResult[groupKey] = new List<InternalAssetData>();
-					connectionResult[groupKey].AddRange(result[groupKey]);
+					if (!resultDict[targetConnectionId].ContainsKey(groupKey)) resultDict[targetConnectionId][groupKey] = new List<InternalAssetData>();
+					resultDict[targetConnectionId][groupKey].AddRange(result[groupKey]);
 				}
 
 				if (isActualRun) {
@@ -887,7 +900,17 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
+						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
+						
+						var useOutputResources = false;
+						switch (bundleUseOutputResources) {
+							case "true" :{
+								useOutputResources = true;
+								break;
+							}
+						}
+						
+						var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -991,7 +1014,17 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var executor = new IntegratedGUIBundlizer(bundleNameTemplate);
+						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
+						
+						var useOutputResources = false;
+						switch (bundleUseOutputResources) {
+							case "true" :{
+								useOutputResources = true;
+								break;
+							}
+						}
+						
+						var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -1039,16 +1072,6 @@ namespace AssetGraph {
 			}
 
 			switch (fromKind) {
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					switch (toKind) {
-						case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-							throw new Exception("cannot connect from bundlizer to bundlizer.");
-						}
-					}
-					break;
-				}
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					switch (toKind) {
 						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
@@ -1278,6 +1301,7 @@ namespace AssetGraph {
 			}
 			return new List<string>();
 		}
+		
 
 		public static bool IsMetaFile (string filePath) {
 			if (filePath.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)) return true;
@@ -1449,6 +1473,7 @@ namespace AssetGraph {
 
 		// for Bundlizer GUI data
 		public readonly Dictionary<string, string> bundleNameTemplate;
+		public readonly Dictionary<string, string> bundleUseOutput;
 
 		// for BundleBuilder GUI data
 		public readonly Dictionary<string, List<string>> enabledBundleOptions;
@@ -1466,6 +1491,7 @@ namespace AssetGraph {
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
+			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			this.nodeId = nodeId;
@@ -1479,6 +1505,7 @@ namespace AssetGraph {
 			this.importerPackages = null;
 			this.groupingKeyword = null;
 			this.bundleNameTemplate = null;
+			this.bundleUseOutput = null;
 			this.enabledBundleOptions = null;
 
 			switch (nodeKind) {
@@ -1519,6 +1546,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.bundleNameTemplate = bundleNameTemplate;
+					this.bundleUseOutput = bundleUseOutput;
 					break;
 				}
 
