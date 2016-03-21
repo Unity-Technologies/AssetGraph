@@ -729,7 +729,7 @@ namespace AssetGraph {
 				if (!parentNode.Any()) return;
 
 				var parentNodeKind = parentNode[0].nodeKind;
-				
+
 				// check node kind order.
 				AssertNodeOrder(parentNodeKind, nodeKind);
 
@@ -807,11 +807,12 @@ namespace AssetGraph {
 				var targetConnectionId = targetConnectionIds[0];
 				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
 				
-				var connectionResult = resultDict[targetConnectionId];
-
+				/*
+					merge connection result by group key.
+				*/
 				foreach (var groupKey in result.Keys) {
-					if (!connectionResult.ContainsKey(groupKey)) connectionResult[groupKey] = new List<InternalAssetData>();
-					connectionResult[groupKey].AddRange(result[groupKey]);
+					if (!resultDict[targetConnectionId].ContainsKey(groupKey)) resultDict[targetConnectionId][groupKey] = new List<InternalAssetData>();
+					resultDict[targetConnectionId][groupKey].AddRange(result[groupKey]);
 				}
 
 				if (isActualRun) {
@@ -899,7 +900,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package).ToLower();
+						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
 						
 						var useOutputResources = false;
 						switch (bundleUseOutputResources) {
@@ -1013,7 +1014,7 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package).ToLower();
+						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
 						
 						var useOutputResources = false;
 						switch (bundleUseOutputResources) {
@@ -1071,16 +1072,6 @@ namespace AssetGraph {
 			}
 
 			switch (fromKind) {
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					switch (toKind) {
-						case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
-						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-							throw new Exception("cannot connect from bundlizer to bundlizer.");
-						}
-					}
-					break;
-				}
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					switch (toKind) {
 						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
@@ -1310,6 +1301,7 @@ namespace AssetGraph {
 			}
 			return new List<string>();
 		}
+		
 
 		public static bool IsMetaFile (string filePath) {
 			if (filePath.EndsWith(AssetGraphSettings.UNITY_METAFILE_EXTENSION)) return true;

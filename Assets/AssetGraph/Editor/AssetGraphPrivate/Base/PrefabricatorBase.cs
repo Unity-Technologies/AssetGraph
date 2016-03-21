@@ -26,7 +26,8 @@ namespace AssetGraph {
 				through all.
 			*/
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
-
+			
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				outputDict[groupKey] = inputSources;
@@ -77,7 +78,11 @@ namespace AssetGraph {
 				// collect generated prefab path.
 				var generated = new List<string>();
 				var outputSources = new List<InternalAssetData>();
-
+				
+				
+				/*
+					Prefabricate(GameObject baseObject, string prefabName, bool forceGenerate) method.
+				*/
 				Func<GameObject, string, bool, string> Prefabricate = (GameObject baseObject, string prefabName, bool forceGenerate) => {
 					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
 					
@@ -127,48 +132,46 @@ namespace AssetGraph {
 				
 
 				/*
-					add assets in this node to next output.
+					ready assets-output-data from this node to next output.
 					it contains "cached" or "generated as prefab" or "else" assets.
 					output all assets.
 				*/
 				var currentAssetsInThisNode = FileController.FilePathsInFolder(recommendedPrefabPath);
-				foreach (var newAssetPath in currentAssetsInThisNode) {
-					if (generated.Contains(newAssetPath)) {
+				foreach (var generatedCandidateAssetPath in currentAssetsInThisNode) {
+					
+					/*
+						candidate is new, regenerated prefab.
+					*/
+					if (generated.Contains(generatedCandidateAssetPath)) {
 						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-							newAssetPath,
-							AssetDatabase.AssetPathToGUID(newAssetPath),
-							AssetGraphInternalFunctions.GetAssetType(newAssetPath),
-							true
-						);
-						outputSources.Add(newAsset);
-					} else {
-						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-							newAssetPath,
-							AssetDatabase.AssetPathToGUID(newAssetPath),
-							AssetGraphInternalFunctions.GetAssetType(newAssetPath),
+							generatedCandidateAssetPath,
+							AssetDatabase.AssetPathToGUID(generatedCandidateAssetPath),
+							AssetGraphInternalFunctions.GetAssetType(generatedCandidateAssetPath),
+							true,
 							false
 						);
 						outputSources.Add(newAsset);
+						continue;
 					}
+					
+					/*
+						candidate is not new prefab.
+					*/
+					var cachedPrefabAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						generatedCandidateAssetPath,
+						AssetDatabase.AssetPathToGUID(generatedCandidateAssetPath),
+						AssetGraphInternalFunctions.GetAssetType(generatedCandidateAssetPath),
+						false,
+						false
+					);
+					outputSources.Add(cachedPrefabAsset);
 				}
 
 
 				/*
 					add current resources to next node's resources.
 				*/
-				foreach (var assetData in inputSources) {
-					var inheritedInternalAssetData = InternalAssetData.InternalAssetDataByImporter(
-						assetData.traceId,
-						assetData.absoluteSourcePath,
-						assetData.sourceBasePath,
-						assetData.fileNameAndExtension,
-						assetData.pathUnderSourceBase,
-						assetData.importedPath,
-						assetData.assetId,
-						assetData.assetType
-					);
-					outputSources.Add(inheritedInternalAssetData);
-				}
+				outputSources.AddRange(inputSources);
 
 				outputDict[groupKey] = outputSources;
 			}

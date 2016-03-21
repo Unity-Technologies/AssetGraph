@@ -59,7 +59,8 @@ namespace AssetGraph {
 						newAssetPath,
 						AssetDatabase.AssetPathToGUID(newAssetPath),
 						AssetGraphInternalFunctions.GetAssetType(newAssetPath),
-						true
+						true,
+						false
 					);
 					outputSources.Add(newAssetData);
 				}

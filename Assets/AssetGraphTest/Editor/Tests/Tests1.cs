@@ -465,7 +465,7 @@ public partial class Test {
 		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true),
+					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true, false),
 				}
 			}
 		};
@@ -499,7 +499,7 @@ public partial class Test {
 		var exportTargets = new Dictionary<string, List<InternalAssetData>> {
 			{"0", 
 				new List<InternalAssetData> {
-					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true),
+					InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(importedPath, assetId, assetType, true, false),
 				}
 			}
 		};

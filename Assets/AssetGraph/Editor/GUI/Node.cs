@@ -190,7 +190,7 @@ namespace AssetGraph {
 
 				var basePlatform = node.currentPlatform;
 				
-				// EditorGUILayout.LabelField("nodeId:", node.nodeId);
+				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -881,6 +881,8 @@ namespace AssetGraph {
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex == -1) return;
 			
+			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
 			connectionPoints.RemoveAt(outputResurceLabelIndex);
 			UpdateNodeRect();
 		}

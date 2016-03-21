@@ -262,6 +262,7 @@ namespace AssetGraph {
 						basePathWithNewAssetPath,
 						AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
 						AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
+						false,
 						false
 					);
 					outputSources.Add(newInternalAssetData);
@@ -271,7 +272,8 @@ namespace AssetGraph {
 						basePathWithNewAssetPath,
 						AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
 						AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
-						true
+						true,
+						false
 					);
 					outputSources.Add(newInternalAssetData);
 				}
