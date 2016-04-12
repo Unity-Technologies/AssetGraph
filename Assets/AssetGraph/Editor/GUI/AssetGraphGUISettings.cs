@@ -1,7 +1,7 @@
 
 namespace AssetGraph {
 	public class AssetGraphGUISettings {
-		public const string RESOURCE_BASEPATH = "Assets/AssetGraph/Editor/GUI/GraphicResources/";
+		public const string RESOURCE_BASEPATH = "Editor/GUI/GraphicResources/";
 
 		public const float NODE_BASE_WIDTH = 120f;
 		public const float NODE_BASE_HEIGHT = 40f;
