@@ -69,7 +69,6 @@ namespace AssetGraph {
 		*/
 		public const string MENU_LOADER_NAME = "Loader";
 		public const string MENU_FILTER_NAME = "Filter";
-		public const string MENU_IMPORTER_NAME = "Importer";
 		public const string MENU_GROUPING_NAME = "Grouping";
 		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
 		public const string MENU_BUNDLIZER_NAME = "Bundlizer";
@@ -79,23 +78,19 @@ namespace AssetGraph {
 		public static Dictionary<string, NodeKind> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, NodeKind>{
 			{"Create " + MENU_LOADER_NAME + " Node", NodeKind.LOADER_GUI},
 			{"Create " + MENU_FILTER_NAME + " Node", NodeKind.FILTER_GUI},
-			{"Create " + MENU_IMPORTER_NAME + " Node", NodeKind.IMPORTER_GUI},
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
 			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
 			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
-			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
-			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
+			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI}
 		};
 
 		public static Dictionary<NodeKind, string> DEFAULT_NODE_NAME = new Dictionary<NodeKind, string>{
 			{NodeKind.LOADER_GUI, "Loader"},
 			{NodeKind.FILTER_GUI, "Filter"},
-			{NodeKind.IMPORTER_GUI, "Importer"},
 			{NodeKind.GROUPING_GUI, "Grouping"},
 			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
 			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
-			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
-			{NodeKind.EXPORTER_GUI, "Exporter"}
+			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"}
 		};
 
 		/*
