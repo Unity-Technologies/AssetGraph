@@ -49,12 +49,14 @@ namespace AssetGraph {
 						continue;
 					}
 					
-					outputSource.Add(
-						InternalAssetData.InternalAssetDataByLoader(
-							targetFilePath, 
-							loadFilePath
-						)
-					);
+					throw new Exception("loader:" + targetFilePath + " is not imported yet, should import before bundlize.");
+					
+					// outputSource.Add(
+					// 	InternalAssetData.InternalAssetDataByLoader(
+					// 		targetFilePath, 
+					// 		loadFilePath
+					// 	)
+					// );
 				}
 
 				var outputDir = new Dictionary<string, List<InternalAssetData>> {
@@ -103,12 +105,14 @@ namespace AssetGraph {
 						continue;
 					}
 					
-					outputSource.Add(
-						InternalAssetData.InternalAssetDataByLoader(
-							targetFilePath, 
-							loadFilePath
-						)
-					);
+					throw new Exception("loader:" + targetFilePath + " is not imported yet, should import before bundlize.");
+					
+					// outputSource.Add(
+					// 	InternalAssetData.InternalAssetDataByLoader(
+					// 		targetFilePath, 
+					// 		loadFilePath
+					// 	)
+					// );
 				}
 				
 				var outputDir = new Dictionary<string, List<InternalAssetData>> {

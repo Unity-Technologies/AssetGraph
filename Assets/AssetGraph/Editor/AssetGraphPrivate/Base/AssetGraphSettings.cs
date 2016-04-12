@@ -144,18 +144,18 @@ namespace AssetGraph {
 
 		public enum NodeKind : int {
 			FILTER_SCRIPT,
-			IMPORTER_SCRIPT,
+			// IMPORTER_SCRIPT,
 			PREFABRICATOR_SCRIPT,
 			BUNDLIZER_SCRIPT,
 
 			LOADER_GUI,
 			FILTER_GUI,
-			IMPORTER_GUI,
+			// IMPORTER_GUI,
 			GROUPING_GUI,
 			PREFABRICATOR_GUI,
 			BUNDLIZER_GUI,
 			BUNDLEBUILDER_GUI,
-			EXPORTER_GUI
+			// EXPORTER_GUI
 		}
 
 		public static NodeKind NodeKindFromString (string val) {

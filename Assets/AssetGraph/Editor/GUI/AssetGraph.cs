@@ -1355,13 +1355,13 @@ namespace AssetGraph {
 					nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
 					break;
 				}
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
-					break;
-				}
+				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+				// 	nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
+				// 	break;
+				// }
 				
 				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
 					nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
@@ -1374,10 +1374,10 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-					nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
-					break;
-				}
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
+				// 	nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
+				// 	break;
+				// }
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
@@ -1437,7 +1437,7 @@ namespace AssetGraph {
 					return newNode;
 				}
 				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
+				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
@@ -1473,21 +1473,21 @@ namespace AssetGraph {
 					return newNode;
 				}
 
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
-					var defaultPlatformAndPackages = new Dictionary<string, string>();
-					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+				// 	var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
+				// 	var defaultPlatformAndPackages = new Dictionary<string, string>();
+				// 	foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
-					var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
-					CollectPackage(defaultPlatformAndPackages.Keys.ToList());
+				// 	var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
+				// 	CollectPackage(defaultPlatformAndPackages.Keys.ToList());
 
-					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-					foreach (var outputLabelSource in outputLabelsList) {
-						var label = outputLabelSource as string;
-						newNode.AddConnectionPoint(new OutputPoint(label));
-					}
-					return newNode;
-				}
+				// 	var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+				// 	foreach (var outputLabelSource in outputLabelsList) {
+				// 		var label = outputLabelSource as string;
+				// 		newNode.AddConnectionPoint(new OutputPoint(label));
+				// 	}
+				// 	return newNode;
+				// }
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
@@ -1548,15 +1548,15 @@ namespace AssetGraph {
 					return newNode;
 				}
 
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
-					var exportPath = new Dictionary<string, string>();
-					foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
+				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+				// 	var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
+				// 	var exportPath = new Dictionary<string, string>();
+				// 	foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
-					var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
-					CollectPackage(exportPath.Keys.ToList());
-					return newNode;
-				}
+				// 	var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
+				// 	CollectPackage(exportPath.Keys.ToList());
+				// 	return newNode;
+				// }
 
 				default: {
 					Debug.LogError("kind not found:" + kind);
@@ -1593,12 +1593,12 @@ namespace AssetGraph {
 					newNode.AddConnectionPoint(new OutputPoint(outputPointLabel));
 				}
 			}
-			if (scriptBaseType == typeof(ImporterBase)) {
-				var kind = AssetGraphSettings.NodeKind.IMPORTER_SCRIPT;
-				newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
-				newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-			}
+			// if (scriptBaseType == typeof(ImporterBase)) {
+			// 	var kind = AssetGraphSettings.NodeKind.IMPORTER_SCRIPT;
+			// 	newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+			// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+			// 	newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+			// }
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
 				newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
@@ -1643,16 +1643,16 @@ namespace AssetGraph {
 					break;
 				}
 				
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					var importerPackages = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+				// 	var importerPackages = new Dictionary<string, string> {
+				// 		{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
+				// 	};
 
-					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-					break;
-				}
+				// 	newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
+				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				// 	newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+				// 	break;
+				// }
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					var newGroupingKeywords = new Dictionary<string, string> {
@@ -1699,15 +1699,15 @@ namespace AssetGraph {
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					var default_platform_package_exportPath = new Dictionary<string, string> {
-						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
+				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+				// 	var default_platform_package_exportPath = new Dictionary<string, string> {
+				// 		{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
+				// 	};
 
-					newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					break;
-				}
+				// 	newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
+				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				// 	break;
+				// }
 				default: {
 					Debug.LogError("no kind match:" + kind);
 					break;
@@ -2096,11 +2096,11 @@ namespace AssetGraph {
 					break;
 				}
 				
-				case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-					break;
-				}
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
+				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				// 	newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+				// 	break;
+				// }
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
@@ -2123,14 +2123,13 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
-					Debug.LogError("コピー時かあ、、うーーん、、全部表示しちゃったほうが楽な気がしてきたなあ、、");
 					break;
 				}
 
-				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					break;
-				}
+				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				// 	break;
+				// }
 				default: {
 					Debug.LogError("no kind match:" + newNode.kind);
 					break;
