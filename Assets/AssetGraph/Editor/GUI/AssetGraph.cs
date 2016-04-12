@@ -257,23 +257,34 @@ namespace AssetGraph {
 
 		private void LoadTextures () {
 			// load shared node textures
-			Node.inputPointTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_INPUT_BG, typeof(Texture2D)) as Texture2D;
-			Node.outputPointTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_OUTPUT_BG, typeof(Texture2D)) as Texture2D;
+			Node.inputPointTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_INPUT_BG);
+			Node.outputPointTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_OUTPUT_BG);
 
-			Node.enablePointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE, typeof(Texture2D)) as Texture2D;
+			Node.enablePointMarkTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE);
 
-			Node.inputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT, typeof(Texture2D)) as Texture2D;
-			Node.outputPointMarkTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT, typeof(Texture2D)) as Texture2D;
-			Node.outputPointMarkConnectedTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED, typeof(Texture2D)) as Texture2D;
+			Node.inputPointMarkTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT);
+			Node.outputPointMarkTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT);
+			Node.outputPointMarkConnectedTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
 
 			SetupPlatformIconsAndStrings(out Node.platformButtonTextures, out Node.platformStrings);
 
 			// load shared connection textures
-			Connection.connectionArrowTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_ARROW, typeof(Texture2D)) as Texture2D;
+			Connection.connectionArrowTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_ARROW);
 
 			// load other textures
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
-			selectionTex = AssetDatabase.LoadAssetAtPath(AssetGraphGUISettings.RESOURCE_SELECTION, typeof(Texture2D)) as Texture2D;
+			selectionTex = TextureFromFile(AssetGraphGUISettings.RESOURCE_SELECTION);
+		}
+		
+		private static Texture2D TextureFromFile(string path) {
+			var extensionPath = GetExtensionPath();
+            Texture2D texture = new Texture2D(1, 1);
+            texture.LoadImage(File.ReadAllBytes(Path.Combine(extensionPath, path)));
+            return texture;
+        }
+		
+		private static string GetExtensionPath () {
+			return Path.GetDirectoryName(Path.GetDirectoryName(typeof(AssetGraph).Assembly.Location));
 		}
 
 		private static void SetupPlatformIconsAndStrings (out Texture2D[] platformTextures, out string[] platformNames) {
