@@ -19,8 +19,9 @@ namespace AssetGraph {
 		
 		public const string ASSETGRAPH_DATA_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
-
-		public const string ASSETGRAPH_PATH = "Assets/AssetGraph/";
+		
+		public const string ASSETS_PATH = "Assets/";
+		public const string ASSETGRAPH_PATH = ASSETS_PATH + "AssetGraph/";
 		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETGRAPH_PATH + "Cache/";
 		public const string SCRIPTSAMPLE_PATH = ASSETGRAPH_PATH + "Editor/ScriptSample/";
 		public const string USERSPACE_PATH = ASSETGRAPH_PATH + "UserSpace/Editor/";

@@ -190,7 +190,6 @@ namespace AssetGraph {
 
 				var basePlatform = node.currentPlatform;
 				
-				EditorGUILayout.LabelField("nodeId:", node.nodeId);
 
 				switch (node.kind) {
 					case AssetGraphSettings.NodeKind.LOADER_GUI: {
@@ -304,7 +303,6 @@ namespace AssetGraph {
 								GUILayout.EndHorizontal();
 							}
 							
-							Debug.LogWarning("ここで、キーワードの数とConPo差し込む箇所が不整合起こしてそうな気がする。");
 							// add contains keyword interface.
 							if (GUILayout.Button("+")) {
 								node.BeforeSave();

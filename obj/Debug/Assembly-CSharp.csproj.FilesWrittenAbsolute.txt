@@ -1,0 +1,17 @@
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Assembly-CSharp.dll.mdb
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Assembly-CSharp.dll
+/Users/tomggg/Desktop/AssetGraph/obj/Debug/Assembly-CSharp.dll
+/Users/tomggg/Desktop/AssetGraph/obj/Debug/Assembly-CSharp.dll.mdb
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/UnityEngine.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/UnityEditor.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/UnityEngine.UI.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/UnityEngine.Networking.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Mono.Cecil.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Unity.SerializationLogic.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Unity.DataContract.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/ICSharpCode.NRefactory.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Unity.UNetWeaver.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Unity.UNetWeaver.dll.mdb
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Unity.CecilTools.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Mono.Cecil.Pdb.dll
+/Users/tomggg/Desktop/AssetGraph/Temp/bin/Debug/Mono.Cecil.Mdb.dll

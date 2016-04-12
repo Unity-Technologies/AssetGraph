@@ -72,8 +72,7 @@ namespace AssetGraph {
 			public override void OnInspectorGUI () {
 				var con = ((ConnectionInspector)target).con;
 				if (con == null) return;
-
-				EditorGUILayout.LabelField("connectionId:", con.connectionId);
+				
 
 				var foldouts = ((ConnectionInspector)target).foldouts;
 				

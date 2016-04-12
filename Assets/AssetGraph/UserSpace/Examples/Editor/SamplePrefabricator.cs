@@ -20,7 +20,7 @@ public class SamplePrefabricator : AssetGraph.PrefabricatorBase {
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
-			
+		
 		if (characterTexture) Debug.Log("Prefabricate:loaded:" + textureAssetPath);
 		else Debug.LogError("Prefabricate:failed to load:" + textureAssetPath);
 

@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace AssetGraph {
 	public class IntegratedGUILoader : INodeBase {
@@ -23,12 +24,31 @@ namespace AssetGraph {
 					throw new Exception("directory not found:" + loadFilePath);
 				}
 			);
-
+			
+			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
+			var assetsFolderPath = Application.dataPath + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
+			
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
+					// already contained into Assets/ folder.
+					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
+					if (targetFilePath.StartsWith(assetsFolderPath)) {
+						var importedPath = targetFilePath.Replace(assetsFolderPath, AssetGraphSettings.ASSETS_PATH);
+						outputSource.Add(
+							InternalAssetData.InternalImportedAssetDataByLoader(
+								targetFilePath, 
+								loadFilePath,
+								importedPath,
+								AssetDatabase.AssetPathToGUID(importedPath),
+								AssetGraphInternalFunctions.GetAssetType(importedPath)
+							)
+						);
+						continue;
+					}
+					
 					outputSource.Add(
 						InternalAssetData.InternalAssetDataByLoader(
 							targetFilePath, 
@@ -59,11 +79,30 @@ namespace AssetGraph {
 				}
 			);
 			
+			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
+			var assetsFolderPath = Application.dataPath + AssetGraphSettings.UNITY_FOLDER_SEPARATOR;
+			
 			var outputSource = new List<InternalAssetData>();
 			try {
 				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
+					// already contained into Assets/ folder.
+					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
+					if (targetFilePath.StartsWith(assetsFolderPath)) {
+						var importedPath = targetFilePath.Replace(assetsFolderPath, AssetGraphSettings.ASSETS_PATH);
+						outputSource.Add(
+							InternalAssetData.InternalImportedAssetDataByLoader(
+								targetFilePath, 
+								loadFilePath,
+								importedPath,
+								AssetDatabase.AssetPathToGUID(importedPath),
+								AssetGraphInternalFunctions.GetAssetType(importedPath)
+							)
+						);
+						continue;
+					}
+					
 					outputSource.Add(
 						InternalAssetData.InternalAssetDataByLoader(
 							targetFilePath, 

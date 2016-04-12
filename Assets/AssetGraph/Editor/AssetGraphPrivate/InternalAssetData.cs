@@ -31,6 +31,24 @@ namespace AssetGraph {
 				pathUnderSourceBase:GetPathWithoutBasePath(absoluteSourcePath, sourceBasePath)
 			);
 		}
+		
+		
+		/**
+			WITHOUT-IMPORTER-TEMP-MODE implements.
+		*/
+		public static InternalAssetData InternalImportedAssetDataByLoader (string absoluteSourcePath, string sourceBasePath, string importedPath, string assetId, Type assetType) {
+			return new InternalAssetData(
+				traceId:Guid.NewGuid().ToString(),
+				absoluteSourcePath:absoluteSourcePath,
+				sourceBasePath:sourceBasePath,
+				fileNameAndExtension:Path.GetFileName(absoluteSourcePath),
+				pathUnderSourceBase:GetPathWithoutBasePath(absoluteSourcePath, sourceBasePath),
+				importedPath:importedPath,
+				pathUnderConnectionId:The2LevelLowerPath(importedPath),
+				assetId:assetId,
+				assetType:assetType
+			);
+		}
 
 		/**
 			new assets which is Imported.
