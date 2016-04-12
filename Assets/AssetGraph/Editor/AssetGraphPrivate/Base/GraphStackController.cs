@@ -89,7 +89,7 @@ namespace AssetGraph {
 		}
 
 		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
-			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptType);
 			if (nodeScriptInstance == null) {
 				Debug.LogError("no class found:" + scriptType);
 				return new List<string>();
@@ -1100,7 +1100,7 @@ namespace AssetGraph {
 		}
 
 		public static T Executor<T> (string typeStr) where T : INodeBase {
-			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
 				throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
 			}
