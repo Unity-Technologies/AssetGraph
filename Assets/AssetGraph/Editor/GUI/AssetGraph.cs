@@ -284,7 +284,8 @@ namespace AssetGraph {
         }
 		
 		private static string GetExtensionPath () {
-			return Path.GetDirectoryName(Path.GetDirectoryName(typeof(AssetGraph).Assembly.Location));
+			return string.Empty;
+			// return Path.GetDirectoryName(Path.GetDirectoryName(typeof(AssetGraph).Assembly.Location));
 		}
 
 		private static void SetupPlatformIconsAndStrings (out Texture2D[] platformTextures, out string[] platformNames) {
