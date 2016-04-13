@@ -396,7 +396,7 @@ namespace AssetGraph {
 								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
 								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
-								IntegratedGUIImporter.ValidateImportSample(samplingPath,
+								IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
 									(string noFolderFound) => {
 										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
 									},
