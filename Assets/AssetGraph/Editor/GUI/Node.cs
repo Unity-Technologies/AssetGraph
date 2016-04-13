@@ -375,6 +375,58 @@ namespace AssetGraph {
 
 					// 	break;
 					// }
+					
+					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI : {
+						EditorGUILayout.HelpBox("ImportSetting: applying settings.", MessageType.Info);
+						UpdateNodeName(node);
+						
+						GUILayout.Space(10f);
+
+						if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
+						/*
+							importer node has no platform key. 
+							platform key is contained by Unity's importer inspector itself.
+						*/
+						UpdateCurrentPackage(node);
+
+						{
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+								var nodeId = node.nodeId;
+								var currentImporterPackage = node.currentPackage;
+								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+								
+								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
+								IntegratedGUIImporter.ValidateImportSample(samplingPath,
+									(string noFolderFound) => {
+										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
+									},
+									(string noFilesFound) => {
+										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
+									},
+									(string samplingAssetPath) => {
+										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
+										if (GUILayout.Button("Modify Import Setting")) {
+											var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
+											Selection.activeObject = obj;
+										}
+										if (GUILayout.Button("Reset Import Setting")) {
+											// delete all import setting files.
+											FileController.RemakeDirectory(samplingPath);
+											node.Save();
+										}
+									},
+									(string tooManyFilesFoundMessage) => {
+										EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
+									}
+								);
+							}
+						}
+
+						if (packageEditMode) EditorGUI.EndDisabledGroup();
+						UpdateDeleteSetting(node);
+
+						break;
+					}
 
 					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 						if (node.groupingKeyword == null) return;
@@ -949,10 +1001,11 @@ namespace AssetGraph {
 				}
 				
 				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	this.nodeInterfaceTypeStr = "flow node 2";
-				// 	break;
-				// }
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
@@ -1085,10 +1138,11 @@ namespace AssetGraph {
 				}
 				
 				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	this.nodeInterfaceTypeStr = "flow node 2 on";
-				// 	break;
-				// }
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 2 on";
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3 on";
@@ -1136,10 +1190,11 @@ namespace AssetGraph {
 				}
 				
 				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	this.nodeInterfaceTypeStr = "flow node 2";
-				// 	break;
-				// }
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";

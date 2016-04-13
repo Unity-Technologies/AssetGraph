@@ -1386,10 +1386,11 @@ namespace AssetGraph {
 					break;
 				}
 
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:{
-				// 	nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
-				// 	break;
-				// }
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
@@ -1485,21 +1486,22 @@ namespace AssetGraph {
 					return newNode;
 				}
 
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
-				// 	var defaultPlatformAndPackages = new Dictionary<string, string>();
-				// 	foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					var defaultPlatformAndPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
+					var defaultPlatformAndPackages = new Dictionary<string, string>();
+					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
-				// 	var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
-				// 	CollectPackage(defaultPlatformAndPackages.Keys.ToList());
+					var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
+					CollectPackage(defaultPlatformAndPackages.Keys.ToList());
 
-				// 	var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-				// 	foreach (var outputLabelSource in outputLabelsList) {
-				// 		var label = outputLabelSource as string;
-				// 		newNode.AddConnectionPoint(new OutputPoint(label));
-				// 	}
-				// 	return newNode;
-				// }
+					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+					foreach (var outputLabelSource in outputLabelsList) {
+						var label = outputLabelSource as string;
+						newNode.AddConnectionPoint(new OutputPoint(label));
+					}
+					return newNode;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					var groupingKeywordSource = nodeDict[AssetGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
@@ -1655,16 +1657,17 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	var importerPackages = new Dictionary<string, string> {
-				// 		{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-				// 	};
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					var importerPackages = new Dictionary<string, string> {
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
+					};
 
-				// 	newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
-				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				// 	newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-				// 	break;
-				// }
+					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					var newGroupingKeywords = new Dictionary<string, string> {
@@ -2108,11 +2111,12 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				// 	newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-				// 	break;
-				// }
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
@@ -2135,6 +2139,7 @@ namespace AssetGraph {
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					Debug.LogError("コピー時かあ、、うーーん、、全部表示しちゃったほうが楽な気がしてきたなあ、、");
 					break;
 				}
 
