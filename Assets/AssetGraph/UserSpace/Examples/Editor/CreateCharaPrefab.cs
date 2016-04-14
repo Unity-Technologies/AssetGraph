@@ -11,7 +11,12 @@ using System.Collections.Generic;
 	Drag & Drop this C# script to AssetGraph.
 */
 public class CreateCharaPrefab : AssetGraph.PrefabricatorBase {
-	public override void In (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+	public override void Estimate (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+		var prefabName = groupKey + "_chara.prefab";
+		Prefabricate(prefabName);
+	}
+	
+	public override void Run (string groupKey, List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 		/*
 			create character's prefab.
 

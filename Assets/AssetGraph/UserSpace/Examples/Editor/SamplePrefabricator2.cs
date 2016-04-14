@@ -7,7 +7,11 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class SamplePrefabricator2 : AssetGraph.PrefabricatorBase {
-	public override void In (string groupKey, List<AssetGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+	public override void Estimate (string groupKey, List<AssetGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+		Prefabricate("prefab2.prefab");
+	}
+	
+	public override void Run (string groupKey, List<AssetGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 		
 		/*
 			you can see what incoming to this Prefabricator at the Inspector between Prefabricator to next node.

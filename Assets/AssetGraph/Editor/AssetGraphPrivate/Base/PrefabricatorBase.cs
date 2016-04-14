@@ -21,18 +21,72 @@ namespace AssetGraph {
 			if (invalids.Any()) {
 				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
 			}
-
-			/*
-				through all.
-			*/
-			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
+			
+			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
-				outputDict[groupKey] = inputSources;
-			};
 
+				var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
+				if (!recommendedPrefabPath.EndsWith(AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) recommendedPrefabPath = recommendedPrefabPath + AssetGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
+				
+				/*
+					ready input resource info for execute. not contains cache in this node.
+				*/
+				var assets = new List<AssetInfo>();
+				foreach (var assetData in inputSources) {
+					var assetName = assetData.fileNameAndExtension;
+					var assetType = assetData.assetType;
+					var assetPath = assetData.importedPath;
+					var assetId = assetData.assetId;
+					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
+				}
+
+				// collect generated prefab path.
+				var generated = new List<string>();
+				
+				/*
+					Prefabricate(string prefabName) method.
+				*/
+				Func<string, string> Prefabricate = (string prefabName) => {
+					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
+					generated.Add(newPrefabOutputPath);
+					// set used.
+					PrefabricateIsUsed();
+
+					return newPrefabOutputPath;
+				};
+				
+				/*
+					execute inheritee's input method.
+				*/
+				try {
+					Estimate(groupKey, assets, recommendedPrefabPath, Prefabricate);
+				} catch (Exception e) {
+					Debug.LogError("Prefabricator:" + this + " error:" + e);
+				}
+
+				if (!isUsed) {
+					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
+				}
+				
+				foreach (var generatedPrefabPath in generated) {
+					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						generatedPrefabPath,
+						string.Empty,// dummy data
+						typeof(string),// dummy data
+						true,// absolutely new in setup.
+						false
+					);
+					
+					if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<InternalAssetData>();
+					outputDict[groupKey].Add(newAsset);
+				}
+				outputDict[groupKey].AddRange(inputSources);
+			}
+			
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
@@ -121,7 +175,7 @@ namespace AssetGraph {
 					execute inheritee's input method.
 				*/
 				try {
-					In(groupKey, assets, recommendedPrefabPath, Prefabricate);
+					Run(groupKey, assets, recommendedPrefabPath, Prefabricate);
 				} catch (Exception e) {
 					Debug.LogError("Prefabricator:" + this + " error:" + e);
 				}
@@ -194,9 +248,14 @@ namespace AssetGraph {
 		private void PrefabricateIsUsed () {
 			isUsed = true;
 		}
+		
+		public virtual void Estimate (string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+			Debug.LogError("should implement \"public override void Estimate (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
+		}
 
-		public virtual void In (string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
-			Debug.LogError("should implement \"public override void In (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
+
+		public virtual void Run (string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+			Debug.LogError("should implement \"public override void Run (List<AssetGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
 		}
 
 
