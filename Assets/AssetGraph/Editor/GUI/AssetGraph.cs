@@ -883,7 +883,7 @@ namespace AssetGraph {
 				
 				// draw connections.
 				foreach (var con in connections) {
-					if (connectionThroughputs.ContainsKey(con.connectionId)) {
+					if (connectionThroughputs.ContainsKey(con.connectionId)) { 
 						var throughputListDict = connectionThroughputs[con.connectionId];
 						con.DrawConnection(nodes, throughputListDict);
 					} else {
@@ -1367,10 +1367,10 @@ namespace AssetGraph {
 					nodeDict[AssetGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
 					break;
 				}
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-				// 	nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
-				// 	break;
-				// }
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportPath.ReadonlyDict();
+					break;
+				}
 				
 				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
@@ -1562,15 +1562,15 @@ namespace AssetGraph {
 					return newNode;
 				}
 
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-				// 	var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
-				// 	var exportPath = new Dictionary<string, string>();
-				// 	foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
+					var exportPath = new Dictionary<string, string>();
+					foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
-				// 	var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
-				// 	CollectPackage(exportPath.Keys.ToList());
-				// 	return newNode;
-				// }
+					var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
+					CollectPackage(exportPath.Keys.ToList());
+					return newNode;
+				}
 
 				default: {
 					Debug.LogError("kind not found:" + kind);
@@ -1714,15 +1714,15 @@ namespace AssetGraph {
 					break;
 				}
 
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-				// 	var default_platform_package_exportPath = new Dictionary<string, string> {
-				// 		{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-				// 	};
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					var default_platform_package_exportPath = new Dictionary<string, string> {
+						{AssetGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
+					};
 
-				// 	newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
-				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				// 	break;
-				// }
+					newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					break;
+				}
 				default: {
 					Debug.LogError("no kind match:" + kind);
 					break;
@@ -2143,10 +2143,10 @@ namespace AssetGraph {
 					break;
 				}
 
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-				// 	newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				// 	break;
-				// }
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					break;
+				}
 				default: {
 					Debug.LogError("no kind match:" + newNode.kind);
 					break;

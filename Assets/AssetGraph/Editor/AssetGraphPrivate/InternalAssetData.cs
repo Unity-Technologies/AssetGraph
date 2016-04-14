@@ -95,7 +95,7 @@ namespace AssetGraph {
 				pathUnderConnectionId:The2LevelLowerPath(importedPath)
 			);
 		}
-
+		
 		public static InternalAssetData InternalAssetDataGeneratedByBundleBuilder (string importedPath) {
 			return new InternalAssetData(
 				traceId:Guid.NewGuid().ToString(),

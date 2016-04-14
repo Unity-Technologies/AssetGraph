@@ -688,56 +688,56 @@ namespace AssetGraph {
 						break;
 					}
 
-					// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					// 	if (node.exportPath == null) return;
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						if (node.exportPath == null) return;
 
-					// 	EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
-					// 	UpdateNodeName(node);
+						EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
+						UpdateNodeName(node);
 
-					// 	GUILayout.Space(10f);
+						GUILayout.Space(10f);
 
-					// 	node.currentPlatform = UpdateCurrentPlatform(basePlatform);
-					// 	UpdateCurrentPackage(node);
+						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
+						UpdateCurrentPackage(node);
 
-					// 	using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-					// 		EditorGUILayout.LabelField("Export Path:");
-					// 		var newExportPath = EditorGUILayout.TextField(
-					// 			GraphStackController.ProjectName(), 
-					// 			GraphStackController.ValueFromPlatformAndPackage(
-					// 				node.exportPath.ReadonlyDict(), 
-					// 				node.currentPlatform, 
-					// 				node.currentPackage
-					// 			).ToString()
-					// 		);
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							EditorGUILayout.LabelField("Export Path:");
+							var newExportPath = EditorGUILayout.TextField(
+								GraphStackController.ProjectName(), 
+								GraphStackController.ValueFromPlatformAndPackage(
+									node.exportPath.ReadonlyDict(), 
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							);
 
-					// 		var exporterrNodePath = GraphStackController.WithProjectPath(newExportPath);
-					// 		IntegratedGUIExporter.ValidateExportPath(
-					// 			newExportPath,
-					// 			exporterrNodePath,
-					// 			() => {
-					// 				EditorGUILayout.HelpBox("export path is empty.", MessageType.Error);
-					// 			},
-					// 			() => {
-					// 				EditorGUILayout.HelpBox("directory not found:" + exporterrNodePath, MessageType.Error);
-					// 			}
-					// 		);
+							var exporterrNodePath = GraphStackController.WithProjectPath(newExportPath);
+							IntegratedGUIExporter.ValidateExportPath(
+								newExportPath,
+								exporterrNodePath,
+								() => {
+									EditorGUILayout.HelpBox("export path is empty.", MessageType.Error);
+								},
+								() => {
+									EditorGUILayout.HelpBox("directory not found:" + exporterrNodePath, MessageType.Error);
+								}
+							);
 
-					// 		if (newExportPath != GraphStackController.ValueFromPlatformAndPackage(
-					// 				node.exportPath.ReadonlyDict(),
-					// 				node.currentPlatform, 
-					// 				node.currentPackage
-					// 			).ToString()
-					// 		) {
-					// 			node.BeforeSave();
-					// 			node.exportPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newExportPath);
-					// 			node.Save();
-					// 		}
-					// 	}
+							if (newExportPath != GraphStackController.ValueFromPlatformAndPackage(
+									node.exportPath.ReadonlyDict(),
+									node.currentPlatform, 
+									node.currentPackage
+								).ToString()
+							) {
+								node.BeforeSave();
+								node.exportPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newExportPath);
+								node.Save();
+							}
+						}
 						
-					// 	UpdateDeleteSetting(node);
+						UpdateDeleteSetting(node);
 
-					// 	break;
-					// }
+						break;
+					}
 
 					default: {
 						Debug.LogError("failed to match:" + node.kind);
@@ -988,8 +988,7 @@ namespace AssetGraph {
 			
 			switch (this.kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-				{
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
@@ -1087,10 +1086,11 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-				// 	importerPackages.Remove(platformPackageKey);
-				// 	break;
-				// }
+				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					importerPackages.Remove(platformPackageKey);
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.GROUPING_GUI: {
 					groupingKeyword.Remove(platformPackageKey);
@@ -1107,10 +1107,10 @@ namespace AssetGraph {
 					break;
 				}
 
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-				// 	exportPath.Remove(platformPackageKey);
-				// 	break;
-				// }
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					exportPath.Remove(platformPackageKey);
+					break;
+				}
 				
 				default: {
 					Debug.LogError("failed to match:" + this.kind);
@@ -1125,8 +1125,7 @@ namespace AssetGraph {
 
 			switch (this.kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-				{
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
@@ -1177,8 +1176,7 @@ namespace AssetGraph {
 		public void SetInactive () {
 			switch (this.kind) {
 				case AssetGraphSettings.NodeKind.LOADER_GUI:
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-				{
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}

@@ -186,6 +186,8 @@ namespace AssetGraph {
 			foreach (var list in throughputListDict.Values) {
 				throughputCount += list.Count;
 			}
+			
+			// if (connectionId == "ff20ddf8-4d4e-4b3b-9510-ca01c976cb85") Debug.LogError("throughputCount:" + throughputCount);
 			var offsetSize = throughputCount.ToString().Length * 20f;
 			
 			buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);

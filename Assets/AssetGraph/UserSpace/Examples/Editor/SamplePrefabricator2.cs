@@ -15,8 +15,8 @@ public class SamplePrefabricator2 : AssetGraph.PrefabricatorBase {
 		*/
 
 		// get texture.
-		var textureAssetPath = sources[3].assetPath;
-		var textureAssetType = sources[3].assetType;
+		var textureAssetPath = sources[1].assetPath;
+		var textureAssetType = sources[1].assetType;
 
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
@@ -26,8 +26,8 @@ public class SamplePrefabricator2 : AssetGraph.PrefabricatorBase {
 
 
 		// get material from path.
-		var materialAssetPath = sources[1].assetPath;
-		var materialAssetType = sources[1].assetType;
+		var materialAssetPath = sources[3].assetPath;
+		var materialAssetType = sources[3].assetType;
 
 		// load texture from AssetDatabase.
 		var characterMaterial = AssetDatabase.LoadAssetAtPath(materialAssetPath, materialAssetType) as Material;

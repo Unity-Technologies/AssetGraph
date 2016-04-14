@@ -23,6 +23,8 @@ namespace AssetGraph {
 
 			var first = true;
 			
+			if (groupedSources.Keys.Count == 0) return;
+			
 			// shrink group to 1 group.
 			if (1 < groupedSources.Keys.Count) Debug.LogWarning("importSetting shrinking group to \"" + groupedSources.Keys.ToList()[0] + "\" forcely.");
 
@@ -63,10 +65,9 @@ namespace AssetGraph {
 					ignoredResource.Add(inputSource.fileNameAndExtension);
 					continue;
 				}
-
-				var assumedImportedBasePath = inputSource.absoluteSourcePath.Replace(inputSource.sourceBasePath, AssetGraphSettings.IMPORTER_CACHE_PLACE);
-				var assumedImportedPath = FileController.PathCombine(assumedImportedBasePath, nodeId);
-
+				
+				var assumedImportedPath = inputSource.importedPath;
+				
 				var assumedType = AssumeTypeFromExtension();
 
 				var newData = InternalAssetData.InternalAssetDataByImporter(
@@ -95,8 +96,8 @@ namespace AssetGraph {
 				}
 			
 
-				if (alreadyImported.Any()) Debug.LogError("importer:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
-				if (ignoredResource.Any()) Debug.LogError("importer:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
+				if (alreadyImported.Any()) Debug.LogError("importSetting:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
+				if (ignoredResource.Any()) Debug.LogError("importSetting:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
 
 				outputDict[groupedSources.Keys.ToList()[0]] = assumedImportedAssetDatas;
 			}
@@ -106,7 +107,6 @@ namespace AssetGraph {
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
-			
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -131,11 +131,6 @@ namespace AssetGraph {
 				}
 			);
 			
-
-			// ready.
-			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
-			
-
 			// construct import path from package info. 
 			// importer's package is complicated.
 			// 1. importer uses their own package informatiom.
@@ -143,14 +138,22 @@ namespace AssetGraph {
 			// this is comes from the spec: importer node contains platform settings in themselves.
 			var nodeDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
 			
+			
+			if (groupedSources.Keys.Count == 0) return;
+			
+			var the1stGroupKey = groupedSources.Keys.ToList()[0];
+			
+			
 			// shrink group to 1 group.
-			if (1 < groupedSources.Keys.Count) Debug.LogWarning("importSetting shrinking group to \"" + groupedSources.Keys.ToList()[0] + "\" forcely.");
+			if (1 < groupedSources.Keys.Count) Debug.LogWarning("importSetting shrinking group to \"" + the1stGroupKey + "\" forcely.");
 
 			var inputSources = new List<InternalAssetData>();
 			foreach (var groupKey in groupedSources.Keys) {
 				inputSources.AddRange(groupedSources[groupKey]);
 			}
-
+			
+			var importSetOveredAssetsAndUpdatedFlagDict = new Dictionary<InternalAssetData, bool>();
+			
 			/*
 				check file & setting.
 				if need, apply importSetting to file.
@@ -159,9 +162,6 @@ namespace AssetGraph {
 				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
 				var effector = new InternalSamplingImportEffector(samplingAssetImporter);
 				{
-					var alreadyImported = new List<string>();
-					var ignoredResource = new List<string>();
-
 					foreach (var inputSource in inputSources) {
 						var importer = AssetImporter.GetAtPath(inputSource.importedPath);
 						
@@ -171,11 +171,12 @@ namespace AssetGraph {
 						var importerTypeStr = importer.GetType().ToString();
 						
 						if (importerTypeStr != samplingAssetImporter.GetType().ToString()) {
-							// mismatched target will be ignored. but already imported. 
+							// mismatched target will be ignored. but already imported.
+							importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false; 
 							continue;
 						}
 						
-						
+						importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false;
 						/*
 							kind of importer is matched.
 							check setting then apply setting or no changed.
@@ -187,7 +188,7 @@ namespace AssetGraph {
 								
 								if (!same) {
 									effector.ForceOnPreprocessTexture(texImporter);
-									Debug.LogError("updated:" + inputSource.importedPath);
+									importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
 								}
 								break;
 							}
@@ -197,7 +198,7 @@ namespace AssetGraph {
 								
 								if (!same) {
 									effector.ForceOnPreprocessModel(modelImporter);
-									Debug.LogError("updated:" + inputSource.importedPath);
+									importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
 								}
 								break;
 							}
@@ -207,7 +208,7 @@ namespace AssetGraph {
 								
 								if (!same) {
 									effector.ForceOnPreprocessAudio(audioImporter);
-									Debug.LogError("updated:" + inputSource.importedPath);
+									importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
 								}
 								break;
 							}
@@ -216,17 +217,7 @@ namespace AssetGraph {
 								throw new Exception("unhandled importer type:" + importerTypeStr);
 							}
 						}
-						
-						// ここを通過したすべての素材が、どっちにしてもimportedとして扱われていいはず。
-						// 比較チェックして、差がなければ変化なし、差があれば変化あり。
-						
-						// 同様のimporter種でなければスルーっていうのもある。
-						// その場合でも、素材は使用される。
 					}
-					
-					if (alreadyImported.Any()) Debug.LogError("importSetting:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
-					if (ignoredResource.Any()) Debug.LogError("importSetting:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
-
 				}
 			}
 
@@ -237,36 +228,33 @@ namespace AssetGraph {
 			
 			var outputSources = new List<InternalAssetData>();
 			
-			// /*
-			// 	treat all assets inside node.
-			// */
-			// foreach (var newAssetPath in localFilePathsWithoutNodeDirectoryPath) {
-			// 	var basePathWithNewAssetPath = InternalAssetData.GetPathWithBasePath(newAssetPath, nodeDirectoryPath);
-				
-			// 	if (usedCache.Contains(basePathWithNewAssetPath)) {
-			// 		// already cached, not new.
-			// 		var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-			// 			basePathWithNewAssetPath,
-			// 			AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
-			// 			AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
-			// 			false,
-			// 			false
-			// 		);
-			// 		outputSources.Add(newInternalAssetData);
-			// 	} else {
-			// 		// now cached. new resource.
-			// 		var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
-			// 			basePathWithNewAssetPath,
-			// 			AssetDatabase.AssetPathToGUID(basePathWithNewAssetPath),
-			// 			AssetGraphInternalFunctions.GetAssetType(basePathWithNewAssetPath),
-			// 			true,
-			// 			false
-			// 		);
-			// 		outputSources.Add(newInternalAssetData);
-			// 	}
-			// }
-
-			outputDict[groupedSources.Keys.ToList()[0]] = outputSources;
+			
+			foreach (var inputAsset in inputSources) {
+				var updated = importSetOveredAssetsAndUpdatedFlagDict[inputAsset];
+				if (!updated) {
+					// already set completed.
+					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						inputAsset.importedPath,
+						AssetDatabase.AssetPathToGUID(inputAsset.importedPath),
+						AssetGraphInternalFunctions.GetAssetType(inputAsset.importedPath),
+						false,// not changed.
+						false
+					);
+					outputSources.Add(newInternalAssetData);
+				} else {
+					// updated asset.
+					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						inputAsset.importedPath,
+						AssetDatabase.AssetPathToGUID(inputAsset.importedPath),
+						AssetGraphInternalFunctions.GetAssetType(inputAsset.importedPath),
+						true,// changed.
+						false
+					);
+					outputSources.Add(newInternalAssetData);
+				}
+			}
+			
+			outputDict[the1stGroupKey] = outputSources;
 
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}

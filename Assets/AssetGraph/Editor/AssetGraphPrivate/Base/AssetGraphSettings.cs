@@ -85,7 +85,8 @@ namespace AssetGraph {
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
 			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
 			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
-			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI}
+			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
+			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
 		};
 
 		public static Dictionary<NodeKind, string> DEFAULT_NODE_NAME = new Dictionary<NodeKind, string>{
@@ -96,7 +97,8 @@ namespace AssetGraph {
 			{NodeKind.GROUPING_GUI, "Grouping"},
 			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
 			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
-			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"}
+			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
+			{NodeKind.EXPORTER_GUI, "Exporter"}
 		};
 
 		/*
@@ -162,7 +164,8 @@ namespace AssetGraph {
 			PREFABRICATOR_GUI,
 			BUNDLIZER_GUI,
 			BUNDLEBUILDER_GUI,
-			// EXPORTER_GUI
+			
+			EXPORTER_GUI
 		}
 
 		public static NodeKind NodeKindFromString (string val) {

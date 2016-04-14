@@ -195,8 +195,7 @@ namespace AssetGraph {
 					// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI:
 					case AssetGraphSettings.NodeKind.GROUPING_GUI:
-					// case AssetGraphSettings.NodeKind.EXPORTER_GUI:
-					{
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						// nothing to do.
 						break;
 					}
@@ -362,6 +361,8 @@ namespace AssetGraph {
 			string package,
 			Action<string, float> updateHandler=null
 		) {
+			IntegratedGUIBundleBuilder.RemoveAllAssetBundleSettings();
+			
 			var EndpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict, package);
 			
 			var endpointNodeIds = EndpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -382,13 +383,19 @@ namespace AssetGraph {
 			var result = new Dictionary<string, Dictionary<string, List<string>>>();
 			foreach (var connectionId in sourceConId_Group_Throughput.Keys) {
 				var connectionGroupDict = sourceConId_Group_Throughput[connectionId];
-
+				
 				var newConnectionGroupDict = new Dictionary<string, List<string>>();
 				foreach (var groupKey in connectionGroupDict.Keys) {
 					var connectionThroughputList = connectionGroupDict[groupKey];
 
 					var sourcePathList = new List<string>();
 					foreach (var assetData in connectionThroughputList) {
+						if (!string.IsNullOrEmpty(assetData.importedPath)) {
+							// if (IsMetaFile(assetData.importedPath)) continue;
+							sourcePathList.Add(assetData.importedPath);
+							continue;
+						} 
+						
 						if (!string.IsNullOrEmpty(assetData.absoluteSourcePath)) {
 							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(ProjectPathWithSlash(), string.Empty);
 							// if (IsMetaFile(relativeAbsolutePath)) continue;
@@ -468,26 +475,26 @@ namespace AssetGraph {
 						);
 						break;
 					}
-					// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					// 	var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
-					// 	var exportPath = new Dictionary<string, string>();
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						var exportPathSource = nodeDict[AssetGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
+						var exportPath = new Dictionary<string, string>();
 
-					// 	if (exportPathSource == null) {
+						if (exportPathSource == null) {
 							
-					// 		exportPathSource = new Dictionary<string, object>();
-					// 	}
-					// 	foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
+							exportPathSource = new Dictionary<string, object>();
+						}
+						foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
-					// 	nodeDatas.Add(
-					// 		new NodeData(
-					// 			nodeId:nodeId, 
-					// 			nodeKind:nodeKind, 
-					// 			nodeName:nodeName,
-					// 			exportPath:exportPath
-					// 		)
-					// 	);
-					// 	break;
-					// }
+						nodeDatas.Add(
+							new NodeData(
+								nodeId:nodeId, 
+								nodeKind:nodeKind, 
+								nodeName:nodeName,
+								exportPath:exportPath
+							)
+						);
+						break;
+					}
 
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
@@ -938,12 +945,12 @@ namespace AssetGraph {
 						break;
 					}
 
-					// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					// 	var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
-					// 	var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-					// 	executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-					// 	break;
-					// }
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
+						var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
+						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+						break;
+					}
 
 					default: {
 						Debug.LogError("kind not found:" + nodeKind);
@@ -1065,12 +1072,12 @@ namespace AssetGraph {
 						break;
 					}
 
-					// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-					// 	var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
-					// 	var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-					// 	executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-					// 	break;
-					// }
+					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+						var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
+						var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
+						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+						break;
+					}
 
 					default: {
 						Debug.LogError("kind not found:" + nodeKind);
@@ -1106,8 +1113,7 @@ namespace AssetGraph {
 						case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 						case AssetGraphSettings.NodeKind.FILTER_GUI:
 						case AssetGraphSettings.NodeKind.GROUPING_GUI:
-						// case AssetGraphSettings.NodeKind.EXPORTER_GUI: 
-						{
+						case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 							// no problem.
 							break;
 						}
@@ -1563,10 +1569,10 @@ namespace AssetGraph {
 					this.loadFilePath = loadPath;
 					break;
 				}
-				// case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-				// 	this.exportFilePath = exportPath;
-				// 	break;
-				// }
+				case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+					this.exportFilePath = exportPath;
+					break;
+				}
 
 				case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:

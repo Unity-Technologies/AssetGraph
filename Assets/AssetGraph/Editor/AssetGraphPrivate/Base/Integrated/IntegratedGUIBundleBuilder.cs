@@ -33,8 +33,8 @@ namespace AssetGraph {
 		}
 		
 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
-
+			// RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
+			
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.Current_Platform_Package_Folder(package));
 			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
@@ -114,7 +114,7 @@ namespace AssetGraph {
 
 
 			/*
-				check assumed bundlized resources and actual generated assetbunles.
+				check assumed bundlized resources and actual generated assetbundles.
 
 				"assuned bundlized resources info from bundlizer" are contained by "actual bundlized resources".
 			*/
@@ -161,7 +161,13 @@ namespace AssetGraph {
 			var usedCache = new List<string>(alreadyCached);
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
-
+		
+		
+		/**
+			
+			Cacheフォルダが素材をすべて保持していた時の、不要なパッケージやプラットフォームからAssetBundleの設定を消す処理
+			
+		*/
 		private void RemoveOtherPlatformAndPackageBundleSettings (List<string> nodeIds, string package) {
 			if (!Directory.Exists(AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)) return;
 
@@ -194,13 +200,20 @@ namespace AssetGraph {
 				}
 			}
 		}
-
-		private void RemoveBundleSettings (string nodePath) {
-			EditorUtility.DisplayProgressBar("AssetGraph BundleBuilder unbundlize resources...", nodePath, 0);
+		
+		public static void RemoveAllAssetBundleSettings () {
+			RemoveBundleSettings(AssetGraphSettings.ASSETS_PATH);
+		}
+		
+		public static void RemoveBundleSettings (string nodePath) {
+			EditorUtility.DisplayProgressBar("AssetGraph unbundlize all resources...", nodePath, 0);
 			var filePathsInFolder = FileController.FilePathsInFolder(nodePath);
 			foreach (var filePath in filePathsInFolder) {
 				if (GraphStackController.IsMetaFile(filePath)) continue;
 				var assetImporter = AssetImporter.GetAtPath(filePath);
+				
+				if (assetImporter.GetType() == typeof(UnityEditor.MonoImporter)) continue;
+				
 				assetImporter.assetBundleName = string.Empty;
 			}
 			EditorUtility.ClearProgressBar();

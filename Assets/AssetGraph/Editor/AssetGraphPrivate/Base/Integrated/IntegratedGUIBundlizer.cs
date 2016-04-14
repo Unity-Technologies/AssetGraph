@@ -101,7 +101,6 @@ namespace AssetGraph {
 			}
 			if (invalids.Any()) throw new Exception("bundlizer:" + string.Join(", ", invalids.ToArray()) + " is not imported yet, should import before bundlize.");
 
-
 			var bundleName = bundleNameTemplate;
 
 			/*
@@ -113,11 +112,30 @@ namespace AssetGraph {
 
 				bundleName = (templateHead + groupkey + templateTail + "." + GraphStackController.Platform_Dot_Package(package)).ToLower();
 			}
+			
+			
+			// if (isRun) {
+			// 	var onFlowAssetImportPaths = sources.Select(asset => asset.importedPath).ToList();
+				
+			// 	/*
+			// 		unbundlize already named(bundled) assets if it is NOT included current sources.
+			// 		this cause by "changing of data stream" and/or "asset's bundle name is changed by manual" and/or something other reason. 
+			// 	*/
+			// 	var bundlizeNamedAssetImportedPaths = AssetDatabase.GetAssetPathsFromAssetBundle(bundleName);
+			// 	foreach (var bundlizedAssetImportedPath in bundlizeNamedAssetImportedPaths) {
+			// 		if (onFlowAssetImportPaths.Contains(bundlizedAssetImportedPath)) continue;
+					
+			// 		// not contained in current flow = should not keep assetBundle binding. should unbind.
+			// 		var assetImporter = AssetImporter.GetAtPath(bundlizedAssetImportedPath);
+			// 		assetImporter.assetBundleName = string.Empty; 
+			// 	}
+			// }
+			
 
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
 			
 			foreach (var source in sources) {
-				// if already bundled, avoid changing that name.
+				// if already bundled in this running, avoid changing that name.
 				if (source.isBundled) continue;
 				
 				if (isRun) {

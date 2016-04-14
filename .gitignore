@@ -62,3 +62,5 @@ Assets/VSCode/*
 .vscode/launch.json
 
 Assets/VSCode.meta
+
+ExportFolder/*
