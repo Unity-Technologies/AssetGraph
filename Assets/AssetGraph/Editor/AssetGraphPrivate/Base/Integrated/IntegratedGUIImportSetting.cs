@@ -214,7 +214,8 @@ namespace AssetGraph {
 							}
 							
 							default: {
-								throw new Exception("unhandled importer type:" + importerTypeStr);
+								// throw new Exception("unhandled importer type:" + importerTypeStr);
+								break;
 							}
 						}
 					}

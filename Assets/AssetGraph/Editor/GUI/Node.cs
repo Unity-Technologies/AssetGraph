@@ -396,12 +396,13 @@ namespace AssetGraph {
 								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
 								var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
+								
 								IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
 									(string noFolderFound) => {
-										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
+										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
 									},
 									(string noFilesFound) => {
-										EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
+										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
 									},
 									(string samplingAssetPath) => {
 										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
@@ -1074,6 +1075,14 @@ namespace AssetGraph {
 			// 	var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
 			// 	if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages.Add(platformPackageKey, string.Empty);
 			// }
+			/*
+				if changed node is importSetting, should run [new package import] for setting.
+			*/
+			if (kind == AssetGraphSettings.NodeKind.IMPORTSETTING_GUI) {
+				// importer node's platform is absolutely PLATFORM_DEFAULT_NAME.
+				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
+				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages.Add(platformPackageKey, string.Empty);
+			}
 			
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
 			Save();
