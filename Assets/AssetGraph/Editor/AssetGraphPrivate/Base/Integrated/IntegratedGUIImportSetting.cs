@@ -131,14 +131,6 @@ namespace AssetGraph {
 				}
 			);
 			
-			// construct import path from package info. 
-			// importer's package is complicated.
-			// 1. importer uses their own package informatiom.
-			// 2. but imported assets are located at platform-package combined path.(same as other node.)
-			// this is comes from the spec: importer node contains platform settings in themselves.
-			var nodeDirectoryPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
-			
-			
 			if (groupedSources.Keys.Count == 0) return;
 			
 			var the1stGroupKey = groupedSources.Keys.ToList()[0];
@@ -169,6 +161,7 @@ namespace AssetGraph {
 							compare type of import setting effector.
 						*/
 						var importerTypeStr = importer.GetType().ToString();
+						
 						
 						if (importerTypeStr != samplingAssetImporter.GetType().ToString()) {
 							// mismatched target will be ignored. but already imported.
@@ -214,8 +207,7 @@ namespace AssetGraph {
 							}
 							
 							default: {
-								// throw new Exception("unhandled importer type:" + importerTypeStr);
-								break;
+								throw new Exception("unhandled importer type:" + importerTypeStr);
 							}
 						}
 					}
@@ -234,7 +226,7 @@ namespace AssetGraph {
 				var updated = importSetOveredAssetsAndUpdatedFlagDict[inputAsset];
 				if (!updated) {
 					// already set completed.
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
 						inputAsset.importedPath,
 						AssetDatabase.AssetPathToGUID(inputAsset.importedPath),
 						AssetGraphInternalFunctions.GetAssetType(inputAsset.importedPath),
@@ -244,7 +236,7 @@ namespace AssetGraph {
 					outputSources.Add(newInternalAssetData);
 				} else {
 					// updated asset.
-					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+					var newInternalAssetData = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
 						inputAsset.importedPath,
 						AssetDatabase.AssetPathToGUID(inputAsset.importedPath),
 						AssetGraphInternalFunctions.GetAssetType(inputAsset.importedPath),

@@ -13,9 +13,12 @@ namespace AssetGraph {
 		public const string GUI_TEXT_MENU_BUILD = "Window/AssetGraph/Build Active Platform And Package";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetGraph/Generate Script For Node";
 		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
-		public const string GUI_TEXT_MENU_GENERATE_BUNDLIZER = GUI_TEXT_MENU_GENERATE + "/Bundlizer Script";
+		
 		public const string GUI_TEXT_MENU_GENERATE_FINALLY = GUI_TEXT_MENU_GENERATE + "/Finally Script";
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetGraph/Clear Cache";
+		
+		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SAMPLE = "Window/AssetGraph/Clear ImportSetting Sample";
+		public const string GUI_TEXT_MENU_DELETE_MODIFIER_SAMPLE = "Window/AssetGraph/Clear Modifier Sample";
 		
 		public const string ASSETGRAPH_DATA_PATH = "AssetGraph/SettingFiles";
 		public const string ASSETGRAPH_DATA_NAME = "AssetGraph.json";
@@ -26,12 +29,12 @@ namespace AssetGraph {
 		public const string SCRIPTSAMPLE_PATH = ASSETGRAPH_PATH + "Editor/ScriptSample/";
 		public const string USERSPACE_PATH = ASSETGRAPH_PATH + "UserSpace/Editor/";
 		
-		public const string IMPORTER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Imported";
 		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
 		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "ImportSettings";
+		public const string IMPORTER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "ImportSettingSamples";
+		public const string MODIFIER_SAMPLING_PLACE		= ASSETGRAPH_PATH + "ModifierSamples";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -71,6 +74,7 @@ namespace AssetGraph {
 		public const string MENU_FILTER_NAME = "Filter";
 		// public const string MENU_IMPORTER_NAME = "Importer";
 		public const string MENU_IMPORTSETTING_NAME = "ImportSetting";
+		public const string MENU_MODIFIER_NAME = "Modifier";
 		public const string MENU_GROUPING_NAME = "Grouping";
 		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
 		public const string MENU_BUNDLIZER_NAME = "Bundlizer";
@@ -80,8 +84,8 @@ namespace AssetGraph {
 		public static Dictionary<string, NodeKind> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, NodeKind>{
 			{"Create " + MENU_LOADER_NAME + " Node", NodeKind.LOADER_GUI},
 			{"Create " + MENU_FILTER_NAME + " Node", NodeKind.FILTER_GUI},
-			// {"Create " + MENU_IMPORTER_NAME + " Node", NodeKind.IMPORTER_GUI},
 			{"Create " + MENU_IMPORTSETTING_NAME + " Node", NodeKind.IMPORTSETTING_GUI},
+			{"Create " + MENU_MODIFIER_NAME + " Node", NodeKind.MODIFIER_GUI},
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
 			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
 			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
@@ -92,8 +96,8 @@ namespace AssetGraph {
 		public static Dictionary<NodeKind, string> DEFAULT_NODE_NAME = new Dictionary<NodeKind, string>{
 			{NodeKind.LOADER_GUI, "Loader"},
 			{NodeKind.FILTER_GUI, "Filter"},
-			// {NodeKind.IMPORTER_GUI, "Importer"},
 			{NodeKind.IMPORTSETTING_GUI, "ImportSetting"},
+			{NodeKind.MODIFIER_GUI, "Modifier"},
 			{NodeKind.GROUPING_GUI, "Grouping"},
 			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
 			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
@@ -126,6 +130,7 @@ namespace AssetGraph {
 		public const string NODE_EXPORTER_EXPORT_PATH = "exportPath";
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
 		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
+		public const string NODE_MODIFIER_PACKAGES = "modifierPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		public const string NODE_BUNDLIZER_USE_OUTPUT = "bundleUseOutput";
@@ -152,14 +157,13 @@ namespace AssetGraph {
 
 		public enum NodeKind : int {
 			FILTER_SCRIPT,
-			// IMPORTER_SCRIPT,
 			PREFABRICATOR_SCRIPT,
-			BUNDLIZER_SCRIPT,
 
 			LOADER_GUI,
 			FILTER_GUI,
-			// IMPORTER_GUI,
 			IMPORTSETTING_GUI,
+			MODIFIER_GUI,
+			
 			GROUPING_GUI,
 			PREFABRICATOR_GUI,
 			BUNDLIZER_GUI,

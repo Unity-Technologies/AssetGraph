@@ -28,18 +28,6 @@ namespace AssetGraph {
 			}
 		}
 
-		public static void CleanCache () {
-			var targetCachePath = AssetGraphSettings.APPLICATIONDATAPATH_CACHE_PATH;
-			if (Directory.Exists(targetCachePath)) Directory.Delete(targetCachePath, true);
-			AssetDatabase.Refresh();
-		}
-
-		public static void CleanSetting () {
-			var targetSettingPath = AssetGraphSettings.IMPORTER_SAMPLING_PLACE;
-			if (Directory.Exists(targetSettingPath)) Directory.Delete(targetSettingPath, true);
-			AssetDatabase.Refresh();
-		}
-
 		/**
 			check if cache is exist at local path.
 		*/
@@ -143,8 +131,7 @@ namespace AssetGraph {
 				switch (kind) {
 					case AssetGraphSettings.NodeKind.FILTER_SCRIPT:
 					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 				
 						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
@@ -192,8 +179,8 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.LOADER_GUI:
 					case AssetGraphSettings.NodeKind.FILTER_GUI:
-					// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI:
+					case AssetGraphSettings.NodeKind.MODIFIER_GUI:
 					case AssetGraphSettings.NodeKind.GROUPING_GUI:
 					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
 						// nothing to do.
@@ -500,9 +487,7 @@ namespace AssetGraph {
 					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = nodeDict[AssetGraphSettings.NODE_SCRIPT_TYPE] as string;
 						nodeDatas.Add(
 							new NodeData(
@@ -531,8 +516,7 @@ namespace AssetGraph {
 						);
 						break;
 					}
-
-					// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
+					
 					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 						var importerPackagesSource = nodeDict[AssetGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
 						var importerPackages = new Dictionary<string, string>();
@@ -549,6 +533,27 @@ namespace AssetGraph {
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
 								importerPackages:importerPackages
+							)
+						);
+						break;
+					}
+					
+					case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+						var modifierPackagesSource = nodeDict[AssetGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
+						var modifierPackages = new Dictionary<string, string>();
+
+						if (modifierPackagesSource == null) {
+							
+							modifierPackagesSource = new Dictionary<string, object>();
+						}
+						foreach (var platform_package_key in modifierPackagesSource.Keys) modifierPackages[platform_package_key] = string.Empty;
+						
+						nodeDatas.Add(
+							new NodeData(
+								nodeId:nodeId, 
+								nodeKind:nodeKind, 
+								nodeName:nodeName,
+								modifierPackages:modifierPackages
 							)
 						);
 						break;
@@ -842,21 +847,9 @@ namespace AssetGraph {
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
-					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-					// 	var scriptType = currentNodeData.scriptType;
-					// 	var executor = Executor<ImporterBase>(scriptType);
-					// 	executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-					// 	break;
-					// }
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var scriptType = currentNodeData.scriptType;
-						var executor = Executor<BundlizerBase>(scriptType);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -878,19 +871,6 @@ namespace AssetGraph {
 						break;
 					}
 					
-					// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					// 	var importerPackageKey = package;
-					// 	if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-
-					// 	/*
-					// 		if nothing match, package will become default setting.
-					// 	*/
-					// 	if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-					// 	var executor = new IntegratedGUIImporter(importerPackageKey);
-					// 	executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-					// 	break;
-					// }
-					
 					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 						var importerPackageKey = package;
 						if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
@@ -900,6 +880,19 @@ namespace AssetGraph {
 						*/
 						if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 						var executor = new IntegratedGUIImportSetting(importerPackageKey);
+						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+						break;
+					}
+					
+					case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+						var modifierPackageKey = package;
+						if (string.IsNullOrEmpty(modifierPackageKey)) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+						/*
+							if nothing match, package will become default setting.
+						*/
+						if (!currentNodeData.modifierPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, modifierPackageKey))) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+						var executor = new IntegratedGUIModifier(modifierPackageKey);
 						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -968,21 +961,9 @@ namespace AssetGraph {
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
-					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-					// 	var scriptType = currentNodeData.scriptType;
-					// 	var executor = Executor<ImporterBase>(scriptType);
-					// 	executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-					// 	break;
-					// }
 					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptType = currentNodeData.scriptType;
 						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						var scriptType = currentNodeData.scriptType;
-						var executor = Executor<BundlizerBase>(scriptType);
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -1004,19 +985,6 @@ namespace AssetGraph {
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
-
-					// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					// 	var importerPackageKey = package;
-					// 	if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-
-					// 	/*
-					// 		if nothing match, package will become default setting.
-					// 	*/
-					// 	if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-					// 	var executor = new IntegratedGUIImporter(importerPackageKey);
-					// 	executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-					// 	break;
-					// }
 					
 					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 						var importerPackageKey = package;
@@ -1027,6 +995,19 @@ namespace AssetGraph {
 						*/
 						if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 						var executor = new IntegratedGUIImportSetting(importerPackageKey);
+						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+						break;
+					}
+					
+					case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+						var modifierPackageKey = package;
+						if (string.IsNullOrEmpty(modifierPackageKey)) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+						/*
+							if nothing match, package will become default setting.
+						*/
+						if (!currentNodeData.modifierPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, modifierPackageKey))) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+						var executor = new IntegratedGUIModifier(modifierPackageKey);
 						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 						break;
 					}
@@ -1094,7 +1075,6 @@ namespace AssetGraph {
 			switch (toKind) {
 				case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					switch (fromKind) {
-						case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
 						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 							// no problem.
 							break;
@@ -1145,153 +1125,13 @@ namespace AssetGraph {
 			var platform_package_key_candidate = GraphStackController.Current_Platform_Package_Folder(package);
 
 			switch (nodeKind) {
-				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					
-				// 	var cachedPathBase = FileController.PathCombine(
-				// 		AssetGraphSettings.IMPORTER_CACHE_PLACE, 
-				// 		nodeId,
-				// 		platform_package_key_candidate
-				// 	);
-
-				// 	// no cache folder, no cache.
-				// 	if (!Directory.Exists(cachedPathBase)) {
-				// 		return new List<string>();
-				// 	}
-
-					
-				// 	/*
-				// 		check importer setting for determine "cache is valid or not."
-				// 		if importer setting is nothing, should generate importer setting then re-import all assets.
-				// 	*/
-				// 	var importerSettingFilePath = string.Empty;
-				// 	{
-				// 		/*
-				// 			1.if package is null or empty, set DefaultPackage.
-				// 			2.if package folder is not exist, change package to DefaultPackage then retry.
-				// 			3.if not hit, no setting exists. means no valid cache exists.
-				// 		*/
-				// 		var importerPackageKey = package;
-				// 		if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-							
-				// 		// get sampling file.
-				// 		var baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackageKey);
-				// 		// if no setting file exist, retry with DefaultPackage.
-				// 		if (!Directory.Exists(baseSettingPath)) {
-				// 			importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-				// 			baseSettingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackageKey);
-
-				// 			if (!Directory.Exists(baseSettingPath)) {
-				// 				// if DefaultPackage is not exists, no valid cache.
-				// 				return new List<string>();
-				// 			}
-				// 		}
-
-				// 		var baseSettingFilePaths = FileController.FilePathsInFolderOnly1Level(baseSettingPath)
-				// 			.Where(path => !IsMetaFile(path))
-				// 			.ToList();
-
-				// 		if (!baseSettingFilePaths.Any()) return new List<string>();
-
-				// 		importerSettingFilePath = baseSettingFilePaths[0];
-				// 	}
-				// 	if (string.IsNullOrEmpty(importerSettingFilePath)) throw new Exception("failed to detect importer setting file.");
-
-
-				// 	var cached = new List<string>();
-
-				// 	/*
-				// 		setting is exists, let's check about cached file's setting.
-				// 		if cached file itself is changed manually, should detect it and destroy it.
-				// 	*/
-				// 	var cacheCandidates = FileController.FilePathsInFolder(cachedPathBase);
-				// 	if (0 < cacheCandidates.Count) {
-
-				// 		var baseSettingFilePath = importerSettingFilePath;
-				// 		var baseSettingImporterOrigin = AssetImporter.GetAtPath(baseSettingFilePath);
-
-						
-
-				// 		foreach (var candidatePath in cacheCandidates) {
-
-				// 			// meta will be cached.
-				// 			if (IsMetaFile(candidatePath)) {
-				// 				cached.Add(candidatePath);
-				// 				continue;
-				// 			}
-
-				// 			var importedCandidateImporterOrigin = AssetImporter.GetAtPath(candidatePath);
-							
-				// 			// cancel if importer type does not match. maybe this is not target of this node's importer.
-				// 			// there are 2 potentials. 
-				// 			// 	a. this is sub-generated resources of the result of import.
-				// 			// 	b. garbage.
-				// 			// both will be treat as cached.
-				// 			if (importedCandidateImporterOrigin.GetType() != baseSettingImporterOrigin.GetType()) {
-				// 				cached.Add(candidatePath);
-				// 				continue;
-				// 			}
-
-				// 			if (typeof(TextureImporter).IsAssignableFrom(importedCandidateImporterOrigin.GetType())) {
-				// 				var baseSettingImporter = baseSettingImporterOrigin as TextureImporter;
-				// 				var importedCandidateImporter = importedCandidateImporterOrigin as TextureImporter;
-				// 				if (InternalSamplingImportAdopter.IsSameTextureSetting(importedCandidateImporter, baseSettingImporter)) {
-				// 					cached.Add(candidatePath);
-				// 					continue;
-				// 				}
-
-				// 				// delete for adopt import.
-				// 				File.Delete(candidatePath);
-				// 			}
-
-				// 			if (typeof(ModelImporter).IsAssignableFrom(importedCandidateImporterOrigin.GetType())) {
-				// 				var baseSettingImporter = baseSettingImporterOrigin as ModelImporter;
-				// 				var importedCandidateImporter = importedCandidateImporterOrigin as ModelImporter;
-				// 				if (InternalSamplingImportAdopter.IsSameModelSetting(importedCandidateImporter, baseSettingImporter)) {
-				// 					cached.Add(candidatePath);
-				// 					continue;
-				// 				}
-
-				// 				// delete for adopt import.
-				// 				File.Delete(candidatePath);
-				// 			}
-
-				// 			if (typeof(AudioImporter).IsAssignableFrom(importedCandidateImporterOrigin.GetType())) {
-				// 				var baseSettingImporter = baseSettingImporterOrigin as AudioImporter;
-				// 				var importedCandidateImporter = importedCandidateImporterOrigin as AudioImporter;
-				// 				if (InternalSamplingImportAdopter.IsSameAudioSetting(importedCandidateImporter, baseSettingImporter)) {
-				// 					cached.Add(candidatePath);
-				// 					continue;
-				// 				}
-
-				// 				// delete for adopt import.
-				// 				File.Delete(candidatePath);
-				// 			}
-				// 		}
-
-				// 		return cached;
-				// 	}
-
-				// 	return new List<string>();
-				// }
-				
-				/*
-					順番としては、
-					・コピーされる
-					・コピーされたものをキャッシュとして扱う
-					・実行時にキャッシュ比較でここにくる
-					
-					なので、
-					・コピーされなくなる
-					・キャッシュ = オリジナルファイルになる
-					・実行時にキャッシュ比較でここにくる
-					
-					の、で、
-					
-					
-					キャッシュ比較をしない。入力ファイルとの比較のみをガチで行う。
-				*/
 				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					// no cache exists without file itself.
+					return new List<string>();
+				}
+				
+				case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+					// no cache exists without file itself.
 					return new List<string>();
 				}
 				
@@ -1319,8 +1159,7 @@ namespace AssetGraph {
 
 					return FileController.FilePathsInFolder(cachedPathBase);
 				}
-				
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: 
+				 
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					// do nothing.
 					break;
@@ -1455,51 +1294,6 @@ namespace AssetGraph {
 			return projectFolderName;
 		}
 
-
-		public static Dictionary<string, List<string>> LoadImporterRecord (string nodeId, string package) {
-			var importRecordPath = FileController.PathCombine(
-				AssetGraphSettings.IMPORTER_CACHE_PLACE, 
-				nodeId, 
-				GraphStackController.Current_Platform_Package_Folder(package),
-				AssetGraphSettings.IMPORTER_RECORDFILE);
-			
-			var importerRecord = new Dictionary<string, List<string>>();
-
-			if (!File.Exists(importRecordPath)) return importerRecord;
-
-			var dataStr = string.Empty;
-			using (var sr = new StreamReader(importRecordPath)) {
-  				dataStr = sr.ReadToEnd();
-  			}
-
-  			var dataDictBase = Json.Deserialize(dataStr) as Dictionary<string, object>;
-  			foreach (var dataDictBaseKey in dataDictBase.Keys) {
-  				var valueSources = dataDictBase[dataDictBaseKey] as List<object>;
-  				var values = valueSources.Select(val => val as string).ToList();
-				importerRecord[dataDictBaseKey] = new List<string>(values);
-  			}
-
-			return importerRecord;
-		}
-
-		public static void UpdateImporterRecord (string nodeId, string package, Dictionary<string, List<string>> generatedRecord) {
-			var serialized = Json.Serialize(generatedRecord);
-
-			var importRecordDirPath = FileController.PathCombine(
-				AssetGraphSettings.IMPORTER_CACHE_PLACE, 
-				nodeId, 
-				GraphStackController.Current_Platform_Package_Folder(package));
-
-			// if no folder found, ignore.
-			if (!Directory.Exists(importRecordDirPath)) return;
-
-			var importRecordPath = FileController.PathCombine(importRecordDirPath, AssetGraphSettings.IMPORTER_RECORDFILE);
-			
-			using (var sw = new StreamWriter(importRecordPath)) {
-   				sw.Write(serialized);
-			}
-		}
-
 	}
 
 	public class NodeData {
@@ -1523,6 +1317,7 @@ namespace AssetGraph {
 
 		// for Importer GUI data
 		public readonly Dictionary<string, string> importerPackages;
+		public readonly Dictionary<string, string> modifierPackages;
 
 		// for Grouping GUI data
 		public readonly Dictionary<string, string> groupingKeyword;
@@ -1545,6 +1340,7 @@ namespace AssetGraph {
 			Dictionary<string, string> exportPath = null,
 			List<string> filterContainsList = null,
 			Dictionary<string, string> importerPackages = null,
+			Dictionary<string, string> modifierPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
 			Dictionary<string, string> bundleUseOutput = null,
@@ -1559,6 +1355,7 @@ namespace AssetGraph {
 			this.exportFilePath = null;
 			this.containsKeywords = null;
 			this.importerPackages = null;
+			this.modifierPackages = null;
 			this.groupingKeyword = null;
 			this.bundleNameTemplate = null;
 			this.bundleUseOutput = null;
@@ -1578,9 +1375,7 @@ namespace AssetGraph {
 				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 
 				case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI:
-
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
+				case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					this.scriptType = scriptType;
 					break;
 				}
@@ -1590,9 +1385,13 @@ namespace AssetGraph {
 					break;
 				}
 
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.importerPackages = importerPackages;
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.modifierPackages = modifierPackages;
 					break;
 				}
 

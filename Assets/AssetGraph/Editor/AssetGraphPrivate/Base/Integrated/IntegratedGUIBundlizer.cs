@@ -141,6 +141,7 @@ namespace AssetGraph {
 				if (isRun) {
 					if (GraphStackController.IsMetaFile(source.importedPath)) continue;	
 					var assetImporter = AssetImporter.GetAtPath(source.importedPath);
+					if (assetImporter == null) continue; 
 					assetImporter.assetBundleName = bundleName;
 				}
 				

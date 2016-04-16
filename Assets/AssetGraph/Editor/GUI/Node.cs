@@ -45,6 +45,7 @@ namespace AssetGraph {
 		[SerializeField] public SerializablePseudoDictionary exportPath;
 		[SerializeField] public List<string> filterContainsKeywords;
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
+		[SerializeField] public SerializablePseudoDictionary modifierPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
 		[SerializeField] public SerializablePseudoDictionary bundleUseOutput;
@@ -123,6 +124,18 @@ namespace AssetGraph {
 				x: x,
 				y: y,
 				importerPackages: importerPackages
+			);
+		}
+		
+		public static Node GUINodeForModify (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, Dictionary<string, string> modifierPackages, float x, float y) {
+			return new Node(
+				index: index,
+				name: name,
+				nodeId: nodeId,
+				kind: kind,
+				x: x,
+				y: y,
+				modifierPackages: modifierPackages
 			);
 		}
 
@@ -315,66 +328,6 @@ namespace AssetGraph {
 
 						break;
 					}
-
-					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT: {
-					// 	EditorGUILayout.HelpBox("Importer: import files by script.", MessageType.Info);
-					// 	UpdateNodeName(node);
-
-					// 	EditorGUILayout.LabelField("Script Path", node.scriptPath);
-					// 	break;
-					// }
-
-					// case AssetGraphSettings.NodeKind.IMPORTER_GUI: {
-					// 	EditorGUILayout.HelpBox("Importer: import files with applying settings from SamplingAssets.", MessageType.Info);
-					// 	UpdateNodeName(node);
-						
-					// 	GUILayout.Space(10f);
-
-					// 	if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
-					// 	/*
-					// 		importer node has no platform key. 
-					// 		platform key is contained by Unity's importer inspector itself.
-					// 	*/
-					// 	UpdateCurrentPackage(node);
-
-					// 	{
-					// 		using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-					// 			var nodeId = node.nodeId;
-					// 			var currentImporterPackage = node.currentPackage;
-					// 			if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-								
-					// 			var samplingPath = FileController.PathCombine(AssetGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
-					// 			IntegratedGUIImporter.ValidateImportSample(samplingPath,
-					// 				(string noFolderFound) => {
-					// 					EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
-					// 				},
-					// 				(string noFilesFound) => {
-					// 					EditorGUILayout.LabelField("Sampling Asset", "no asset found. please Reload first.");
-					// 				},
-					// 				(string samplingAssetPath) => {
-					// 					EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-					// 					if (GUILayout.Button("Modify Import Setting")) {
-					// 						var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
-					// 						Selection.activeObject = obj;
-					// 					}
-					// 					if (GUILayout.Button("Reset Import Setting")) {
-					// 						// delete all import setting files.
-					// 						FileController.RemakeDirectory(samplingPath);
-					// 						node.Save();
-					// 					}
-					// 				},
-					// 				(string tooManyFilesFoundMessage) => {
-					// 					EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
-					// 				}
-					// 			);
-					// 		}
-					// 	}
-
-					// 	if (packageEditMode) EditorGUI.EndDisabledGroup();
-					// 	UpdateDeleteSetting(node);
-
-					// 	break;
-					// }
 					
 					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI : {
 						EditorGUILayout.HelpBox("ImportSetting: applying settings.", MessageType.Info);
@@ -406,11 +359,63 @@ namespace AssetGraph {
 									},
 									(string samplingAssetPath) => {
 										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-										if (GUILayout.Button("Modify Import Setting")) {
+										if (GUILayout.Button("Setup Import Setting")) {
 											var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
 											Selection.activeObject = obj;
 										}
 										if (GUILayout.Button("Reset Import Setting")) {
+											// delete all import setting files.
+											FileController.RemakeDirectory(samplingPath);
+											node.Save();
+										}
+									},
+									(string tooManyFilesFoundMessage) => {
+										EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
+									}
+								);
+							}
+						}
+
+						if (packageEditMode) EditorGUI.EndDisabledGroup();
+						UpdateDeleteSetting(node);
+
+						break;
+					}
+					
+					case AssetGraphSettings.NodeKind.MODIFIER_GUI : {
+						EditorGUILayout.HelpBox("Modifier: applying settings to Assets.", MessageType.Info);
+						UpdateNodeName(node);
+						
+						GUILayout.Space(10f);
+
+						if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
+						/*
+							modifier node has no platform key. 
+						*/
+						UpdateCurrentPackage(node);
+
+						{
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+								var nodeId = node.nodeId;
+								var currentModifierPackage = node.currentPackage;
+								if (string.IsNullOrEmpty(currentModifierPackage)) currentModifierPackage = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+								
+								var samplingPath = FileController.PathCombine(AssetGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId, currentModifierPackage);
+								
+								IntegratedGUIModifier.ValidateModifierSample(samplingPath,
+									(string noFolderFound) => {
+										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
+									},
+									(string noFilesFound) => {
+										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
+									},
+									(string samplingAssetPath) => {
+										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
+										if (GUILayout.Button("Setup Modifier Setting")) {
+											var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
+											Selection.activeObject = obj;
+										}
+										if (GUILayout.Button("Reset Modifier Setting")) {
 											// delete all import setting files.
 											FileController.RemakeDirectory(samplingPath);
 											node.Save();
@@ -509,14 +514,6 @@ namespace AssetGraph {
 								node.Save();
 							}
 						}
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT: {
-						EditorGUILayout.HelpBox("Bundlizer: generate AssetBundle by script.", MessageType.Info);
-						UpdateNodeName(node);
-
-						EditorGUILayout.LabelField("Script Path", node.scriptPath);
 						break;
 					}
 
@@ -963,6 +960,7 @@ namespace AssetGraph {
 			Dictionary<string, string> exportPath = null, 
 			List<string> filterContainsKeywords = null, 
 			Dictionary<string, string> importerPackages = null,
+			Dictionary<string, string> modifierPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
 			Dictionary<string, string> bundleUseOutput = null,
@@ -980,6 +978,7 @@ namespace AssetGraph {
 			if (exportPath != null) this.exportPath = new SerializablePseudoDictionary(exportPath);
 			this.filterContainsKeywords = filterContainsKeywords;
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
+			if (modifierPackages != null) this.modifierPackages = new SerializablePseudoDictionary(modifierPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
 			if (bundleUseOutput != null) this.bundleUseOutput = new SerializablePseudoDictionary(bundleUseOutput);
@@ -1000,10 +999,13 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
 
@@ -1018,8 +1020,7 @@ namespace AssetGraph {
 					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
-
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 5";
 					break;
@@ -1051,6 +1052,7 @@ namespace AssetGraph {
 				(this.exportPath != null) ? this.exportPath.ReadonlyDict() : null,
 				this.filterContainsKeywords,
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
+				(this.modifierPackages != null) ? this.modifierPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
 				(this.bundleUseOutput != null) ? this.bundleUseOutput.ReadonlyDict() : null,
@@ -1067,14 +1069,6 @@ namespace AssetGraph {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
 			currentPackage = newCurrentPackage;
 
-			// /*
-			// 	if changed node is importer, should run [new package import] for setting.
-			// */
-			// if (kind == AssetGraphSettings.NodeKind.IMPORTER_GUI) {
-			// 	// importer node's platform is absolutely PLATFORM_DEFAULT_NAME.
-			// 	var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
-			// 	if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages.Add(platformPackageKey, string.Empty);
-			// }
 			/*
 				if changed node is importSetting, should run [new package import] for setting.
 			*/
@@ -1082,6 +1076,15 @@ namespace AssetGraph {
 				// importer node's platform is absolutely PLATFORM_DEFAULT_NAME.
 				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
 				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages.Add(platformPackageKey, string.Empty);
+			}
+			
+			/*
+				if changed node is Modifier, should run [new package import] for setting.
+			*/
+			if (kind == AssetGraphSettings.NodeKind.MODIFIER_GUI) {
+				// modifier node's platform is absolutely PLATFORM_DEFAULT_NAME.
+				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
+				if (!modifierPackages.ContainsKey(platformPackageKey)) modifierPackages.Add(platformPackageKey, string.Empty);
 			}
 			
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
@@ -1095,9 +1098,13 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					importerPackages.Remove(platformPackageKey);
+					break;
+				}
+
+				case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+					modifierPackages.Remove(platformPackageKey);
 					break;
 				}
 
@@ -1145,10 +1152,13 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2 on";
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 4 on";
 					break;
 				}
 
@@ -1163,8 +1173,7 @@ namespace AssetGraph {
 					this.nodeInterfaceTypeStr = "flow node 4 on";
 					break;
 				}
-
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 5 on";
 					break;
@@ -1196,10 +1205,13 @@ namespace AssetGraph {
 					break;
 				}
 				
-				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_GUI:
 				case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
+				
+				case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
 
@@ -1214,8 +1226,7 @@ namespace AssetGraph {
 					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
-
-				case AssetGraphSettings.NodeKind.BUNDLIZER_SCRIPT:
+				
 				case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 5";
 					break;

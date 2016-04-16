@@ -70,7 +70,7 @@ namespace AssetGraph {
 		/**
 			new assets which is generated on Imported or Prefabricated.
 		*/
-		public static InternalAssetData InternalAssetDataGeneratedByImporterOrPrefabricator (string importedPath, string assetId, Type assetType, bool isNew, bool isBundled) {
+		public static InternalAssetData InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator (string importedPath, string assetId, Type assetType, bool isNew, bool isBundled) {
 			return new InternalAssetData(
 				traceId:Guid.NewGuid().ToString(),
 				fileNameAndExtension:Path.GetFileName(importedPath),

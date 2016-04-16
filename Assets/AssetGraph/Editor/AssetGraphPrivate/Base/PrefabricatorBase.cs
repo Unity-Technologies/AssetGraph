@@ -73,7 +73,7 @@ namespace AssetGraph {
 				}
 				
 				foreach (var generatedPrefabPath in generated) {
-					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
 						generatedPrefabPath,
 						string.Empty,// dummy data
 						typeof(string),// dummy data
@@ -197,7 +197,7 @@ namespace AssetGraph {
 						candidate is new, regenerated prefab.
 					*/
 					if (generated.Contains(generatedCandidateAssetPath)) {
-						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
 							generatedCandidateAssetPath,
 							AssetDatabase.AssetPathToGUID(generatedCandidateAssetPath),
 							AssetGraphInternalFunctions.GetAssetType(generatedCandidateAssetPath),
@@ -211,7 +211,7 @@ namespace AssetGraph {
 					/*
 						candidate is not new prefab.
 					*/
-					var cachedPrefabAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrPrefabricator(
+					var cachedPrefabAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
 						generatedCandidateAssetPath,
 						AssetDatabase.AssetPathToGUID(generatedCandidateAssetPath),
 						AssetGraphInternalFunctions.GetAssetType(generatedCandidateAssetPath),
