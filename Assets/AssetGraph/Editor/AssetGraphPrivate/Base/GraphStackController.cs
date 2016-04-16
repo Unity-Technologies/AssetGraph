@@ -835,236 +835,242 @@ namespace AssetGraph {
 					cachedDict[nodeId].AddRange(justCached);
 				}
 			};
-
-			if (isActualRun) {
-				switch (nodeKind) {
-					/*
-						Scripts
-					*/
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						var scriptType = currentNodeData.scriptType;
-						var executor = Executor<FilterBase>(scriptType);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						var scriptType = currentNodeData.scriptType;
-						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					
-
-					/*
-						GUIs
-					*/
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath, package);
-						var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					
-					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-						var importerPackageKey = package;
-						if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-
+			
+			try {
+				if (isActualRun) {
+					switch (nodeKind) {
 						/*
-							if nothing match, package will become default setting.
+							Scripts
 						*/
-						if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-						var executor = new IntegratedGUIImportSetting(importerPackageKey);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					
-					case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
-						var modifierPackageKey = package;
-						if (string.IsNullOrEmpty(modifierPackageKey)) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-
-						/*
-							if nothing match, package will become default setting.
-						*/
-						if (!currentNodeData.modifierPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, modifierPackageKey))) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-						var executor = new IntegratedGUIModifier(modifierPackageKey);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(currentNodeData.groupingKeyword, package));
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-						var scriptType = currentNodeData.scriptType;
-						if (string.IsNullOrEmpty(scriptType)) {
-							Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
+						case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
+							var scriptType = currentNodeData.scriptType;
+							var executor = Executor<FilterBase>(scriptType);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
-						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
-						
-						var useOutputResources = false;
-						switch (bundleUseOutputResources) {
-							case "true" :{
-								useOutputResources = true;
-								break;
-							}
+						case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+							var scriptType = currentNodeData.scriptType;
+							var executor = Executor<PrefabricatorBase>(scriptType);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
 						}
 						
-						var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(currentNodeData.enabledBundleOptions, package);
-						var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
-						var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-						executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					default: {
-						Debug.LogError("kind not found:" + nodeKind);
-						break;
-					}
-				}
-			} else {
-				switch (nodeKind) {
-					/*
-						Scripts
-					*/
-					case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
-						var scriptType = currentNodeData.scriptType;
-						var executor = Executor<FilterBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						var scriptType = currentNodeData.scriptType;
-						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					
-
-					/*
-						GUIs
-					*/
-					case AssetGraphSettings.NodeKind.LOADER_GUI: {
-						var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath, package);
-
-						var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					
-					case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-						var importerPackageKey = package;
-						if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 
 						/*
-							if nothing match, package will become default setting.
+							GUIs
 						*/
-						if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-						var executor = new IntegratedGUIImportSetting(importerPackageKey);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-					
-					case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
-						var modifierPackageKey = package;
-						if (string.IsNullOrEmpty(modifierPackageKey)) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-
-						/*
-							if nothing match, package will become default setting.
-						*/
-						if (!currentNodeData.modifierPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, modifierPackageKey))) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
-						var executor = new IntegratedGUIModifier(modifierPackageKey);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.GROUPING_GUI: {
-						var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(currentNodeData.groupingKeyword, package));
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
-
-					case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-						var scriptType = currentNodeData.scriptType;
-						if (string.IsNullOrEmpty(scriptType)) {
-							Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
-							break;;
+						case AssetGraphSettings.NodeKind.LOADER_GUI: {
+							var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath, package);
+							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
 						}
-						var executor = Executor<PrefabricatorBase>(scriptType);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
 
-					case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
-						var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
+						case AssetGraphSettings.NodeKind.FILTER_GUI: {
+							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
 						
-						var useOutputResources = false;
-						switch (bundleUseOutputResources) {
-							case "true" :{
-								useOutputResources = true;
+						case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+							var importerPackageKey = package;
+							if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+							/*
+								if nothing match, package will become default setting.
+							*/
+							if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+							var executor = new IntegratedGUIImportSetting(importerPackageKey);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+						
+						case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+							var modifierPackageKey = package;
+							if (string.IsNullOrEmpty(modifierPackageKey)) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+							/*
+								if nothing match, package will become default setting.
+							*/
+							if (!currentNodeData.modifierPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, modifierPackageKey))) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+							var executor = new IntegratedGUIModifier(modifierPackageKey);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+							var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(currentNodeData.groupingKeyword, package));
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+							var scriptType = currentNodeData.scriptType;
+							if (string.IsNullOrEmpty(scriptType)) {
+								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
 								break;
 							}
+							var executor = Executor<PrefabricatorBase>(scriptType);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
+							var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
+							
+							var useOutputResources = false;
+							switch (bundleUseOutputResources) {
+								case "true" :{
+									useOutputResources = true;
+									break;
+								}
+							}
+							
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+							var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(currentNodeData.enabledBundleOptions, package);
+							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+							var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
+							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
+							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						default: {
+							Debug.LogError("kind not found:" + nodeKind);
+							break;
+						}
+					}
+				} else {
+					switch (nodeKind) {
+						/*
+							Scripts
+						*/
+						case AssetGraphSettings.NodeKind.FILTER_SCRIPT: {
+							var scriptType = currentNodeData.scriptType;
+							var executor = Executor<FilterBase>(scriptType);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+						case AssetGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+							var scriptType = currentNodeData.scriptType;
+							var executor = Executor<PrefabricatorBase>(scriptType);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
 						}
 						
-						var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
 
-					case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(currentNodeData.enabledBundleOptions, package);
-						var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
+						/*
+							GUIs
+						*/
+						case AssetGraphSettings.NodeKind.LOADER_GUI: {
+							var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath, package);
 
-					case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
-						var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
-						var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-						executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
-						break;
-					}
+							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
 
-					default: {
-						Debug.LogError("kind not found:" + nodeKind);
-						break;
+						case AssetGraphSettings.NodeKind.FILTER_GUI: {
+							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+						
+						case AssetGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+							var importerPackageKey = package;
+							if (string.IsNullOrEmpty(importerPackageKey)) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+							/*
+								if nothing match, package will become default setting.
+							*/
+							if (!currentNodeData.importerPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, importerPackageKey))) importerPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+							var executor = new IntegratedGUIImportSetting(importerPackageKey);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+						
+						case AssetGraphSettings.NodeKind.MODIFIER_GUI: {
+							var modifierPackageKey = package;
+							if (string.IsNullOrEmpty(modifierPackageKey)) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+
+							/*
+								if nothing match, package will become default setting.
+							*/
+							if (!currentNodeData.modifierPackages.ContainsKey(Platform_Package_Key(AssetGraphSettings.PLATFORM_DEFAULT_NAME, modifierPackageKey))) modifierPackageKey = AssetGraphSettings.PLATFORM_DEFAULT_PACKAGE;
+							var executor = new IntegratedGUIModifier(modifierPackageKey);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.GROUPING_GUI: {
+							var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(currentNodeData.groupingKeyword, package));
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+							var scriptType = currentNodeData.scriptType;
+							if (string.IsNullOrEmpty(scriptType)) {
+								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
+								break;;
+							}
+							var executor = Executor<PrefabricatorBase>(scriptType);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleNameTemplate, package);
+							var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(currentNodeData.bundleUseOutput, package).ToLower();
+							
+							var useOutputResources = false;
+							switch (bundleUseOutputResources) {
+								case "true" :{
+									useOutputResources = true;
+									break;
+								}
+							}
+							
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+							var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(currentNodeData.enabledBundleOptions, package);
+							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						case AssetGraphSettings.NodeKind.EXPORTER_GUI: {
+							var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath, package);
+							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
+							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
+
+						default: {
+							Debug.LogError("kind not found:" + nodeKind);
+							break;
+						}
 					}
 				}
+			} catch (OnNodeException e) {
+				// Abort(e.reason, e.nodeId);
+				Debug.LogError("isActualRun:" + isActualRun + " Nodeのsetup/runのエラー、なんかしらGUIまで伝えないとな〜というところ。 e.reason:" + e.reason + " at:" + nodeName);
+				throw new Exception("abort");
 			}
 
 			currentNodeData.Done();

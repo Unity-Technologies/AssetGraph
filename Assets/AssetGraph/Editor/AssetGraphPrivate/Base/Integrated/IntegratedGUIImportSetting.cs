@@ -19,6 +19,10 @@ namespace AssetGraph {
 
 		public void Setup (string nodeId, string labelToNext, string unusedPackageInfo, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			
+			// reserve importSetting type for limit asset.
+			var importSettingSampleType = string.Empty;
+			
+			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			var first = true;
@@ -45,16 +49,18 @@ namespace AssetGraph {
 					// do nothing. keep importing new asset for sampling.
 				},
 				(string samplePath) => {
+					importSettingSampleType = AssetImporter.GetAtPath(samplePath).GetType().ToString();
 					first = false;
 				},
 				(string tooManysample) => {
-					first = false;
+					throw new OnNodeException("too many sampling file found. please clear ImportSettingSamples folder.", nodeId);
 				}
 			);
 
 			var alreadyImported = new List<string>();
 			var ignoredResource = new List<string>();
-
+			
+			
 			foreach (var inputSource in inputSources) {
 				if (string.IsNullOrEmpty(inputSource.absoluteSourcePath)) {
 					if (!string.IsNullOrEmpty(inputSource.importedPath)) {
@@ -68,8 +74,24 @@ namespace AssetGraph {
 				
 				var assumedImportedPath = inputSource.importedPath;
 				
-				var assumedType = AssumeTypeFromExtension();
-
+				var assumedType = AssetImporter.GetAtPath(assumedImportedPath).GetType();
+				var importerTypeStr = assumedType.ToString();
+				
+				/*
+					only texture, model and audio importer is acceptable.
+				*/
+				switch (importerTypeStr) {
+					case "UnityEditor.TextureImporter":
+					case "UnityEditor.ModelImporter":
+					case "UnityEditor.AudioImporter": {
+						break;
+					}
+					
+					default: {
+						throw new OnNodeException("unhandled importer type:" + importerTypeStr, nodeId);
+					}
+				}
+				
 				var newData = InternalAssetData.InternalAssetDataByImporter(
 					inputSource.traceId,
 					inputSource.absoluteSourcePath,
@@ -93,6 +115,12 @@ namespace AssetGraph {
 					first = false;
 					AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 					EditorUtility.ClearProgressBar();
+					
+					importSettingSampleType = AssetImporter.GetAtPath(targetFilePath).GetType().ToString();
+				} else {
+					if (importerTypeStr != importSettingSampleType) {
+						throw new OnNodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + importSettingSampleType + " inputted error file path:" + inputSource.importedPath, nodeId);
+					}
 				}
 			
 
@@ -150,66 +178,62 @@ namespace AssetGraph {
 				check file & setting.
 				if need, apply importSetting to file.
 			*/
-			{
-				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
-				var effector = new InternalSamplingImportEffector(samplingAssetImporter);
-				{
-					foreach (var inputSource in inputSources) {
-						var importer = AssetImporter.GetAtPath(inputSource.importedPath);
+			var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
+			var effector = new InternalSamplingImportEffector(samplingAssetImporter);
+			var samplingAssetImporterTypeStr = samplingAssetImporter.GetType().ToString();
+			
+			foreach (var inputSource in inputSources) {
+				var importer = AssetImporter.GetAtPath(inputSource.importedPath);
+				
+				/*
+					compare type of import setting effector.
+				*/
+				var importerTypeStr = importer.GetType().ToString();
+				
+				
+				if (importerTypeStr != samplingAssetImporterTypeStr) {
+					throw new OnNodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + samplingAssetImporterTypeStr + " inputted error file path:" + inputSource.importedPath, nodeId);
+				}
+				
+				importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false;
+				/*
+					kind of importer is matched.
+					check setting then apply setting or no changed.
+				*/
+				switch (importerTypeStr) {
+					case "UnityEditor.TextureImporter": {
+						var texImporter = importer as TextureImporter;
+						var same = InternalSamplingImportAdopter.IsSameTextureSetting(texImporter, samplingAssetImporter as TextureImporter);
 						
-						/*
-							compare type of import setting effector.
-						*/
-						var importerTypeStr = importer.GetType().ToString();
-						
-						
-						if (importerTypeStr != samplingAssetImporter.GetType().ToString()) {
-							// mismatched target will be ignored. but already imported.
-							importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false; 
-							continue;
+						if (!same) {
+							effector.ForceOnPreprocessTexture(texImporter);
+							importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
 						}
+						break;
+					}
+					case "UnityEditor.ModelImporter": {
+						var modelImporter = importer as ModelImporter;
+						var same = InternalSamplingImportAdopter.IsSameModelSetting(modelImporter, samplingAssetImporter as ModelImporter);
 						
-						importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false;
-						/*
-							kind of importer is matched.
-							check setting then apply setting or no changed.
-						*/
-						switch (importerTypeStr) {
-							case "UnityEditor.TextureImporter": {
-								var texImporter = importer as TextureImporter;
-								var same = InternalSamplingImportAdopter.IsSameTextureSetting(texImporter, samplingAssetImporter as TextureImporter);
-								
-								if (!same) {
-									effector.ForceOnPreprocessTexture(texImporter);
-									importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
-								}
-								break;
-							}
-							case "UnityEditor.ModelImporter": {
-								var modelImporter = importer as ModelImporter;
-								var same = InternalSamplingImportAdopter.IsSameModelSetting(modelImporter, samplingAssetImporter as ModelImporter);
-								
-								if (!same) {
-									effector.ForceOnPreprocessModel(modelImporter);
-									importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
-								}
-								break;
-							}
-							case "UnityEditor.AudioImporter": {
-								var audioImporter = importer as AudioImporter;
-								var same = InternalSamplingImportAdopter.IsSameAudioSetting(audioImporter, samplingAssetImporter as AudioImporter);
-								
-								if (!same) {
-									effector.ForceOnPreprocessAudio(audioImporter);
-									importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
-								}
-								break;
-							}
-							
-							default: {
-								throw new Exception("unhandled importer type:" + importerTypeStr);
-							}
+						if (!same) {
+							effector.ForceOnPreprocessModel(modelImporter);
+							importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
 						}
+						break;
+					}
+					case "UnityEditor.AudioImporter": {
+						var audioImporter = importer as AudioImporter;
+						var same = InternalSamplingImportAdopter.IsSameAudioSetting(audioImporter, samplingAssetImporter as AudioImporter);
+						
+						if (!same) {
+							effector.ForceOnPreprocessAudio(audioImporter);
+							importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
+						}
+						break;
+					}
+					
+					default: {
+						throw new OnNodeException("unhandled importer type:" + importerTypeStr, nodeId);
 					}
 				}
 			}
@@ -280,11 +304,6 @@ namespace AssetGraph {
 			}
 
 			NoSampleFolderFound("no samples found in ImporterSetting directory:" + samplePath + ", applying default importer settings. If you want to set Importer seting, please Reload and set import setting from the inspector of Importer node.");
-		}
-		
-		public Type AssumeTypeFromExtension () {
-			// no mean. nobody can predict type of asset before import.
-			return typeof(UnityEngine.Object);
 		}
 
 	}
