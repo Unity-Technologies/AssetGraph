@@ -214,6 +214,7 @@ namespace AssetGraph {
 					case "UnityEditor.ModelImporter": {
 						var modelImporter = importer as ModelImporter;
 						var same = InternalSamplingImportAdopter.IsSameModelSetting(modelImporter, samplingAssetImporter as ModelImporter);
+						var data = AssetDatabase.LoadAssetAtPath(inputSource.importedPath, inputSource.assetType);
 						
 						if (!same) {
 							effector.ForceOnPreprocessModel(modelImporter);

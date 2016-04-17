@@ -279,19 +279,33 @@ namespace AssetGraph {
 					}
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
-						EditorGUILayout.HelpBox("Filter: filtering files by keywords.", MessageType.Info);
+						EditorGUILayout.HelpBox("Filter: filtering files by keywords and types.", MessageType.Info);
 						UpdateNodeName(node);
 						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							GUILayout.Label("Contains keyword and type");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
-								GUILayout.BeginHorizontal();
-								{
-									if (GUILayout.Button("-")) {
+								using (new GUILayout.HorizontalScope()) {
+									if (GUILayout.Button("-", GUILayout.Width(30))) {
 										node.BeforeSave();
 										node.filterContainsKeywords.RemoveAt(i);
 										node.FilterOutputPointsDeleted(i);
 									} else {
-										var newContainsKeyword = EditorGUILayout.TextField("Contains", node.filterContainsKeywords[i]);
+										var newContainsKeyword = string.Empty;
+										using (new EditorGUILayout.HorizontalScope()) {
+											var currentTypeConstraintStr = "untyped";
+											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i]);
+											if (GUILayout.Button(currentTypeConstraintStr)) {
+												ShowFilterKeyTypeMenu(currentTypeConstraintStr,
+													() => {
+														// EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
+													},
+													(b) => {
+														// EditorGUILayout.HelpBox("already exist.", MessageType.Error);
+													} 
+												);
+											}
+										}
 										var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
 										currentKeywordsSource.RemoveAt(i);
 										var currentKeywords = new List<string>(currentKeywordsSource);
@@ -313,7 +327,6 @@ namespace AssetGraph {
 										}
 									}
 								}
-								GUILayout.EndHorizontal();
 							}
 							
 							// add contains keyword interface.
@@ -1650,6 +1663,13 @@ namespace AssetGraph {
 			}
 			
 			return containedPoints;
+		}
+		
+		
+		
+		public static void ShowFilterKeyTypeMenu (string current, Action NoneSelected, Action<string> ExistSelected) {
+			// んーで、型は限られてるんだよな。ほんとか？限られてるか？Assetを拡張してる型か、、Filterの役割が広がるなあ、、とりあえず
+			// stringでextensionを定義しよう。それとのマッチで考える。
 		}
 
 		public static void ShowPackageMenu (string currentPackage, Action NoneSelected, Action<string> ExistSelected) {
