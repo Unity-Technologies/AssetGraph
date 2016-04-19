@@ -3,12 +3,15 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace AssetGraph {
 	public class IntegratedGUIFilter : INodeBase {
 		private readonly List<string> containsKeywords;
-		public IntegratedGUIFilter (List<string> containsKeywords) {
+		private readonly List<string> containsKeytypes;
+		public IntegratedGUIFilter (List<string> containsKeywords, List<string> containsKeytypes) {
 			this.containsKeywords = containsKeywords;
+			this.containsKeytypes = containsKeytypes;
 		}
 
 		public void Setup (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -82,11 +85,30 @@ namespace AssetGraph {
 		}
 
 		private void In (List<string> source, Action<string, List<string>> Out) {
-			foreach (var containsKeyword in containsKeywords) {
-				var contains = source.Where(path => path.Contains(containsKeyword)).ToList();
-				Out(containsKeyword, contains);
+			for (var i = 0; i < containsKeywords.Count; i++) {
+				var keyword = containsKeywords[i];
+				var keytype = containsKeytypes[i];
+				
+				var contains = source.Where(path => path.Contains(keyword)).ToList();
+				
+				// type constraint.
+				if (keytype != AssetGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+					var typeContains = new List<string>();
+					
+					foreach (var contain in contains) {
+						var assumedType = TypeBinder.AssumeTypeFromExtension(contain);
+						if (keytype == assumedType.ToString()) typeContains.Add(contain);
+					}
+					
+					Out(keyword, typeContains);
+					continue;
+				}
+				 
+				Out(keyword, contains);
 			}
 		}
+		
+		
 
 		public static void ValidateFilter (string currentFilterKeyword, List<string> keywords, Action NullOrEmpty, Action AlreadyContained) {
 			if (string.IsNullOrEmpty(currentFilterKeyword)) NullOrEmpty();

@@ -129,6 +129,7 @@ namespace AssetGraph {
 		public const string NODE_LOADER_LOAD_PATH = "loadPath";
 		public const string NODE_EXPORTER_EXPORT_PATH = "exportPath";
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
+		public const string NODE_FILTER_CONTAINS_KEYTYPES = "filterContainsKeytypes";
 		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
 		public const string NODE_MODIFIER_PACKAGES = "modifierPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
@@ -154,6 +155,8 @@ namespace AssetGraph {
 		public const string BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL = "resources";
 		
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
+		public const string DEFAULT_FILTER_KEYTYPE = "None";
+		
 
 		public enum NodeKind : int {
 			FILTER_SCRIPT,

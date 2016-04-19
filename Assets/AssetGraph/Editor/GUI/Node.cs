@@ -44,6 +44,7 @@ namespace AssetGraph {
 		[SerializeField] public SerializablePseudoDictionary loadPath;
 		[SerializeField] public SerializablePseudoDictionary exportPath;
 		[SerializeField] public List<string> filterContainsKeywords;
+		[SerializeField] public List<string> filterContainsKeytypes;
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
 		[SerializeField] public SerializablePseudoDictionary modifierPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
@@ -103,7 +104,7 @@ namespace AssetGraph {
 			);
 		}
 
-		public static Node GUINodeForFilter (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, float x, float y) {
+		public static Node GUINodeForFilter (int index, string name, string nodeId, AssetGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -111,7 +112,8 @@ namespace AssetGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				filterContainsKeywords: filterContainsKeywords
+				filterContainsKeywords: filterContainsKeywords,
+				filterContainsKeytypes: filterContainsKeytypes
 			);
 		}
 
@@ -285,6 +287,7 @@ namespace AssetGraph {
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							GUILayout.Label("Contains keyword and type");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
+								
 								using (new GUILayout.HorizontalScope()) {
 									if (GUILayout.Button("-", GUILayout.Width(30))) {
 										node.BeforeSave();
@@ -293,15 +296,16 @@ namespace AssetGraph {
 									} else {
 										var newContainsKeyword = string.Empty;
 										using (new EditorGUILayout.HorizontalScope()) {
-											var currentTypeConstraintStr = "untyped";
-											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i]);
-											if (GUILayout.Button(currentTypeConstraintStr)) {
-												ShowFilterKeyTypeMenu(currentTypeConstraintStr,
-													() => {
-														// EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
-													},
-													(b) => {
-														// EditorGUILayout.HelpBox("already exist.", MessageType.Error);
+											
+											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], GUILayout.Width(120));
+											var currentIndex = i;
+											if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
+												ShowFilterKeyTypeMenu(
+													node.filterContainsKeytypes[currentIndex],
+													(string selectedTypeStr) => {
+														node.BeforeSave();
+														node.filterContainsKeytypes[currentIndex] = selectedTypeStr;
+														node.Save();
 													} 
 												);
 											}
@@ -334,7 +338,10 @@ namespace AssetGraph {
 								node.BeforeSave();
 								var addingIndex = node.filterContainsKeywords.Count;
 								var newKeyword = AssetGraphSettings.DEFAULT_FILTER_KEYWORD;
+								
 								node.filterContainsKeywords.Add(newKeyword);
+								node.filterContainsKeytypes.Add(AssetGraphSettings.DEFAULT_FILTER_KEYTYPE);
+								
 								node.FilterOutputPointsAdded(addingIndex, AssetGraphSettings.DEFAULT_FILTER_KEYWORD);
 							}
 						}
@@ -972,6 +979,7 @@ namespace AssetGraph {
 			Dictionary<string, string> loadPath = null, 
 			Dictionary<string, string> exportPath = null, 
 			List<string> filterContainsKeywords = null, 
+			List<string> filterContainsKeytypes = null, 
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> modifierPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
@@ -990,6 +998,7 @@ namespace AssetGraph {
 			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
 			if (exportPath != null) this.exportPath = new SerializablePseudoDictionary(exportPath);
 			this.filterContainsKeywords = filterContainsKeywords;
+			this.filterContainsKeytypes = filterContainsKeytypes;
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
 			if (modifierPackages != null) this.modifierPackages = new SerializablePseudoDictionary(modifierPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
@@ -1064,6 +1073,7 @@ namespace AssetGraph {
 				(this.loadPath != null) ? loadPath.ReadonlyDict() : null,
 				(this.exportPath != null) ? this.exportPath.ReadonlyDict() : null,
 				this.filterContainsKeywords,
+				this.filterContainsKeytypes,
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
 				(this.modifierPackages != null) ? this.modifierPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
@@ -1666,10 +1676,26 @@ namespace AssetGraph {
 		}
 		
 		
-		
-		public static void ShowFilterKeyTypeMenu (string current, Action NoneSelected, Action<string> ExistSelected) {
-			// んーで、型は限られてるんだよな。ほんとか？限られてるか？Assetを拡張してる型か、、Filterの役割が広がるなあ、、とりあえず
-			// stringでextensionを定義しよう。それとのマッチで考える。
+		public static void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
+			var menu = new GenericMenu();
+			
+			menu.AddDisabledItem(new GUIContent(current));
+			
+			menu.AddSeparator(string.Empty);
+			
+			for (var i = 0; i < TypeBinder.KeyTypes.Count; i++) {
+				var type = TypeBinder.KeyTypes[i];
+				if (type == current) continue;
+				
+				menu.AddItem(
+					new GUIContent(type),
+					false,
+					() => {
+						ExistSelected(type);
+					}
+				);
+			}
+			menu.ShowAsContext();
 		}
 
 		public static void ShowPackageMenu (string currentPackage, Action NoneSelected, Action<string> ExistSelected) {

@@ -502,16 +502,24 @@ namespace AssetGraph {
 
 					case AssetGraphSettings.NodeKind.FILTER_GUI: {
 						var containsKeywordsSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
-						var filterContainsList = new List<string>();
+						var filterContainsKeywords = new List<string>();
 						foreach (var containsKeywordSource in containsKeywordsSource) {
-							filterContainsList.Add(containsKeywordSource.ToString());
+							filterContainsKeywords.Add(containsKeywordSource.ToString());
 						}
+						
+						var containsKeytypesSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
+						var filterContainsKeytypes = new List<string>();
+						foreach (var containsKeytypeSource in containsKeytypesSource) {
+							filterContainsKeytypes.Add(containsKeytypeSource.ToString());
+						}
+						
 						nodeDatas.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
-								filterContainsList:filterContainsList
+								filterContainsKeywords:filterContainsKeywords,
+								filterContainsKeytypes:filterContainsKeytypes
 							)
 						);
 						break;
@@ -867,7 +875,7 @@ namespace AssetGraph {
 						}
 
 						case AssetGraphSettings.NodeKind.FILTER_GUI: {
-							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
+							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
 							executor.Run(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -982,7 +990,7 @@ namespace AssetGraph {
 						}
 
 						case AssetGraphSettings.NodeKind.FILTER_GUI: {
-							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords);
+							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
 							executor.Setup(nodeId, labelToChild, package, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -1320,6 +1328,7 @@ namespace AssetGraph {
 
 		// for Filter GUI data
 		public readonly List<string> containsKeywords;
+		public readonly List<string> containsKeytypes;
 
 		// for Importer GUI data
 		public readonly Dictionary<string, string> importerPackages;
@@ -1344,7 +1353,8 @@ namespace AssetGraph {
 			string scriptType = null,
 			Dictionary<string, string> loadPath = null,
 			Dictionary<string, string> exportPath = null,
-			List<string> filterContainsList = null,
+			List<string> filterContainsKeywords = null,
+			List<string> filterContainsKeytypes = null,
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> modifierPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
@@ -1387,7 +1397,8 @@ namespace AssetGraph {
 				}
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
-					this.containsKeywords = filterContainsList;
+					this.containsKeywords = filterContainsKeywords;
+					this.containsKeytypes = filterContainsKeytypes;
 					break;
 				}
 

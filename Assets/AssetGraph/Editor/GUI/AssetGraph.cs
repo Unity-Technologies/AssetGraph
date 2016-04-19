@@ -1381,6 +1381,7 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
 					nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
+					nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] = node.filterContainsKeytypes;
 					break;
 				}
 
@@ -1475,8 +1476,14 @@ namespace AssetGraph {
 					foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
 						filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
 					}
+					
+					var filterContainsKeytypesSource = nodeDict[AssetGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
+					var filterContainsKeytypes = new List<string>();
+					foreach (var filterContainsKeytypeSource in filterContainsKeytypesSource) {
+						filterContainsKeytypes.Add(filterContainsKeytypeSource.ToString());
+					}
 
-					var newNode = Node.GUINodeForFilter(currentNodesCount, name, id, kind, filterContainsKeywords, x, y);
+					var newNode = Node.GUINodeForFilter(currentNodesCount, name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
 
 					var outputLabelsList = nodeDict[AssetGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1655,7 +1662,8 @@ namespace AssetGraph {
 
 				case AssetGraphSettings.NodeKind.FILTER_GUI: {
 					var newFilterKeywords = new List<string>();
-					newNode = Node.GUINodeForFilter(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, x, y);
+					var newFilterKeytypes = new List<string>();
+					newNode = Node.GUINodeForFilter(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}

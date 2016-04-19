@@ -68,7 +68,7 @@ namespace AssetGraph {
 				
 				var assumedImportedPath = inputSource.importedPath;
 				
-				var assumedType = AssumeTypeFromExtension();
+				var assumedType = TypeBinder.AssumeTypeFromExtension(assumedImportedPath);
 
 				var newData = InternalAssetData.InternalAssetDataByImporter(
 					inputSource.traceId,
@@ -466,10 +466,8 @@ namespace AssetGraph {
 			NoSampleFolderFound("no samples found in ImporterSetting directory:" + samplePath + ", applying default importer settings. If you want to set Importer seting, please Reload and set import setting from the inspector of Importer node.");
 		}
 		
-		public Type AssumeTypeFromExtension () {
-			// no mean. nobody can predict type of asset before import.
-			return typeof(UnityEngine.Object);
-		}
+		
+		
 
 	}
 }
