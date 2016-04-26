@@ -35,7 +35,7 @@ namespace AssetGraph {
 		
 		public static Dictionary<string, Type> AssumeTypeBinding = new Dictionary<string, Type>{
 			// importers
-			{".png", typeof(TextureImporter)},// もっといっぱいあるよね
+			{".png", typeof(TextureImporter)},// もっといっぱいあるよね -> このへんはimporterで見る
 			{".fbx", typeof(ModelImporter)},// もっといっぱいあるよね
 			{".mp3", typeof(AudioImporter)},// もっといっぱいあるよね
 			

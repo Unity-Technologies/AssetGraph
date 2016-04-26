@@ -155,7 +155,7 @@ namespace AssetGraph {
 		public const string BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL = "resources";
 		
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
-		public const string DEFAULT_FILTER_KEYTYPE = "None";
+		public const string DEFAULT_FILTER_KEYTYPE = "Any";
 		
 
 		public enum NodeKind : int {
