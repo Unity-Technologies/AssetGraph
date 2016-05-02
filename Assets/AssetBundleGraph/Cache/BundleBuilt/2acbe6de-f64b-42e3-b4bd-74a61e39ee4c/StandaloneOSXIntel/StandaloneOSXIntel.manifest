@@ -1,0 +1,16 @@
+ManifestFileVersion: 0
+CRC: 1029066526
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: bundle_a_0.assetbundle.standaloneosxintel
+      Dependencies: {}
+    Info_1:
+      Name: bundle_a_1.assetbundle.standaloneosxintel
+      Dependencies: {}
+    Info_2:
+      Name: bundle_a_2.assetbundle.standaloneosxintel
+      Dependencies: {}
+    Info_3:
+      Name: bundle_b_0.assetbundle.standaloneosxintel
+      Dependencies: {}

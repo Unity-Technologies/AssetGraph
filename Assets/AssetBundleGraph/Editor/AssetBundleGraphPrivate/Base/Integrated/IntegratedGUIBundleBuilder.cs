@@ -16,7 +16,7 @@ namespace AssetBundleGraph {
 			this.relatedNodeIds = relatedNodeIds;
 		}
 
-		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			/*
 				forcely merge to group ["0"].
 				these are came from bundlizer.
@@ -32,11 +32,11 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
 			
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
-			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.Current_Platform_Package_Folder(package));
+			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.Current_Platform_Package_Folder());
 			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
 			
@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 				platform's bundle & manifest. 
 				e.g. iOS & iOS.manifest.
 			*/
-			var currentPlatform_Package_BundleFile = GraphStackController.Current_Platform_Package_Folder(package);
+			var currentPlatform_Package_BundleFile = GraphStackController.Current_Platform_Package_Folder();
 			var currentPlatform_Package_BundleFileManifest = currentPlatform_Package_BundleFile + AssetBundleGraphSettings.MANIFEST_FOOTER;
 			
 			intendedAssetNames.Add(currentPlatform_Package_BundleFile);
@@ -162,44 +162,6 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 		
-		
-		/**
-			
-			Cacheフォルダが素材をすべて保持していた時の、不要なパッケージやプラットフォームからAssetBundleの設定を消す処理
-			
-		*/
-		private void RemoveOtherPlatformAndPackageBundleSettings (List<string> nodeIds, string package) {
-			if (!Directory.Exists(AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)) return;
-
-			/*
-				get all cache folder of node from cache path.
-			*/
-			var cachedNodeKindFolderPaths = FileController.FolderPathsInFolder(AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
-			foreach (var cachedNodeKindFolderPath in cachedNodeKindFolderPaths) {
-				var nodeIdFolderPaths = FileController.FolderPathsInFolder(cachedNodeKindFolderPath);
-				foreach (var nodeIdFolderPath in nodeIdFolderPaths) {
-					var nodeIdFromFolder = nodeIdFolderPath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
-
-					// remove all bundle settings from unrelated nodes.
-					if (!nodeIds.Contains(nodeIdFromFolder)) {
-						RemoveBundleSettings(nodeIdFolderPath);
-						continue;
-					}
-
-					// related nodes, contains platform_package folder.
-					
-					// remove all bundle settings from unrelated platforms + packages.
-					var platformFolderPaths = FileController.FolderPathsInFolder(nodeIdFolderPath);
-					foreach (var platformFolderPath in platformFolderPaths) {
-						var platformNameFromFolder = platformFolderPath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Last();
-
-						if (platformNameFromFolder == GraphStackController.Current_Platform_Package_Folder(package)) continue;
-						
-						RemoveBundleSettings(platformFolderPath);
-					}
-				}
-			}
-		}
 		
 		public static void RemoveAllAssetBundleSettings () {
 			RemoveBundleSettings(AssetBundleGraphSettings.ASSETS_PATH);

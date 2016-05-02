@@ -22,8 +22,7 @@ namespace AssetBundleGraph {
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
-			var lastPackageStr = LastPackage();
-			Run(lastPackageStr);
+			Run();
 		}
 
 		public enum ScriptType : int {
@@ -79,11 +78,8 @@ namespace AssetBundleGraph {
 					}
 				}
 			}
-
-			var packageStr = string.Empty;
-			if (1 < currentParams.Count) packageStr = currentParams[1];
-
-			Run(packageStr);
+			
+			Run();
 		}
 
 		public static BuildTarget BuildTargetFromString (string val) {
@@ -120,8 +116,8 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)]
-		public static void DeleteCache () {
+		
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
 			FileController.RemakeDirectory(AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
 
 			AssetDatabase.Refresh();
@@ -159,7 +155,7 @@ namespace AssetBundleGraph {
 			LoadTextures();
 
 			InitializeGraph();
-			Setup(package);
+			Setup();
 
 
 			if (nodes.Any()) UpdateSpacerRect();
@@ -252,8 +248,6 @@ namespace AssetBundleGraph {
 			}
 		}
 		private ScalePoint scalePoint;
-
-		private string package = string.Empty;
 
 		private void LoadTextures () {
 			// load shared node textures
@@ -382,33 +376,6 @@ namespace AssetBundleGraph {
 			return new ActiveObject(idPosDict);
 		}
 
-		private static string LastPackage () {
-			var basePath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
-
-			if (!Directory.Exists(basePath)) throw new Exception("lastPackage data load error: no AssetBundleGraph data directory found. please open AssetBundleGraph first.");
-
-			var graphDataPath = FileController.PathCombine(basePath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
-			if (!File.Exists(graphDataPath)) throw new Exception("lastPackage data load error: no AssetBundleGraph data found. please open AssetBundleGraph first.");
-
-			var deserialized = new Dictionary<string, object>();
-			
-			var dataStr = string.Empty;
-			using (var sr = new StreamReader(graphDataPath)) {
-				dataStr = sr.ReadToEnd();
-			}
-
-			try {
-				deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			} catch (Exception e) {
-				throw new Exception("lastPackage data load error:" + e + " at path:" + graphDataPath);
-			}
-
-			var lastPackageStr = deserialized[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTPACKAGE] as string;
-			if (string.IsNullOrEmpty(lastPackageStr)) lastPackageStr = string.Empty;
-
-			return lastPackageStr;
-		}
-
 		/**
 			node graph initializer.
 			setup nodes, points and connections from saved data.
@@ -424,9 +391,6 @@ namespace AssetBundleGraph {
 
 			var deserialized = new Dictionary<string, object>();
 			var lastModified = DateTime.Now;
-
-			// default package is empty.
-			package = string.Empty;
 
 			if (File.Exists(graphDataPath)) {
 
@@ -446,10 +410,6 @@ namespace AssetBundleGraph {
 
 				var lastModifiedStr = deserialized[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED] as string;
 				lastModified = Convert.ToDateTime(lastModifiedStr);
-				
-				var lastPackageStr = deserialized[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTPACKAGE] as string;
-				if (string.IsNullOrEmpty(lastPackageStr)) lastPackageStr = string.Empty;
-				package = lastPackageStr;
 
 				var validatedDataDict = GraphStackController.ValidateStackedGraph(deserialized);
 
@@ -495,7 +455,7 @@ namespace AssetBundleGraph {
 			/*
 				load graph data from deserialized data.
 			*/
-			var nodesAndConnections = ConstructGraphFromDeserializedData(deserialized, package);
+			var nodesAndConnections = ConstructGraphFromDeserializedData(deserialized);
 			nodes = nodesAndConnections.currentNodes;
 			connections = nodesAndConnections.currentConnections;
 		}
@@ -505,8 +465,7 @@ namespace AssetBundleGraph {
 			var graphData = new Dictionary<string, object>{
 				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
 				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, new List<object>()},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, new List<object>()},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTPACKAGE, string.Empty}
+				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, new List<object>()}
 			};
 
 			// save new empty graph data.
@@ -525,7 +484,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private static NodesAndConnections ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData, string currentPackage) {
+		private static NodesAndConnections ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData) {
 			var currentNodes = new List<Node>();
 			var currentConnections = new List<Connection>();
 
@@ -587,8 +546,7 @@ namespace AssetBundleGraph {
 			var graphData = new Dictionary<string, object>{
 				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
 				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, nodeList},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, connectionList},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTPACKAGE, package}
+				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, connectionList}
 			};
 
 			UpdateGraphData(graphData);
@@ -597,7 +555,7 @@ namespace AssetBundleGraph {
 		private void SaveGraphWithReloadSilent () {
 			SaveGraph();
 			try {
-				Setup(package);
+				Setup();
 			} catch {
 				// display nothing.d
 			}
@@ -606,24 +564,14 @@ namespace AssetBundleGraph {
 		private void SaveGraphWithReload () {
 			SaveGraph();
 			try {
-				Setup(package);
+				Setup();
 			} catch (Exception e) {
 				Debug.LogError("reload error:" + e);
 			}
 		}
 
-		private static void CollectPackage (List<string> platform_package_keys) {
-			foreach (var platform_package_key in platform_package_keys) {
-				var packageKey = GraphStackController.PackageKeyFromPlatform_Package_Key(platform_package_key);
-				if (string.IsNullOrEmpty(packageKey)) continue;
-
-				if (!Node.NodeSharedPackages.Contains(packageKey)) {
-					Node.NodeSharedPackages.Add(packageKey);
-				}
-			}
-		}
-
-		private void Setup (string package) {
+		
+		private void Setup () {
 			EditorUtility.ClearProgressBar();
 
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
@@ -649,12 +597,12 @@ namespace AssetBundleGraph {
 			Node.allNodeNames = new List<string>(nodes.Select(node => node.name).ToList());
 
 			// ready throughput datas.
-			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData, package);
+			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
 
 			Finally(nodes, connections, connectionThroughputs, false);
 		}
 
-		private static void Run (string package) {
+		private static void Run () {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
@@ -669,7 +617,7 @@ namespace AssetBundleGraph {
 			}
 			
 			var loadedData = Json.Deserialize(dataStr) as Dictionary<string, object>;
-			var nodesAndConnections = ConstructGraphFromDeserializedData(loadedData, package);
+			var nodesAndConnections = ConstructGraphFromDeserializedData(loadedData);
 			var currentNodes = nodesAndConnections.currentNodes;
 			var currentConnections = nodesAndConnections.currentConnections;
 
@@ -698,19 +646,19 @@ namespace AssetBundleGraph {
 
 
 			// setup datas. fail if exception raise.
-			GraphStackController.SetupStackedGraph(loadedData, package);
+			GraphStackController.SetupStackedGraph(loadedData);
 
 
 			/*
 				remove bundlize setting names from unused Nodes.
 			*/
-			var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(loadedData, package);
+			var endpointNodeIdsAndNodeDatasAndConnectionDatas = GraphStackController.SerializeNodeRoute(loadedData);
 			var usedNodeIds = endpointNodeIdsAndNodeDatasAndConnectionDatas.nodeDatas.Select(usedNode => usedNode.nodeId).ToList();
 			UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
 
 			
 			// run datas.
-			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, package, updateHandler);
+			connectionThroughputs = GraphStackController.RunStackedGraph(loadedData, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
@@ -832,29 +780,11 @@ namespace AssetBundleGraph {
 		public void OnGUI () {
 			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
 				if (GUILayout.Button(reloadButtonTexture, GUILayout.Height(18))) {
-					Setup(package);
+					Setup();
 				}
 
 				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")", GUILayout.Height(18))) {
-					Run(package);
-				}
-				
-				var packageStr = package;
-				if (string.IsNullOrEmpty(packageStr)) packageStr = AssetBundleGraphSettings.PLATFORM_NONE_PACKAGE;
-				if (GUILayout.Button("Package:" + packageStr, "Popup", GUILayout.Width(200), GUILayout.Height(18))) {
-					Action DefaultSelected = () => {
-						package = string.Empty;
-						SaveGraph();
-						Setup(package);
-					};
-
-					Action<string> ExistSelected = (string newPackage) => {
-						package = newPackage;
-						SaveGraph();
-						Setup(package);
-					};
-					
-					Node.ShowPackageMenu(package, DefaultSelected, ExistSelected);
+					Run();
 				}
 			}
 
@@ -1443,8 +1373,7 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
 
 					var newNode = Node.LoaderNode(currentNodesCount, name, id, kind, loadPath, x, y);
-					CollectPackage(loadPath.Keys.ToList());
-
+					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
 						var label = outputLabelSource as string;
@@ -1498,8 +1427,7 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
 					var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
-					CollectPackage(defaultPlatformAndPackages.Keys.ToList());
-
+					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
 						var label = outputLabelSource as string;
@@ -1514,8 +1442,7 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
 					var newNode = Node.GUINodeForModify(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
-					CollectPackage(defaultPlatformAndPackages.Keys.ToList());
-
+					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
 						var label = outputLabelSource as string;
@@ -1530,8 +1457,7 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
 
 					var newNode = Node.GUINodeForGrouping(currentNodesCount, name, id, kind, groupingKeyword, x, y);
-					CollectPackage(groupingKeyword.Keys.ToList());
-
+					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
 						var label = outputLabelSource as string;
@@ -1551,8 +1477,7 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string; 
 					
 					var newNode = Node.GUINodeForBundlizer(currentNodesCount, name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
-					CollectPackage(bundleNameTemplate.Keys.ToList());
-
+					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
 						var label = outputLabelSource as string;
@@ -1573,8 +1498,7 @@ namespace AssetBundleGraph {
 					}
 
 					var newNode = Node.GUINodeForBundleBuilder(currentNodesCount, name, id, kind, bundleOptions, x, y);
-					CollectPackage(bundleOptions.Keys.ToList());
-
+					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
 						var label = outputLabelSource as string;
@@ -1589,7 +1513,6 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
 					var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
-					CollectPackage(exportPath.Keys.ToList());
 					return newNode;
 				}
 
@@ -1719,7 +1642,6 @@ namespace AssetBundleGraph {
 					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
-					Debug.LogError("作成時にここにも付けとくかどうか、、");
 					break;
 				}
 
@@ -2076,21 +1998,6 @@ namespace AssetBundleGraph {
 				case OnNodeEvent.EventType.EVENT_SAVE: {
 					SaveGraphWithReloadSilent();
 					Repaint();
-					break;
-				}
-				case OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE: {
-					package = e.eventSourceNode.currentPackage;
-					Setup(package);
-					Repaint();
-					break;
-				}
-				case OnNodeEvent.EventType.EVENT_UPDATEPACKAGE: {
-					foreach (var node in nodes) {
-						/*
-							if package is deleted & node's current package is that, should change current package to None.
-						*/
-						if (!Node.NodeSharedPackages.Contains(node.currentPackage)) node.currentPackage = string.Empty;
-					}
 					break;
 				}
 			}

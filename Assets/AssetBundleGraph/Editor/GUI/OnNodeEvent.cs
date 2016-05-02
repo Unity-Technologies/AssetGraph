@@ -21,8 +21,6 @@ namespace AssetBundleGraph {
 
 			EVENT_BEFORESAVE,
 			EVENT_SAVE,
-			EVENT_SETUPWITHPACKAGE,
-			EVENT_UPDATEPACKAGE
 		}
 
 		public readonly EventType eventType;

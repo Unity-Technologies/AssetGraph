@@ -54,7 +54,7 @@ namespace AssetBundleGraph {
 		
 		// for platform-package specified parameter.
 		[SerializeField] public string currentPlatform = AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME;
-		[SerializeField] public string currentPackage = string.Empty;
+		
 		public static List<string> NodeSharedPackages = new List<string>();
 
 		[SerializeField] private string nodeInterfaceTypeStr;
@@ -223,7 +223,6 @@ namespace AssetBundleGraph {
 
 							// update platform & package.
 							node.currentPlatform = UpdateCurrentPlatform(basePlatform);
-							UpdateCurrentPackage(node);
 
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								EditorGUILayout.LabelField("Load Path:");
@@ -231,8 +230,7 @@ namespace AssetBundleGraph {
 									GraphStackController.ProjectName(), 
 									GraphStackController.ValueFromPlatformAndPackage(
 										node.loadPath.ReadonlyDict(), 
-										node.currentPlatform, 
-										node.currentPackage
+										node.currentPlatform
 									).ToString()
 								);
 								var loaderNodePath = GraphStackController.WithProjectPath(newLoadPath);
@@ -249,12 +247,11 @@ namespace AssetBundleGraph {
 								
 								if (newLoadPath !=	GraphStackController.ValueFromPlatformAndPackage(
 										node.loadPath.ReadonlyDict(),
-										node.currentPlatform, 
-										node.currentPackage
+										node.currentPlatform
 									).ToString()
 								) {
 									node.BeforeSave();
-									node.loadPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newLoadPath);
+									node.loadPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), newLoadPath);
 									node.Save();
 								}
 							}
@@ -360,15 +357,12 @@ namespace AssetBundleGraph {
 							importer node has no platform key. 
 							platform key is contained by Unity's importer inspector itself.
 						*/
-						UpdateCurrentPackage(node);
 
 						{
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var nodeId = node.nodeId;
-								var currentImporterPackage = node.currentPackage;
-								if (string.IsNullOrEmpty(currentImporterPackage)) currentImporterPackage = AssetBundleGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
-								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, currentImporterPackage);
+								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 								
 								IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
 									(string noFolderFound) => {
@@ -412,15 +406,12 @@ namespace AssetBundleGraph {
 						/*
 							modifier node has no platform key. 
 						*/
-						UpdateCurrentPackage(node);
 
 						{
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var nodeId = node.nodeId;
-								var currentModifierPackage = node.currentPackage;
-								if (string.IsNullOrEmpty(currentModifierPackage)) currentModifierPackage = AssetBundleGraphSettings.PLATFORM_DEFAULT_PACKAGE;
 								
-								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId, currentModifierPackage);
+								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId);
 								
 								IntegratedGUIModifier.ValidateModifierSample(samplingPath,
 									(string noFolderFound) => {
@@ -463,15 +454,13 @@ namespace AssetBundleGraph {
 						GUILayout.Space(10f);
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
-						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var newGroupingKeyword = EditorGUILayout.TextField(
 								"Grouping Keyword",
 								GraphStackController.ValueFromPlatformAndPackage(
 									node.groupingKeyword.ReadonlyDict(), 
-									node.currentPlatform,
-									node.currentPackage
+									node.currentPlatform
 								).ToString()
 							);
 							IntegratedGUIGrouping.ValidateGroupingKeyword(
@@ -486,12 +475,11 @@ namespace AssetBundleGraph {
 
 							if (newGroupingKeyword != GraphStackController.ValueFromPlatformAndPackage(
 									node.groupingKeyword.ReadonlyDict(), 
-									node.currentPlatform, 
-									node.currentPackage
+									node.currentPlatform
 								).ToString()
 							) {
 								node.BeforeSave();
-								node.groupingKeyword.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newGroupingKeyword);
+								node.groupingKeyword.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), newGroupingKeyword);
 								node.Save();
 							}
 						}
@@ -546,15 +534,13 @@ namespace AssetBundleGraph {
 						GUILayout.Space(10f);
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
-						UpdateCurrentPackage(node);
 						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var bundleNameTemplate = EditorGUILayout.TextField(
 								"Bundle Name Template", 
 								GraphStackController.ValueFromPlatformAndPackage(
 									node.bundleNameTemplate.ReadonlyDict(), 
-									node.currentPlatform, 
-									node.currentPackage
+									node.currentPlatform
 								).ToString()
 							).ToLower();
 
@@ -567,19 +553,17 @@ namespace AssetBundleGraph {
 
 							if (bundleNameTemplate != GraphStackController.ValueFromPlatformAndPackage(
 									node.bundleNameTemplate.ReadonlyDict(), 
-									node.currentPlatform, 
-									node.currentPackage
+									node.currentPlatform
 								).ToString()
 							) {
 								node.BeforeSave();
-								node.bundleNameTemplate.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), bundleNameTemplate);
+								node.bundleNameTemplate.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), bundleNameTemplate);
 								node.Save();
 							}
 							
 							var isUseOutputResoruces = GraphStackController.ValueFromPlatformAndPackage(
 								node.bundleUseOutput.ReadonlyDict(), 
-								node.currentPlatform, 
-								node.currentPackage
+								node.currentPlatform
 							).ToString().ToLower();
 							
 							var useOrNot = false;
@@ -598,7 +582,7 @@ namespace AssetBundleGraph {
 								if (result) node.BundlizerUseOutputResources();
 								else node.BundlizerUnuseOutputResources(); 
 								
-								node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), result.ToString());
+								node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), result.ToString());
 								node.Save();
 							} 
 						}
@@ -617,16 +601,14 @@ namespace AssetBundleGraph {
 						GUILayout.Space(10f);
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
-						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							var bundleOptions = GraphStackController.ValueFromPlatformAndPackage(
 								node.enabledBundleOptions.ReadonlyDict(),
-								node.currentPlatform, 
-								node.currentPackage
+								node.currentPlatform
 							);
 
-							var plartform_pakcage_key = GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage);
+							var plartform_pakcage_key = GraphStackController.Platform_Package_Key(node.currentPlatform);
 
 							for (var i = 0; i < AssetBundleGraphSettings.DefaultBundleOptionSettings.Count; i++) {
 								var enablablekey = AssetBundleGraphSettings.DefaultBundleOptionSettings[i];
@@ -649,7 +631,7 @@ namespace AssetBundleGraph {
 											currentEnableds.Add(enablablekey);
 
 											node.enabledBundleOptions.Add(
-												GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+												GraphStackController.Platform_Package_Key(node.currentPlatform),
 												currentEnableds
 											);
 										}
@@ -662,7 +644,7 @@ namespace AssetBundleGraph {
 											currentEnableds.Remove(enablablekey);
 											
 											node.enabledBundleOptions.Add(
-												GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+												GraphStackController.Platform_Package_Key(node.currentPlatform),
 												currentEnableds
 											);
 										}
@@ -672,25 +654,25 @@ namespace AssetBundleGraph {
 										Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
 									*/
 									if (enablablekey == "Disable Write TypeTree" && result &&
-										node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Ignore TypeTree Changes")) {
+										node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform)].Contains("Ignore TypeTree Changes")) {
 
-										var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+										var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform)];
 										newEnableds.Remove("Ignore TypeTree Changes");
 										
 										node.enabledBundleOptions.Add(
-											GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+											GraphStackController.Platform_Package_Key(node.currentPlatform),
 											newEnableds
 										);
 									}
 
 									if (enablablekey == "Ignore TypeTree Changes" && result &&
-										node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)].Contains("Disable Write TypeTree")) {
+										node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform)].Contains("Disable Write TypeTree")) {
 										
-										var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage)];
+										var newEnableds = node.enabledBundleOptions.ReadonlyDict()[GraphStackController.Platform_Package_Key(node.currentPlatform)];
 										newEnableds.Remove("Disable Write TypeTree");
 										
 										node.enabledBundleOptions.Add(
-											GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage),
+											GraphStackController.Platform_Package_Key(node.currentPlatform),
 											newEnableds
 										);
 									}
@@ -715,7 +697,6 @@ namespace AssetBundleGraph {
 						GUILayout.Space(10f);
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
-						UpdateCurrentPackage(node);
 
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 							EditorGUILayout.LabelField("Export Path:");
@@ -723,8 +704,7 @@ namespace AssetBundleGraph {
 								GraphStackController.ProjectName(), 
 								GraphStackController.ValueFromPlatformAndPackage(
 									node.exportPath.ReadonlyDict(), 
-									node.currentPlatform, 
-									node.currentPackage
+									node.currentPlatform
 								).ToString()
 							);
 
@@ -742,12 +722,11 @@ namespace AssetBundleGraph {
 
 							if (newExportPath != GraphStackController.ValueFromPlatformAndPackage(
 									node.exportPath.ReadonlyDict(),
-									node.currentPlatform, 
-									node.currentPackage
+									node.currentPlatform
 								).ToString()
 							) {
 								node.BeforeSave();
-								node.exportPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform, node.currentPackage), newExportPath);
+								node.exportPath.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), newExportPath);
 								node.Save();
 							}
 						}
@@ -821,82 +800,9 @@ namespace AssetBundleGraph {
 				return newPlatform;
 			}
 
-			private void UpdateCurrentPackage (Node packagesParentNode) {
-				using (new EditorGUILayout.HorizontalScope()) {
-					GUILayout.Label("Package:");
-					var currentPackageStr = packagesParentNode.currentPackage;
-
-					// if package is empty => package is default one. use (None).
-					if (string.IsNullOrEmpty(currentPackageStr)) currentPackageStr = AssetBundleGraphSettings.PLATFORM_NONE_PACKAGE;
-
-					if (GUILayout.Button(currentPackageStr, "Popup")) {
-						Action DefaultSelected = () => {
-							packagesParentNode.PackageChanged(string.Empty);
-						};
-
-						Action<string> ExistSelected = (string package) => {
-							packagesParentNode.PackageChanged(package);
-						};
-
-						ShowPackageMenu(packagesParentNode.currentPackage, DefaultSelected, ExistSelected);
-						GUI.FocusControl(string.Empty);
-					}
-
-					if (GUILayout.Button("+", GUILayout.Width(30))) {
-						packageEditMode = true;
-						GUI.FocusControl(string.Empty);
-						return;
-					}
-				}
-
-				if (packageEditMode) {
-					GUILayout.Space(10f);
-					EditorGUI.EndDisabledGroup();
-					
-					// package added or deleted.
-					ConfigureSharedPackages(packagesParentNode);
-
-					EditorGUI.BeginDisabledGroup(true);
-					GUILayout.Space(10f);
-				}
-			}
-
-			private void ConfigureSharedPackages (Node packagesParentNode) {
-				for (int i = 0; i < NodeSharedPackages.Count; i++) {
-					GUILayout.BeginHorizontal();
-					{
-						if (GUILayout.Button("-")) {
-							NodeSharedPackages.RemoveAt(i);
-							packagesParentNode.UpdatePackages();
-							break;
-						} else {
-							var newPackage = EditorGUILayout.TextField("Package", NodeSharedPackages[i]);
-							if (newPackage != NodeSharedPackages[i]) {
-								NodeSharedPackages[i] = newPackage;
-								packagesParentNode.UpdatePackages();
-								break;
-							}
-						}
-					}
-					GUILayout.EndHorizontal();
-				}
-
-				GUILayout.BeginHorizontal();
-				{
-					// add contains keyword interface.
-					if (GUILayout.Button("Add New Package")) {
-						NodeSharedPackages.Add(AssetBundleGraphSettings.PLATFORM_NEW_PACKAGE + "_" + NodeSharedPackages.Count);
-						packagesParentNode.UpdatePackages();
-					}
-					if (GUILayout.Button("Done", GUILayout.Width(50))) {
-						packageEditMode = false;
-					}
-				}
-				GUILayout.EndHorizontal();
-			}
-
+			
 			private void UpdateDeleteSetting (Node currentNode) {
-				var currentNodePlatformPackageKey = GraphStackController.Platform_Package_Key(currentNode.currentPlatform, currentNode.currentPackage);
+				var currentNodePlatformPackageKey = GraphStackController.Platform_Package_Key(currentNode.currentPlatform);
 
 				if (currentNodePlatformPackageKey == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) return;
 
@@ -1082,36 +988,6 @@ namespace AssetBundleGraph {
 				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
 			);
 			return duplicatedNode;
-		}
-
-		public void UpdatePackages () {
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_UPDATEPACKAGE, this, Vector2.zero, null));
-		}
-
-		public void PackageChanged (string newCurrentPackage) {
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
-			currentPackage = newCurrentPackage;
-
-			/*
-				if changed node is importSetting, should run [new package import] for setting.
-			*/
-			if (kind == AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI) {
-				// importer node's platform is absolutely PLATFORM_DEFAULT_NAME.
-				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
-				if (!importerPackages.ContainsKey(platformPackageKey)) importerPackages.Add(platformPackageKey, string.Empty);
-			}
-			
-			/*
-				if changed node is Modifier, should run [new package import] for setting.
-			*/
-			if (kind == AssetBundleGraphSettings.NodeKind.MODIFIER_GUI) {
-				// modifier node's platform is absolutely PLATFORM_DEFAULT_NAME.
-				var platformPackageKey = GraphStackController.Platform_Package_Key(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, currentPackage);
-				if (!modifierPackages.ContainsKey(platformPackageKey)) modifierPackages.Add(platformPackageKey, string.Empty);
-			}
-			
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SETUPWITHPACKAGE, this, Vector2.zero, null));
-			Save();
 		}
 
 		public void DeleteCurrentPackagePlatformKey (string platformPackageKey) {
@@ -1695,50 +1571,6 @@ namespace AssetBundleGraph {
 					}
 				);
 			}
-			menu.ShowAsContext();
-		}
-
-		public static void ShowPackageMenu (string currentPackage, Action NoneSelected, Action<string> ExistSelected) {
-			List<string> packageList = new List<string>();
-			var selection = 0;
-
-			// first is None.
-			packageList.Add(AssetBundleGraphSettings.PLATFORM_NONE_PACKAGE);//0
-
-			// delim
-			packageList.Add(string.Empty);//1
-
-			packageList.AddRange(NodeSharedPackages);//2
-			if (NodeSharedPackages.Contains(currentPackage)) selection = 2 + NodeSharedPackages.FindIndex(package => package == currentPackage);
-
-			// delim
-			packageList.Add(string.Empty);
-
-			var menu = new GenericMenu();
-			for (var i = 0; i < packageList.Count; i++) {
-				var packageName = packageList[i];
-				switch (i) {
-					case 0: {
-						menu.AddItem(
-							new GUIContent(packageName), 
-							(i == selection),
-							() => NoneSelected()
-						);
-						continue;
-					}
-					default: {
-						menu.AddItem(
-							new GUIContent(packageName), 
-							(i == selection),
-							() => {
-								ExistSelected(packageName);
-							}
-						);
-						break;
-					}
-				}
-			}
-			
 			menu.ShowAsContext();
 		}
 	}

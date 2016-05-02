@@ -55,14 +55,9 @@ namespace AssetBundleGraph {
             "ChunkBased Compression"
         #endif			
 		};
-
-		public const string package_SEPARATOR = "___";
-
+		
 		public const string PLATFORM_DEFAULT_NAME = "Default";
 		public const string PLATFORM_STANDALONE = "Standalone";
-		public const string PLATFORM_DEFAULT_PACKAGE = "DefaultPackage";
-		public const string PLATFORM_NEW_PACKAGE = "newPackage";
-		public const string PLATFORM_NONE_PACKAGE = "(None)";
 
 		public const float WINDOW_SPAN = 20f;
 
@@ -110,7 +105,6 @@ namespace AssetBundleGraph {
 		public const string ASSETBUNDLEGRAPH_DATA_LASTMODIFIED = "lastModified";
 		public const string ASSETBUNDLEGRAPH_DATA_NODES = "nodes";
 		public const string ASSETBUNDLEGRAPH_DATA_CONNECTIONS = "connections";
-		public const string ASSETBUNDLEGRAPH_DATA_LASTPACKAGE = "lastPackage";
 
 		// node const.
 		public const string NODE_NAME = "name";

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			var invalids = new List<string>();
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -22,7 +22,7 @@ namespace AssetBundleGraph {
 				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
 			}
 			
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
@@ -90,7 +90,7 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var invalids = new List<string>();
@@ -106,7 +106,7 @@ namespace AssetBundleGraph {
 				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
 			}
 			
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			var cachedOrGenerated = new List<string>();

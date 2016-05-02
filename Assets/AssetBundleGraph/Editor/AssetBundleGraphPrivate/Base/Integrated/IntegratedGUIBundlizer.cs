@@ -16,7 +16,7 @@ namespace AssetBundleGraph {
 			this.outputResource = outputResource;
 		}
 
-		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
@@ -24,14 +24,14 @@ namespace AssetBundleGraph {
 				}
 			);
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(package, groupKey, inputSources, recommendedBundleOutputDir, false);
+				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, false);
 				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
 
 				var outputSources = new List<InternalAssetData>();
@@ -54,7 +54,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
@@ -62,14 +62,14 @@ namespace AssetBundleGraph {
 				}
 			);
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder(package));
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(package, groupKey, inputSources, recommendedBundleOutputDir, true);
+				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, true);
 				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
 
 				var outputSources = new List<InternalAssetData>();
@@ -92,7 +92,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public string BundlizeAssets (string package, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
+		public string BundlizeAssets (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
 			var invalids = new List<string>();
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importedPath)) {
@@ -110,7 +110,7 @@ namespace AssetBundleGraph {
 				var templateHead = bundleNameTemplate.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[0];
 				var templateTail = bundleNameTemplate.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[1];
 
-				bundleName = (templateHead + groupkey + templateTail + "." + GraphStackController.Platform_Dot_Package(package)).ToLower();
+				bundleName = (templateHead + groupkey + templateTail + "." + GraphStackController.Platform_Dot_Package()).ToLower();
 			}
 			
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);

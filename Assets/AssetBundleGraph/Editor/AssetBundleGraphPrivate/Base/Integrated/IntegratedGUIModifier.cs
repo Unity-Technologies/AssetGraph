@@ -12,12 +12,9 @@ namespace AssetBundleGraph {
 		IntegratedGUIModifier is the class for apply specific setting to asset files.
 	*/
 	public class IntegratedGUIModifier : INodeBase {
-		private readonly string modifierPackage;
-		public IntegratedGUIModifier (string modifierPackage) {
-			this.modifierPackage = modifierPackage;
-		}
-
-		public void Setup (string nodeId, string labelToNext, string unusedPackageInfo, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		
+		
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -36,7 +33,7 @@ namespace AssetBundleGraph {
 			var assumedImportedAssetDatas = new List<InternalAssetData>();
 			
 
-			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId, modifierPackage);
+			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId);
 			ValidateModifierSample(samplingDirectoryPath,
 				(string noSampleFolder) => {
 					// do nothing. keep importing new asset for sampling.
@@ -105,14 +102,14 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 
 			// caution if import setting file is exists already or not.
-			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId, modifierPackage);
+			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId);
 			
 			var sampleAssetPath = string.Empty;
 			ValidateModifierSample(samplingDirectoryPath,
@@ -387,6 +384,7 @@ namespace AssetBundleGraph {
 								// }
 								
 								// とりあえず決め打ちで、変化があったものとしてみなす。デバッグ中。
+								Debug.LogError("modifierは、現状「通過した素材の設定が変更されてるかどうか把握できない」ので、常に新規扱いになっている。そのため、このファイルと、このファイルを使ったpredab生成が常に新作になり、キャッシュが効かないようになっている。");
 								importSetOveredAssetsAndUpdatedFlagDict[inputSource] = true;
 								break;
 							}

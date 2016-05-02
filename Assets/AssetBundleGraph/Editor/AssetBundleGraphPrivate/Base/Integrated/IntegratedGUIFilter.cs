@@ -14,7 +14,7 @@ namespace AssetBundleGraph {
 			this.containsKeytypes = containsKeytypes;
 		}
 
-		public void Setup (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var duplicated = containsKeywords.GroupBy(x => x)
 				.Where(group => group.Count() > 1)
 				.Select(group => group.Key)
@@ -49,7 +49,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string noUseLabel, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var duplicated = containsKeywords.GroupBy(x => x)
 				.Where(group => group.Count() > 1)
 				.Select(group => group.Key)

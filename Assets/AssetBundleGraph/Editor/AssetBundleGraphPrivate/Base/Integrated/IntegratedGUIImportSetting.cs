@@ -12,12 +12,8 @@ namespace AssetBundleGraph {
 		IntegratedGUIImportSetting is the class for apply specific setting to already imported files.
 	*/
 	public class IntegratedGUIImportSetting : INodeBase {
-		private readonly string importerPackage;
-		public IntegratedGUIImportSetting (string importerPackage) {
-			this.importerPackage = importerPackage;
-		}
-
-		public void Setup (string nodeId, string labelToNext, string unusedPackageInfo, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
@@ -40,7 +36,7 @@ namespace AssetBundleGraph {
 			var assumedImportedAssetDatas = new List<InternalAssetData>();
 			
 
-			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackage);
+			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			ValidateImportSample(samplingDirectoryPath,
 				(string noSampleFolder) => {
 					// do nothing. keep importing new asset for sampling.
@@ -133,14 +129,14 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 
 			// caution if import setting file is exists already or not.
-			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId, importerPackage);
+			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
 			
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,

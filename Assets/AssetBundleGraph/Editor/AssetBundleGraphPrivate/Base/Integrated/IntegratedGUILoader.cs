@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateLoadPath(
 				loadFilePath,
 				loadFilePath,
@@ -69,7 +69,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateLoadPath(
 				loadFilePath,
 				loadFilePath,
