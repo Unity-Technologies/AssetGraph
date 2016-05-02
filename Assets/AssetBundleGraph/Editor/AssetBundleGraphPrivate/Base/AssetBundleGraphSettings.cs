@@ -156,6 +156,8 @@ namespace AssetBundleGraph {
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";
 		
+		public const string FILTER_KEYWORD_WILDCARD = "*";
+		
 
 		public enum NodeKind : int {
 			FILTER_SCRIPT,

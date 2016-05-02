@@ -317,7 +317,7 @@ namespace AssetBundleGraph {
 											newContainsKeyword,
 											currentKeywords,
 											() => {
-												EditorGUILayout.HelpBox("filter is empty.", MessageType.Error);
+												EditorGUILayout.HelpBox("please use \"*\" or other keyword.", MessageType.Error);
 											},
 											() => {
 												EditorGUILayout.HelpBox("already exist.", MessageType.Error);

@@ -90,6 +90,7 @@ namespace AssetBundleGraph {
 				var keytype = containsKeytypes[i];
 				
 				var contains = source.Where(path => path.Contains(keyword)).ToList();
+				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) contains = source; 
 				
 				// type constraint.
 				if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
