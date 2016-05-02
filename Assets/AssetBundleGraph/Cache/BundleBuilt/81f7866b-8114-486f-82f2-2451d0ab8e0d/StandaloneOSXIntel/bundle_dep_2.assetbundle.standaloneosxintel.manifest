@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 1478831313
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 5ab29658ea99e592e8f51bfb2e5c7d98
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 67e99222a1589ff9377ee6366f65dd7a
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 65
+  Script: {instanceID: 0}
+Assets:
+- Assets/AssetBundleGraph/Cache/Prefabricated/b156a750-f776-4792-bcf9-e5c94814a317/StandaloneOSXIntel/2/prefab2.prefab
+Dependencies:
+- Assets/AssetBundleGraph/Cache/BundleBuilt/81f7866b-8114-486f-82f2-2451d0ab8e0d/StandaloneOSXIntel/bundle_2.assetbundle.standaloneosxintel
