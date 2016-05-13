@@ -199,7 +199,7 @@ namespace AssetBundleGraph {
 				switch (importerTypeStr) {
 					case "UnityEditor.TextureImporter": {
 						var texImporter = importer as TextureImporter;
-						var same = InternalSamplingImportAdopter.IsSameTextureSetting(texImporter, samplingAssetImporter as TextureImporter);
+						var same = InternalSamplingImportEffector.IsSameTextureSetting(texImporter, samplingAssetImporter as TextureImporter);
 						
 						if (!same) {
 							effector.ForceOnPreprocessTexture(texImporter);
@@ -209,7 +209,7 @@ namespace AssetBundleGraph {
 					}
 					case "UnityEditor.ModelImporter": {
 						var modelImporter = importer as ModelImporter;
-						var same = InternalSamplingImportAdopter.IsSameModelSetting(modelImporter, samplingAssetImporter as ModelImporter);
+						var same = InternalSamplingImportEffector.IsSameModelSetting(modelImporter, samplingAssetImporter as ModelImporter);
 						var data = AssetDatabase.LoadAssetAtPath(inputSource.importedPath, inputSource.assetType);
 						
 						if (!same) {
@@ -220,7 +220,7 @@ namespace AssetBundleGraph {
 					}
 					case "UnityEditor.AudioImporter": {
 						var audioImporter = importer as AudioImporter;
-						var same = InternalSamplingImportAdopter.IsSameAudioSetting(audioImporter, samplingAssetImporter as AudioImporter);
+						var same = InternalSamplingImportEffector.IsSameAudioSetting(audioImporter, samplingAssetImporter as AudioImporter);
 						
 						if (!same) {
 							effector.ForceOnPreprocessAudio(audioImporter);

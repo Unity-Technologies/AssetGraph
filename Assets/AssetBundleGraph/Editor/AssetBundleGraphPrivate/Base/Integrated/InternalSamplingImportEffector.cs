@@ -63,6 +63,54 @@ namespace AssetBundleGraph {
 		}
 
 		// public void OnPostprocessTexture (Texture2D texture) {}
+		
+		public static bool IsSameTextureSetting (TextureImporter target, TextureImporter compareBase) {
+			if (target.anisoLevel != compareBase.anisoLevel) return false;
+			if (target.borderMipmap != compareBase.borderMipmap) return false;
+			if (target.compressionQuality != compareBase.compressionQuality) return false;
+			if (target.convertToNormalmap != compareBase.convertToNormalmap) return false;
+			if (target.fadeout != compareBase.fadeout) return false;
+			if (target.filterMode != compareBase.filterMode) return false;
+			if (target.generateCubemap != compareBase.generateCubemap) return false;
+			if (target.generateMipsInLinearSpace != compareBase.generateMipsInLinearSpace) return false;
+			if (target.grayscaleToAlpha != compareBase.grayscaleToAlpha) return false;
+			if (target.heightmapScale != compareBase.heightmapScale) return false;
+			if (target.isReadable != compareBase.isReadable) return false;
+			if (target.lightmap != compareBase.lightmap) return false;
+			if (target.linearTexture != compareBase.linearTexture) return false;
+			if (target.maxTextureSize != compareBase.maxTextureSize) return false;
+			if (target.mipMapBias != compareBase.mipMapBias) return false;
+			if (target.mipmapEnabled != compareBase.mipmapEnabled) return false;
+			if (target.mipmapFadeDistanceEnd != compareBase.mipmapFadeDistanceEnd) return false;
+			if (target.mipmapFadeDistanceStart != compareBase.mipmapFadeDistanceStart) return false;
+			if (target.mipmapFilter != compareBase.mipmapFilter) return false;
+			if (target.normalmap != compareBase.normalmap) return false;
+			if (target.normalmapFilter != compareBase.normalmapFilter) return false;
+			if (target.npotScale != compareBase.npotScale) return false;
+			// if (target.qualifiesForSpritePacking != compareBase.qualifiesForSpritePacking) return false;
+			if (target.spriteBorder != compareBase.spriteBorder) return false;
+			if (target.spriteImportMode != compareBase.spriteImportMode) return false;
+			if (target.spritePackingTag != compareBase.spritePackingTag) return false;
+			if (target.spritePivot != compareBase.spritePivot) return false;
+			if (target.spritePixelsPerUnit != compareBase.spritePixelsPerUnit) return false;
+
+			// spritesheet
+			{
+				if (target.spritesheet.Length != compareBase.spritesheet.Length) return false;
+				for (int i = 0; i < target.spritesheet.Length; i++) {
+					if (target.spritesheet[i].alignment != compareBase.spritesheet[i].alignment) return false;
+					if (target.spritesheet[i].border != compareBase.spritesheet[i].border) return false;
+					if (target.spritesheet[i].name != compareBase.spritesheet[i].name) return false;
+					if (target.spritesheet[i].pivot != compareBase.spritesheet[i].pivot) return false;
+					if (target.spritesheet[i].rect != compareBase.spritesheet[i].rect) return false;
+				}
+			}
+
+			if (target.textureFormat != compareBase.textureFormat) return false;
+			if (target.textureType != compareBase.textureType) return false;
+			if (target.wrapMode != compareBase.wrapMode) return false;
+			return true;
+		}
 
 		public void ForceOnPreprocessAudio (AudioImporter importer) {
 			if (importerSourceObj == null) return;
@@ -75,7 +123,22 @@ namespace AssetBundleGraph {
 		}
 
 		// public void OnPostprocessAudio (AudioClip clip) {}
+		
+		public static bool IsSameAudioSetting (AudioImporter target, AudioImporter compareBase) {
+			// defaultSampleSettings
+			if (target.defaultSampleSettings.compressionFormat != compareBase.defaultSampleSettings.compressionFormat) return false;
+			if (target.defaultSampleSettings.loadType != compareBase.defaultSampleSettings.loadType) return false;
+			if (target.defaultSampleSettings.quality != compareBase.defaultSampleSettings.quality) return false;
+			if (target.defaultSampleSettings.sampleRateOverride != compareBase.defaultSampleSettings.sampleRateOverride) return false;
+			if (target.defaultSampleSettings.sampleRateSetting != compareBase.defaultSampleSettings.sampleRateSetting) return false;
 
+			if (target.forceToMono != compareBase.forceToMono) return false;
+			if (target.loadInBackground != compareBase.loadInBackground) return false;
+			if (target.preloadAudioData != compareBase.preloadAudioData) return false;
+
+			return true;
+		}
+		
 		public void ForceOnPreprocessModel (ModelImporter importer) {
 			if (importerSourceObj == null) return;
 			var importerSource = importerSourceObj as ModelImporter;
@@ -127,6 +190,9 @@ namespace AssetBundleGraph {
 			importer.useFileUnits = importerSource.useFileUnits;
 		}
 
+		// public void OnPostprocessModel (GameObject g) {}
+		// public void OnAssignMaterialModel (Material material, Renderer renderer) {}
+		
 		public static bool IsSameModelSetting (ModelImporter target, ModelImporter compareBase) {
 			if (target.addCollider != compareBase.addCollider) return false;
 			if (target.animationCompression != compareBase.animationCompression) return false;
@@ -255,7 +321,5 @@ namespace AssetBundleGraph {
 
 			return true;
 		}
-		// public void OnPostprocessModel (GameObject g) {}
-		// public void OnAssignMaterialModel (Material material, Renderer renderer) {}
 	}
 }

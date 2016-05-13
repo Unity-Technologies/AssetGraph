@@ -586,7 +586,7 @@ namespace AssetBundleGraph {
 								node.Save();
 							}
 							
-							EditorGUILayout.HelpBox("If checked, use once-bundled resources to generate other bundles.", MessageType.Info);
+							EditorGUILayout.HelpBox("If checked, you can use once-bundled resources to generate other bundles.", MessageType.Info);
 						}
 
 						UpdateDeleteSetting(node);
