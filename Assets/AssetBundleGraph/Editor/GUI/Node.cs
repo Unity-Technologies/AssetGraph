@@ -584,7 +584,9 @@ namespace AssetBundleGraph {
 								
 								node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), result.ToString());
 								node.Save();
-							} 
+							}
+							
+							EditorGUILayout.HelpBox("If checked, use once-bundled resources to generate other bundles.", MessageType.Info);
 						}
 
 						UpdateDeleteSetting(node);
