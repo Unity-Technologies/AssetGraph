@@ -63,9 +63,7 @@ namespace AssetBundleGraph {
 					continue;
 				}
 				
-				var assumedImportedPath = inputSource.importedPath;
-				
-				var assumedType = TypeBinder.AssumeTypeFromExtension(assumedImportedPath);
+				var assumedType = TypeBinder.AssumeTypeOfAsset(inputSource.importedPath);
 
 				var newData = InternalAssetData.InternalAssetDataByImporter(
 					inputSource.traceId,
@@ -73,7 +71,7 @@ namespace AssetBundleGraph {
 					inputSource.sourceBasePath,
 					inputSource.fileNameAndExtension,
 					inputSource.pathUnderSourceBase,
-					assumedImportedPath,
+					inputSource.importedPath,
 					null,
 					assumedType
 				);

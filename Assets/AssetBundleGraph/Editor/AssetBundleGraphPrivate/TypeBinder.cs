@@ -33,12 +33,7 @@ namespace AssetBundleGraph {
 			typeof(Sprite).ToString(),
 		};
 		
-		public static Dictionary<string, Type> AssumeTypeBinding = new Dictionary<string, Type>{
-			// importers
-			{".png", typeof(TextureImporter)},// もっといっぱいあるよね -> このへんはimporterで見る
-			{".fbx", typeof(ModelImporter)},// もっといっぱいあるよね
-			{".mp3", typeof(AudioImporter)},// もっといっぱいあるよね
-			
+		public static Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
 			// others(Assets)
 			{".anim", typeof(Animation)},
 			{".controller", typeof(Animator)},
@@ -57,9 +52,26 @@ namespace AssetBundleGraph {
 			// {"", typeof(Sprite)},
 		};
 		
-		public static Type AssumeTypeFromExtension (string filePath) {
-			var extension = Path.GetExtension(filePath);
-			if (AssumeTypeBinding.ContainsKey(extension)) return AssumeTypeBinding[extension];
+		public static Type AssumeTypeOfAsset (string assetPath) {
+			// check by asset importer type.
+			var assumedImporterType = AssetImporter.GetAtPath(assetPath).GetType();
+			var importerTypeStr = assumedImporterType.ToString();
+			
+			switch (importerTypeStr) {
+				case "UnityEditor.TextureImporter":
+				case "UnityEditor.ModelImporter":
+				case "UnityEditor.AudioImporter": {
+					return assumedImporterType;
+				}
+			}
+			
+			// not specific type importer. should determine their type by extension.
+			var extension = Path.GetExtension(assetPath);
+			if (AssumeTypeBindingByExtension.ContainsKey(extension)) return AssumeTypeBindingByExtension[extension];
+			
+			
+			// unhandled..
+			Debug.LogError("failed to detect asset extension:" + extension);
 			return typeof(UnityEngine.Object);
 		}
 	}

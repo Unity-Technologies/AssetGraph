@@ -3,10 +3,10 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEditor;
 
-namespace AssetBundleGraph {
-	public class IntegratedGUIFilter : INodeBase {
+namespace AssetBundleGraph
+{
+    public class IntegratedGUIFilter : INodeBase {
 		private readonly List<string> containsKeywords;
 		private readonly List<string> containsKeytypes;
 		public IntegratedGUIFilter (List<string> containsKeywords, List<string> containsKeytypes) {
@@ -19,13 +19,13 @@ namespace AssetBundleGraph {
 				.Where(group => group.Count() > 1)
 				.Select(group => group.Key)
 				.ToList();
+			
 			if (duplicated.Any()) throw new Exception("filter keywords are overlapping:" + duplicated[0]);
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 				var inputSources = groupedSources[groupKey];
-				var absoluteSourcePaths = inputSources.Select(assetData => assetData.GetAbsolutePathOrImportedPath()).ToList();
 				
 				Action<string, List<string>> _PreOutput = (string label, List<string> outputSources) => {
 					var outputs = new List<InternalAssetData>();
@@ -41,8 +41,9 @@ namespace AssetBundleGraph {
 					outputDict[groupKey] = outputs;
 					Output(nodeId, label, outputDict, new List<string>());
 				};
+				
 				try {
-					In(absoluteSourcePaths, _PreOutput);
+					Filtering(inputSources, _PreOutput);
 				} catch (Exception e) {
 					Debug.LogError("Filter:" + this + " error:" + e);
 				}
@@ -61,7 +62,6 @@ namespace AssetBundleGraph {
 
 				var inputSources = groupedSources[groupKey];
 				
-				var absoluteSourcePaths = inputSources.Select(assetData => assetData.GetAbsolutePathOrImportedPath()).ToList();
 				Action<string, List<string>> _Output = (string label, List<string> outputSources) => {
 					var outputs = new List<InternalAssetData>();
 					
@@ -76,36 +76,40 @@ namespace AssetBundleGraph {
 					outputDict[groupKey] = outputs;
 					Output(nodeId, label, outputDict, new List<string>());
 				};
+				
 				try {
-					In(absoluteSourcePaths, _Output);
+					Filtering(inputSources, _Output);
 				} catch (Exception e) {
 					Debug.LogError("Filter:" + this + " error:" + e);
 				}
 			}
 		}
 
-		private void In (List<string> source, Action<string, List<string>> Out) {
+		private void Filtering (List<InternalAssetData> assets, Action<string, List<string>> Out) {
 			for (var i = 0; i < containsKeywords.Count; i++) {
 				var keyword = containsKeywords[i];
 				var keytype = containsKeytypes[i];
 				
-				var contains = source.Where(path => path.Contains(keyword)).ToList();
-				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) contains = source; 
+				var contains = assets.Where(assetData => assetData.importedPath.Contains(keyword)).ToList();
+				
+				// if keyword is wildcard, use type for constraint. pass all assets.
+				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) contains = assets; 
 				
 				// type constraint.
 				if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
 					var typeContains = new List<string>();
 					
-					foreach (var contain in contains) {
-						var assumedType = TypeBinder.AssumeTypeFromExtension(contain);
-						if (keytype == assumedType.ToString()) typeContains.Add(contain);
+					foreach (var containedAssetData in contains) {
+						var assumedType = TypeBinder.AssumeTypeOfAsset(containedAssetData.importedPath);
+						if (keytype == assumedType.ToString()) typeContains.Add(containedAssetData.absoluteSourcePath);
 					}
 					
 					Out(keyword, typeContains);
 					continue;
 				}
 				 
-				Out(keyword, contains);
+				var containsAssetAbsolutePaths = contains.Select(assetData => assetData.absoluteSourcePath).ToList();
+				Out(keyword, containsAssetAbsolutePaths);
 			}
 		}
 		

@@ -37,6 +37,7 @@ namespace AssetBundleGraph {
 					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 					if (targetFilePath.StartsWith(assetsFolderPath)) {
 						var importedPath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
+						
 						outputSource.Add(
 							InternalAssetData.InternalImportedAssetDataByLoader(
 								targetFilePath, 
@@ -93,6 +94,7 @@ namespace AssetBundleGraph {
 					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 					if (targetFilePath.StartsWith(assetsFolderPath)) {
 						var importedPath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
+						
 						outputSource.Add(
 							InternalAssetData.InternalImportedAssetDataByLoader(
 								targetFilePath, 
