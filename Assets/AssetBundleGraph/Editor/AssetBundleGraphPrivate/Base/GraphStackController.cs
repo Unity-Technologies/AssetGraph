@@ -305,7 +305,7 @@ namespace AssetBundleGraph {
 			return graphDataDict;
 		}
 		
-		public static Dictionary<string, Dictionary<string, List<string>>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
+		public static Dictionary<string, Dictionary<string, List<ThroughputAsset>>> SetupStackedGraph (Dictionary<string, object> graphDataDict) {
 			var endpointNodeIdsAndNodeDatasAndConnectionDatas = SerializeNodeRoute(graphDataDict);
 			
 			var endpointNodeIds = endpointNodeIdsAndNodeDatasAndConnectionDatas.endpointNodeIds;
@@ -335,7 +335,7 @@ namespace AssetBundleGraph {
 			return ConId_Group_Throughput(resultDict);
 		}
 
-		public static Dictionary<string, Dictionary<string, List<string>>> RunStackedGraph (
+		public static Dictionary<string, Dictionary<string, List<ThroughputAsset>>> RunStackedGraph (
 			Dictionary<string, object> graphDataDict, 
 			Action<string, float> updateHandler=null
 		) {
@@ -357,39 +357,37 @@ namespace AssetBundleGraph {
 			return ConId_Group_Throughput(resultDict);
 		}
 
-		private static Dictionary<string, Dictionary<string, List<string>>> ConId_Group_Throughput (Dictionary<string, Dictionary<string, List<InternalAssetData>>> sourceConId_Group_Throughput) {
-			var result = new Dictionary<string, Dictionary<string, List<string>>>();
+		private static Dictionary<string, Dictionary<string, List<ThroughputAsset>>> ConId_Group_Throughput (Dictionary<string, Dictionary<string, List<InternalAssetData>>> sourceConId_Group_Throughput) {
+			var result = new Dictionary<string, Dictionary<string, List<ThroughputAsset>>>();
 			foreach (var connectionId in sourceConId_Group_Throughput.Keys) {
 				var connectionGroupDict = sourceConId_Group_Throughput[connectionId];
 				
-				var newConnectionGroupDict = new Dictionary<string, List<string>>();
+				var newConnectionGroupDict = new Dictionary<string, List<ThroughputAsset>>();
 				foreach (var groupKey in connectionGroupDict.Keys) {
 					var connectionThroughputList = connectionGroupDict[groupKey];
 
-					var sourcePathList = new List<string>();
+					var sourcePathList = new List<ThroughputAsset>();
 					foreach (var assetData in connectionThroughputList) {
+						var bundled = assetData.isBundled;
+						
 						if (!string.IsNullOrEmpty(assetData.importedPath)) {
-							// if (IsMetaFile(assetData.importedPath)) continue;
-							sourcePathList.Add(assetData.importedPath);
+							sourcePathList.Add(new ThroughputAsset(assetData.importedPath, bundled));
 							continue;
 						} 
 						
 						if (!string.IsNullOrEmpty(assetData.absoluteSourcePath)) {
 							var relativeAbsolutePath = assetData.absoluteSourcePath.Replace(ProjectPathWithSlash(), string.Empty);
-							// if (IsMetaFile(relativeAbsolutePath)) continue;
-							sourcePathList.Add(relativeAbsolutePath);
+							sourcePathList.Add(new ThroughputAsset(relativeAbsolutePath, bundled));
 							continue;
 						}
 
 						if (!string.IsNullOrEmpty(assetData.pathUnderConnectionId)) {
-							// if (IsMetaFile(assetData.pathUnderConnectionId)) continue;
-							sourcePathList.Add(assetData.pathUnderConnectionId);
+							sourcePathList.Add(new ThroughputAsset(assetData.pathUnderConnectionId, bundled));
 							continue;
 						}
 
 						if (!string.IsNullOrEmpty(assetData.exportedPath)) {
-							// if (IsMetaFile(assetData.exportedPath)) continue;
-							sourcePathList.Add(assetData.exportedPath);
+							sourcePathList.Add(new ThroughputAsset(assetData.exportedPath, bundled));
 							continue;
 						}
 					}

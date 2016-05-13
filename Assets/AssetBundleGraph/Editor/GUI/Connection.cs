@@ -86,7 +86,10 @@ namespace AssetBundleGraph {
 				}
 
 				EditorGUILayout.LabelField("Total", count.ToString());
-
+				
+				var redColor = new GUIStyle(EditorStyles.label);
+				redColor.normal.textColor = Color.gray;
+		 
 				var index = 0;
 				foreach (var groupKey in throughputListDict.Keys) {
 					var throughputList = throughputListDict[groupKey];
@@ -97,8 +100,10 @@ namespace AssetBundleGraph {
 					if (foldout) {
 						EditorGUI.indentLevel = 1;
 						for (var i = 0; i < throughputList.Count; i++) {
-							var sourceStr = throughputList[i];
-							EditorGUILayout.LabelField(sourceStr);
+							var sourceStr = throughputList[i].path;
+							var isBundled = throughputList[i].isBundled;
+							if (isBundled) EditorGUILayout.LabelField(sourceStr, redColor); 
+							else EditorGUILayout.LabelField(sourceStr);
 						}
 						EditorGUI.indentLevel = 0;
 					}
@@ -112,8 +117,8 @@ namespace AssetBundleGraph {
 		public Rect GetRect () {
 			return buttonRect;
 		}
-
-		public void DrawConnection (List<Node> nodes, Dictionary<string, List<string>> throughputListDict) {
+		
+		public void DrawConnection (List<Node> nodes, Dictionary<string, List<ThroughputAsset>> throughputListDict) {
 			var startNodes = nodes.Where(node => node.nodeId == startNodeId).ToList();
 			if (!startNodes.Any()) return;
 

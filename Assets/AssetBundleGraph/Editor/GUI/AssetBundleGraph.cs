@@ -11,6 +11,16 @@ using MiniJSONForAssetBundleGraph;
  
 
 namespace AssetBundleGraph {
+	public struct ThroughputAsset {
+		public readonly string path;
+		public readonly bool isBundled;
+		
+		public ThroughputAsset (string path, bool isBundled) {
+			this.path = path;
+			this.isBundled = isBundled;
+		}
+	}
+	
 	public class AssetBundleGraph : EditorWindow {
 		/*
 			menu items
@@ -193,7 +203,7 @@ namespace AssetBundleGraph {
 		
 		private GUIContent reloadButtonTexture;
 
-		private static Dictionary<string,Dictionary<string, List<string>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<string>>>();
+		private static Dictionary<string,Dictionary<string, List<ThroughputAsset>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<ThroughputAsset>>>();
 
 
 		[Serializable] public struct ActiveObject {
@@ -670,7 +680,7 @@ namespace AssetBundleGraph {
 		public static void Finally (
 			List<Node> currentNodes,
 			List<Connection> currentConnections,
-			Dictionary<string, Dictionary<string, List<string>>> throughputsSource, 
+			Dictionary<string, Dictionary<string, List<ThroughputAsset>>> throughputsSource, 
 			bool isRun
 		) {
 			var nodeThroughputs = NodeThroughputs(currentNodes, currentConnections, throughputsSource);
@@ -738,7 +748,7 @@ namespace AssetBundleGraph {
 		private static Dictionary<string, Dictionary<string, List<string>>> NodeThroughputs (
 			List<Node> currentNodes,
 			List<Connection> currentConnections,
-			Dictionary<string, Dictionary<string, List<string>>> throughputs
+			Dictionary<string, Dictionary<string, List<ThroughputAsset>>> throughputs
 		) {
 			var nodeDatas = new Dictionary<string, Dictionary<string, List<string>>>();
 
@@ -755,7 +765,8 @@ namespace AssetBundleGraph {
 					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
 					foreach (var groupKey in nodeThroughput.Keys) {
 						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
-						nodeDatas[targetNodeName][groupKey].AddRange(nodeThroughput[groupKey]);
+						var assetPaths = nodeThroughput[groupKey].Select(asset => asset.path).ToList();
+						nodeDatas[targetNodeName][groupKey].AddRange(assetPaths);
 					}
 				}
 
@@ -769,7 +780,8 @@ namespace AssetBundleGraph {
 					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
 					foreach (var groupKey in nodeThroughput.Keys) {
 						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
-						nodeDatas[targetNodeName][groupKey].AddRange(nodeThroughput[groupKey]);
+						var assetPaths = nodeThroughput[groupKey].Select(asset => asset.path).ToList();
+						nodeDatas[targetNodeName][groupKey].AddRange(assetPaths);
 					}
 				}
 			}
@@ -817,7 +829,7 @@ namespace AssetBundleGraph {
 						var throughputListDict = connectionThroughputs[con.connectionId];
 						con.DrawConnection(nodes, throughputListDict);
 					} else {
-						con.DrawConnection(nodes, new Dictionary<string, List<string>>());
+						con.DrawConnection(nodes, new Dictionary<string, List<ThroughputAsset>>());
 					}
 				}
 

@@ -6,10 +6,10 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	public class ConnectionInspector : ScriptableObject {
 		public Connection con;
-		public Dictionary<string, List<string>> throughputListDict;
+		public Dictionary<string, List<ThroughputAsset>> throughputListDict;
 		public List<bool> foldouts;
 
-		public void UpdateCon (Connection con, Dictionary<string, List<string>> throughputListDict) {
+		public void UpdateCon (Connection con, Dictionary<string, List<ThroughputAsset>> throughputListDict) {
 			this.con = con;
 			this.throughputListDict = throughputListDict;
 
