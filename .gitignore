@@ -62,3 +62,13 @@ Assets/VSCode/*
 .vscode/launch.json
 
 Assets/VSCode.meta
+
+ExportFolder/*
+
+Assets/TestResourceAssets/*
+
+
+Assets/AssetGraph/ImportSettingSamples/*
+
+
+Assets/AssetBundleGraph/Cache/*

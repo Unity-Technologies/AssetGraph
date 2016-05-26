@@ -1,0 +1,14 @@
+using UnityEngine;
+using UnityEditor;
+
+using System.Collections.Generic;
+using System.IO;
+using YamlDotNet.Serialization.NamingConventions;
+using YamlDotNet.Serialization;
+using System;
+
+public class MyFinally : AssetBundleGraph.FinallyBase {
+	public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
+		// let's write post process of AssetBundleGraph.
+	}
+}

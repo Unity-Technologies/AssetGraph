@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 6ffc718ef2f5c4a9d88c71ff9d30d1e1
+timeCreated: 1460442171
+licenseType: Pro
+AudioImporter:
+  serializedVersion: 6
+  defaultSettings:
+    loadType: 0
+    sampleRateSetting: 0
+    sampleRateOverride: 44100
+    compressionFormat: 1
+    quality: 1
+    conversionMode: 0
+  platformSettingOverrides: {}
+  forceToMono: 0
+  normalize: 1
+  preloadAudioData: 1
+  loadInBackground: 0
+  3D: 1
+  userData: 
+  assetBundleName: bundle_b_0.assetbundle.standaloneosxintel
+  assetBundleVariant: 
