@@ -1175,6 +1175,14 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
+		public static bool ContainsHiddenFiles (string filePath) {
+			var pathComponents = filePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
+			foreach (var path in pathComponents) {
+				if (path.StartsWith(AssetBundleGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)) return true;
+			}
+			return false;
+		}
+
 		public static string ValueFromPlatformAndPackage (Dictionary<string, string> packageDict, string platform) {
 			var key = Platform_Package_Key(platform);
 			if (packageDict.ContainsKey(key)) return packageDict[key];

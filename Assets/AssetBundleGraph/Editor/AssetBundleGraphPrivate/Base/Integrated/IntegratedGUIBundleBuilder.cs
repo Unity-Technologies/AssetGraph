@@ -172,6 +172,7 @@ namespace AssetBundleGraph {
 			var filePathsInFolder = FileController.FilePathsInFolder(nodePath);
 			foreach (var filePath in filePathsInFolder) {
 				if (GraphStackController.IsMetaFile(filePath)) continue;
+				if (GraphStackController.ContainsHiddenFiles(filePath)) continue;
 				var assetImporter = AssetImporter.GetAtPath(filePath);
 				
 				if (assetImporter.GetType() == typeof(UnityEditor.MonoImporter)) continue;
