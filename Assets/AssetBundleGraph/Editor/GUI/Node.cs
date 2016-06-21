@@ -1354,7 +1354,7 @@ namespace AssetBundleGraph {
 			if (scaleFactor != SCALE_MAX) return;
 
 			var defaultPointTex = outputPointMarkConnectedTex;
-			
+
 			if (justConnecting && eventSource != null) {
 				if (eventSource.eventSourceNode.nodeId != this.nodeId) {
 					if (eventSource.eventSourceConnectionPoint.isInput) {
