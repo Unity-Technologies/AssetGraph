@@ -1402,8 +1402,19 @@ namespace AssetBundleGraph {
 			
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
-			if (this.kind == AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI) GUI.contentColor = Color.black;
-			if (this.kind == AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT) GUI.contentColor = Color.black; 
+			switch (this.kind) {
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+					GUI.contentColor = Color.black;
+					break;
+				}
+				default: {
+					GUI.contentColor = Color.white;
+					break;
+				}
+			}
+			 
 			GUI.Label(nodeTitleRect, name, style);
 
 			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
