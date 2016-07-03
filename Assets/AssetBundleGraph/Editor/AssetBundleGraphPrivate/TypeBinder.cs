@@ -54,7 +54,13 @@ namespace AssetBundleGraph {
 		
 		public static Type AssumeTypeOfAsset (string assetPath) {
 			// check by asset importer type.
-			var assumedImporterType = AssetImporter.GetAtPath(assetPath).GetType();
+			var importer = AssetImporter.GetAtPath(assetPath);
+			if (importer == null) {
+				Debug.LogError("failed to assume the assetType of assetPath:" + assetPath + " 's importer is null, this asset is ignored from Unity.");
+				return typeof(object);
+			}
+
+			var assumedImporterType = importer.GetType();
 			var importerTypeStr = assumedImporterType.ToString();
 			
 			switch (importerTypeStr) {
@@ -70,9 +76,9 @@ namespace AssetBundleGraph {
 			if (AssumeTypeBindingByExtension.ContainsKey(extension)) return AssumeTypeBindingByExtension[extension];
 			
 			
-			// unhandled..
-			Debug.LogError("failed to detect asset extension:" + extension);
-			return typeof(UnityEngine.Object);
+			// unhandled.
+			Debug.LogWarning("failed to detect asset extension:" + extension + ",  fall down to 'UnityEngine.Object' type.");
+			return typeof(object);
 		}
 	}
 }

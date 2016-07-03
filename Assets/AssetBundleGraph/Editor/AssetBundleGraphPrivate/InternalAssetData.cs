@@ -11,7 +11,6 @@ namespace AssetBundleGraph {
 		public readonly string fileNameAndExtension;
 		public readonly string pathUnderSourceBase;
 		public readonly string importedPath;
-		public readonly string pathUnderConnectionId;
 		public readonly string exportedPath;
 		public readonly string assetId;
 		public readonly Type assetType;
@@ -31,7 +30,6 @@ namespace AssetBundleGraph {
 				fileNameAndExtension:Path.GetFileName(absoluteSourcePath),
 				pathUnderSourceBase:GetPathWithoutBasePath(absoluteSourcePath, sourceBasePath),
 				importedPath:importedPath,
-				pathUnderConnectionId:The2LevelLowerPath(importedPath),
 				assetId:assetId,
 				assetType:assetType
 			);
@@ -48,7 +46,6 @@ namespace AssetBundleGraph {
 				fileNameAndExtension:fileNameAndExtension,
 				pathUnderSourceBase:pathUnderSourceBase,
 				importedPath:importedPath,
-				pathUnderConnectionId:The2LevelLowerPath(importedPath),
 				assetId:assetId,
 				assetType:assetType
 			);
@@ -62,7 +59,6 @@ namespace AssetBundleGraph {
 				traceId:Guid.NewGuid().ToString(),
 				fileNameAndExtension:Path.GetFileName(importedPath),
 				importedPath:importedPath,
-				pathUnderConnectionId:The2LevelLowerPath(importedPath),
 				assetId:assetId,
 				assetType:assetType,
 				isNew:isNew,
@@ -78,8 +74,7 @@ namespace AssetBundleGraph {
 			return new InternalAssetData(
 				traceId:Guid.NewGuid().ToString(),
 				fileNameAndExtension:Path.GetFileName(importedPath),
-				importedPath:importedPath,
-				pathUnderConnectionId:The2LevelLowerPath(importedPath)
+				importedPath:importedPath
 			);
 		}
 		
@@ -87,8 +82,7 @@ namespace AssetBundleGraph {
 			return new InternalAssetData(
 				traceId:Guid.NewGuid().ToString(),
 				fileNameAndExtension:Path.GetFileName(importedPath),
-				importedPath:importedPath,
-				pathUnderConnectionId:The2LevelLowerPath(importedPath)
+				importedPath:importedPath
 			);
 		}
 
@@ -108,7 +102,6 @@ namespace AssetBundleGraph {
 			string fileNameAndExtension = null,
 			string pathUnderSourceBase = null,
 			string importedPath = null,
-			string pathUnderConnectionId = null,
 			string exportedPath = null,
 			string assetId = null,
 			Type assetType = null,
@@ -121,43 +114,19 @@ namespace AssetBundleGraph {
 			this.fileNameAndExtension = fileNameAndExtension;
 			this.pathUnderSourceBase = pathUnderSourceBase;
 			this.importedPath = importedPath;
-			this.pathUnderConnectionId = pathUnderConnectionId;
 			this.exportedPath = exportedPath;
 			this.assetId = assetId;
 			this.assetType = assetType;
 			this.isNew = isNew;
 			this.isBundled = isBundled;
 		}
-
-		/**
-			get ITEM_FOLDERS&ITEMS path
-			from Assets/AssetBundleGraph/Cache/NODE_KIND/CONNECTION_ID_FOLDER/ITEM_FOLDERS&ITEMS path.
-
-			e.g. 
-				Assets/AssetBundleGraph/Cache/NODE_KIND_FOLDER/CONNECTION_ID_FOLDER/somewhere/something.png
-				->
-				something/something.png
-		*/
-		private static string The2LevelLowerPath (string assetsTemp_ConnectionId_ResourcePath) {
-			var splitted = assetsTemp_ConnectionId_ResourcePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
-			var depthCount = AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;// last +1 is connectionId's count
-			var concatenated = new string[splitted.Length - depthCount];
-			Array.Copy(splitted, depthCount, concatenated, 0, concatenated.Length);
-			var resultPath = string.Join(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), concatenated);
-			
-			return resultPath;
-		}
-
+		
 		public static string GetPathWithoutBasePath (string localPathWithBasePath, string basePath) {
 			var replaced = localPathWithBasePath.Replace(basePath, string.Empty);
 			if (replaced.StartsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) return replaced.Substring(1);
 			return replaced;
 		}
 		
-		public static string GetPathWithBasePath (string localPathWithoutBasePath, string basePath) {
-			return FileController.PathCombine(basePath, localPathWithoutBasePath);
-		}
-
 		public string GetAbsolutePathOrImportedPath () {
 			if (absoluteSourcePath != null) return absoluteSourcePath;
 			return importedPath;

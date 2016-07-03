@@ -380,11 +380,11 @@ namespace AssetBundleGraph {
 							sourcePathList.Add(new ThroughputAsset(relativeAbsolutePath, bundled));
 							continue;
 						}
-
-						if (!string.IsNullOrEmpty(assetData.pathUnderConnectionId)) {
-							sourcePathList.Add(new ThroughputAsset(assetData.pathUnderConnectionId, bundled));
-							continue;
-						}
+						
+						// if (!string.IsNullOrEmpty(assetData.pathUnderConnectionId)) {
+						// 	sourcePathList.Add(new ThroughputAsset(assetData.pathUnderConnectionId, bundled));
+						// 	continue;
+						// }
 
 						if (!string.IsNullOrEmpty(assetData.exportedPath)) {
 							sourcePathList.Add(new ThroughputAsset(assetData.exportedPath, bundled));
