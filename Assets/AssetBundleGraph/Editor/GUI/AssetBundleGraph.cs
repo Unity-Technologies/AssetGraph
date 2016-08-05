@@ -133,14 +133,17 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 		
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SAMPLE)]
-		public static void DeleteImportSettingSample () {
-			Debug.LogError("not yet.");
+		
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS)] public static void DeleteImportSettingSample () {
+			FileController.RemakeDirectory(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE);
+
+			AssetDatabase.Refresh();
 		}
 		
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_MODIFIER_SAMPLE)]
-		public static void DeleteModifierSample () {
-			Debug.LogError("not yet.");
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_MODIFIER_SETTINGS)] public static void DeleteModifierSample () {
+			FileController.RemakeDirectory(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE);
+
+			AssetDatabase.Refresh();
 		}
 
 

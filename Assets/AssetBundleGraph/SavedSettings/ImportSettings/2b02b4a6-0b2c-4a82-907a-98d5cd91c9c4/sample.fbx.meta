@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: bac35d8b0deba4b2996c82831313d685
-timeCreated: 1460442177
+guid: 4f9df63fb5c3a44e6a8b4aa77e4f7338
+timeCreated: 1470381666
 licenseType: Pro
 ModelImporter:
   serializedVersion: 19
@@ -77,5 +77,5 @@ ModelImporter:
   humanoidOversampling: 1
   additionalBone: 0
   userData: 
-  assetBundleName: bundle_a_1.assetbundle.standaloneosxintel
+  assetBundleName: 
   assetBundleVariant: 

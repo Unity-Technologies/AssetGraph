@@ -16,8 +16,8 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_GENERATE_FINALLY = GUI_TEXT_MENU_GENERATE + "/Finally Script";
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Cache";
 		
-		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SAMPLE = "Window/AssetBundleGraph/Clear ImportSetting Sample";
-		public const string GUI_TEXT_MENU_DELETE_MODIFIER_SAMPLE = "Window/AssetBundleGraph/Clear Modifier Sample";
+		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
+		public const string GUI_TEXT_MENU_DELETE_MODIFIER_SETTINGS = "Window/AssetBundleGraph/Clear Saved ModifierSettings";
 		
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
@@ -32,8 +32,8 @@ namespace AssetBundleGraph {
 		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
-		public const string IMPORTER_SAMPLING_PLACE		= ASSETBUNDLEGRAPH_PATH + "ImportSettingSamples";
-		public const string MODIFIER_SAMPLING_PLACE		= ASSETBUNDLEGRAPH_PATH + "ModifierSamples";
+		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
+		public const string MODIFIER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierSettings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
