@@ -27,7 +27,8 @@ namespace AssetBundleGraph {
 		*/
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
-			GetWindow<AssetBundleGraph>();
+			var window = GetWindow<AssetBundleGraph>();
+			window.titleContent = new GUIContent("AssetBundle");
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
