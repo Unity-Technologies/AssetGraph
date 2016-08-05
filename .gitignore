@@ -73,3 +73,5 @@ Assets/AssetBundleGraph/Cache/*
 
 obj/*
 
+*.sln
+*.userprefs
