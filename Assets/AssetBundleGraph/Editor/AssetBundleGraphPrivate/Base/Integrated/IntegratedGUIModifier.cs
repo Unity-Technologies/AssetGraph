@@ -35,7 +35,7 @@ namespace AssetBundleGraph {
 			var assumedImportedAssetDatas = new List<InternalAssetData>();
 			
 
-			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId);
+			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE, nodeId);
 			ValidateModifierSample(samplingDirectoryPath,
 				(string noSampleFolder) => {
 					// do nothing. keep importing new asset for sampling.
@@ -109,7 +109,7 @@ namespace AssetBundleGraph {
 
 
 			// caution if import setting file is exists already or not.
-			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId);
+			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE, nodeId);
 			
 			var sampleAssetPath = string.Empty;
 			ValidateModifierSample(samplingDirectoryPath,

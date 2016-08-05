@@ -366,7 +366,7 @@ namespace AssetBundleGraph {
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var nodeId = node.nodeId;
 								
-								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SAMPLING_PLACE, nodeId);
+								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
 								
 								IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
 									(string noFolderFound) => {
@@ -415,7 +415,7 @@ namespace AssetBundleGraph {
 							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var nodeId = node.nodeId;
 								
-								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SAMPLING_PLACE, nodeId);
+								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE, nodeId);
 								
 								IntegratedGUIModifier.ValidateModifierSample(samplingPath,
 									(string noFolderFound) => {
