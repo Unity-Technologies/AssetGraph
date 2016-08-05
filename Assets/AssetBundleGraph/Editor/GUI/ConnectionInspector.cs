@@ -1,10 +1,8 @@
 using UnityEngine;
-
 using System.Collections.Generic;
-using System;
 
 namespace AssetBundleGraph {
-	public class ConnectionInspector : ScriptableObject {
+    public class ConnectionInspector : ScriptableObject {
 		public Connection con;
 		public Dictionary<string, List<ThroughputAsset>> throughputListDict;
 		public List<bool> foldouts;

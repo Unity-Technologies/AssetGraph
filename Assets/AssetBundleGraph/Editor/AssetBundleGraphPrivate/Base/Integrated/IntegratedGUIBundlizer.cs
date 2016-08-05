@@ -1,13 +1,11 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
-	public class IntegratedGUIBundlizer : INodeBase {
+    public class IntegratedGUIBundlizer : INodeBase {
 		private readonly string bundleNameTemplate;
 		private readonly bool outputResource;
 		
@@ -115,7 +113,9 @@ namespace AssetBundleGraph {
 			
 			var bundlePath = FileController.PathCombine(recommendedBundleOutputDir, bundleName);
 			
-			foreach (var source in sources) {
+			for (var i = 0; i < sources.Count; i++) {
+				var source = sources[i];
+
 				// if already bundled in this running, avoid changing that name.
 				if (source.isBundled) continue;
 				
@@ -127,7 +127,7 @@ namespace AssetBundleGraph {
 				}
 				
 				// set as this resource is already bundled.
-				source.isBundled = true;
+				sources[i] = InternalAssetData.InternalAssetDataBundledByBundlizer(sources[i]);
 			}
 
 			return bundlePath;

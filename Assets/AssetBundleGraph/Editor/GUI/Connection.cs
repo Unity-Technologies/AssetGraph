@@ -106,6 +106,7 @@ namespace AssetBundleGraph {
 						for (var i = 0; i < throughputList.Count; i++) {
 							var sourceStr = throughputList[i].path;
 							var isBundled = throughputList[i].isBundled;
+							
 							if (isBundled) EditorGUILayout.LabelField(sourceStr, redColor); 
 							else EditorGUILayout.LabelField(sourceStr);
 						}

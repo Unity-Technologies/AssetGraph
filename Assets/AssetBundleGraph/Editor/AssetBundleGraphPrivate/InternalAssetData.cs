@@ -16,7 +16,7 @@ namespace AssetBundleGraph {
 		public readonly Type assetType;
 		public readonly bool isNew;
 		
-		public bool isBundled;
+		public readonly bool isBundled;
 		
 		
 		/**
@@ -78,6 +78,22 @@ namespace AssetBundleGraph {
 			);
 		}
 		
+		/**
+			renew internal assetdata as "already bundled".
+			isBundled is always true.
+		*/
+		public static InternalAssetData InternalAssetDataBundledByBundlizer (InternalAssetData bundledSourceAssetData) {
+			return new InternalAssetData(
+				traceId:bundledSourceAssetData.traceId,
+				fileNameAndExtension:bundledSourceAssetData.fileNameAndExtension,
+				importedPath:bundledSourceAssetData.importedPath,
+				assetId:bundledSourceAssetData.assetId,
+				assetType:bundledSourceAssetData.assetType,
+				isNew:bundledSourceAssetData.isNew,
+				isBundled:true
+			);
+		}
+
 		public static InternalAssetData InternalAssetDataGeneratedByBundleBuilder (string importedPath) {
 			return new InternalAssetData(
 				traceId:Guid.NewGuid().ToString(),
