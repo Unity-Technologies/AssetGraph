@@ -69,6 +69,10 @@ namespace AssetBundleGraph {
 		[CustomEditor(typeof(ConnectionInspector))]
 		public class ConnectionObj : Editor {
 
+			public override bool RequiresConstantRepaint() {
+				return true;
+			}
+
 			public override void OnInspectorGUI () {
 				var con = ((ConnectionInspector)target).con;
 				if (con == null) return;

@@ -198,6 +198,10 @@ namespace AssetBundleGraph {
 
 			private bool packageEditMode = false;
 
+			public override bool RequiresConstantRepaint() {
+				return true;
+			}
+
 			public override void OnInspectorGUI () {
 				var currentTarget = (NodeInspector)target;
 				var node = currentTarget.node;
