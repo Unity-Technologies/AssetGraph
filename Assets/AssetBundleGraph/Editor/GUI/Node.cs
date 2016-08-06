@@ -62,8 +62,6 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private NodeInspector nodeInsp;
 
-
-
 		private float progress;
 		private bool running;
 
@@ -196,6 +194,8 @@ namespace AssetBundleGraph {
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
 
+			private List<Action> messageActions;
+
 			private bool packageEditMode = false;
 
 			public override bool RequiresConstantRepaint() {
@@ -207,8 +207,13 @@ namespace AssetBundleGraph {
 				var node = currentTarget.node;
 				if (node == null) return;
 
+				if(messageActions == null) {
+					messageActions = new List<Action>();
+				}
+
 				var basePlatform = node.currentPlatform;
-				
+
+				messageActions.Clear();
 
 				switch (node.kind) {
 					case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
@@ -228,7 +233,7 @@ namespace AssetBundleGraph {
 							// update platform & package.
 							node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 								EditorGUILayout.LabelField("Load Path:");
 								var newLoadPath = EditorGUILayout.TextField(
 									GraphStackController.ProjectName(), 
@@ -285,11 +290,11 @@ namespace AssetBundleGraph {
 						EditorGUILayout.HelpBox("Filter: filtering files by keywords and types.", MessageType.Info);
 						UpdateNodeName(node);
 						
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							GUILayout.Label("Contains keyword and type");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 								
-								using (new GUILayout.HorizontalScope()) {
+								using (new GUILayout.HorizontalScope(GUILayout.Height(40))) {
 									if (GUILayout.Button("-", GUILayout.Width(30))) {
 										node.BeforeSave();
 										node.filterContainsKeywords.RemoveAt(i);
@@ -318,10 +323,20 @@ namespace AssetBundleGraph {
 											newContainsKeyword,
 											currentKeywords,
 											() => {
-												EditorGUILayout.HelpBox("please use \"*\" or other keyword.", MessageType.Error);
+												EditorGUILayout.LabelField(new GUIContent(), (GUIStyle)"CN EntryError", GUILayout.Width(40));
+												int index = i;
+												//EditorGUILayout.HelpBox("", MessageType.Error);
+												messageActions.Add(() => {
+													EditorGUILayout.HelpBox(string.Format("Filter #{0}: put keyword or use \"*\" for wildcard.", index), MessageType.Error);
+												});
 											},
 											() => {
-												EditorGUILayout.HelpBox("already exist.", MessageType.Error);
+												EditorGUILayout.LabelField(new GUIContent(), (GUIStyle)"CN EntryError", GUILayout.Width(40));
+												int index = i;
+												//EditorGUILayout.HelpBox("", MessageType.Error);
+												messageActions.Add(() => {
+													EditorGUILayout.HelpBox(string.Format("Filter #{0}: duplicate condition please change keyword and/or type.", index), MessageType.Error);
+												});
 											}
 										);
 
@@ -363,7 +378,7 @@ namespace AssetBundleGraph {
 						*/
 
 						{
-							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 								var nodeId = node.nodeId;
 								
 								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
@@ -412,7 +427,7 @@ namespace AssetBundleGraph {
 						*/
 
 						{
-							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 								var nodeId = node.nodeId;
 								
 								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE, nodeId);
@@ -459,7 +474,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var newGroupingKeyword = EditorGUILayout.TextField(
 								"Grouping Keyword",
 								GraphStackController.ValueFromPlatformAndPackage(
@@ -504,7 +519,7 @@ namespace AssetBundleGraph {
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
 						UpdateNodeName(node);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
 
 							/*
@@ -539,7 +554,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 						
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var bundleNameTemplate = EditorGUILayout.TextField(
 								"Bundle Name Template", 
 								GraphStackController.ValueFromPlatformAndPackage(
@@ -608,7 +623,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var bundleOptions = GraphStackController.ValueFromPlatformAndPackage(
 								node.enabledBundleOptions.ReadonlyDict(),
 								node.currentPlatform
@@ -704,7 +719,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							EditorGUILayout.LabelField("Export Path:");
 							var newExportPath = EditorGUILayout.TextField(
 								GraphStackController.ProjectName(), 
@@ -745,6 +760,11 @@ namespace AssetBundleGraph {
 					default: {
 						Debug.LogError("failed to match:" + node.kind);
 						break;
+					}
+				}
+				using (new EditorGUILayout.VerticalScope()) {
+					foreach(Action a in messageActions) {
+						a.Invoke();
 					}
 				}
 			}
