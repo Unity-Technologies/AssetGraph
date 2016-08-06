@@ -1,9 +1,8 @@
 using UnityEngine;
-
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
-	public class ConnectionInspector : ScriptableObject {
+    public class ConnectionInspector : ScriptableObject {
 		public Connection con;
 		public Dictionary<string, List<ThroughputAsset>> throughputListDict;
 		public List<bool> foldouts;
@@ -17,5 +16,9 @@ namespace AssetBundleGraph {
 				foldouts.Add(true);
 			}
 		}
-	}
+
+        public void UpdateThroughputs(Dictionary<string, List<ThroughputAsset>> throughputListDict) {
+            this.throughputListDict = throughputListDict;
+        }
+    }
 }

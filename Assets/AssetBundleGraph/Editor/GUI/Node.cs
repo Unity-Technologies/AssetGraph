@@ -316,11 +316,24 @@ namespace AssetBundleGraph {
 												);
 											}
 										}
+
+										/*
+											generate keyword + keytype string for compare exists setting vs new modifying setting at once.
+										*/
 										var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
+										var currentKeytypesSource = new List<string>(node.filterContainsKeytypes);
+										
+										var currentKeytype = currentKeytypesSource[i];
+
+										for (var j = 0; j < currentKeywordsSource.Count; j++) {
+											currentKeywordsSource[j] = currentKeywordsSource[j] + currentKeytypesSource[j];
+										}
+
+										// remove current choosing one from compare target.
 										currentKeywordsSource.RemoveAt(i);
 										var currentKeywords = new List<string>(currentKeywordsSource);
 										IntegratedGUIFilter.ValidateFilter(
-											newContainsKeyword,
+											newContainsKeyword + currentKeytype,
 											currentKeywords,
 											() => {
 												EditorGUILayout.LabelField(new GUIContent(), (GUIStyle)"CN EntryError", GUILayout.Width(40));

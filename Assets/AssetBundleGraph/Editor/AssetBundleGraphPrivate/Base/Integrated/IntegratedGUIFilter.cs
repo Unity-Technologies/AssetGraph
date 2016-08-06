@@ -4,8 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph
-{
+namespace AssetBundleGraph {
     public class IntegratedGUIFilter : INodeBase {
 		private readonly List<string> containsKeywords;
 		private readonly List<string> containsKeytypes;
@@ -15,12 +14,15 @@ namespace AssetBundleGraph
 		}
 
 		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			var duplicated = containsKeywords.GroupBy(x => x)
-				.Where(group => group.Count() > 1)
-				.Select(group => group.Key)
-				.ToList();
-			
-			if (duplicated.Any()) throw new Exception("filter keywords are overlapping:" + duplicated[0]);
+			// overlapping test.
+			{
+				var overlappingCheckList = new List<string>();
+				for (var i = 0; i < containsKeywords.Count; i++) {
+					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
+					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new Exception("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i]);
+					overlappingCheckList.Add(keywordAndKeytypeCombind);
+				}
+			}
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -51,11 +53,15 @@ namespace AssetBundleGraph
 		}
 		
 		public void Run (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			var duplicated = containsKeywords.GroupBy(x => x)
-				.Where(group => group.Count() > 1)
-				.Select(group => group.Key)
-				.ToList();
-			if (duplicated.Any()) throw new Exception("filter keywords are overlapping:" + duplicated[0]);
+			// overlapping test.
+			{
+				var overlappingCheckList = new List<string>();
+				for (var i = 0; i < containsKeywords.Count; i++) {
+					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
+					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new Exception("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i]);
+					overlappingCheckList.Add(keywordAndKeytypeCombind);
+				}
+			}
 			
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();

@@ -613,6 +613,8 @@ namespace AssetBundleGraph {
 			// ready throughput datas.
 			connectionThroughputs = GraphStackController.SetupStackedGraph(reloadedData);
 
+			RefreshInspector(connectionThroughputs);
+
 			Finally(nodes, connections, connectionThroughputs, false);
 		}
 
@@ -677,9 +679,24 @@ namespace AssetBundleGraph {
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
 
+			RefreshInspector(connectionThroughputs);
+
 			Finally(currentNodes, currentConnections, connectionThroughputs, true);
 		}
 
+		private static void RefreshInspector (Dictionary<string,Dictionary<string, List<ThroughputAsset>>> currentConnectionThroughputs) {
+			switch (Selection.activeObject.GetType().ToString()) {
+				case "AssetBundleGraph.ConnectionInspector": {
+					var con = ((ConnectionInspector)Selection.activeObject).con;
+					((ConnectionInspector)Selection.activeObject).UpdateThroughputs(currentConnectionThroughputs[con.connectionId]);
+					break;
+				}
+				default: {
+					// do nothing.
+					break;
+				}
+			}
+		} 
 
 		public static void Finally (
 			List<Node> currentNodes,
