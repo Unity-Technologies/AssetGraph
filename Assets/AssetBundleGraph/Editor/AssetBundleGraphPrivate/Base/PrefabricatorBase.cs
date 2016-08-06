@@ -152,7 +152,7 @@ namespace AssetBundleGraph {
 						AssetDatabase.SaveAssets();
 						generated.Add(newPrefabOutputPath);
 						cachedOrGenerated.Add(newPrefabOutputPath);
-						Debug.Log("AssetBundleGraph prefab:" + newPrefabOutputPath + " is newly generated.");
+						Debug.Log("AssetBundleGraph prefab:" + newPrefabOutputPath + " created.");
 					} else {
 						// cached.
 						usedCache.Add(newPrefabOutputPath);
