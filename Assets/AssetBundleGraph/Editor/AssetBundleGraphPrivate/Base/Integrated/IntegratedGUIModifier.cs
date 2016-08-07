@@ -16,7 +16,7 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIModifier : INodeBase {
 		
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -102,7 +102,7 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -149,7 +149,7 @@ namespace AssetBundleGraph {
 			*/
 			{
 				var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
-				var effector = new InternalSamplingImportEffector(samplingAssetImporter);
+//				var effector = new InternalSamplingImportEffector(samplingAssetImporter);
 				{
 					foreach (var inputSource in inputSources) {
 						var importer = AssetImporter.GetAtPath(inputSource.importedPath);

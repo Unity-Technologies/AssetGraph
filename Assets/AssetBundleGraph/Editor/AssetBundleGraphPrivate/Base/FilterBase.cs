@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class FilterBase : INodeBase {
-		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -35,7 +35,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

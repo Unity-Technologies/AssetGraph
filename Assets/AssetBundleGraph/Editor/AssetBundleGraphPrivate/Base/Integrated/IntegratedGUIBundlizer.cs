@@ -14,11 +14,11 @@ namespace AssetBundleGraph {
 			this.outputResource = outputResource;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
-					throw new Exception("no Bundle Name Template set.");
+					throw new AssetBundleGraphSetupException(nodeName + ":Bundle Name Template is empty.");
 				}
 			);
 			
@@ -29,7 +29,7 @@ namespace AssetBundleGraph {
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, false);
+				var reservedBundlePath = BundlizeAssets(nodeName, groupKey, inputSources, recommendedBundleOutputDir, false);
 				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
 
 				var outputSources = new List<InternalAssetData>();
@@ -52,11 +52,11 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
-					throw new Exception("no Bundle Name Template set.");
+					throw new AssetBundleGraphBuildException(nodeName + ": Bundle Name Template is empty.");
 				}
 			);
 			
@@ -67,7 +67,7 @@ namespace AssetBundleGraph {
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(groupKey, inputSources, recommendedBundleOutputDir, true);
+				var reservedBundlePath = BundlizeAssets(nodeName, groupKey, inputSources, recommendedBundleOutputDir, true);
 				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
 
 				var outputSources = new List<InternalAssetData>();
@@ -90,14 +90,16 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public string BundlizeAssets (string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
+		public string BundlizeAssets (string nodeName, string groupkey, List<InternalAssetData> sources, string recommendedBundleOutputDir, bool isRun) {			
 			var invalids = new List<string>();
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importedPath)) {
 					invalids.Add(source.pathUnderSourceBase);
 				}
 			}
-			if (invalids.Any()) throw new Exception("bundlizer:" + string.Join(", ", invalids.ToArray()) + " is not imported yet, should import before bundlize.");
+			if (invalids.Any()) {
+				throw new AssetBundleGraphBuildException(nodeName + ": Invalid files to bundle. Following files need to be imported before bundlize: " + string.Join(", ", invalids.ToArray()) );
+			}
 
 			var bundleName = bundleNameTemplate;
 

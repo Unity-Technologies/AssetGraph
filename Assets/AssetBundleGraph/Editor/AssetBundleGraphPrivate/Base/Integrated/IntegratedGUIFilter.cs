@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			this.containsKeytypes = containsKeytypes;
 		}
 
-		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// overlapping test.
 			{
 				var overlappingCheckList = new List<string>();
@@ -52,7 +52,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// overlapping test.
 			{
 				var overlappingCheckList = new List<string>();

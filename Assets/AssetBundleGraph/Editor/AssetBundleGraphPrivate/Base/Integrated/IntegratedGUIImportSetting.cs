@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 	*/
 	public class IntegratedGUIImportSetting : INodeBase {
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
@@ -129,7 +129,7 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -210,7 +210,7 @@ namespace AssetBundleGraph {
 					case "UnityEditor.ModelImporter": {
 						var modelImporter = importer as ModelImporter;
 						var same = InternalSamplingImportEffector.IsSameModelSetting(modelImporter, samplingAssetImporter as ModelImporter);
-						var data = AssetDatabase.LoadAssetAtPath(inputSource.importedPath, inputSource.assetType);
+//						var data = AssetDatabase.LoadAssetAtPath(inputSource.importedPath, inputSource.assetType);
 						
 						if (!same) {
 							effector.ForceOnPreprocessModel(modelImporter);

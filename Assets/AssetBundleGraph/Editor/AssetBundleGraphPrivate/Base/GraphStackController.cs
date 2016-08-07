@@ -86,6 +86,7 @@ namespace AssetBundleGraph {
 			};
 
 			((FilterBase)nodeScriptInstance).Setup(
+				"GetLabelsFromSetupFilter_dummy_nodeName",
 				"GetLabelsFromSetupFilter_dummy_nodeId", 
 				string.Empty,
 				new Dictionary<string, List<InternalAssetData>>{
@@ -155,6 +156,7 @@ namespace AssetBundleGraph {
 							};
 
 							((FilterBase)nodeScriptInstance).Setup(
+								nodeName,
 								nodeId, 
 								string.Empty,
 								new Dictionary<string, List<InternalAssetData>>{
@@ -834,13 +836,13 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<FilterBase>(scriptType);
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<PrefabricatorBase>(scriptType);
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
@@ -851,31 +853,31 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 							var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath);
 							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 							var executor = new IntegratedGUIImportSetting();
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 							var executor = new IntegratedGUIModifier();
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 							var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(currentNodeData.groupingKeyword));
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -886,7 +888,7 @@ namespace AssetBundleGraph {
 								break;
 							}
 							var executor = Executor<PrefabricatorBase>(scriptType);
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -903,21 +905,21 @@ namespace AssetBundleGraph {
 							}
 							
 							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 							var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(currentNodeData.enabledBundleOptions);
 							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 							var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath);
 							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-							executor.Run(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -934,13 +936,13 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<FilterBase>(scriptType);
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<PrefabricatorBase>(scriptType);
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
@@ -952,31 +954,31 @@ namespace AssetBundleGraph {
 							var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.loadFilePath);
 
 							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 							var executor = new IntegratedGUIImportSetting();
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 							var executor = new IntegratedGUIModifier();
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 							var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(currentNodeData.groupingKeyword));
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -987,7 +989,7 @@ namespace AssetBundleGraph {
 								break;;
 							}
 							var executor = Executor<PrefabricatorBase>(scriptType);
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -1004,21 +1006,21 @@ namespace AssetBundleGraph {
 							}
 							
 							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 							var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(currentNodeData.enabledBundleOptions);
 							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 							var exportPath = Current_Platform_Package_OrDefaultFromDict(currentNodeData.exportFilePath);
 							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-							executor.Setup(nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -1030,8 +1032,8 @@ namespace AssetBundleGraph {
 				}
 			} catch (OnNodeException e) {
 				// Abort(e.reason, e.nodeId);
-				Debug.LogError("isActualRun:" + isActualRun + " Nodeのsetup/runのエラー、なんかしらGUIまで伝えないとな〜というところ。 e.reason:" + e.reason + " at:" + nodeName);
-				throw new Exception("abort");
+				//Debug.LogError("isActualRun:" + isActualRun + " Nodeのsetup/runのエラー、なんかしらGUIまで伝えないとな〜というところ。 e.reason:" + e.reason + " at:" + nodeName);
+				throw new AssetBundleGraphException(nodeName + ": " + e.reason);
 			}
 
 			currentNodeData.Done();

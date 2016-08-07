@@ -8,7 +8,7 @@
 
 // namespace AssetGraph {
 // 	public class BundlizerBase : INodeBase {
-// 		public void Setup (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+// 		public void Setup (string nodeName, string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 // 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
 // 			foreach (var groupKey in groupedSources.Keys) {
@@ -19,7 +19,7 @@
 // 			Output(nodeId, labelToNext, outputDict, new List<string>());
 // 		}
 		
-// 		public void Run (string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+// 		public void Run (string nodeName, string nodeId, string labelToNext, string package, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 // 			var recommendedBundleOutputDir = FileController.PathCombine(AssetGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId);
 // 			FileController.RemakeDirectory(recommendedBundleOutputDir);
 
