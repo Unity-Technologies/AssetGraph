@@ -293,8 +293,10 @@ namespace AssetBundleGraph {
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							GUILayout.Label("Contains keyword and type");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
-								
-								using (new GUILayout.HorizontalScope(GUILayout.Height(40))) {
+
+								Action messageAction = null;
+
+								using (new GUILayout.HorizontalScope()) {
 									if (GUILayout.Button("-", GUILayout.Width(30))) {
 										node.BeforeSave();
 										node.filterContainsKeywords.RemoveAt(i);
@@ -336,20 +338,18 @@ namespace AssetBundleGraph {
 											newContainsKeyword + currentKeytype,
 											currentKeywords,
 											() => {
-												EditorGUILayout.LabelField(new GUIContent(), (GUIStyle)"CN EntryError", GUILayout.Width(40));
-												int index = i;
+//												int index = i;
 												//EditorGUILayout.HelpBox("", MessageType.Error);
-												messageActions.Add(() => {
-													EditorGUILayout.HelpBox(string.Format("Filter #{0}: put keyword or use \"*\" for wildcard.", index), MessageType.Error);
-												});
+												messageAction = () => {
+													EditorGUILayout.HelpBox("Put keyword or use \"*\" for wildcard.", MessageType.Error);
+												};
 											},
 											() => {
-												EditorGUILayout.LabelField(new GUIContent(), (GUIStyle)"CN EntryError", GUILayout.Width(40));
-												int index = i;
+//												int index = i;
 												//EditorGUILayout.HelpBox("", MessageType.Error);
-												messageActions.Add(() => {
-													EditorGUILayout.HelpBox(string.Format("Filter #{0}: duplicate condition please change keyword and/or type.", index), MessageType.Error);
-												});
+												messageAction = () => {
+													EditorGUILayout.HelpBox("Duplicate condition.", MessageType.Error);
+												};
 											}
 										);
 
@@ -358,6 +358,12 @@ namespace AssetBundleGraph {
 											node.filterContainsKeywords[i] = newContainsKeyword;
 											node.FilterOutputPointsLabelChanged(i, node.filterContainsKeywords[i]);
 										}
+									}
+								}
+
+								if(messageAction != null) {
+									using (new GUILayout.HorizontalScope()) {
+										messageAction.Invoke();
 									}
 								}
 							}
