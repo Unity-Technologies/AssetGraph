@@ -1029,9 +1029,9 @@ namespace AssetBundleGraph {
 					}
 				}
 			} catch (OnNodeException e) {
-				// Abort(e.reason, e.nodeId);
-				Debug.LogError("isActualRun:" + isActualRun + " Nodeのsetup/runのエラー、なんかしらGUIまで伝えないとな〜というところ。 e.reason:" + e.reason + " at:" + nodeName);
-				throw new Exception("abort");
+				AssetBundleGraph.AddOnNodeException(e);
+				Debug.LogError("error occured:\"" + e.reason + "\", please check information on node.");
+				return;
 			}
 
 			currentNodeData.Done();

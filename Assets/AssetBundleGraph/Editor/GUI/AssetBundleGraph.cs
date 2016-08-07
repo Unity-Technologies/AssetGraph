@@ -23,6 +23,28 @@ namespace AssetBundleGraph {
 	
 	public class AssetBundleGraph : EditorWindow {
 		/*
+			exception pool for display node error.
+		*/
+		private static List<OnNodeException> onNodeExceptionPool = new List<OnNodeException>();
+		public static void AddOnNodeException (OnNodeException nodeEx) {
+			onNodeExceptionPool.Add(nodeEx);
+		}
+		
+		private static void ResetOnNodeExceptionPool () {
+			onNodeExceptionPool.Clear();
+		}
+
+		private static void ShowErrorOnNodes (List<Node> nodes) {
+			foreach (var node in nodes) {
+				node.RenewErrorSource();
+				var errorsForeachNode = onNodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
+				if (errorsForeachNode.Any()) {
+					node.AppendErrorSources(errorsForeachNode);
+				}
+			}
+		}
+
+		/*
 			menu items
 		*/
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
@@ -89,7 +111,6 @@ namespace AssetBundleGraph {
 					}
 				}
 			}
-			
 			Run();
 		}
 
@@ -586,6 +607,8 @@ namespace AssetBundleGraph {
 
 		
 		private void Setup () {
+			ResetOnNodeExceptionPool();
+
 			EditorUtility.ClearProgressBar();
 
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
@@ -615,10 +638,14 @@ namespace AssetBundleGraph {
 
 			RefreshInspector(connectionThroughputs);
 
+			ShowErrorOnNodes(nodes);
+
 			Finally(nodes, connections, connectionThroughputs, false);
 		}
 
 		private static void Run () {
+			ResetOnNodeExceptionPool();
+
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
@@ -681,10 +708,13 @@ namespace AssetBundleGraph {
 
 			RefreshInspector(connectionThroughputs);
 
+			ShowErrorOnNodes(currentNodes);
+
 			Finally(currentNodes, currentConnections, connectionThroughputs, true);
 		}
 
 		private static void RefreshInspector (Dictionary<string,Dictionary<string, List<ThroughputAsset>>> currentConnectionThroughputs) {
+			if (Selection.activeObject == null) return; 
 			switch (Selection.activeObject.GetType().ToString()) {
 				case "AssetBundleGraph.ConnectionInspector": {
 					var con = ((ConnectionInspector)Selection.activeObject).con;

@@ -1,7 +1,7 @@
 using System;
 
 namespace AssetBundleGraph {
-	class OnNodeException : Exception {
+	public class OnNodeException : Exception {
 		public readonly string reason;
 		public readonly string nodeId;
 		

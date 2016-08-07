@@ -14,7 +14,6 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIImportSetting : INodeBase {
 		
 		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
 			
@@ -49,7 +48,7 @@ namespace AssetBundleGraph {
 					first = false;
 				},
 				(string tooManysample) => {
-					throw new OnNodeException("too many sampling file found. please clear ImportSettingSamples folder.", nodeId);
+					throw new OnNodeException("too many sampling file found. please Reset ImportSettingSamples folder.", nodeId);
 				}
 			);
 
