@@ -32,7 +32,7 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
-		[SerializeField] private int nodeWindowId;
+        [SerializeField] private int nodeWindowId;
 		[SerializeField] private Rect baseRect;
 
 		[SerializeField] public string name;
@@ -62,6 +62,24 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private NodeInspector nodeInsp;
 
+
+		/*
+			show error on node functions.
+		*/
+		private bool hasErrors = false;
+
+        public void RenewErrorSource () {
+            hasErrors = false;
+        }
+		public void AppendErrorSources (List<string> errors) {
+			this.hasErrors = true;
+			this.nodeInsp.UpdateErrors(errors);
+		}
+
+		/*
+			show progress on node functions(unused. due to mainthread synchronization problem.)
+			can not update any visual on Editor while building AssetBundles through AssetBundleGraph.
+		*/
 		private float progress;
 		private bool running;
 
@@ -212,7 +230,7 @@ namespace AssetBundleGraph {
 				}
 
 				var basePlatform = node.currentPlatform;
-
+				
 				messageActions.Clear();
 
 				switch (node.kind) {
@@ -293,7 +311,7 @@ namespace AssetBundleGraph {
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							GUILayout.Label("Contains keyword and type");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
-
+								
 								Action messageAction = null;
 
 								using (new GUILayout.HorizontalScope()) {
@@ -422,7 +440,11 @@ namespace AssetBundleGraph {
 										}
 									},
 									(string tooManyFilesFoundMessage) => {
-										EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
+										if (GUILayout.Button("Reset Import Setting")) {
+											// delete all import setting files.
+											FileController.RemakeDirectory(samplingPath);
+											node.Save();
+										}
 									}
 								);
 							}
@@ -446,7 +468,7 @@ namespace AssetBundleGraph {
 						*/
 
 						{
-							using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
 								var nodeId = node.nodeId;
 								
 								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE, nodeId);
@@ -781,6 +803,13 @@ namespace AssetBundleGraph {
 						break;
 					}
 				}
+
+				var errors = currentTarget.errors;
+				if (errors != null && errors.Any()) {
+					foreach (var error in errors) {
+						EditorGUILayout.LabelField("error:" + error);
+					}
+				}
 				using (new EditorGUILayout.VerticalScope()) {
 					foreach(Action a in messageActions) {
 						a.Invoke();
@@ -912,7 +941,16 @@ namespace AssetBundleGraph {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
 		}
 
+		/**
+			node's setting is changed from Inspector.
+		*/
 		public void Save () {
+			/*
+				update as no errors.
+			*/
+			this.hasErrors = false;
+			this.nodeInsp.UpdateErrors(new List<string>());
+
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
 
@@ -1437,8 +1475,6 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawNodeContents () {
-			// if ( != SCALE_MAX) return;
-
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
@@ -1463,6 +1499,13 @@ namespace AssetBundleGraph {
 			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
 
 			style.alignment = defaultAlignment;
+
+			/*
+				draw error mark if errors exists.
+			*/
+			if (hasErrors) { 
+				EditorGUI.HelpBox(new Rect(0f, -6f, 100f, 100f), string.Empty, MessageType.Error);
+			}
 		}
 
 		public void UpdateNodeRect () {
