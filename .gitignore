@@ -76,4 +76,9 @@ Assets/AssetBundleGraph/Cache/*
 obj/*
 
 *.sln
+*.vcproj
+*.unityproj
 *.userprefs
+
+Assets/EditorGUI Style Viewer*
+Assets/EditorGUI Style Viewer/*
