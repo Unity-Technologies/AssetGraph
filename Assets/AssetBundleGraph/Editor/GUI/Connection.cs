@@ -8,8 +8,17 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	[Serializable] public class Connection {
 		public static Action<OnConnectionEvent> Emit;
-		
-		public static Texture2D connectionArrowTex;
+
+		private static Texture2D s_connectionArrowTex;
+		public static Texture2D connectionArrowTex {
+			get {
+				// load shared connection textures
+				if( s_connectionArrowTex == null ) {
+					s_connectionArrowTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_ARROW);
+				}
+				return s_connectionArrowTex;
+			}
+		}
 
 		[SerializeField] public string label;
 		[SerializeField] public string connectionId;
