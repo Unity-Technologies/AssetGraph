@@ -49,7 +49,7 @@ namespace AssetBundleGraph {
 				},
 				(string samplePath) => {
 					throw new OnNodeException(
-						String.Format("Too many sample file found for this import setting node. Delete files in %1 or use \"Clear Saved ImportSettings\" menu.", samplePath), 
+						String.Format("Too many sample file found for this import setting node. Delete files in {0} or use \"Clear Saved ImportSettings\" menu.", samplePath), 
 						nodeId);
 				}
 			);
@@ -145,14 +145,14 @@ namespace AssetBundleGraph {
 					Debug.LogWarning("No Sample Directory found:" + samplePath);
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphException("No sample file found:" + samplePath);
+					throw new AssetBundleGraphBuildException("No sample file found:" + samplePath);
 				},
 				(string samplePath) => {
 					Debug.Log("Using import setting:" + samplePath);
 					sampleAssetPath = samplePath;
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphException("importSetting error:" + samplePath);
+					throw new AssetBundleGraphBuildException("importSetting error:" + samplePath);
 				}
 			);
 			

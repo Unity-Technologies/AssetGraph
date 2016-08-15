@@ -14,16 +14,22 @@ namespace AssetBundleGraph {
 		}
 		
 		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			ValidateExportPath(
-				exportFilePath,
-				exportFilePath,
-				() => {
-					throw new AssetBundleGraphSetupException(nodeName + ":Export Path is empty.");
-				},
-				() => {
-					throw new AssetBundleGraphSetupException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath);
-				}
-			);
+
+			try {
+				ValidateExportPath(
+					exportFilePath,
+					exportFilePath,
+					() => {
+						throw new OnNodeException(nodeName + ":Export Path is empty.", nodeId);
+					},
+					() => {
+						throw new OnNodeException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath, nodeId);
+					}
+				);
+			} catch(OnNodeException e) {
+				AssetBundleGraph.AddOnNodeException(e);
+				return;
+			}
 
 			Export(nodeId, labelToNext, groupedSources, Output, false);
 		}

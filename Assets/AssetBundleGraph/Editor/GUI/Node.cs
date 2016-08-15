@@ -8,7 +8,8 @@ using System.Collections.Generic;
 
 
 namespace AssetBundleGraph {
-	[Serializable] public class Node {
+	[Serializable] 
+	public class Node {
 
 		private class NodeSingleton {
 			public Action<OnNodeEvent> emitAction;
@@ -548,7 +549,7 @@ namespace AssetBundleGraph {
 						UpdateNodeName(node);
 						
 						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-							GUILayout.Label("Contains keyword and type");
+							GUILayout.Label("Filter Settings:");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 								
 								Action messageAction = null;
@@ -558,23 +559,9 @@ namespace AssetBundleGraph {
 										node.BeforeSave();
 										node.filterContainsKeywords.RemoveAt(i);
 										node.FilterOutputPointsDeleted(i);
-									} else {
-										var newContainsKeyword = string.Empty;
-										using (new EditorGUILayout.HorizontalScope()) {
-											
-											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], GUILayout.Width(120));
-											var currentIndex = i;
-											if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
-												ShowFilterKeyTypeMenu(
-													node.filterContainsKeytypes[currentIndex],
-													(string selectedTypeStr) => {
-														node.BeforeSave();
-														node.filterContainsKeytypes[currentIndex] = selectedTypeStr;
-														node.Save();
-													} 
-												);
-											}
-										}
+									}
+									else {
+										var newContainsKeyword = node.filterContainsKeywords[i];
 
 										/*
 											generate keyword + keytype string for compare exists setting vs new modifying setting at once.
@@ -591,24 +578,36 @@ namespace AssetBundleGraph {
 										// remove current choosing one from compare target.
 										currentKeywordsSource.RemoveAt(i);
 										var currentKeywords = new List<string>(currentKeywordsSource);
+
+										GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+
 										IntegratedGUIFilter.ValidateFilter(
 											newContainsKeyword + currentKeytype,
 											currentKeywords,
 											() => {
-//												int index = i;
-												//EditorGUILayout.HelpBox("", MessageType.Error);
-												messageAction = () => {
-													EditorGUILayout.HelpBox("Put keyword or use \"*\" for wildcard.", MessageType.Error);
-												};
+												s.fontStyle = FontStyle.Bold;
+												s.fontSize = 12;
 											},
 											() => {
-//												int index = i;
-												//EditorGUILayout.HelpBox("", MessageType.Error);
-												messageAction = () => {
-													EditorGUILayout.HelpBox("Duplicate condition.", MessageType.Error);
-												};
+												s.fontStyle = FontStyle.Bold;
+												s.fontSize = 12;
 											}
 										);
+
+										using (new EditorGUILayout.HorizontalScope()) {
+											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], s, GUILayout.Width(120));
+											var currentIndex = i;
+											if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
+												ShowFilterKeyTypeMenu(
+													node.filterContainsKeytypes[currentIndex],
+													(string selectedTypeStr) => {
+														node.BeforeSave();
+														node.filterContainsKeytypes[currentIndex] = selectedTypeStr;
+														node.Save();
+													} 
+												);
+											}
+										}
 
 										if (newContainsKeyword != node.filterContainsKeywords[i]) {
 											node.BeforeSave();

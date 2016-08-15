@@ -15,13 +15,18 @@ namespace AssetBundleGraph {
 
 		public void Setup (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// overlapping test.
-			{
+			try {
 				var overlappingCheckList = new List<string>();
 				for (var i = 0; i < containsKeywords.Count; i++) {
 					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
-					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new OnNodeException("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i], nodeId);
+					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
+						throw new OnNodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
+					}
 					overlappingCheckList.Add(keywordAndKeytypeCombind);
 				}
+			} catch(OnNodeException e) {
+				AssetBundleGraph.AddOnNodeException(e);
+				return;
 			}
 
 			foreach (var groupKey in groupedSources.Keys) {
