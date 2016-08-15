@@ -114,7 +114,7 @@ namespace AssetBundleGraph {
 					importSettingSampleType = AssetImporter.GetAtPath(targetFilePath).GetType().ToString();
 				} else {
 					if (importerTypeStr != importSettingSampleType) {
-						throw new OnNodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + importSettingSampleType + " inputted error file path:" + inputSource.importedPath, nodeId);
+						throw new OnNodeException("Multiple asset type is given to Importer Settings. ImporterSetting Takes only 1 asset type." + nodeName +  " is configured for " + importSettingSampleType + ", but " + importerTypeStr + " found.", nodeId);
 					}
 				}
 			
