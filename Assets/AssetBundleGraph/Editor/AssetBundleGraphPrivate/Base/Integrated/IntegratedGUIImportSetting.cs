@@ -37,18 +37,20 @@ namespace AssetBundleGraph {
 
 			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
 			ValidateImportSample(samplingDirectoryPath,
-				(string noSampleFolder) => {
+				(string samplePath) => {
 					// do nothing. keep importing new asset for sampling.
 				},
-				(string noSampleFile) => {
+				(string samplePath) => {
 					// do nothing. keep importing new asset for sampling.
 				},
 				(string samplePath) => {
 					importSettingSampleType = AssetImporter.GetAtPath(samplePath).GetType().ToString();
 					first = false;
 				},
-				(string tooManysample) => {
-					throw new OnNodeException("too many sampling file found. please Reset ImportSettingSamples folder.", nodeId);
+				(string samplePath) => {
+					throw new OnNodeException(
+						String.Format("Too many sample file found for this import setting node. Delete files in %1 or use \"Clear Saved ImportSettings\" menu.", samplePath), 
+						nodeId);
 				}
 			);
 
@@ -139,18 +141,18 @@ namespace AssetBundleGraph {
 			
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
-				(string noSampleFolder) => {
-					Debug.LogWarning("importSetting:" + noSampleFolder);
-				},
-				(string noSampleFile) => {
-					throw new Exception("importSetting error:" + noSampleFile);
+				(string samplePath) => {
+					Debug.LogWarning("No Sample Directory found:" + samplePath);
 				},
 				(string samplePath) => {
-					Debug.Log("using import setting:" + samplePath);
+					throw new AssetBundleGraphException("No sample file found:" + samplePath);
+				},
+				(string samplePath) => {
+					Debug.Log("Using import setting:" + samplePath);
 					sampleAssetPath = samplePath;
 				},
-				(string tooManysample) => {
-					throw new Exception("importSetting error:" + tooManysample);
+				(string samplePath) => {
+					throw new AssetBundleGraphException("importSetting error:" + samplePath);
 				}
 			);
 			
@@ -285,7 +287,7 @@ namespace AssetBundleGraph {
 
 				switch (filesInSampling.Count) {
 					case 0: {
-						NoSampleFound("no importSetting file found in ImporterSetting directory:" + samplePath + ", please reload first.");
+						NoSampleFound(samplePath);
 						return;
 					}
 					case 1: {
@@ -293,13 +295,13 @@ namespace AssetBundleGraph {
 						return;
 					}
 					default: {
-						TooManySampleFound("too many samples in ImporterSetting directory:" + samplePath);
+						TooManySampleFound(samplePath);
 						return;
 					}
 				}
 			}
 
-			NoSampleFolderFound("no samples found in ImporterSetting directory:" + samplePath + ", applying default importer settings. If you want to set Importer seting, please Reload and set import setting from the inspector of Importer node.");
+			NoSampleFolderFound(samplePath);
 		}
 
 	}

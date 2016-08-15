@@ -661,10 +661,10 @@ namespace AssetBundleGraph {
 								
 								IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
 									(string noFolderFound) => {
-										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
+										EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
 									},
 									(string noFilesFound) => {
-										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
+										EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
 									},
 									(string samplingAssetPath) => {
 										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
