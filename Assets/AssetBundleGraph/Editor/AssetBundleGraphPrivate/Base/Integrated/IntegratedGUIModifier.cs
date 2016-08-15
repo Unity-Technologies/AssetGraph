@@ -25,7 +25,9 @@ namespace AssetBundleGraph {
 			if (groupedSources.Keys.Count == 0) return;
 			
 			// shrink group to 1 group.
-			if (1 < groupedSources.Keys.Count) Debug.LogWarning("modifierSetting shrinking group to \"" + groupedSources.Keys.ToList()[0] + "\" forcely.");
+			if (1 < groupedSources.Keys.Count) {
+				Debug.LogWarning("modifierSetting shrinking group to \"" + groupedSources.Keys.ToList()[0] + "\" forcely.");
+			}
 
 			var inputSources = new List<InternalAssetData>();
 			foreach (var groupKey in groupedSources.Keys) {
