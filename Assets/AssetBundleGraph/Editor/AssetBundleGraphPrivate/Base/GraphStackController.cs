@@ -727,7 +727,7 @@ namespace AssetBundleGraph {
 				var fromNodeId = connectionDataOfParent.fromNodeId;
 				var usedConnectionId = connectionDataOfParent.connectionId;
 				
-				if (usedConnectionIds.Contains(usedConnectionId)) throw new Exception("connection loop detected.");
+				if (usedConnectionIds.Contains(usedConnectionId)) throw new OnNodeException("connection loop detected.", fromNodeId);
 				
 				usedConnectionIds.Add(usedConnectionId);
 				
@@ -1032,7 +1032,7 @@ namespace AssetBundleGraph {
 				}
 			} catch (OnNodeException e) {
 				AssetBundleGraph.AddOnNodeException(e);
-				Debug.LogError("error occured:\"" + e.reason + "\", please check information on node.");
+				//Debug.LogError("error occured:\"" + e.reason + "\", please check information on node.");
 				return;
 				//throw new AssetBundleGraphException(nodeName + ": " + e.reason);
 			}

@@ -19,7 +19,7 @@ namespace AssetBundleGraph {
 				var overlappingCheckList = new List<string>();
 				for (var i = 0; i < containsKeywords.Count; i++) {
 					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
-					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new Exception("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i]);
+					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new OnNodeException("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i], nodeId);
 					overlappingCheckList.Add(keywordAndKeytypeCombind);
 				}
 			}
