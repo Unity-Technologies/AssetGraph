@@ -25,22 +25,22 @@ namespace AssetBundleGraph {
 		/*
 			exception pool for display node error.
 		*/
-		private static List<OnNodeException> onNodeExceptionPool = new List<OnNodeException>();
+		private static List<NodeException> NodeExceptionPool = new List<NodeException>();
 
 		private bool initialized;
 
-		public static void AddOnNodeException (OnNodeException nodeEx) {
-			onNodeExceptionPool.Add(nodeEx);
+		public static void AddNodeException (NodeException nodeEx) {
+			NodeExceptionPool.Add(nodeEx);
 		}
 		
-		private static void ResetOnNodeExceptionPool () {
-			onNodeExceptionPool.Clear();
+		private static void ResetNodeExceptionPool () {
+			NodeExceptionPool.Clear();
 		}
 
 		private static void ShowErrorOnNodes (List<Node> nodes) {
 			foreach (var node in nodes) {
 				node.RenewErrorSource();
-				var errorsForeachNode = onNodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
+				var errorsForeachNode = NodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}
@@ -508,7 +508,7 @@ namespace AssetBundleGraph {
 
 		
 		private void Setup () {
-			ResetOnNodeExceptionPool();
+			ResetNodeExceptionPool();
 
 			EditorUtility.ClearProgressBar();
 
@@ -545,7 +545,7 @@ namespace AssetBundleGraph {
 		}
 
 		private static void Run () {
-			ResetOnNodeExceptionPool();
+			ResetNodeExceptionPool();
 
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {

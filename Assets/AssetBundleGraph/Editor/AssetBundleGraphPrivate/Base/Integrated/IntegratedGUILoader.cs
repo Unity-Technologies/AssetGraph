@@ -20,14 +20,14 @@ namespace AssetBundleGraph {
 					loadFilePath,
 					loadFilePath,
 					() => {
-						throw new OnNodeException(nodeName + ": Load Path is empty.", nodeId);
+						throw new NodeException(nodeName + ": Load Path is empty.", nodeId);
 					}, 
 					() => {
-						throw new OnNodeException(nodeName + ": Directory not found: " + loadFilePath, nodeId);
+						throw new NodeException(nodeName + ": Directory not found: " + loadFilePath, nodeId);
 					}
 				);
-			} catch(OnNodeException e) {
-				AssetBundleGraph.AddOnNodeException(e);
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
 				return;
 			}
 			
@@ -59,10 +59,10 @@ namespace AssetBundleGraph {
 						continue;
 					}
 
-					throw new OnNodeException(nodeName + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath, nodeId);
+					throw new NodeException(nodeName + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath, nodeId);
 				}
-			} catch(OnNodeException e) {
-				AssetBundleGraph.AddOnNodeException(e);
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
 				return;
 			}
 			catch (Exception e) {

@@ -18,7 +18,7 @@ namespace AssetBundleGraph {
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
-					throw new OnNodeException(nodeName + ":Bundle Name Template is empty.", nodeId);
+					throw new NodeException(nodeName + ":Bundle Name Template is empty.", nodeId);
 				}
 			);
 			

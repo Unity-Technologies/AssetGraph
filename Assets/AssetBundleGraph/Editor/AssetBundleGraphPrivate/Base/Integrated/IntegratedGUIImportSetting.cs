@@ -48,7 +48,7 @@ namespace AssetBundleGraph {
 					first = false;
 				},
 				(string samplePath) => {
-					throw new OnNodeException(
+					throw new NodeException(
 						String.Format("Too many sample file found for this import setting node. Delete files in {0} or use \"Clear Saved ImportSettings\" menu.", samplePath), 
 						nodeId);
 				}
@@ -85,7 +85,7 @@ namespace AssetBundleGraph {
 					}
 					
 					default: {
-						throw new OnNodeException("unhandled importer type:" + importerTypeStr, nodeId);
+						throw new NodeException("unhandled importer type:" + importerTypeStr, nodeId);
 					}
 				}
 				
@@ -116,7 +116,7 @@ namespace AssetBundleGraph {
 					importSettingSampleType = AssetImporter.GetAtPath(targetFilePath).GetType().ToString();
 				} else {
 					if (importerTypeStr != importSettingSampleType) {
-						throw new OnNodeException("Multiple asset type is given to Importer Settings. ImporterSetting Takes only 1 asset type." + nodeName +  " is configured for " + importSettingSampleType + ", but " + importerTypeStr + " found.", nodeId);
+						throw new NodeException("Multiple asset type is given to Importer Settings. ImporterSetting Takes only 1 asset type." + nodeName +  " is configured for " + importSettingSampleType + ", but " + importerTypeStr + " found.", nodeId);
 					}
 				}
 			
@@ -189,7 +189,7 @@ namespace AssetBundleGraph {
 				
 				
 				if (importerTypeStr != samplingAssetImporterTypeStr) {
-					throw new OnNodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + samplingAssetImporterTypeStr + " inputted error file path:" + inputSource.importedPath, nodeId);
+					throw new NodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + samplingAssetImporterTypeStr + " inputted error file path:" + inputSource.importedPath, nodeId);
 				}
 				
 				importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false;
@@ -231,7 +231,7 @@ namespace AssetBundleGraph {
 					}
 					
 					default: {
-						throw new OnNodeException("unhandled importer type:" + importerTypeStr, nodeId);
+						throw new NodeException("unhandled importer type:" + importerTypeStr, nodeId);
 					}
 				}
 			}

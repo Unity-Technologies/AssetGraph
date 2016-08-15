@@ -20,14 +20,14 @@ namespace AssetBundleGraph {
 					exportFilePath,
 					exportFilePath,
 					() => {
-						throw new OnNodeException(nodeName + ":Export Path is empty.", nodeId);
+						throw new NodeException(nodeName + ":Export Path is empty.", nodeId);
 					},
 					() => {
-						throw new OnNodeException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath, nodeId);
+						throw new NodeException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath, nodeId);
 					}
 				);
-			} catch(OnNodeException e) {
-				AssetBundleGraph.AddOnNodeException(e);
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
 				return;
 			}
 

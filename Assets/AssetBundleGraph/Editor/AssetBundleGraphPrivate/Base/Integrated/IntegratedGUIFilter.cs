@@ -20,12 +20,12 @@ namespace AssetBundleGraph {
 				for (var i = 0; i < containsKeywords.Count; i++) {
 					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
 					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
-						throw new OnNodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
+						throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
 					}
 					overlappingCheckList.Add(keywordAndKeytypeCombind);
 				}
-			} catch(OnNodeException e) {
-				AssetBundleGraph.AddOnNodeException(e);
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
 				return;
 			}
 
