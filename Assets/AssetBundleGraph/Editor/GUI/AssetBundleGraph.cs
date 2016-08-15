@@ -25,22 +25,22 @@ namespace AssetBundleGraph {
 		/*
 			exception pool for display node error.
 		*/
-		private static List<NodeException> NodeExceptionPool = new List<NodeException>();
+		private static List<NodeException> nodeExceptionPool = new List<NodeException>();
 
 		private bool initialized;
 
 		public static void AddNodeException (NodeException nodeEx) {
-			NodeExceptionPool.Add(nodeEx);
+			nodeExceptionPool.Add(nodeEx);
 		}
 		
 		private static void ResetNodeExceptionPool () {
-			NodeExceptionPool.Clear();
+			nodeExceptionPool.Clear();
 		}
 
 		private static void ShowErrorOnNodes (List<Node> nodes) {
 			foreach (var node in nodes) {
 				node.RenewErrorSource();
-				var errorsForeachNode = NodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
+				var errorsForeachNode = nodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}

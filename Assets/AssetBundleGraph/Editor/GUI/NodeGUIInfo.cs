@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
-    public class NodeInspector : ScriptableObject {
+    public class NodeGUIInfo : ScriptableObject {
 		public Node node;
 		public List<string> errors;
 
