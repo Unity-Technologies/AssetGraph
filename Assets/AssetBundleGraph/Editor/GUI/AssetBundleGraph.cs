@@ -1287,11 +1287,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] = node.modifierPackages.ReadonlyDict();
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
 					break;
@@ -1394,21 +1389,6 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
 					var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
-					
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-					foreach (var outputLabelSource in outputLabelsList) {
-						var label = outputLabelSource as string;
-						newNode.AddConnectionPoint(new OutputPoint(label));
-					}
-					return newNode;
-				}
-				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var defaultPlatformAndPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
-					var defaultPlatformAndPackages = new Dictionary<string, string>();
-					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
-
-					var newNode = Node.GUINodeForModify(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
 					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1568,17 +1548,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var modifierPackages = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
-
-					newNode = Node.GUINodeForModify(nodes.Count, nodeName, nodeId, kind, modifierPackages, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					var newGroupingKeywords = new Dictionary<string, string> {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT}
@@ -2052,12 +2021,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));

@@ -79,7 +79,6 @@ namespace AssetBundleGraph {
 			{"Create " + MENU_LOADER_NAME + " Node", NodeKind.LOADER_GUI},
 			{"Create " + MENU_FILTER_NAME + " Node", NodeKind.FILTER_GUI},
 			{"Create " + MENU_IMPORTSETTING_NAME + " Node", NodeKind.IMPORTSETTING_GUI},
-			{"Create " + MENU_MODIFIER_NAME + " Node", NodeKind.MODIFIER_GUI},
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
 			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
 			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
@@ -91,7 +90,6 @@ namespace AssetBundleGraph {
 			{NodeKind.LOADER_GUI, "Loader"},
 			{NodeKind.FILTER_GUI, "Filter"},
 			{NodeKind.IMPORTSETTING_GUI, "ImportSetting"},
-			{NodeKind.MODIFIER_GUI, "Modifier"},
 			{NodeKind.GROUPING_GUI, "Grouping"},
 			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
 			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
@@ -124,7 +122,6 @@ namespace AssetBundleGraph {
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
 		public const string NODE_FILTER_CONTAINS_KEYTYPES = "filterContainsKeytypes";
 		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
-		public const string NODE_MODIFIER_PACKAGES = "modifierPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		public const string NODE_BUNDLIZER_USE_OUTPUT = "bundleUseOutput";
@@ -160,7 +157,6 @@ namespace AssetBundleGraph {
 			LOADER_GUI,
 			FILTER_GUI,
 			IMPORTSETTING_GUI,
-			MODIFIER_GUI,
 			
 			GROUPING_GUI,
 			PREFABRICATOR_GUI,

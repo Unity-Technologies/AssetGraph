@@ -566,11 +566,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 4";
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
@@ -636,11 +631,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					modifierPackages.Remove(platformPackageKey);
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					groupingKeyword.Remove(platformPackageKey);
 					break;
@@ -690,11 +680,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 4 on";
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3 on";
 					break;
@@ -743,11 +728,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 4";
-					break;
-				}
-
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
@@ -1033,7 +1013,6 @@ namespace AssetBundleGraph {
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
 			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					GUI.contentColor = Color.black;

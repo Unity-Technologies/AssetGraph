@@ -255,55 +255,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI : {
-					EditorGUILayout.HelpBox("Modifier: applying settings to Assets.", MessageType.Info);
-					UpdateNodeName(node);
-
-					GUILayout.Space(10f);
-
-					if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
-					/*
-								modifier node has no platform key. 
-							*/
-
-					{
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							var nodeId = node.nodeId;
-
-							var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE, nodeId);
-
-							IntegratedGUIModifier.ValidateModifierSample(samplingPath,
-								(string noFolderFound) => {
-									EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
-								},
-								(string noFilesFound) => {
-									EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
-								},
-								(string samplingAssetPath) => {
-									EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-									if (GUILayout.Button("Setup Modifier Setting")) {
-										var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
-										Selection.activeObject = obj;
-									}
-									if (GUILayout.Button("Reset Modifier Setting")) {
-										// delete all import setting files.
-										FileController.RemakeDirectory(samplingPath);
-										node.Save();
-									}
-								},
-								(string tooManyFilesFoundMessage) => {
-									EditorGUILayout.LabelField("Sampling Asset", "too many assets found. please delete files at:" + samplingPath);
-								}
-							);
-						}
-					}
-
-					if (packageEditMode) EditorGUI.EndDisabledGroup();
-					UpdateDeleteSetting(node);
-
-					break;
-				}
-
 			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					if (node.groupingKeyword == null) return;
 

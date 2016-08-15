@@ -1,5 +1,5 @@
 {
-	"lastModified":"08/07/2016 17:37:17",
+	"lastModified":"08/15/2016 19:08:53",
 	"nodes":[
 		{
 			"name":"Loader0",
@@ -77,21 +77,6 @@
 				"y":115
 			},
 			"importerPackages":{
-				"Default":""
-			}
-		},
-		{
-			"name":"Modifier0",
-			"id":"8afd1de0-af05-4549-85f9-44946df83a28",
-			"kind":"MODIFIER_GUI",
-			"outputLabels":[
-				"+"
-			],
-			"pos":{
-				"x":369,
-				"y":178
-			},
-			"modifierPackages":{
 				"Default":""
 			}
 		},
@@ -263,12 +248,6 @@
 		},
 		{
 			"label":"+",
-			"connectionId":"71c26c06-3424-4564-a797-37ed06298915",
-			"fromNode":"8afd1de0-af05-4549-85f9-44946df83a28",
-			"toNode":"66c749d4-8493-48c8-b12c-91f24a44aa24"
-		},
-		{
-			"label":"+",
 			"connectionId":"e15b41be-e5b4-486f-a11e-28af03e83494",
 			"fromNode":"66c749d4-8493-48c8-b12c-91f24a44aa24",
 			"toNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad"
@@ -302,12 +281,6 @@
 			"connectionId":"27060ab5-23c1-40d0-915f-4662fc35d5e8",
 			"fromNode":"2acbe6de-f64b-42e3-b4bd-74a61e39ee4c",
 			"toNode":"2d444eda-e60e-4d6f-9b85-a53ed642827f"
-		},
-		{
-			"label":"*",
-			"connectionId":"d663509a-5351-473a-8252-c38e3d52f11d",
-			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
-			"toNode":"8afd1de0-af05-4549-85f9-44946df83a28"
 		},
 		{
 			"label":"resources",
