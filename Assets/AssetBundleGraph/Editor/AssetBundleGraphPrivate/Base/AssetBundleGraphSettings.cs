@@ -17,8 +17,7 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
-		public const string GUI_TEXT_MENU_DELETE_MODIFIER_SETTINGS = "Window/AssetBundleGraph/Clear Saved ModifierSettings";
-		
+
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
 		
@@ -33,7 +32,6 @@ namespace AssetBundleGraph {
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
 		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
-		public const string MODIFIER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierSettings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";

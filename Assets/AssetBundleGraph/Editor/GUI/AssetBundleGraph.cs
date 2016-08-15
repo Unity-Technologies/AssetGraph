@@ -163,13 +163,6 @@ namespace AssetBundleGraph {
 
 			AssetDatabase.Refresh();
 		}
-		
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_MODIFIER_SETTINGS)] public static void DeleteModifierSample () {
-			FileController.RemakeDirectory(AssetBundleGraphSettings.MODIFIER_SETTINGS_PLACE);
-
-			AssetDatabase.Refresh();
-		}
-
 
 
 		public void OnFocus () {
