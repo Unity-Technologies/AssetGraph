@@ -9,14 +9,14 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	public class IntegratedGUIBundleBuilder : INodeBase {
 		private readonly List<string> bundleOptions;
-		private readonly List<string> relatedNodeIds;
+//		private readonly List<string> relatedNodeIds;
 
 		public IntegratedGUIBundleBuilder (List<string> bundleOptions, List<string> relatedNodeIds) {
 			this.bundleOptions = bundleOptions;
-			this.relatedNodeIds = relatedNodeIds;
+//			this.relatedNodeIds = relatedNodeIds;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			/*
 				forcely merge to group ["0"].
 				these are came from bundlizer.
@@ -32,7 +32,7 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
 			
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);

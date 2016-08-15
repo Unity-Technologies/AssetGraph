@@ -8,13 +8,13 @@ namespace AssetBundleGraph {
 		*/
 		public const bool IGNORE_META = true;
 
-		public const string GUI_TEXT_MENU_OPEN = "Window/AssetBundleGraph/Open...";
-		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Active Platform And Package";
-		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Generate Script For Node";
+		public const string GUI_TEXT_MENU_OPEN = "Window/AssetBundleGraph/Open Graph Editor";
+		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
+		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Generate Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
 		
 		public const string GUI_TEXT_MENU_GENERATE_FINALLY = GUI_TEXT_MENU_GENERATE + "/Finally Script";
-		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Cache";
+		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
 		public const string GUI_TEXT_MENU_DELETE_MODIFIER_SETTINGS = "Window/AssetBundleGraph/Clear Saved ModifierSettings";

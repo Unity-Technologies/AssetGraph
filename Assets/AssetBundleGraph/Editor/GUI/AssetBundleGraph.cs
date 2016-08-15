@@ -25,19 +25,22 @@ namespace AssetBundleGraph {
 		/*
 			exception pool for display node error.
 		*/
-		private static List<OnNodeException> onNodeExceptionPool = new List<OnNodeException>();
-		public static void AddOnNodeException (OnNodeException nodeEx) {
-			onNodeExceptionPool.Add(nodeEx);
+		private static List<NodeException> NodeExceptionPool = new List<NodeException>();
+
+		private bool initialized;
+
+		public static void AddNodeException (NodeException nodeEx) {
+			NodeExceptionPool.Add(nodeEx);
 		}
 		
-		private static void ResetOnNodeExceptionPool () {
-			onNodeExceptionPool.Clear();
+		private static void ResetNodeExceptionPool () {
+			NodeExceptionPool.Clear();
 		}
 
 		private static void ShowErrorOnNodes (List<Node> nodes) {
 			foreach (var node in nodes) {
 				node.RenewErrorSource();
-				var errorsForeachNode = onNodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
+				var errorsForeachNode = NodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}
@@ -50,7 +53,6 @@ namespace AssetBundleGraph {
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
 			var window = GetWindow<AssetBundleGraph>();
-			window.titleContent = new GUIContent("AssetBundle");
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
@@ -176,8 +178,16 @@ namespace AssetBundleGraph {
 			Connection.Emit = EmitConnectionEvent;
 		}
 
-		public void OnEnable () {
-			this.titleContent = new GUIContent("AssetBundleGraph");
+		private void Init() {
+
+			if(initialized) {
+				return;
+			}
+			initialized = true;
+
+			this.titleContent = new GUIContent("AssetBundle");
+
+			Node.EnsureInitialized();
 
 			Undo.undoRedoPerformed += () => {
 				SaveGraphWithReload();
@@ -187,11 +197,12 @@ namespace AssetBundleGraph {
 			Node.Emit = EmitNodeEvent;
 			Connection.Emit = EmitConnectionEvent;
 
-			LoadTextures();
-
 			InitializeGraph();
 			Setup();
 
+			// load other textures
+			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
+			selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
 
 			if (nodes.Any()) UpdateSpacerRect();
 		}
@@ -284,121 +295,11 @@ namespace AssetBundleGraph {
 		}
 		private ScalePoint scalePoint;
 
-		private void LoadTextures () {
-			// load shared node textures
-			Node.inputPointTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_INPUT_BG);
-			Node.outputPointTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_OUTPUT_BG);
-
-			Node.enablePointMarkTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE);
-
-			Node.inputPointMarkTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT);
-			Node.outputPointMarkTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT);
-			Node.outputPointMarkConnectedTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
-
-			SetupPlatformIconsAndStrings(out Node.platformButtonTextures, out Node.platformStrings);
-
-			// load shared connection textures
-			Connection.connectionArrowTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_ARROW);
-
-			// load other textures
-			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
-			selectionTex = TextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
-		}
-		
-		private static Texture2D TextureFromFile(string path) {
-			var extensionPath = GetExtensionPath();
+		public static Texture2D LoadTextureFromFile(string path) {
             Texture2D texture = new Texture2D(1, 1);
-            texture.LoadImage(File.ReadAllBytes(Path.Combine(extensionPath, path)));
+            texture.LoadImage(File.ReadAllBytes(path));
             return texture;
         }
-		
-		private static string GetExtensionPath () {
-			return string.Empty;
-			// return Path.GetDirectoryName(Path.GetDirectoryName(typeof(AssetBundleGraph).Assembly.Location));
-		}
-
-		private static void SetupPlatformIconsAndStrings (out Texture2D[] platformTextures, out string[] platformNames) {
-			var assetBundleGraphPlatformSettings = AssetBundleGraphPlatformSettings.platforms;
-			
-			var platformStringList = new List<string>();
-			var platformTexList = new List<Texture2D>();
-			
-			platformStringList.Add("Default");
-			platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));//dummy.
-
-			if (assetBundleGraphPlatformSettings.Contains("Web")) {
-				platformStringList.Add("Web");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("Standalone")) {
-				platformStringList.Add("Standalone");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("iPhone") || assetBundleGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
-				platformStringList.Add("iOS");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("Android")) {
-				platformStringList.Add("Android");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.Android"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("BlackBerry")) {
-				platformStringList.Add("BlackBerry");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("Tizen")) {
-				platformStringList.Add("Tizen");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.Tizen"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("XBox360")) {
-				platformStringList.Add("XBox360");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.XBox360"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("XboxOne")) {
-				platformStringList.Add("XboxOne");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("PS3")) {
-				platformStringList.Add("PS3");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.PS3"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("PSP2")) {
-				platformStringList.Add("PSP2");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.PSP2"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("PS4")) {
-				platformStringList.Add("PS4");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.PS4"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("StandaloneGLESEmu")) {
-				platformStringList.Add("StandaloneGLESEmu");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("Metro")) {
-				platformStringList.Add("Metro");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.Metro"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("WP8")) {
-				platformStringList.Add("WP8");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.WP8"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("WebGL")) {
-				platformStringList.Add("WebGL");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.WebGL"));
-			}
-			if (assetBundleGraphPlatformSettings.Contains("SamsungTV")) {
-				platformStringList.Add("SamsungTV");
-				platformTexList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
-			}
-
-			platformTextures = platformTexList.ToArray();
-			platformNames = platformStringList.ToArray();
-		}
-
-		private static Texture2D GetPlatformIcon(string locTitle) {
-			return EditorGUIUtility.IconContent(locTitle + ".Small").image as Texture2D;
-		}
-
 
 		private ActiveObject RenewActiveObject (List<string> ids) {
 			var idPosDict = new Dictionary<string, Vector2>();
@@ -607,7 +508,7 @@ namespace AssetBundleGraph {
 
 		
 		private void Setup () {
-			ResetOnNodeExceptionPool();
+			ResetNodeExceptionPool();
 
 			EditorUtility.ClearProgressBar();
 
@@ -644,7 +545,7 @@ namespace AssetBundleGraph {
 		}
 
 		private static void Run () {
-			ResetOnNodeExceptionPool();
+			ResetNodeExceptionPool();
 
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
@@ -841,6 +742,9 @@ namespace AssetBundleGraph {
 		}
 
 		public void OnGUI () {
+
+			Init();
+
 			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
 				if (GUILayout.Button(reloadButtonTexture, GUILayout.Height(18))) {
 					Setup();

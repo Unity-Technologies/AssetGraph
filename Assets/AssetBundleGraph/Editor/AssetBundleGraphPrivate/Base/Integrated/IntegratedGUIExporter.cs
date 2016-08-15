@@ -13,30 +13,36 @@ namespace AssetBundleGraph {
 			this.exportFilePath = exportFilePath;
 		}
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			ValidateExportPath(
-				exportFilePath,
-				exportFilePath,
-				() => {
-					throw new Exception("no Export Path set.");
-				},
-				() => {
-					throw new Exception("no Export Path found, exportFilePath:" + exportFilePath);
-				}
-			);
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+
+			try {
+				ValidateExportPath(
+					exportFilePath,
+					exportFilePath,
+					() => {
+						throw new NodeException(nodeName + ":Export Path is empty.", nodeId);
+					},
+					() => {
+						throw new NodeException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath, nodeId);
+					}
+				);
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
+			}
 
 			Export(nodeId, labelToNext, groupedSources, Output, false);
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateExportPath(
 				exportFilePath,
 				exportFilePath,
 				() => {
-					throw new Exception("no Export Path set.");
+					throw new AssetBundleGraphBuildException(nodeName + ":Export Path is empty.");
 				},
 				() => {
-					throw new Exception("no Export Path found, exportFilePath:" + exportFilePath);
+					throw new AssetBundleGraphBuildException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath);
 				}
 			);
 
@@ -94,7 +100,7 @@ namespace AssetBundleGraph {
 			}
 
 			if (failedExports.Any()) {
-				Debug.LogError("exporter: " + string.Join(", ", failedExports.ToArray()) + " is not imported yet, should import before export.");
+				Debug.LogError("[Exporter] Given files failed to export: " + string.Join(", ", failedExports.ToArray()) + " must be imported before export.");
 			}
 
 			Output(nodeId, labelToNext, outputDict, new List<string>());

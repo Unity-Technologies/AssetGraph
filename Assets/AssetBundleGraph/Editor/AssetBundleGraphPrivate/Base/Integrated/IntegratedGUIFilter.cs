@@ -13,15 +13,20 @@ namespace AssetBundleGraph {
 			this.containsKeytypes = containsKeytypes;
 		}
 
-		public void Setup (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// overlapping test.
-			{
+			try {
 				var overlappingCheckList = new List<string>();
 				for (var i = 0; i < containsKeywords.Count; i++) {
 					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
-					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new Exception("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i]);
+					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
+						throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
+					}
 					overlappingCheckList.Add(keywordAndKeytypeCombind);
 				}
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
 			}
 
 			foreach (var groupKey in groupedSources.Keys) {
@@ -52,7 +57,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string noUseLabel, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// overlapping test.
 			{
 				var overlappingCheckList = new List<string>();

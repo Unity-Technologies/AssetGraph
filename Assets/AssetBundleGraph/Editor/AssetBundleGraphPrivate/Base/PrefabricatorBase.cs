@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			var invalids = new List<string>();
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -90,7 +90,7 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var invalids = new List<string>();
@@ -152,7 +152,7 @@ namespace AssetBundleGraph {
 						AssetDatabase.SaveAssets();
 						generated.Add(newPrefabOutputPath);
 						cachedOrGenerated.Add(newPrefabOutputPath);
-						Debug.Log("AssetBundleGraph prefab:" + newPrefabOutputPath + " is newly generated.");
+						Debug.Log("AssetBundleGraph prefab:" + newPrefabOutputPath + " created.");
 					} else {
 						// cached.
 						usedCache.Add(newPrefabOutputPath);

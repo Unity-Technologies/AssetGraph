@@ -49,7 +49,7 @@ public class SamplePrefabricator2 : AssetBundleGraph.PrefabricatorBase {
 		meshRenderer.material = characterMaterial;
 
 		// generate prefab in prefabBaseName folder. "node/SOMEWHERE/groupKey/prefab.prefab". AssetBundleGraph determines this path automatically.
-		var generatedPrefabPath = Prefabricate(cubeObj, "prefab2.prefab", false);
+//		var generatedPrefabPath = Prefabricate(cubeObj, "prefab2.prefab", false);
 		// Debug.LogWarning("prefab:" + generatedPrefabPath + " is generated or already cached.");
 
 		// delete unnecessary cube model from hierarchy.

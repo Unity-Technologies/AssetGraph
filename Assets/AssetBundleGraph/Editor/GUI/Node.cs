@@ -8,21 +8,260 @@ using System.Collections.Generic;
 
 
 namespace AssetBundleGraph {
-	[Serializable] public class Node {
-		public static Action<OnNodeEvent> Emit;
+	[Serializable] 
+	public class Node {
 
-		public static Texture2D inputPointTex;
-		public static Texture2D outputPointTex;
+		private class NodeSingleton {
+			public Action<OnNodeEvent> emitAction;
 
-		public static Texture2D enablePointMarkTex;
+			public Texture2D inputPointTex;
+			public Texture2D outputPointTex;
 
-		public static Texture2D inputPointMarkTex;
-		public static Texture2D outputPointMarkTex;
-		public static Texture2D outputPointMarkConnectedTex;
-		public static Texture2D[] platformButtonTextures;
-		public static string[] platformStrings;
+			public Texture2D enablePointMarkTex;
 
-		public static List<string> allNodeNames;
+			public Texture2D inputPointMarkTex;
+			public Texture2D outputPointMarkTex;
+			public Texture2D outputPointMarkConnectedTex;
+			public Texture2D[] platformButtonTextures;
+			public string[] platformStrings;
+
+			public List<string> allNodeNames;
+
+			private static NodeSingleton s_singleton;
+
+			public static NodeSingleton s {
+				get {
+					if( s_singleton == null ) {
+						s_singleton = new NodeSingleton();
+					}
+
+					return s_singleton;
+				}
+			}
+
+			public void SetupPlatformIcons () {
+				var assetBundleGraphPlatformSettings = AssetBundleGraphPlatformSettings.platforms;
+
+				var platformTexList = new List<Texture2D>();
+
+				platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));//dummy.
+
+				if (assetBundleGraphPlatformSettings.Contains("Web")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Standalone")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("iPhone") || assetBundleGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
+					platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Android")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.Android"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("BlackBerry")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Tizen")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.Tizen"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("XBox360")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.XBox360"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("XboxOne")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("PS3")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.PS3"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("PSP2")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.PSP2"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("PS4")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.PS4"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("StandaloneGLESEmu")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Metro")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.Metro"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("WP8")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.WP8"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("WebGL")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.WebGL"));
+				}
+				if (assetBundleGraphPlatformSettings.Contains("SamsungTV")) {
+					platformTexList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
+				}
+
+				platformButtonTextures = platformTexList.ToArray();
+			}
+
+
+			public void SetupPlatformStrings () {
+				var assetBundleGraphPlatformSettings = AssetBundleGraphPlatformSettings.platforms;
+
+				var platformStringList = new List<string>();
+
+				platformStringList.Add("Default");
+
+				if (assetBundleGraphPlatformSettings.Contains("Web")) {
+					platformStringList.Add("Web");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Standalone")) {
+					platformStringList.Add("Standalone");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("iPhone") || assetBundleGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
+					platformStringList.Add("iOS");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Android")) {
+					platformStringList.Add("Android");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("BlackBerry")) {
+					platformStringList.Add("BlackBerry");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Tizen")) {
+					platformStringList.Add("Tizen");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("XBox360")) {
+					platformStringList.Add("XBox360");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("XboxOne")) {
+					platformStringList.Add("XboxOne");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("PS3")) {
+					platformStringList.Add("PS3");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("PSP2")) {
+					platformStringList.Add("PSP2");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("PS4")) {
+					platformStringList.Add("PS4");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("StandaloneGLESEmu")) {
+					platformStringList.Add("StandaloneGLESEmu");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("Metro")) {
+					platformStringList.Add("Metro");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("WP8")) {
+					platformStringList.Add("WP8");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("WebGL")) {
+					platformStringList.Add("WebGL");
+				}
+				if (assetBundleGraphPlatformSettings.Contains("SamsungTV")) {
+					platformStringList.Add("SamsungTV");
+				}
+
+				platformStrings = platformStringList.ToArray();
+			}
+
+			private Texture2D GetPlatformIcon(string locTitle) {
+				return EditorGUIUtility.IconContent(locTitle + ".Small").image as Texture2D;
+			}
+		}
+
+		public static bool EnsureInitialized() {
+			return NodeSingleton.s != null;
+		}
+
+
+		public static Action<OnNodeEvent> Emit {
+			get {
+				return NodeSingleton.s.emitAction;
+			}
+			set {
+				NodeSingleton.s.emitAction = value;
+			}
+		}
+
+		public static Texture2D inputPointTex {
+			get {
+				if(NodeSingleton.s.inputPointTex == null) {
+					NodeSingleton.s.inputPointTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_INPUT_BG);
+				}
+//				Debug.Log("NodeSingleton.s.inputPointTex : " + NodeSingleton.s.inputPointTex);
+				return NodeSingleton.s.inputPointTex;
+			}
+		}
+
+		public static Texture2D outputPointTex {
+			get {
+				if(NodeSingleton.s.outputPointTex == null) {
+					NodeSingleton.s.outputPointTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_OUTPUT_BG);
+				}
+//				Debug.Log("NodeSingleton.s.outputPointTex : " + NodeSingleton.s.outputPointTex);
+				return NodeSingleton.s.outputPointTex;
+			}
+		}
+
+		public static Texture2D enablePointMarkTex {
+			get {
+				if(NodeSingleton.s.enablePointMarkTex == null) {
+					NodeSingleton.s.enablePointMarkTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE);
+				}
+//				Debug.Log("NodeSingleton.s.enablePointMarkTex : " + NodeSingleton.s.enablePointMarkTex);
+				return NodeSingleton.s.enablePointMarkTex;
+			}
+		}
+
+		public static Texture2D inputPointMarkTex {
+			get {
+				if(NodeSingleton.s.inputPointMarkTex == null) {
+					NodeSingleton.s.inputPointMarkTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT);
+				}
+
+//				Debug.Log("NodeSingleton.s.inputPointMarkTex : " + NodeSingleton.s.inputPointMarkTex);
+				return NodeSingleton.s.inputPointMarkTex;
+			}
+		}
+
+		public static Texture2D outputPointMarkTex {
+			get {
+				if(NodeSingleton.s.outputPointMarkTex == null) {
+					NodeSingleton.s.outputPointMarkTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT);
+				}
+				return NodeSingleton.s.outputPointMarkTex;
+			}
+		}
+
+		public static Texture2D outputPointMarkConnectedTex {
+			get {
+				if(NodeSingleton.s.outputPointMarkConnectedTex == null) {
+					NodeSingleton.s.outputPointMarkConnectedTex = AssetBundleGraph.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
+				}
+				return NodeSingleton.s.outputPointMarkConnectedTex;
+			}
+		}
+
+		public static Texture2D[] platformButtonTextures {
+			get {
+				if(NodeSingleton.s.platformButtonTextures == null) {
+					NodeSingleton.s.SetupPlatformIcons();
+				}
+				return NodeSingleton.s.platformButtonTextures;
+			}
+		}
+
+		public static string[] platformStrings {
+			get {
+				if(NodeSingleton.s.platformStrings == null) {
+					NodeSingleton.s.SetupPlatformStrings();
+				}
+				return NodeSingleton.s.platformStrings;
+			}
+		}
+
+		public static List<string> allNodeNames {
+			get {
+				return NodeSingleton.s.allNodeNames;
+			}
+			set {
+				NodeSingleton.s.allNodeNames = value;
+			}
+		}
 
 		public static float scaleFactor = 1.0f;// 1.0f. 0.7f, 0.4f, 0.3f
 		public const float SCALE_MIN = 0.3f;
@@ -70,6 +309,7 @@ namespace AssetBundleGraph {
 
         public void RenewErrorSource () {
             hasErrors = false;
+			this.nodeInsp.UpdateErrors(null);
         }
 		public void AppendErrorSources (List<string> errors) {
 			this.hasErrors = true;
@@ -212,6 +452,8 @@ namespace AssetBundleGraph {
 		[CustomEditor(typeof(NodeInspector))]
 		public class NodeObj : Editor {
 
+			private List<Action> messageActions;
+
 			private bool packageEditMode = false;
 
 			public override bool RequiresConstantRepaint() {
@@ -223,8 +465,13 @@ namespace AssetBundleGraph {
 				var node = currentTarget.node;
 				if (node == null) return;
 
+				if(messageActions == null) {
+					messageActions = new List<Action>();
+				}
+
 				var basePlatform = node.currentPlatform;
 				
+				messageActions.Clear();
 
 				switch (node.kind) {
 					case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
@@ -244,7 +491,7 @@ namespace AssetBundleGraph {
 							// update platform & package.
 							node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 								EditorGUILayout.LabelField("Load Path:");
 								var newLoadPath = EditorGUILayout.TextField(
 									GraphStackController.ProjectName(), 
@@ -301,32 +548,20 @@ namespace AssetBundleGraph {
 						EditorGUILayout.HelpBox("Filter: filtering files by keywords and types.", MessageType.Info);
 						UpdateNodeName(node);
 						
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
-							GUILayout.Label("Contains keyword and type");
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+							GUILayout.Label("Filter Settings:");
 							for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
 								
+								Action messageAction = null;
+
 								using (new GUILayout.HorizontalScope()) {
 									if (GUILayout.Button("-", GUILayout.Width(30))) {
 										node.BeforeSave();
 										node.filterContainsKeywords.RemoveAt(i);
 										node.FilterOutputPointsDeleted(i);
-									} else {
-										var newContainsKeyword = string.Empty;
-										using (new EditorGUILayout.HorizontalScope()) {
-											
-											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], GUILayout.Width(120));
-											var currentIndex = i;
-											if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
-												ShowFilterKeyTypeMenu(
-													node.filterContainsKeytypes[currentIndex],
-													(string selectedTypeStr) => {
-														node.BeforeSave();
-														node.filterContainsKeytypes[currentIndex] = selectedTypeStr;
-														node.Save();
-													} 
-												);
-											}
-										}
+									}
+									else {
+										var newContainsKeyword = node.filterContainsKeywords[i];
 
 										/*
 											generate keyword + keytype string for compare exists setting vs new modifying setting at once.
@@ -343,22 +578,48 @@ namespace AssetBundleGraph {
 										// remove current choosing one from compare target.
 										currentKeywordsSource.RemoveAt(i);
 										var currentKeywords = new List<string>(currentKeywordsSource);
+
+										GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+
 										IntegratedGUIFilter.ValidateFilter(
 											newContainsKeyword + currentKeytype,
 											currentKeywords,
 											() => {
-												EditorGUILayout.HelpBox("please use \"*\" or other keyword.", MessageType.Error);
+												s.fontStyle = FontStyle.Bold;
+												s.fontSize = 12;
 											},
 											() => {
-												EditorGUILayout.HelpBox("already exist.", MessageType.Error);
+												s.fontStyle = FontStyle.Bold;
+												s.fontSize = 12;
 											}
 										);
+
+										using (new EditorGUILayout.HorizontalScope()) {
+											newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], s, GUILayout.Width(120));
+											var currentIndex = i;
+											if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
+												ShowFilterKeyTypeMenu(
+													node.filterContainsKeytypes[currentIndex],
+													(string selectedTypeStr) => {
+														node.BeforeSave();
+														node.filterContainsKeytypes[currentIndex] = selectedTypeStr;
+														node.Save();
+													} 
+												);
+											}
+										}
 
 										if (newContainsKeyword != node.filterContainsKeywords[i]) {
 											node.BeforeSave();
 											node.filterContainsKeywords[i] = newContainsKeyword;
 											node.FilterOutputPointsLabelChanged(i, node.filterContainsKeywords[i]);
 										}
+									}
+								}
+
+								if(messageAction != null) {
+									using (new GUILayout.HorizontalScope()) {
+										messageAction.Invoke();
 									}
 								}
 							}
@@ -392,17 +653,17 @@ namespace AssetBundleGraph {
 						*/
 
 						{
-							using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+							using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 								var nodeId = node.nodeId;
 								
 								var samplingPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
 								
 								IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
 									(string noFolderFound) => {
-										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
+										EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
 									},
 									(string noFilesFound) => {
-										EditorGUILayout.LabelField("Sampling Asset", "no sampling asset found. please Reload first.");
+										EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
 									},
 									(string samplingAssetPath) => {
 										EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
@@ -492,7 +753,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var newGroupingKeyword = EditorGUILayout.TextField(
 								"Grouping Keyword",
 								GraphStackController.ValueFromPlatformAndPackage(
@@ -537,7 +798,7 @@ namespace AssetBundleGraph {
 						EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
 						UpdateNodeName(node);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
 
 							/*
@@ -572,7 +833,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 						
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var bundleNameTemplate = EditorGUILayout.TextField(
 								"Bundle Name Template", 
 								GraphStackController.ValueFromPlatformAndPackage(
@@ -641,7 +902,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							var bundleOptions = GraphStackController.ValueFromPlatformAndPackage(
 								node.enabledBundleOptions.ReadonlyDict(),
 								node.currentPlatform
@@ -737,7 +998,7 @@ namespace AssetBundleGraph {
 
 						node.currentPlatform = UpdateCurrentPlatform(basePlatform);
 
-						using (new EditorGUILayout.VerticalScope(GUI.skin.box, new GUILayoutOption[0])) {
+						using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 							EditorGUILayout.LabelField("Export Path:");
 							var newExportPath = EditorGUILayout.TextField(
 								GraphStackController.ProjectName(), 
@@ -784,19 +1045,26 @@ namespace AssetBundleGraph {
 				var errors = currentTarget.errors;
 				if (errors != null && errors.Any()) {
 					foreach (var error in errors) {
-						EditorGUILayout.LabelField("error:" + error);
+						EditorGUILayout.HelpBox(error, MessageType.Error);
+					}
+				}
+				using (new EditorGUILayout.VerticalScope()) {
+					foreach(Action a in messageActions) {
+						a.Invoke();
 					}
 				}
 			}
 
 			private void UpdateNodeName (Node node) {
 				var newName = EditorGUILayout.TextField("Node Name", node.name);
-				
-				var overlapping = Node.allNodeNames.GroupBy(x => x)
-					.Where(group => group.Count() > 1)
-					.Select(group => group.Key);
-				if (overlapping.Any() && overlapping.Contains(newName)) {
-					EditorGUILayout.HelpBox("node name is overlapping:" + newName, MessageType.Error);
+
+				if( Node.allNodeNames != null ) {
+					var overlapping = Node.allNodeNames.GroupBy(x => x)
+						.Where(group => group.Count() > 1)
+						.Select(group => group.Key);
+					if (overlapping.Any() && overlapping.Contains(newName)) {
+						EditorGUILayout.HelpBox("node name is overlapping:" + newName, MessageType.Error);
+					}
 				}
 
 				if (newName != node.name) {

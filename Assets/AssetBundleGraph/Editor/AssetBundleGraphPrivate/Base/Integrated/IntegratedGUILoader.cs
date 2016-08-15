@@ -13,17 +13,23 @@ namespace AssetBundleGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			ValidateLoadPath(
-				loadFilePath,
-				loadFilePath,
-				() => {
-					throw new Exception("load path is empty.");
-				}, 
-				() => {
-					throw new Exception("directory not found:" + loadFilePath);
-				}
-			);
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+
+			try {
+				ValidateLoadPath(
+					loadFilePath,
+					loadFilePath,
+					() => {
+						throw new NodeException(nodeName + ": Load Path is empty.", nodeId);
+					}, 
+					() => {
+						throw new NodeException(nodeName + ": Directory not found: " + loadFilePath, nodeId);
+					}
+				);
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
+			}
 			
 			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
@@ -52,10 +58,14 @@ namespace AssetBundleGraph {
 						);
 						continue;
 					}
-					
-					throw new Exception("loader:" + targetFilePath + " is not imported yet, should import before bundlize.");
+
+					throw new NodeException(nodeName + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath, nodeId);
 				}
-			} catch (Exception e) {
+			} catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
+			}
+			catch (Exception e) {
 				Debug.LogError("Loader error:" + e);
 			}
 
@@ -66,15 +76,15 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDir, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateLoadPath(
 				loadFilePath,
 				loadFilePath,
 				() => {
-					throw new Exception("load path is empty.");
+					throw new AssetBundleGraphBuildException(nodeName + ": Load Path is empty.");
 				}, 
 				() => {
-					throw new Exception("directory not found:" + loadFilePath);
+					throw new AssetBundleGraphBuildException(nodeName + ": Directory not found: " + loadFilePath);
 				}
 			);
 			
@@ -103,14 +113,7 @@ namespace AssetBundleGraph {
 						continue;
 					}
 					
-					throw new Exception("loader:" + targetFilePath + " is not imported yet, should import before bundlize.");
-					
-					// outputSource.Add(
-					// 	InternalAssetData.InternalAssetDataByLoader(
-					// 		targetFilePath, 
-					// 		loadFilePath
-					// 	)
-					// );
+					throw new AssetBundleGraphSetupException(nodeName + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath);
 				}
 				
 				var outputDir = new Dictionary<string, List<InternalAssetData>> {

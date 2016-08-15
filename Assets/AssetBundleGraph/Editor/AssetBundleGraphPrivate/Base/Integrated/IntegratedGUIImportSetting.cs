@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 	*/
 	public class IntegratedGUIImportSetting : INodeBase {
 		
-		public void Setup (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
 			
@@ -37,18 +37,20 @@ namespace AssetBundleGraph {
 
 			var samplingDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
 			ValidateImportSample(samplingDirectoryPath,
-				(string noSampleFolder) => {
+				(string samplePath) => {
 					// do nothing. keep importing new asset for sampling.
 				},
-				(string noSampleFile) => {
+				(string samplePath) => {
 					// do nothing. keep importing new asset for sampling.
 				},
 				(string samplePath) => {
 					importSettingSampleType = AssetImporter.GetAtPath(samplePath).GetType().ToString();
 					first = false;
 				},
-				(string tooManysample) => {
-					throw new OnNodeException("too many sampling file found. please Reset ImportSettingSamples folder.", nodeId);
+				(string samplePath) => {
+					throw new NodeException(
+						String.Format("Too many sample file found for this import setting node. Delete files in {0} or use \"Clear Saved ImportSettings\" menu.", samplePath), 
+						nodeId);
 				}
 			);
 
@@ -83,7 +85,7 @@ namespace AssetBundleGraph {
 					}
 					
 					default: {
-						throw new OnNodeException("unhandled importer type:" + importerTypeStr, nodeId);
+						throw new NodeException("unhandled importer type:" + importerTypeStr, nodeId);
 					}
 				}
 				
@@ -114,7 +116,7 @@ namespace AssetBundleGraph {
 					importSettingSampleType = AssetImporter.GetAtPath(targetFilePath).GetType().ToString();
 				} else {
 					if (importerTypeStr != importSettingSampleType) {
-						throw new OnNodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + importSettingSampleType + " inputted error file path:" + inputSource.importedPath, nodeId);
+						throw new NodeException("Multiple asset type is given to Importer Settings. ImporterSetting Takes only 1 asset type." + nodeName +  " is configured for " + importSettingSampleType + ", but " + importerTypeStr + " found.", nodeId);
 					}
 				}
 			
@@ -128,7 +130,7 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -139,18 +141,18 @@ namespace AssetBundleGraph {
 			
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
-				(string noSampleFolder) => {
-					Debug.LogWarning("importSetting:" + noSampleFolder);
-				},
-				(string noSampleFile) => {
-					throw new Exception("importSetting error:" + noSampleFile);
+				(string samplePath) => {
+					Debug.LogWarning("No Sample Directory found:" + samplePath);
 				},
 				(string samplePath) => {
-					Debug.Log("using import setting:" + samplePath);
+					throw new AssetBundleGraphBuildException("No sample file found:" + samplePath);
+				},
+				(string samplePath) => {
+					Debug.Log("Using import setting:" + samplePath);
 					sampleAssetPath = samplePath;
 				},
-				(string tooManysample) => {
-					throw new Exception("importSetting error:" + tooManysample);
+				(string samplePath) => {
+					throw new AssetBundleGraphBuildException("importSetting error:" + samplePath);
 				}
 			);
 			
@@ -187,7 +189,7 @@ namespace AssetBundleGraph {
 				
 				
 				if (importerTypeStr != samplingAssetImporterTypeStr) {
-					throw new OnNodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + samplingAssetImporterTypeStr + " inputted error file path:" + inputSource.importedPath, nodeId);
+					throw new NodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + samplingAssetImporterTypeStr + " inputted error file path:" + inputSource.importedPath, nodeId);
 				}
 				
 				importSetOveredAssetsAndUpdatedFlagDict[inputSource] = false;
@@ -229,7 +231,7 @@ namespace AssetBundleGraph {
 					}
 					
 					default: {
-						throw new OnNodeException("unhandled importer type:" + importerTypeStr, nodeId);
+						throw new NodeException("unhandled importer type:" + importerTypeStr, nodeId);
 					}
 				}
 			}
@@ -285,7 +287,7 @@ namespace AssetBundleGraph {
 
 				switch (filesInSampling.Count) {
 					case 0: {
-						NoSampleFound("no importSetting file found in ImporterSetting directory:" + samplePath + ", please reload first.");
+						NoSampleFound(samplePath);
 						return;
 					}
 					case 1: {
@@ -293,13 +295,13 @@ namespace AssetBundleGraph {
 						return;
 					}
 					default: {
-						TooManySampleFound("too many samples in ImporterSetting directory:" + samplePath);
+						TooManySampleFound(samplePath);
 						return;
 					}
 				}
 			}
 
-			NoSampleFolderFound("no samples found in ImporterSetting directory:" + samplePath + ", applying default importer settings. If you want to set Importer seting, please Reload and set import setting from the inspector of Importer node.");
+			NoSampleFolderFound(samplePath);
 		}
 
 	}
