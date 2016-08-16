@@ -30,7 +30,7 @@ namespace AssetBundleGraph {
 				try {
 					In(absoluteSourcePaths, _PreOutput);
 				} catch (Exception e) {
-					Debug.LogError("Filter:" + this + " error:" + e);
+					Debug.LogError(nodeName + " Error:" + e);
 				}
 			}
 		}
@@ -59,7 +59,7 @@ namespace AssetBundleGraph {
 				try {
 					In(absoluteSourcePaths, _Output);
 				} catch (Exception e) {
-					Debug.LogError("Filter:" + this + " error:" + e);
+					Debug.LogError(nodeName + " Error:" + e);
 				}
 			}
 		}
@@ -69,7 +69,7 @@ namespace AssetBundleGraph {
 			フィルタに対して自動的に呼ばれる関数。
 		*/
 		public virtual void In (List<string> source, Action<string, List<string>> Out) {
-			Debug.LogError("should implement \"public override void In (List<string> source, Action<string, List<string>> Out)\" in class:" + this);
+			Debug.LogError("The filter class did not have \"In()\" method implemented. Please implement the method to filter:" + this);
 		}
 	}
 }

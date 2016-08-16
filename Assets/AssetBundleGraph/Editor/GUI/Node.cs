@@ -324,7 +324,7 @@ namespace AssetBundleGraph {
 		private float progress;
 		private bool running;
 
-		public static Node LoaderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
+		public static Node CreateLoaderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -336,7 +336,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node ExporterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportPath, float x, float y) {
+		public static Node CreateExporterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -348,7 +348,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node ScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
+		public static Node CreateScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -361,7 +361,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForFilter (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
+		public static Node CreateGUIFilterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -374,7 +374,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForImport (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
+		public static Node CreateGUIImportNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -386,19 +386,7 @@ namespace AssetBundleGraph {
 			);
 		}
 		
-		public static Node GUINodeForModify (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> modifierPackages, float x, float y) {
-			return new Node(
-				index: index,
-				name: name,
-				nodeId: nodeId,
-				kind: kind,
-				x: x,
-				y: y,
-				modifierPackages: modifierPackages
-			);
-		}
-
-		public static Node GUINodeForGrouping (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
+		public static Node CreateGUIGroupingNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -410,7 +398,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForPrefabricator (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static Node CreatePrefabricatorNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -421,7 +409,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
+		public static Node CreateBundlizerNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -434,7 +422,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
+		public static Node CreateBundleBuilderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -446,13 +434,13 @@ namespace AssetBundleGraph {
 			);
 		}
 			
-		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
+		public void AddFilterOutputPoint (int addedIndex, string keyword) {
 			connectionPoints.Insert(addedIndex, new OutputPoint(keyword));
 			Save();
 			UpdateNodeRect();
 		}
 
-		public void FilterOutputPointsDeleted (int deletedIndex) {
+		public void DeleteFilterOutputPoint (int deletedIndex) {
 			var deletedConnectionPoint = connectionPoints[deletedIndex];
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
 			connectionPoints.RemoveAt(deletedIndex);
@@ -460,7 +448,7 @@ namespace AssetBundleGraph {
 			UpdateNodeRect();
 		}
 
-		public void FilterOutputPointsLabelChanged (int changedIndex, string latestLabel) {
+		public void RenameFilterOutputPointLabel (int changedIndex, string latestLabel) {
 			connectionPoints[changedIndex].label = latestLabel;
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex]));
 			Save();
@@ -469,16 +457,16 @@ namespace AssetBundleGraph {
 		
 		
 		
-		public void BundlizerUseOutputResources () {
-			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+		public void AddBundlizerDependencyOutput () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex != -1) return;
 			
-			connectionPoints.Add(new OutputPoint(AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL));
+			connectionPoints.Add(new OutputPoint(AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL));
 			UpdateNodeRect();
 		}
 		
-		public void BundlizerUnuseOutputResources () {
-			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+		public void RemoveBundlizerDependencyOutput () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex == -1) return;
 			
 			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
@@ -589,7 +577,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -652,7 +640,7 @@ namespace AssetBundleGraph {
 				}
 				
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -703,7 +691,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -751,7 +739,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -784,10 +772,10 @@ namespace AssetBundleGraph {
 						.ToList();
 		}
 
-		public ConnectionPoint ConnectionPointFromLabel (string label) {
+		public ConnectionPoint GetConnectionPointFromLabel (string label) {
 			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
 			if (!targetPoints.Any()) {
-				Debug.LogError("no connection label:" + label + " exists in node name:" + name);
+				Debug.LogError(label + " not found in node " + name);
 				return null;
 			}
 			return targetPoints[0];

@@ -124,7 +124,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 					default: {
-						throw new Exception("AssetBundleGraph error:" + currentParams[0] + " is not valid platform. by default.");
+						throw new AssetBundleGraphException(currentParams[0] + " is not supported.");
 					}
 				}
 			}
@@ -155,7 +155,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				default: {
-					Debug.LogError("undefined script type:" + scriptType);
+					Debug.LogError("Unknown script type found:" + scriptType);
 					break;
 				}
 			}
@@ -362,7 +362,7 @@ namespace AssetBundleGraph {
 				try {
 					deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
 				} catch (Exception e) {
-					Debug.LogError("data load error:" + e + " at path:" + graphDataPath);
+					Debug.LogError("Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + graphDataPath);
 					return;
 				}
 
@@ -470,12 +470,12 @@ namespace AssetBundleGraph {
 				var startNodeCandidates = currentNodes.Where(node => node.nodeId == fromNodeId).ToList();
 				if (!startNodeCandidates.Any()) continue;
 				var startNode = startNodeCandidates[0];
-				var startPoint = startNode.ConnectionPointFromLabel(label);
+				var startPoint = startNode.GetConnectionPointFromLabel(label);
 
 				var endNodeCandidates = currentNodes.Where(node => node.nodeId == toNodeId).ToList();
 				if (!endNodeCandidates.Any()) continue;
 				var endNode = endNodeCandidates[0];
-				var endPoint = endNode.ConnectionPointFromLabel(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL);
+				var endPoint = endNode.GetConnectionPointFromLabel(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL);
 
 				currentConnections.Add(Connection.LoadConnection(label, connectionId, startNode.nodeId, startPoint, endNode.nodeId, endPoint));
 			}
@@ -524,7 +524,7 @@ namespace AssetBundleGraph {
 			try {
 				Setup();
 			} catch (Exception e) {
-				Debug.LogError("Reload Error:" + e);
+				Debug.LogError("Error occured during reload:" + e);
 			}
 		}
 
@@ -537,7 +537,7 @@ namespace AssetBundleGraph {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
-				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. New setting file created.");
+				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. Creating from scratch...");
 				return;
 			}
 
@@ -572,7 +572,7 @@ namespace AssetBundleGraph {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
-				Debug.LogError("no data found. new data is generated.");
+				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. Creating from scratch...");
 				return;
 			}
 
@@ -667,7 +667,9 @@ namespace AssetBundleGraph {
 					.ToList();
 			foreach (var typeStr in finallyBasedTypeRunner) {
 				var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
-				if (finallyScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(FinallyBase));
+				if (finallyScriptInstance == null) {
+					throw new AssetBundleGraphException("Running post process script failed because AssetBundleGraph failed to create script instance for " + typeStr + ". No such class found in assembly.");
+				}
 				var finallyInstance = (FinallyBase)finallyScriptInstance;
 
 				finallyInstance.Run(nodeThroughputs, isRun);
@@ -1250,11 +1252,15 @@ namespace AssetBundleGraph {
 
   									switch (pasteType) {
   										case CopyType.COPYTYPE_COPY: {
-  											if (2 <= nameOverlapping.Count) continue;
+											if (2 <= nameOverlapping.Count) {
+												continue;
+											}
   											break;
   										}
   										case CopyType.COPYTYPE_CUT: {
-  											if (1 <= nameOverlapping.Count) continue;
+											if (1 <= nameOverlapping.Count) {
+												continue;
+											}
   											break;
   										}
   									}
@@ -1263,7 +1269,9 @@ namespace AssetBundleGraph {
 								}
 							}
 
-							if (!duplicatingData.Any()) break;
+							if (!duplicatingData.Any()) {
+								break;
+							}
 
 							Undo.RecordObject(this, "Paste");
 							foreach (var newNode in duplicatingData) {
@@ -1383,7 +1391,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + node.kind);
+					Debug.LogError(node.name + " is defined as unknown kind of node. value:" + node.kind);
 					break;
 				}
 			}
@@ -1407,7 +1415,7 @@ namespace AssetBundleGraph {
 					var loadPath = new Dictionary<string, string>();
 					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
 
-					var newNode = Node.LoaderNode(currentNodesCount, name, id, kind, loadPath, x, y);
+					var newNode = Node.CreateLoaderNode(currentNodesCount, name, id, kind, loadPath, x, y);
 					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1423,7 +1431,7 @@ namespace AssetBundleGraph {
 					var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
 					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
 
-					var newNode = Node.ScriptNode(currentNodesCount, name, id, kind, scriptType, scriptPath, x, y);
+					var newNode = Node.CreateScriptNode(currentNodesCount, name, id, kind, scriptType, scriptPath, x, y);
 
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1446,7 +1454,7 @@ namespace AssetBundleGraph {
 						filterContainsKeytypes.Add(filterContainsKeytypeSource.ToString());
 					}
 
-					var newNode = Node.GUINodeForFilter(currentNodesCount, name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
+					var newNode = Node.CreateGUIFilterNode(currentNodesCount, name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
 
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1461,7 +1469,7 @@ namespace AssetBundleGraph {
 					var defaultPlatformAndPackages = new Dictionary<string, string>();
 					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
-					var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
+					var newNode = Node.CreateGUIImportNode(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
 					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1476,7 +1484,7 @@ namespace AssetBundleGraph {
 					var groupingKeyword = new Dictionary<string, string>();
 					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
 
-					var newNode = Node.GUINodeForGrouping(currentNodesCount, name, id, kind, groupingKeyword, x, y);
+					var newNode = Node.CreateGUIGroupingNode(currentNodesCount, name, id, kind, groupingKeyword, x, y);
 					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1496,7 +1504,7 @@ namespace AssetBundleGraph {
 					var bundleUseOutput = new Dictionary<string, string>();
 					foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string; 
 					
-					var newNode = Node.GUINodeForBundlizer(currentNodesCount, name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
+					var newNode = Node.CreateBundlizerNode(currentNodesCount, name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
 					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1517,7 +1525,7 @@ namespace AssetBundleGraph {
 						foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
 					}
 
-					var newNode = Node.GUINodeForBundleBuilder(currentNodesCount, name, id, kind, bundleOptions, x, y);
+					var newNode = Node.CreateBundleBuilderNode(currentNodesCount, name, id, kind, bundleOptions, x, y);
 					
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1532,25 +1540,27 @@ namespace AssetBundleGraph {
 					var exportPath = new Dictionary<string, string>();
 					foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
-					var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
+					var newNode = Node.CreateExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
 					return newNode;
 				}
 
 				default: {
-					Debug.LogError("kind not found:" + kind);
+					Debug.LogError(name + " is defined as unknown kind of node. value:" + kind);
 					break;
 				}
 			}
 
-			Debug.LogError("failed to detect." + kindSource);
-			// error. returns empty node.
-			return new Node();
+			throw new AssetBundleGraphException("Could not find way to create node: " + name + " kind:" + kindSource);
 		}
 
 		private Type IsAcceptableScriptType (Type type) {
-			if (typeof(FilterBase).IsAssignableFrom(type)) return typeof(FilterBase);
-			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) return typeof(PrefabricatorBase);
-			Debug.LogError("failed to accept:" + type);
+			if (typeof(FilterBase).IsAssignableFrom(type)) {
+				return typeof(FilterBase);
+			}
+			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) {
+				return typeof(PrefabricatorBase);
+			}
+
 			return null;
 		}
 
@@ -1558,11 +1568,11 @@ namespace AssetBundleGraph {
 			Node newNode = null;
 			if (scriptBaseType == typeof(FilterBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT;
-				newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				
 				// add output point to this node.
 				// setup this filter then add output point by result of setup.
-				var outputPointLabels = GraphStackController.GetLabelsFromSetupFilter(scriptName);
+				var outputPointLabels = GraphStackController.CreateCustomFilterInstanceForScript(scriptName);
 
 				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				foreach (var outputPointLabel in outputPointLabels) {
@@ -1572,14 +1582,15 @@ namespace AssetBundleGraph {
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			
 			
 			if (newNode == null) {
-				Debug.LogError("failed to add node. no type found, scriptName:" + scriptName + " scriptPath:" + scriptPath + " scriptBaseType:" + scriptBaseType);
+				Debug.LogError("Could not add node from code. " + scriptType + "(base:" + scriptBaseType + 
+					") is not supported to create from code.");
 				return;
 			}
 
@@ -1597,7 +1608,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
-					newNode = Node.LoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
+					newNode = Node.CreateLoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
@@ -1605,7 +1616,7 @@ namespace AssetBundleGraph {
 				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					var newFilterKeywords = new List<string>();
 					var newFilterKeytypes = new List<string>();
-					newNode = Node.GUINodeForFilter(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
+					newNode = Node.CreateGUIFilterNode(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -1615,7 +1626,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
-					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
+					newNode = Node.CreateGUIImportNode(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1626,14 +1637,14 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT}
 					};
 
-					newNode = Node.GUINodeForGrouping(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
+					newNode = Node.CreateGUIGroupingNode(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-					newNode = Node.GUINodeForPrefabricator(nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.CreatePrefabricatorNode(nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1648,7 +1659,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.BUNDLIZER_USEOUTPUT_DEFAULT}	
 					};
 
-					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
+					newNode = Node.CreateBundlizerNode(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;
@@ -1659,7 +1670,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, new List<string>()}
 					};
 
-					newNode = Node.GUINodeForBundleBuilder(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
+					newNode = Node.CreateBundleBuilderNode(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1670,12 +1681,12 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
-					newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
+					newNode = Node.CreateExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {
-					Debug.LogError("no kind match:" + kind);
+					Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + kind);
 					break;
 				}
 			}
@@ -1848,7 +1859,6 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							// Debug.Log("unconsumed or ignored event:" + e.eventType);
 							modifyMode = ModifyMode.CONNECT_ENDED;
 							break;
 						}
@@ -2012,7 +2022,6 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							// Debug.Log("unconsumed or ignored event:" + e.eventType);
 							break;
 						}
 					}
@@ -2123,7 +2132,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				default: {
-					Debug.LogError("no kind match:" + newNode.kind);
+					Debug.LogError(newNode.name + " is defined as unknown kind of node. value:" + newNode.kind);
 					break;
 				}
 			}
@@ -2205,7 +2214,6 @@ namespace AssetBundleGraph {
 							break;
 						}
 						default: {
-							// Debug.Log("unconsumed or ignored event:" + e.eventType);
 							break;
 						}
 					}

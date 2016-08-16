@@ -73,10 +73,10 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static List<string> GetLabelsFromSetupFilter (string scriptType) {
+		public static List<string> CreateCustomFilterInstanceForScript (string scriptType) {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptType);
 			if (nodeScriptInstance == null) {
-				Debug.LogError("no class found:" + scriptType);
+				Debug.LogError("Failed to create instance for " + scriptType + ". No such class found in assembly.");
 				return new List<string>();
 			}
 
@@ -137,12 +137,12 @@ namespace AssetBundleGraph {
 						// warn if no class found.
 						if (nodeScriptInstance == null) {
 							changed = true;
-							Debug.LogWarning("no class found:" + scriptType + " kind:" + kind + ", rebuildfing AssetGraph...");
+							Debug.LogError("Node could not be created properly because AssetBundleGraph failed to create script instance for " + scriptType + ". No such class found in assembly.");
 							continue;
 						}
 
 						/*
-							on validation, filter script receives all groups to only one group. group key is "0".
+							during validation, filter script receives only one group with key "0".
 						*/
 						if (kind == AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT) {
 							var outoutLabelsSource = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
@@ -190,34 +190,36 @@ namespace AssetBundleGraph {
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
 						if (string.IsNullOrEmpty(scriptType)) {
-							Debug.LogWarning("node:" + kind + ", script path is empty, please set prefer script to node:" + nodeName);
+							Debug.LogWarning(nodeName  + ": " + kind + " found but no script name assigned.");
 							break;
 						}
 
 						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
 						
 						// warn if no class found.
-						if (nodeScriptInstance == null) Debug.LogWarning("no class found:" + scriptType + ", please set prefer script to node:" + nodeName);
+						if (nodeScriptInstance == null) {
+							Debug.LogError(nodeName  + " could not be created properly because AssetBundleGraph failed to create script instance for " + scriptType + ". No such class found in assembly.");
+						}
 						break;
 					}
 
 					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 						if (bundleNameTemplateSource == null) {
-							Debug.LogError("bundleNameTemplateSourceがnull");
+							Debug.LogWarning(nodeName + " bundleNameTemplateSource is null. This could be caused because of deserialization error.");
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
 							var platform_package_bundleNameTemplate = bundleNameTemplateSource[platform_package_key] as string;
 							if (string.IsNullOrEmpty(platform_package_bundleNameTemplate)) {
-								Debug.LogWarning("node:" + kind + ", bundleNameTemplate is empty, please set prefer bundleNameTemplate to node:" + nodeName);
+								Debug.LogWarning(nodeName + " Bundle Name Template is empty. Configure this from editor.");
 								break;
 							}
 						}
 						
 						var bundleUseOutputSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
 						if (bundleUseOutputSource == null) {
-							Debug.LogError("bundleUseOutputSource is null. maybe deserialize error.");
+							Debug.LogWarning(nodeName + " bundleUseOutputSource is null. This could be caused because of deserialization error.");
 							bundleUseOutputSource = new Dictionary<string, object>();
 						}
 						break;
@@ -229,7 +231,7 @@ namespace AssetBundleGraph {
 					}
 
 					default: {
-						Debug.LogError("not match kind:" + kind);
+						Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + kind);
 						break;
 					}
 				}
@@ -615,7 +617,7 @@ namespace AssetBundleGraph {
 					}
 
 					default: {
-						Debug.LogError("failed to match:" + nodeKind);
+						Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + nodeKind);
 						break;
 					}
 				}
@@ -859,7 +861,7 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 							var scriptType = currentNodeData.scriptType;
 							if (string.IsNullOrEmpty(scriptType)) {
-								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
+								Debug.LogError(nodeName  + ": " + nodeKind + " found but no script name assigned. Configure valid script name from editor.");
 								break;
 							}
 							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
@@ -899,7 +901,7 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							Debug.LogError("kind not found:" + nodeKind);
+							Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + nodeKind);
 							break;
 						}
 					}
@@ -1000,7 +1002,7 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							Debug.LogError("kind not found:" + nodeKind);
+							Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + nodeKind);
 							break;
 						}
 					}
@@ -1025,7 +1027,7 @@ namespace AssetBundleGraph {
 							break;
 						}
 						default: {
-							throw new Exception("cannot connect from " + fromKind + " to bundleBuilder.");
+							throw new AssetBundleGraphException("BundleBuilder only accepts input from Bundlizer.");
 						}
 					}
 					break;
@@ -1044,7 +1046,7 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							throw new Exception("cannot connect from bundleBuilder to " + toKind);
+							throw new AssetBundleGraphException("BundleBuilder only accepts output to Filter, Grouping and Exporter.");
 						}
 					}
 					break;
@@ -1158,11 +1160,15 @@ namespace AssetBundleGraph {
 
 		public static string ValueFromPlatformAndPackage (Dictionary<string, string> packageDict, string platform) {
 			var key = Platform_Package_Key(platform);
-			if (packageDict.ContainsKey(key)) return packageDict[key];
+			if (packageDict.ContainsKey(key)) {
+				return packageDict[key];
+			}
 
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
+			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
+				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
+			}
 
-			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
+			throw new AssetBundleGraphException("Default setting not found.");
 		}
 
 		public static List<string> ValueFromPlatformAndPackage (Dictionary<string, List<string>> packageDict, string platform) {
@@ -1351,7 +1357,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match kind:" + nodeKind);
+					Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + nodeKind);
 					break;
 				}
 			}

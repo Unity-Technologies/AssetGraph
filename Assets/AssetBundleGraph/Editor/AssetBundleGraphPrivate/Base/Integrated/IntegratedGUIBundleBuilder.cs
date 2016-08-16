@@ -153,7 +153,7 @@ namespace AssetBundleGraph {
 
 			var diffs = newAssetPaths.Except(containedAssetBundles);
 			foreach (var diff in diffs) {
-				Debug.LogWarning("bundleBuilder:AssetBundle:" + diff + " is not intended bundle. please check if unnecessary importer or prefabricator node is exists in graph.");
+				Debug.LogWarning(nodeName +": AssetBundle " + diff + " is not intended to build. Check if unnecessary importer or prefabricator exists in the graph.");
 			}
 		
 			outputDict["0"] = outputSources;

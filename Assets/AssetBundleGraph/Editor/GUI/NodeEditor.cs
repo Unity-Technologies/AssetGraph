@@ -101,7 +101,7 @@ namespace AssetBundleGraph {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
 							node.BeforeSave();
 							node.filterContainsKeywords.RemoveAt(i);
-							node.FilterOutputPointsDeleted(i);
+							node.DeleteFilterOutputPoint(i);
 						}
 						else {
 							var newContainsKeyword = node.filterContainsKeywords[i];
@@ -155,7 +155,7 @@ namespace AssetBundleGraph {
 							if (newContainsKeyword != node.filterContainsKeywords[i]) {
 								node.BeforeSave();
 								node.filterContainsKeywords[i] = newContainsKeyword;
-								node.FilterOutputPointsLabelChanged(i, node.filterContainsKeywords[i]);
+								node.RenameFilterOutputPointLabel(i, node.filterContainsKeywords[i]);
 							}
 						}
 					}
@@ -176,7 +176,7 @@ namespace AssetBundleGraph {
 					node.filterContainsKeywords.Add(newKeyword);
 					node.filterContainsKeytypes.Add(AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE);
 
-					node.FilterOutputPointsAdded(addingIndex, AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD);
+					node.AddFilterOutputPoint(addingIndex, AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD);
 				}
 			}
 		}
@@ -371,8 +371,8 @@ namespace AssetBundleGraph {
 				if (result != useOrNot) {
 					node.BeforeSave();
 
-					if (result) node.BundlizerUseOutputResources();
-					else node.BundlizerUnuseOutputResources(); 
+					if (result) node.AddBundlizerDependencyOutput();
+					else node.RemoveBundlizerDependencyOutput(); 
 
 					node.bundleUseOutput.Add(GraphStackController.Platform_Package_Key(node.currentPlatform), result.ToString());
 					node.Save();
@@ -595,7 +595,7 @@ namespace AssetBundleGraph {
 				DoInspectorExporterGUI(node);
 				break;
 			default: 
-				Debug.LogError("Unsupported node kind found:" + node.kind);
+				Debug.LogError(node.name + " is defined as unknown kind of node. value:" + node.kind);
 				break;
 			}
 
@@ -620,7 +620,8 @@ namespace AssetBundleGraph {
 					.Where(group => group.Count() > 1)
 					.Select(group => group.Key);
 				if (overlapping.Any() && overlapping.Contains(newName)) {
-					EditorGUILayout.HelpBox("node name is overlapping:" + newName, MessageType.Error);
+					EditorGUILayout.HelpBox("This node name already exist. Please put other name:" + newName, MessageType.Error);
+					AssetBundleGraph.AddNodeException(new NodeException("Node name " + newName + " already exist.", node.nodeId ));
 				}
 			}
 

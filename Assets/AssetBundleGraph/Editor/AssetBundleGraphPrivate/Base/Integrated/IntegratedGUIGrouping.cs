@@ -14,17 +14,15 @@ namespace AssetBundleGraph {
 		}
 
 		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			GroupingOutput(nodeId, labelToNext, groupedSources, Output);
+			GroupingOutput(nodeName, nodeId, labelToNext, groupedSources, Output);
 		}
 
 		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			GroupingOutput(nodeId, labelToNext, groupedSources, Output);
+			GroupingOutput(nodeName, nodeId, labelToNext, groupedSources, Output);
 		}
 
 
-		private void GroupingOutput (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-
-			if (1 < groupedSources.Keys.Count()) Debug.LogWarning("grouping merges all input groups to new output groups forcely.");
+		private void GroupingOutput (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 
 			try {
 				ValidateGroupingKeyword(

@@ -116,7 +116,9 @@ namespace AssetBundleGraph {
 			delimiter is always '/'.
 		*/
 		public static string PathCombine (params string[] paths) {
-			if (paths.Length < 2) throw new Exception("failed to combine paths: only 1 path.");
+			if (paths.Length < 2) {
+				throw new ArgumentException("Argument must contain at least 2 strings to combine.");
+			}
 
 			var combinedPath = _PathCombine(paths[0], paths[1]);
 			var restPaths = new string[paths.Length-2];

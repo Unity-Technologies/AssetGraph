@@ -71,7 +71,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 			catch (Exception e) {
-				Debug.LogError("Loader error:" + e);
+				Debug.LogError(nodeName + " Error:" + e);
 			}
 
 			var outputDir = new Dictionary<string, List<InternalAssetData>> {
@@ -132,7 +132,7 @@ namespace AssetBundleGraph {
 
 				Output(nodeId, labelToNext, outputDir, new List<string>());
 			} catch (Exception e) {
-				Debug.LogError("Loader error:" + e);
+				Debug.LogError(nodeName + " Error:" + e);
 			}
 		}
 

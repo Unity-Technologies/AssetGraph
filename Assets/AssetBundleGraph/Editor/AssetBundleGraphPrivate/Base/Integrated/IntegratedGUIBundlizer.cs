@@ -54,7 +54,7 @@ namespace AssetBundleGraph {
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
 			}
 		}
 		
@@ -92,7 +92,7 @@ namespace AssetBundleGraph {
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
 			}
 		}
 

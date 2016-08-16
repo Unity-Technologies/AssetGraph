@@ -42,8 +42,12 @@ public class SamplePrefabricator2 : AssetBundleGraph.PrefabricatorBase {
 		// load texture from AssetDatabase.
 		var characterTexture = AssetDatabase.LoadAssetAtPath(textureAssetPath, textureAssetType) as Texture2D;
 			
-		if (characterTexture) Debug.Log("Prefabricate:loaded:" + textureAssetPath);
-		else Debug.LogError("Prefabricate:failed to load:" + textureAssetPath);
+		if (characterTexture) {
+			Debug.Log("SamplePrefabricator2 loaded " + textureAssetPath);
+		}
+		else {
+			Debug.LogError("SamplePrefabricator2 failed to load " + textureAssetPath);
+		}
 
 
 		if( sources[3].assetType != typeof(Material) ) {
@@ -57,8 +61,12 @@ public class SamplePrefabricator2 : AssetBundleGraph.PrefabricatorBase {
 		// load texture from AssetDatabase.
 		var characterMaterial = AssetDatabase.LoadAssetAtPath(materialAssetPath, materialAssetType) as Material;
 
-		if (characterMaterial) Debug.Log("Prefabricate:loaded:" + materialAssetPath);
-		else Debug.LogError("Prefabricate:failed to load:" + materialAssetPath);
+		if (characterMaterial) {
+			Debug.Log("SamplePrefabricator2 loaded: " + materialAssetPath);
+		}
+		else {
+			Debug.LogError("SamplePrefabricator2 failed to load: " + materialAssetPath);
+		}
 		
 		// then set loaded texture to that material.
 		characterMaterial.mainTexture = characterTexture;
@@ -69,9 +77,8 @@ public class SamplePrefabricator2 : AssetBundleGraph.PrefabricatorBase {
 		var meshRenderer = cubeObj.GetComponent<MeshRenderer>();
 		meshRenderer.material = characterMaterial;
 
-		// generate prefab in prefabBaseName folder. "node/SOMEWHERE/groupKey/prefab.prefab". AssetBundleGraph determines this path automatically.
-//		var generatedPrefabPath = Prefabricate(cubeObj, "prefab2.prefab", false);
-		// Debug.LogWarning("prefab:" + generatedPrefabPath + " is generated or already cached.");
+		// generate prefab in prefabBaseName folder. "node/SOMEWHERE/groupKey/prefab2.prefab". AssetBundleGraph determines this path automatically.
+		Prefabricate(cubeObj, "prefab2.prefab", false);
 
 		// delete unnecessary cube model from hierarchy.
 		GameObject.DestroyImmediate(cubeObj);
