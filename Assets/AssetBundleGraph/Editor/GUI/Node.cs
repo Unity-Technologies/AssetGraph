@@ -448,23 +448,23 @@ namespace AssetBundleGraph {
 			
 		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
 			connectionPoints.Insert(addedIndex, new OutputPoint(keyword));
-			UpdateNodeRect();
 			Save();
+			UpdateNodeRect();
 		}
 
 		public void FilterOutputPointsDeleted (int deletedIndex) {
 			var deletedConnectionPoint = connectionPoints[deletedIndex];
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
 			connectionPoints.RemoveAt(deletedIndex);
-			UpdateNodeRect();
 			Save();
+			UpdateNodeRect();
 		}
 
 		public void FilterOutputPointsLabelChanged (int changedIndex, string latestLabel) {
 			connectionPoints[changedIndex].label = latestLabel;
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex]));
-			UpdateNodeRect();
 			Save();
+			UpdateNodeRect();
 		}
 		
 		
@@ -1039,7 +1039,6 @@ namespace AssetBundleGraph {
 		}
 
 		public void UpdateNodeRect () {
-
 			var contentWidth = this.name.Length;
 			switch (this.kind) {
 				case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
