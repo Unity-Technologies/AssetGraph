@@ -324,7 +324,9 @@ namespace AssetBundleGraph {
 					.Select(group => group.Key)
 					.ToList();
 
-				if (overlappings.Any()) throw new Exception("node names are overlapping:" + overlappings[0]);
+				if (overlappings.Any()) {
+					throw new AssetBundleGraphException("Duplicate node name found:" + overlappings[0] + " please rename and avoid same name.");
+				}
 			}
 
 			var resultDict = new Dictionary<string, Dictionary<string, List<InternalAssetData>>>();
