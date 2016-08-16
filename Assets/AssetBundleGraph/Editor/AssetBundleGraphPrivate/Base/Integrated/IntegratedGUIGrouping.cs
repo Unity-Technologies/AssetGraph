@@ -26,15 +26,20 @@ namespace AssetBundleGraph {
 
 			if (1 < groupedSources.Keys.Count()) Debug.LogWarning("grouping merges all input groups to new output groups forcely.");
 
-			ValidateGroupingKeyword(
-				groupingKeyword,
-				() => {
-					throw new Exception("groupingKeyword is empty.");
-				},
-				() => {
-					throw new Exception("grouping keyword does not contain " + AssetBundleGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + groupingKeyword);
-				}
-			);
+			try {
+				ValidateGroupingKeyword(
+					groupingKeyword,
+					() => {
+						throw new NodeException("Grouping Keyword can not be empty.", nodeId);
+					},
+					() => {
+						throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", AssetBundleGraphSettings.KEYWORD_WILDCARD, groupingKeyword), nodeId);
+					}
+				);
+			}  catch(NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
+			}
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

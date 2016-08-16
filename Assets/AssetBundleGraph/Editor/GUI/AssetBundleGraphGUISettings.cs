@@ -21,6 +21,7 @@ namespace AssetBundleGraph {
 
 		public const float CONNECTION_CURVE_LENGTH = 10f;
 
+		public const float TOOLBAR_HEIGHT = 20f;
 
 		public const string RESOURCE_ARROW					= RESOURCE_BASEPATH + "AssetGraph_Arrow.png";
 

@@ -738,12 +738,24 @@ namespace AssetBundleGraph {
 
 			Init();
 
-			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
-				if (GUILayout.Button(reloadButtonTexture, GUILayout.Height(18))) {
+			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
+				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
 					Setup();
 				}
 
-				if (GUILayout.Button("Build (active build target is " + EditorUserBuildSettings.activeBuildTarget + ")", GUILayout.Height(18))) {
+				GUILayout.FlexibleSpace();
+
+				GUIStyle tbLabel = new GUIStyle(EditorStyles.toolbar);
+
+				tbLabel.alignment = TextAnchor.MiddleCenter;
+
+				GUIStyle tbLabelTarget = new GUIStyle(tbLabel);
+				tbLabelTarget.fontStyle = FontStyle.Bold;
+
+				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+				GUILayout.Label(AssetBundleGraphPlatformSettings.BuildTargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+
+				if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
 					Run();
 				}
 			}

@@ -9,85 +9,90 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	public class PrefabricatorBase : INodeBase {
 		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
-			var invalids = new List<string>();
-			foreach (var sources in groupedSources.Values) {
-				foreach (var source in sources) {
-					if (string.IsNullOrEmpty(source.importedPath)) {
-						invalids.Add(source.pathUnderSourceBase);
+
+			try {
+				var invalids = new List<string>();
+				foreach (var sources in groupedSources.Values) {
+					foreach (var source in sources) {
+						if (string.IsNullOrEmpty(source.importedPath)) {
+							invalids.Add(source.pathUnderSourceBase);
+						}
 					}
 				}
+
+				if (invalids.Any()) {
+					throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before prefabricated.", nodeId);
+				}
+			} catch (NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
 			}
-
-			if (invalids.Any()) {
-				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
-			}
-			
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
-			
-			var outputDict = new Dictionary<string, List<InternalAssetData>>();
-			
-			foreach (var groupKey in groupedSources.Keys) {
-				var inputSources = groupedSources[groupKey];
-
-				var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
-				if (!recommendedPrefabPath.EndsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) recommendedPrefabPath = recommendedPrefabPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
 				
-				/*
-					ready input resource info for execute. not contains cache in this node.
-				*/
-				var assets = new List<AssetInfo>();
-				foreach (var assetData in inputSources) {
-					var assetName = assetData.fileNameAndExtension;
-					var assetType = assetData.assetType;
-					var assetPath = assetData.importedPath;
-					var assetId = assetData.assetId;
-					assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
-				}
-
-				// collect generated prefab path.
-				var generated = new List<string>();
+			try {
+				var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());				
+				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 				
-				/*
-					Prefabricate(string prefabName) method.
-				*/
-				Func<string, string> Prefabricate = (string prefabName) => {
-					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
-					generated.Add(newPrefabOutputPath);
-					// set used.
-					PrefabricateIsUsed();
+				foreach (var groupKey in groupedSources.Keys) {
+					var inputSources = groupedSources[groupKey];
 
-					return newPrefabOutputPath;
-				};
-				
-				/*
-					execute inheritee's input method.
-				*/
-				try {
-					Estimate(groupKey, assets, recommendedPrefabPath, Prefabricate);
-				} catch (Exception e) {
-					Debug.LogError("Prefabricator:" + this + " error:" + e);
-				}
-
-				if (!isUsed) {
-					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
-				}
-				
-				foreach (var generatedPrefabPath in generated) {
-					var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
-						generatedPrefabPath,
-						string.Empty,// dummy data
-						typeof(string),// dummy data
-						true,// absolutely new in setup.
-						false
-					);
+					var recommendedPrefabPath = FileController.PathCombine(recommendedPrefabOutputDirectoryPath, groupKey);
+					if (!recommendedPrefabPath.EndsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) recommendedPrefabPath = recommendedPrefabPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
 					
-					if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<InternalAssetData>();
-					outputDict[groupKey].Add(newAsset);
-				}
-				outputDict[groupKey].AddRange(inputSources);
+					/*
+						ready input resource info for execute. not contains cache in this node.
+					*/
+					var assets = new List<AssetInfo>();
+					foreach (var assetData in inputSources) {
+						var assetName = assetData.fileNameAndExtension;
+						var assetType = assetData.assetType;
+						var assetPath = assetData.importedPath;
+						var assetId = assetData.assetId;
+						assets.Add(new AssetInfo(assetName, assetType, assetPath, assetId));
+					}
+
+					// collect generated prefab path.
+					var generated = new List<string>();
+					
+					/*
+						Prefabricate(string prefabName) method.
+					*/
+					Func<string, string> Prefabricate = (string prefabName) => {
+						var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
+						generated.Add(newPrefabOutputPath);
+						// set used.
+						PrefabricateIsUsed();
+
+						return newPrefabOutputPath;
+					};
+
+					Estimate(groupKey, assets, recommendedPrefabPath, Prefabricate);
+
+					if (!isUsed) {
+						Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
+					}
+
+					foreach (var generatedPrefabPath in generated) {
+						var newAsset = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
+							generatedPrefabPath,
+							string.Empty,// dummy data
+							typeof(string),// dummy data
+							true,// absolutely new in setup.
+							false
+						);
+
+						if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<InternalAssetData>();
+						outputDict[groupKey].Add(newAsset);
+					}
+					outputDict[groupKey].AddRange(inputSources);
+				
+				} 				
+
+				Output(nodeId, labelToNext, outputDict, new List<string>());
+
+			} catch (NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
 			}
-			
-			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
 		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -103,7 +108,7 @@ namespace AssetBundleGraph {
 			}
 
 			if (invalids.Any()) {
-				throw new Exception("prefabricator:" + string.Join(", ", invalids.ToArray()) + " are not imported yet, should import before prefabricate.");
+				throw new Exception(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before prefabricated.");
 			}
 			
 			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());

@@ -288,20 +288,26 @@ namespace AssetBundleGraph {
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType);
+
+				GUIStyle s = new GUIStyle("TextFieldDropDownText");
 
 				/*
-									check prefabricator script-type string.
-								*/
-				if (string.IsNullOrEmpty(newScriptType)) {
-					EditorGUILayout.HelpBox("PrefabricatorBase extended class name is empty.", MessageType.Error);
+					check prefabricator script-type string.
+				*/
+				if (string.IsNullOrEmpty(node.scriptType)) {
+					s.fontStyle = FontStyle.Bold;
+					s.fontSize  = 12;
+				} else {
+					var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptType);
+
+					if (loadedType == null) {
+						s.fontStyle = FontStyle.Bold;
+						s.fontSize  = 12;
+					}
 				}
 
-				var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(newScriptType);
 
-				if (loadedType == null) {
-					EditorGUILayout.HelpBox("PrefabricatorBase extended class not found:" + newScriptType, MessageType.Error);
-				}
+				var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType, s);
 
 				if (newScriptType != node.scriptType) {
 					node.BeforeSave();

@@ -814,13 +814,13 @@ namespace AssetBundleGraph {
 						*/
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<FilterBase>(scriptType);
+							var executor = Executor<FilterBase>(scriptType, nodeId);
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<PrefabricatorBase>(scriptType);
+							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -860,7 +860,7 @@ namespace AssetBundleGraph {
 								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
 								break;
 							}
-							var executor = Executor<PrefabricatorBase>(scriptType);
+							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -908,13 +908,13 @@ namespace AssetBundleGraph {
 						*/
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<FilterBase>(scriptType);
+							var executor = Executor<FilterBase>(scriptType, nodeId);
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<PrefabricatorBase>(scriptType);
+							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -952,11 +952,17 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 							var scriptType = currentNodeData.scriptType;
 							if (string.IsNullOrEmpty(scriptType)) {
-								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
-								break;;
+								AssetBundleGraph.AddNodeException(new NodeException("prefabriator class at node:" + nodeName + " is empty, please set valid script type.", nodeId));
+//								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
+								break;
 							}
-							var executor = Executor<PrefabricatorBase>(scriptType);
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							try {
+								var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
+								executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							} catch (NodeException e) {
+								AssetBundleGraph.AddNodeException(e);
+								break;
+							}
 							break;
 						}
 
@@ -1050,10 +1056,10 @@ namespace AssetBundleGraph {
 			return FileController.PathCombine(projectPath, pathUnderProjectFolder);
 		}
 
-		public static T Executor<T> (string typeStr) where T : INodeBase {
+		public static T Executor<T> (string typeStr, string nodeId) where T : INodeBase {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
-				throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T));
+				throw new NodeException("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T), nodeId);
 			}
 			return ((T)nodeScriptInstance);
 		}
