@@ -505,15 +505,22 @@ namespace AssetBundleGraph {
 					newExportPath,
 					exporterrNodePath,
 					() => {
-						//EditorGUILayout.HelpBox("export path is empty.", MessageType.Error);
+						// TODO Make text field bold
 					},
 					() => {
 						using (new EditorGUILayout.HorizontalScope()) {
 							EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
 							if(GUILayout.Button("Create directory")) {
+								Directory.CreateDirectory(exporterrNodePath);
 							}
 						}
-						//EditorGUILayout.HelpBox("directory not found:" + exporterrNodePath, MessageType.Error);
+						EditorGUILayout.Space();
+
+						EditorGUILayout.LabelField("Available Directories:");
+						string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
+						foreach(string s in dirs) {
+							EditorGUILayout.LabelField(s);
+						}
 					}
 				);
 
