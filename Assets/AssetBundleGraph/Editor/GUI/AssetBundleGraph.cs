@@ -187,6 +187,17 @@ namespace AssetBundleGraph {
 			Connection.Emit = EmitConnectionEvent;
 		}
 
+		public void SelectNode(string nodeId) {
+			var selectObject = nodes.Where(node => node.nodeId == nodeId).ToList();
+			// set deactive for all nodes.
+			foreach (var node in nodes) {
+				node.SetInactive();
+			}
+			foreach(Node n in selectObject) {
+				n.SetActive();
+			}
+		}
+
 		private void Init() {
 
 			if(initialized) {
@@ -245,7 +256,8 @@ namespace AssetBundleGraph {
 		
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
-		
+		private Vector2 errorScrollPos = new Vector2(0,0);
+
 		private GUIContent reloadButtonTexture;
 
 		private static Dictionary<string,Dictionary<string, List<ThroughputAsset>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<ThroughputAsset>>>();
@@ -755,6 +767,7 @@ namespace AssetBundleGraph {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
 					Setup();
 				}
+				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
 				GUILayout.FlexibleSpace();
 
@@ -781,6 +794,21 @@ namespace AssetBundleGraph {
 				}
 				GUI.enabled = true;
 			}		
+		}
+
+		private void DrawGUINodeErrors() {
+			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
+			{
+				using (new EditorGUILayout.VerticalScope()) {
+					foreach(NodeException e in nodeExceptionPool) {
+						EditorGUILayout.HelpBox(e.reason, MessageType.Error);
+						if( GUILayout.Button("Go to Node") ) {
+							SelectNode(e.nodeId);
+						}
+					}
+				}
+			}
+			EditorGUILayout.EndScrollView();
 		}
 
 		private void DrawGUINodeGraph() {
@@ -999,15 +1027,19 @@ namespace AssetBundleGraph {
 
 			DrawGUIToolBar();
 
-
-			DrawGUINodeGraph();
+			using (new EditorGUILayout.HorizontalScope()) {
+				DrawGUINodeGraph();
+				if(showErrors) {
+					DrawGUINodeErrors();
+				}
+			}
 
 			/*
-				detect 
-					dragging some script into window.
-					right click.
-					connection end mouse up.
-					command(Delete, Copy, and more)
+				Event Handling:
+				- Supporting dragging script into window to create node.
+				- Context Menu	
+				- Node connection.
+				- Command(Delete, Copy, etc...)
 			*/
 			switch (Event.current.type) {
 				// detect dragging script then change interface to "(+)" icon.
@@ -1082,8 +1114,7 @@ namespace AssetBundleGraph {
 				}
 
 				/*
-					handling mouse up
-						 -> drag released -> release modifyMode.
+					Handling mouseUp at empty space. 
 				*/
 				case EventType.MouseUp: {
 					modifyMode = ModifyMode.CONNECT_ENDED;
