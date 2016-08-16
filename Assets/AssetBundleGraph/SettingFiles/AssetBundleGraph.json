@@ -1,5 +1,5 @@
 {
-	"lastModified":"08/15/2016 19:08:53",
+	"lastModified":"08/16/2016 14:06:52",
 	"nodes":[
 		{
 			"name":"Loader0",
@@ -10,7 +10,7 @@
 			],
 			"pos":{
 				"x":22,
-				"y":19
+				"y":20
 			},
 			"loadPath":{
 				"Default":"Assets/SampleAssets"
@@ -28,8 +28,8 @@
 				"ses"
 			],
 			"pos":{
-				"x":43,
-				"y":163
+				"x":45,
+				"y":164
 			},
 			"filterContainsKeywords":[
 				"images",
@@ -44,7 +44,11 @@
 				"UnityEngine.Material",
 				"Any",
 				"Any",
-				"UnityEditor.TextureImporter",
+				"Any",
+				"Any",
+				"Any",
+				"Any",
+				"Any",
 				"Any",
 				"Any",
 				"Any"
@@ -88,8 +92,8 @@
 				"+"
 			],
 			"pos":{
-				"x":363,
-				"y":244
+				"x":364,
+				"y":243
 			},
 			"importerPackages":{
 				"Default":""
@@ -118,8 +122,8 @@
 				"+"
 			],
 			"pos":{
-				"x":639,
-				"y":84
+				"x":642,
+				"y":83
 			},
 			"groupingKeyword":{
 				"Default":"/ID_*/"
@@ -133,8 +137,8 @@
 				"+"
 			],
 			"pos":{
-				"x":707,
-				"y":150
+				"x":705,
+				"y":151
 			},
 			"scriptType":"SamplePrefabricator",
 			"scriptPath":""
@@ -148,8 +152,8 @@
 				"resources"
 			],
 			"pos":{
-				"x":773,
-				"y":223
+				"x":774,
+				"y":225
 			},
 			"bundleNameTemplate":{
 				"Default":"bundle_a_*.assetbundle"

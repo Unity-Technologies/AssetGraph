@@ -45,7 +45,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private static void ShowErrorOnNodes (List<Node> nodes) {
+		private void ShowErrorOnNodes () {
 			foreach (var node in nodes) {
 				node.RenewErrorSource();
 				var errorsForeachNode = nodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
@@ -73,7 +73,8 @@ namespace AssetBundleGraph {
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
-			Run();
+			var window = GetWindow<AssetBundleGraph>();
+			window.Run();
 		}
 
 		public enum ScriptType : int {
@@ -129,7 +130,9 @@ namespace AssetBundleGraph {
 					}
 				}
 			}
-			Run();
+			
+			var window = GetWindow<AssetBundleGraph>();
+			window.Run();
 		}
 
 		public static BuildTarget BuildTargetFromString (string val) {
@@ -514,7 +517,7 @@ namespace AssetBundleGraph {
 			try {
 				Setup();
 			} catch {
-				// display nothing.d
+				// display nothing.
 			}
 		}
 
@@ -560,12 +563,12 @@ namespace AssetBundleGraph {
 
 			RefreshInspector(connectionThroughputs);
 
-			ShowErrorOnNodes(nodes);
+			ShowErrorOnNodes();
 
 			Finally(nodes, connections, connectionThroughputs, false);
 		}
 
-		private static void Run () {
+		private void Run () {
 			ResetNodeExceptionPool();
 
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
@@ -630,7 +633,7 @@ namespace AssetBundleGraph {
 
 			RefreshInspector(connectionThroughputs);
 
-			ShowErrorOnNodes(currentNodes);
+			ShowErrorOnNodes();
 
 			Finally(currentNodes, currentConnections, connectionThroughputs, true);
 		}
@@ -640,7 +643,9 @@ namespace AssetBundleGraph {
 			switch (Selection.activeObject.GetType().ToString()) {
 				case "AssetBundleGraph.ConnectionInspector": {
 					var con = ((ConnectionInspector)Selection.activeObject).con;
-					((ConnectionInspector)Selection.activeObject).UpdateThroughputs(currentConnectionThroughputs[con.connectionId]);
+					if (currentConnectionThroughputs.ContainsKey(con.connectionId)) {
+						((ConnectionInspector)Selection.activeObject).UpdateThroughputs(currentConnectionThroughputs[con.connectionId]);
+					}
 					break;
 				}
 				default: {

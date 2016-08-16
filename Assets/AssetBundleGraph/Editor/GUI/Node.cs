@@ -300,8 +300,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private BuildTarget currentBuildTarget;
 
 		[SerializeField] private NodeGUIInfo nodeInsp;
-
-
+		
 		/*
 			show error on node functions.
 		*/
@@ -309,10 +308,12 @@ namespace AssetBundleGraph {
 
         public void RenewErrorSource () {
             hasErrors = false;
-			this.nodeInsp.UpdateErrors(null);
+			this.nodeInsp.UpdateNode(this);
+			this.nodeInsp.UpdateErrors(new List<string>());
         }
 		public void AppendErrorSources (List<string> errors) {
 			this.hasErrors = true;
+			this.nodeInsp.UpdateNode(this);
 			this.nodeInsp.UpdateErrors(errors);
 		}
 
@@ -499,8 +500,7 @@ namespace AssetBundleGraph {
 			/*
 				update as no errors.
 			*/
-			this.hasErrors = false;
-			this.nodeInsp.UpdateErrors(new List<string>());
+			RenewErrorSource();
 
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
@@ -527,8 +527,8 @@ namespace AssetBundleGraph {
 			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
-			nodeInsp = ScriptableObject.CreateInstance<NodeGUIInfo>();
-			nodeInsp.hideFlags = HideFlags.DontSave;
+			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInfo>();
+			
 			this.nodeWindowId = index;
 			this.name = name;
 			this.nodeId = nodeId;
