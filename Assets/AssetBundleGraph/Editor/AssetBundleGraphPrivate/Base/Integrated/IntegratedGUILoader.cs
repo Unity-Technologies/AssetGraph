@@ -39,6 +39,11 @@ namespace AssetBundleGraph {
 
 			try {	
 				foreach (var targetFilePath in targetFilePaths) {
+
+					if(targetFilePath.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)) {
+						continue;
+					}
+
 					// already contained into Assets/ folder.
 					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 					if (targetFilePath.StartsWith(assetsFolderPath)) {
@@ -59,7 +64,7 @@ namespace AssetBundleGraph {
 						continue;
 					}
 
-					throw new NodeException(nodeName + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath, nodeId);
+					throw new NodeException(nodeName + ": Invalid Load Path. Path must start with Assets/", nodeId);
 				}
 			} catch(NodeException e) {
 				AssetBundleGraph.AddNodeException(e);
@@ -96,6 +101,11 @@ namespace AssetBundleGraph {
 				var targetFilePaths = FileController.FilePathsInFolder(loadFilePath);
 				
 				foreach (var targetFilePath in targetFilePaths) {
+
+					if(targetFilePath.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)) {
+						continue;
+					}
+
 					// already contained into Assets/ folder.
 					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 					if (targetFilePath.StartsWith(assetsFolderPath)) {

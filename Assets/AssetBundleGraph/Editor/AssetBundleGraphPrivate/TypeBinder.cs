@@ -51,7 +51,19 @@ namespace AssetBundleGraph {
 			{".shader", typeof(Shader)},
 			// {"", typeof(Sprite)},
 		};
-		
+
+		public static List<string> IgnoreExtension = new List<string>{
+			"",
+			".manifest",
+			".assetbundle",
+			".sample",
+			".cs",
+			".sh",
+			".json",
+			".js",
+			".unity",
+		};
+
 		public static Type AssumeTypeOfAsset (string assetPath) {
 			// check by asset importer type.
 			var importer = AssetImporter.GetAtPath(assetPath);
@@ -73,12 +85,17 @@ namespace AssetBundleGraph {
 			
 			// not specific type importer. should determine their type by extension.
 			var extension = Path.GetExtension(assetPath);
-			if (AssumeTypeBindingByExtension.ContainsKey(extension)) return AssumeTypeBindingByExtension[extension];
-			
+			if (AssumeTypeBindingByExtension.ContainsKey(extension)) {
+				return AssumeTypeBindingByExtension[extension];
+			}
+
+			if (IgnoreExtension.Contains(extension)) {
+				return null;
+			}
 			
 			// unhandled.
-			Debug.LogWarning("failed to detect asset extension:" + extension + ",  fall down to 'UnityEngine.Object' type.");
-			return typeof(object);
+			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'UnityEngine.Object'.");
+			return typeof(UnityEngine.Object);
 		}
 	}
 }

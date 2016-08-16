@@ -112,7 +112,7 @@ namespace AssetBundleGraph {
 					
 					foreach (var containedAssetData in contains) {
 						var assumedType = TypeBinder.AssumeTypeOfAsset(containedAssetData.importedPath);
-						if (keytype == assumedType.ToString()) typeContains.Add(containedAssetData.absoluteSourcePath);
+						if (assumedType != null && keytype == assumedType.ToString()) typeContains.Add(containedAssetData.absoluteSourcePath);
 					}
 					
 					Out(keyword, typeContains);
