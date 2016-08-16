@@ -91,10 +91,10 @@ namespace AssetBundleGraph {
 		/**
 			build from commandline.
 		*/
-		public static void Build () {
+		public static void BuildFromCommandline () {
 			var argumentSources = new List<string>(System.Environment.GetCommandLineArgs());
 
-			var argumentStartIndex = argumentSources.FindIndex(arg => arg == "AssetBundleGraph.AssetBundleGraph.Build") + 1;
+			var argumentStartIndex = argumentSources.FindIndex(arg => arg == "AssetBundleGraph.AssetBundleGraph.BuildFromCommandline") + 1;
 			var currentParams = argumentSources.GetRange(argumentStartIndex, argumentSources.Count - argumentStartIndex).ToList();
 
 			if (0 < currentParams.Count) {
