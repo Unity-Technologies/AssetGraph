@@ -1,5 +1,5 @@
 {
-	"lastModified":"08/16/2016 14:06:52",
+	"lastModified":"08/16/2016 16:44:08",
 	"nodes":[
 		{
 			"name":"Loader0",
@@ -9,8 +9,8 @@
 				"+"
 			],
 			"pos":{
-				"x":22,
-				"y":20
+				"x":30,
+				"y":32
 			},
 			"loadPath":{
 				"Default":"Assets/SampleAssets"
@@ -62,8 +62,8 @@
 				"+"
 			],
 			"pos":{
-				"x":359,
-				"y":59
+				"x":344,
+				"y":105
 			},
 			"importerPackages":{
 				"Default":""
@@ -77,8 +77,8 @@
 				"+"
 			],
 			"pos":{
-				"x":359,
-				"y":115
+				"x":341,
+				"y":218
 			},
 			"importerPackages":{
 				"Default":""
@@ -92,8 +92,8 @@
 				"+"
 			],
 			"pos":{
-				"x":364,
-				"y":243
+				"x":341,
+				"y":337
 			},
 			"importerPackages":{
 				"Default":""
@@ -107,8 +107,8 @@
 				"+"
 			],
 			"pos":{
-				"x":363,
-				"y":304
+				"x":345,
+				"y":406
 			},
 			"importerPackages":{
 				"Default":""
@@ -122,8 +122,8 @@
 				"+"
 			],
 			"pos":{
-				"x":642,
-				"y":83
+				"x":603,
+				"y":59
 			},
 			"groupingKeyword":{
 				"Default":"/ID_*/"
@@ -137,30 +137,11 @@
 				"+"
 			],
 			"pos":{
-				"x":705,
-				"y":151
+				"x":728,
+				"y":148
 			},
 			"scriptType":"SamplePrefabricator",
 			"scriptPath":""
-		},
-		{
-			"name":"Bundlizer0",
-			"id":"60d2592a-0504-4202-9486-0442394a83c6",
-			"kind":"BUNDLIZER_GUI",
-			"outputLabels":[
-				"bundles",
-				"resources"
-			],
-			"pos":{
-				"x":774,
-				"y":225
-			},
-			"bundleNameTemplate":{
-				"Default":"bundle_a_*.assetbundle"
-			},
-			"bundleUseOutput":{
-				"Default":"True"
-			}
 		},
 		{
 			"name":"Bundlizer1",
@@ -170,8 +151,8 @@
 				"bundles"
 			],
 			"pos":{
-				"x":773,
-				"y":359
+				"x":959,
+				"y":347
 			},
 			"bundleNameTemplate":{
 				"Default":"bundle_b_*.assetbundle"
@@ -188,8 +169,8 @@
 				"+"
 			],
 			"pos":{
-				"x":1055,
-				"y":230
+				"x":1314,
+				"y":299
 			},
 			"enabledBundleOptions":{
 				"Default":[
@@ -205,11 +186,34 @@
 				
 			],
 			"pos":{
-				"x":1265,
-				"y":304
+				"x":1532,
+				"y":300
 			},
 			"exportPath":{
-				"Default":"ExportFolder"
+				"Default":"ExportFolder",
+				"Standalone":"ExportFolder_Standalone",
+				"Web":"ExportFolder_Web",
+				"iOS":"ExportFolder_iOS",
+				"Android":"ExportFolder_Android",
+				"WebGL":"ExportFolder_WebGL"
+			}
+		},
+		{
+			"name":"Bundlizer0",
+			"id":"1c5f7427-67d3-403b-b384-283bbc761238",
+			"kind":"BUNDLIZER_GUI",
+			"outputLabels":[
+				"bundles"
+			],
+			"pos":{
+				"x":991,
+				"y":87
+			},
+			"bundleNameTemplate":{
+				"Default":"bundle_a_*.assetbundle"
+			},
+			"bundleUseOutput":{
+				"Default":"False"
 			}
 		}
 	],
@@ -258,12 +262,6 @@
 		},
 		{
 			"label":"+",
-			"connectionId":"168cbd13-2f45-4524-be6e-ec12a95dc439",
-			"fromNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad",
-			"toNode":"60d2592a-0504-4202-9486-0442394a83c6"
-		},
-		{
-			"label":"+",
 			"connectionId":"e4b4766b-ebc1-4594-9112-6d1845c6ef99",
 			"fromNode":"84e49ab1-74a3-41ee-b281-730555d5a655",
 			"toNode":"813382b2-28e5-4e7a-bee7-db072acb9109"
@@ -287,21 +285,21 @@
 			"toNode":"2d444eda-e60e-4d6f-9b85-a53ed642827f"
 		},
 		{
-			"label":"resources",
-			"connectionId":"95680870-8ecc-433b-a0ca-747e8ccccff3",
-			"fromNode":"60d2592a-0504-4202-9486-0442394a83c6",
-			"toNode":"2d444eda-e60e-4d6f-9b85-a53ed642827f"
-		},
-		{
 			"label":"images",
 			"connectionId":"bc934200-686c-4fb3-8d0b-5d7970ba95c7",
 			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
 			"toNode":"2cc186b7-9bb5-4a01-a7f7-8db87e36841d"
 		},
 		{
+			"label":"+",
+			"connectionId":"5832312f-f799-47f0-967c-08d7b8f41047",
+			"fromNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad",
+			"toNode":"1c5f7427-67d3-403b-b384-283bbc761238"
+		},
+		{
 			"label":"bundles",
-			"connectionId":"00194a5b-3c8e-40a5-81c7-b21079ead917",
-			"fromNode":"60d2592a-0504-4202-9486-0442394a83c6",
+			"connectionId":"38d142cb-2bbe-457e-afcd-43a965cf7405",
+			"fromNode":"1c5f7427-67d3-403b-b384-283bbc761238",
 			"toNode":"2acbe6de-f64b-42e3-b4bd-74a61e39ee4c"
 		}
 	]
