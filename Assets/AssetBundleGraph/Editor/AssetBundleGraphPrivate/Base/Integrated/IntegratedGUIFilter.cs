@@ -50,7 +50,7 @@ namespace AssetBundleGraph {
 				};
 				
 				try {
-					Filtering(inputSources, _PreOutput);
+					Filter(inputSources, _PreOutput);
 				} catch (Exception e) {
 					Debug.LogError("Filter:" + this + " error:" + e);
 				}
@@ -89,38 +89,42 @@ namespace AssetBundleGraph {
 				};
 				
 				try {
-					Filtering(inputSources, _Output);
+					Filter(inputSources, _Output);
 				} catch (Exception e) {
 					Debug.LogError("Filter:" + this + " error:" + e);
 				}
 			}
 		}
 
-		private void Filtering (List<InternalAssetData> assets, Action<string, List<string>> Out) {
+		private void Filter (List<InternalAssetData> assets, Action<string, List<string>> FilterResultReceiver) {
 			for (var i = 0; i < containsKeywords.Count; i++) {
 				var keyword = containsKeywords[i];
 				var keytype = containsKeytypes[i];
+
+				var label = keyword;
 				
 				var contains = assets.Where(assetData => assetData.importedPath.Contains(keyword)).ToList();
 				
 				// if keyword is wildcard, use type for constraint. pass all assets.
-				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) contains = assets; 
+				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) {
+					contains = assets; 
+				}
 				
 				// type constraint.
 				if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
-					var typeContains = new List<string>();
+					var assetList = new List<string>();
 					
 					foreach (var containedAssetData in contains) {
 						var assumedType = TypeBinder.AssumeTypeOfAsset(containedAssetData.importedPath);
-						if (assumedType != null && keytype == assumedType.ToString()) typeContains.Add(containedAssetData.absoluteSourcePath);
+						if (assumedType != null && keytype == assumedType.ToString()) assetList.Add(containedAssetData.absoluteSourcePath);
 					}
 					
-					Out(keyword, typeContains);
+					FilterResultReceiver(label, assetList);
 					continue;
 				}
 				 
 				var containsAssetAbsolutePaths = contains.Select(assetData => assetData.absoluteSourcePath).ToList();
-				Out(keyword, containsAssetAbsolutePaths);
+				FilterResultReceiver(label, containsAssetAbsolutePaths);
 			}
 		}
 		
