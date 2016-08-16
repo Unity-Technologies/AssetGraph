@@ -140,7 +140,7 @@ namespace AssetBundleGraph {
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
 		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL = "resources";
+		public const string BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL = "bundled assets";
 		
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";

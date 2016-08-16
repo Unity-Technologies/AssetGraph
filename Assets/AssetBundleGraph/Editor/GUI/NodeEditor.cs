@@ -366,7 +366,7 @@ namespace AssetBundleGraph {
 					}
 				}
 
-				var result = EditorGUILayout.ToggleLeft("Output Resources", useOrNot);
+				var result = EditorGUILayout.ToggleLeft("Asset Output for Dependency", useOrNot);
 
 				if (result != useOrNot) {
 					node.BeforeSave();
@@ -378,7 +378,7 @@ namespace AssetBundleGraph {
 					node.Save();
 				}
 
-				EditorGUILayout.HelpBox("If checked, you can use once-bundled resources to generate other bundles.", MessageType.Info);
+				EditorGUILayout.HelpBox("Check this to enable asset output slot to create asset bundle which has dependency to asset bundle of this node.", MessageType.Info);
 			}
 
 			UpdateDeleteSetting(node);
