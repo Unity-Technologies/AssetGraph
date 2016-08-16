@@ -171,6 +171,7 @@ namespace AssetBundleGraph {
 				try {
 					Run(groupKey, assets, recommendedPrefabPath, Prefabricate);
 				} catch (Exception e) {
+					Debug.LogError("Prefabricator:" + this + " error:" + e);
 					throw new NodeException("Prefabricator:" + this + " error:" + e, nodeId);
 				}
 
