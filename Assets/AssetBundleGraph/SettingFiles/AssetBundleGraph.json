@@ -1,5 +1,5 @@
 {
-	"lastModified":"08/16/2016 16:44:08",
+	"lastModified":"08/16/2016 18:52:13",
 	"nodes":[
 		{
 			"name":"Loader0",
@@ -25,25 +25,28 @@
 				"models",
 				"*",
 				"bgms",
+				"ses",
 				"ses"
 			],
 			"pos":{
-				"x":45,
-				"y":164
+				"x":44,
+				"y":161
 			},
 			"filterContainsKeywords":[
 				"images",
 				"models",
 				"*",
 				"bgms",
+				"ses",
 				"ses"
 			],
 			"filterContainsKeytypes":[
 				"UnityEditor.TextureImporter",
 				"UnityEditor.ModelImporter",
-				"UnityEngine.Material",
+				"UnityEditor.TextureImporter",
 				"Any",
 				"Any",
+				"UnityEditor.AudioImporter",
 				"Any",
 				"Any",
 				"Any",
@@ -122,8 +125,8 @@
 				"+"
 			],
 			"pos":{
-				"x":603,
-				"y":59
+				"x":566,
+				"y":154
 			},
 			"groupingKeyword":{
 				"Default":"/ID_*/"
@@ -137,8 +140,8 @@
 				"+"
 			],
 			"pos":{
-				"x":728,
-				"y":148
+				"x":741,
+				"y":159
 			},
 			"scriptType":"SamplePrefabricator",
 			"scriptPath":""
@@ -215,6 +218,39 @@
 			"bundleUseOutput":{
 				"Default":"False"
 			}
+		},
+		{
+			"name":"Grouping1",
+			"id":"15672575-d326-4c8a-899a-18e5ceb2415f",
+			"kind":"GROUPING_GUI",
+			"outputLabels":[
+				"+"
+			],
+			"pos":{
+				"x":385,
+				"y":282
+			},
+			"groupingKeyword":{
+				"Default":"/Group_*/"
+			}
+		},
+		{
+			"name":"Filter1",
+			"id":"ad0c7ffc-b6c6-4777-b21b-3cb241ef7619",
+			"kind":"FILTER_GUI",
+			"outputLabels":[
+				
+			],
+			"pos":{
+				"x":294,
+				"y":478
+			},
+			"filterContainsKeywords":[
+				
+			],
+			"filterContainsKeytypes":[
+				
+			]
 		}
 	],
 	"connections":[
@@ -253,12 +289,6 @@
 			"connectionId":"183860da-9c02-4b2e-8923-c80a26fd4ff9",
 			"fromNode":"2b02b4a6-0b2c-4a82-907a-98d5cd91c9c4",
 			"toNode":"66c749d4-8493-48c8-b12c-91f24a44aa24"
-		},
-		{
-			"label":"+",
-			"connectionId":"e15b41be-e5b4-486f-a11e-28af03e83494",
-			"fromNode":"66c749d4-8493-48c8-b12c-91f24a44aa24",
-			"toNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad"
 		},
 		{
 			"label":"+",
@@ -301,6 +331,18 @@
 			"connectionId":"38d142cb-2bbe-457e-afcd-43a965cf7405",
 			"fromNode":"1c5f7427-67d3-403b-b384-283bbc761238",
 			"toNode":"2acbe6de-f64b-42e3-b4bd-74a61e39ee4c"
+		},
+		{
+			"label":"*",
+			"connectionId":"f7cef824-39eb-4cef-9a64-8e0d73caad6d",
+			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
+			"toNode":"15672575-d326-4c8a-899a-18e5ceb2415f"
+		},
+		{
+			"label":"ses",
+			"connectionId":"849931b5-24a2-4abe-8d74-543cb8964b46",
+			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
+			"toNode":"ad0c7ffc-b6c6-4777-b21b-3cb241ef7619"
 		}
 	]
 }

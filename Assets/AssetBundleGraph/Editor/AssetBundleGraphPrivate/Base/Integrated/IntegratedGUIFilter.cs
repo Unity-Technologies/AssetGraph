@@ -96,30 +96,56 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		private class ExhaustiveAssetPathData {
+			public readonly string importedPath;
+			public readonly string absoluteSourcePath;
+			public bool isFilterExhausted = false;
+
+			public ExhaustiveAssetPathData (string absoluteSourcePath, string importedPath) {
+				this.importedPath = importedPath;
+				this.absoluteSourcePath = absoluteSourcePath;
+			}
+		}
+
 		private void Filtering (List<InternalAssetData> assets, Action<string, List<string>> Out) {
+			var exhaustiveAssets = new List<ExhaustiveAssetPathData>();
+			foreach (var asset in assets) {
+				exhaustiveAssets.Add(new ExhaustiveAssetPathData(asset.absoluteSourcePath, asset.importedPath));
+			}
+
 			for (var i = 0; i < containsKeywords.Count; i++) {
 				var keyword = containsKeywords[i];
 				var keytype = containsKeytypes[i];
 				
-				var contains = assets.Where(assetData => assetData.importedPath.Contains(keyword)).ToList();
+				var keywordContainsAssets = exhaustiveAssets.Where(assetData => !assetData.isFilterExhausted && assetData.importedPath.Contains(keyword)).ToList();
 				
-				// if keyword is wildcard, use type for constraint. pass all assets.
-				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) contains = assets; 
+				// if keyword is wildcard, use type for constraint. pass all remaining assets.
+				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) keywordContainsAssets = exhaustiveAssets.Where(assetData => !assetData.isFilterExhausted).ToList(); 
 				
 				// type constraint.
 				if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
-					var typeContains = new List<string>();
+					var typeMatchedAssetsAbsolutePaths = new List<string>();
 					
-					foreach (var containedAssetData in contains) {
+					foreach (var containedAssetData in keywordContainsAssets) {
 						var assumedType = TypeBinder.AssumeTypeOfAsset(containedAssetData.importedPath);
-						if (assumedType != null && keytype == assumedType.ToString()) typeContains.Add(containedAssetData.absoluteSourcePath);
+						if (assumedType != null && keytype == assumedType.ToString()) typeMatchedAssetsAbsolutePaths.Add(containedAssetData.absoluteSourcePath);
 					}
 					
-					Out(keyword, typeContains);
+					// these assets are exhausted.
+					foreach (var exhaustiveAsset in exhaustiveAssets) {
+						if (typeMatchedAssetsAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
+					}
+
+					Out(keyword, typeMatchedAssetsAbsolutePaths);
 					continue;
 				}
-				 
-				var containsAssetAbsolutePaths = contains.Select(assetData => assetData.absoluteSourcePath).ToList();
+				
+				var containsAssetAbsolutePaths = keywordContainsAssets.Select(assetData => assetData.absoluteSourcePath).ToList();
+				// these assets are exhausted.
+				foreach (var exhaustiveAsset in exhaustiveAssets) {
+					if (containsAssetAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
+				}
+
 				Out(keyword, containsAssetAbsolutePaths);
 			}
 		}
