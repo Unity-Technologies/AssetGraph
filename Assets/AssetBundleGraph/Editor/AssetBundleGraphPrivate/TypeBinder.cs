@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace AssetBundleGraph {
 	public static class TypeBinder {
@@ -31,6 +32,7 @@ namespace AssetBundleGraph {
 			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
 			typeof(Sprite).ToString(),
+			typeof(Scene).ToString(),
 		};
 		
 		public static Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
@@ -49,6 +51,8 @@ namespace AssetBundleGraph {
 			{".renderTexture", typeof(RenderTexture)},
 			// typeof(SceneAsset).ToString(),
 			{".shader", typeof(Shader)},
+			{".unity", typeof(Scene)},
+
 			// {"", typeof(Sprite)},
 		};
 
@@ -93,8 +97,8 @@ namespace AssetBundleGraph {
 			}
 			
 			// unhandled.
-			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'UnityEngine.Object'.");
-			return typeof(UnityEngine.Object);
+			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'object'.");
+			return typeof(object);
 		}
 	}
 }
