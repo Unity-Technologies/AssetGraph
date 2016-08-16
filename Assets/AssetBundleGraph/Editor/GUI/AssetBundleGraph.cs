@@ -27,8 +27,6 @@ namespace AssetBundleGraph {
 		*/
 		private static List<NodeException> nodeExceptionPool = new List<NodeException>();
 
-		private bool initialized;
-
 		private bool showErrors;
 
 		public static void AddNodeException (NodeException nodeEx) {
@@ -202,16 +200,9 @@ namespace AssetBundleGraph {
 		}
 
 		private void Init() {
-
-			if(initialized) {
-				return;
-			}
-			initialized = true;
-
 			this.titleContent = new GUIContent("AssetBundle");
 
 			Node.EnsureInitialized();
-
 			Undo.undoRedoPerformed += () => {
 				SaveGraphWithReload();
 				Repaint();
@@ -1026,10 +1017,11 @@ namespace AssetBundleGraph {
 			EditorGUILayout.EndScrollView();
 		}
 
-		public void OnGUI () {
-
+		public void OnEnable () {
 			Init();
+		}
 
+		public void OnGUI () {
 			DrawGUIToolBar();
 
 			using (new EditorGUILayout.HorizontalScope()) {
