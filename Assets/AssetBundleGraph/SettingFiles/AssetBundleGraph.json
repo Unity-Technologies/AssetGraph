@@ -1,5 +1,5 @@
 {
-	"lastModified":"08/16/2016 16:44:08",
+	"lastModified":"08/16/2016 18:50:05",
 	"nodes":[
 		{
 			"name":"Loader0",
@@ -9,11 +9,11 @@
 				"+"
 			],
 			"pos":{
-				"x":30,
-				"y":32
+				"x":26,
+				"y":27
 			},
 			"loadPath":{
-				"Default":"Assets/SampleAssets"
+				"Default":"SampleAssets"
 			}
 		},
 		{
@@ -23,9 +23,9 @@
 			"outputLabels":[
 				"images",
 				"models",
-				"*",
 				"bgms",
-				"ses"
+				"ses",
+				"level"
 			],
 			"pos":{
 				"x":45,
@@ -34,14 +34,18 @@
 			"filterContainsKeywords":[
 				"images",
 				"models",
-				"*",
 				"bgms",
-				"ses"
+				"ses",
+				"level"
 			],
 			"filterContainsKeytypes":[
 				"UnityEditor.TextureImporter",
 				"UnityEditor.ModelImporter",
 				"UnityEngine.Material",
+				"Any",
+				"Any",
+				"UnityEngine.SceneManagement.Scene",
+				"Any",
 				"Any",
 				"Any",
 				"Any",
@@ -92,8 +96,8 @@
 				"+"
 			],
 			"pos":{
-				"x":341,
-				"y":337
+				"x":344,
+				"y":314
 			},
 			"importerPackages":{
 				"Default":""
@@ -107,8 +111,8 @@
 				"+"
 			],
 			"pos":{
-				"x":345,
-				"y":406
+				"x":346,
+				"y":386
 			},
 			"importerPackages":{
 				"Default":""
@@ -122,26 +126,12 @@
 				"+"
 			],
 			"pos":{
-				"x":603,
-				"y":59
+				"x":632,
+				"y":93
 			},
 			"groupingKeyword":{
 				"Default":"/ID_*/"
 			}
-		},
-		{
-			"name":"Prefabricator0",
-			"id":"dfbba7c3-fcc0-40b0-af18-ff6754526bad",
-			"kind":"PREFABRICATOR_GUI",
-			"outputLabels":[
-				"+"
-			],
-			"pos":{
-				"x":728,
-				"y":148
-			},
-			"scriptType":"SamplePrefabricator",
-			"scriptPath":""
 		},
 		{
 			"name":"Bundlizer1",
@@ -151,8 +141,8 @@
 				"bundles"
 			],
 			"pos":{
-				"x":959,
-				"y":347
+				"x":1047,
+				"y":269
 			},
 			"bundleNameTemplate":{
 				"Default":"bundle_b_*.assetbundle"
@@ -169,8 +159,8 @@
 				"+"
 			],
 			"pos":{
-				"x":1314,
-				"y":299
+				"x":1443,
+				"y":248
 			},
 			"enabledBundleOptions":{
 				"Default":[
@@ -186,11 +176,11 @@
 				
 			],
 			"pos":{
-				"x":1532,
-				"y":300
+				"x":1568,
+				"y":359
 			},
 			"exportPath":{
-				"Default":"ExportFolder",
+				"Default":"Export",
 				"Standalone":"ExportFolder_Standalone",
 				"Web":"ExportFolder_Web",
 				"iOS":"ExportFolder_iOS",
@@ -203,17 +193,51 @@
 			"id":"1c5f7427-67d3-403b-b384-283bbc761238",
 			"kind":"BUNDLIZER_GUI",
 			"outputLabels":[
-				"bundles"
+				"bundles",
+				"bundled assets"
 			],
 			"pos":{
-				"x":991,
-				"y":87
+				"x":862,
+				"y":93
 			},
 			"bundleNameTemplate":{
 				"Default":"bundle_a_*.assetbundle"
 			},
 			"bundleUseOutput":{
-				"Default":"False"
+				"Default":"True"
+			}
+		},
+		{
+			"name":"Grouping by Level",
+			"id":"d80a21ee-c153-49c7-b96b-e40270622173",
+			"kind":"GROUPING_GUI",
+			"outputLabels":[
+				"+"
+			],
+			"pos":{
+				"x":355,
+				"y":506
+			},
+			"groupingKeyword":{
+				"Default":"/level*/"
+			}
+		},
+		{
+			"name":"Bundlizer2",
+			"id":"b8c45dd1-5781-41ae-802a-cfa038d20a25",
+			"kind":"BUNDLIZER_GUI",
+			"outputLabels":[
+				"bundles"
+			],
+			"pos":{
+				"x":776,
+				"y":507
+			},
+			"bundleNameTemplate":{
+				"Default":"level_*.assetbundle"
+			},
+			"bundleUseOutput":{
+				"Default":"false"
 			}
 		}
 	],
@@ -255,24 +279,6 @@
 			"toNode":"66c749d4-8493-48c8-b12c-91f24a44aa24"
 		},
 		{
-			"label":"+",
-			"connectionId":"e15b41be-e5b4-486f-a11e-28af03e83494",
-			"fromNode":"66c749d4-8493-48c8-b12c-91f24a44aa24",
-			"toNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad"
-		},
-		{
-			"label":"+",
-			"connectionId":"e4b4766b-ebc1-4594-9112-6d1845c6ef99",
-			"fromNode":"84e49ab1-74a3-41ee-b281-730555d5a655",
-			"toNode":"813382b2-28e5-4e7a-bee7-db072acb9109"
-		},
-		{
-			"label":"+",
-			"connectionId":"b93f881e-c842-4c5e-bd0c-f180b9811ecd",
-			"fromNode":"1e234f6e-a5d5-42cc-9efd-579ea9c075ef",
-			"toNode":"813382b2-28e5-4e7a-bee7-db072acb9109"
-		},
-		{
 			"label":"bundles",
 			"connectionId":"b22a778c-cc40-4390-9350-d15e333e08de",
 			"fromNode":"813382b2-28e5-4e7a-bee7-db072acb9109",
@@ -285,21 +291,45 @@
 			"toNode":"2d444eda-e60e-4d6f-9b85-a53ed642827f"
 		},
 		{
+			"label":"bundles",
+			"connectionId":"38d142cb-2bbe-457e-afcd-43a965cf7405",
+			"fromNode":"1c5f7427-67d3-403b-b384-283bbc761238",
+			"toNode":"2acbe6de-f64b-42e3-b4bd-74a61e39ee4c"
+		},
+		{
+			"label":"+",
+			"connectionId":"b2d52439-de02-4411-999e-25895e350010",
+			"fromNode":"66c749d4-8493-48c8-b12c-91f24a44aa24",
+			"toNode":"1c5f7427-67d3-403b-b384-283bbc761238"
+		},
+		{
+			"label":"bundled assets",
+			"connectionId":"1d2ff78a-e8e1-4d16-be7c-bf4e54e24ba5",
+			"fromNode":"1c5f7427-67d3-403b-b384-283bbc761238",
+			"toNode":"813382b2-28e5-4e7a-bee7-db072acb9109"
+		},
+		{
 			"label":"images",
-			"connectionId":"bc934200-686c-4fb3-8d0b-5d7970ba95c7",
+			"connectionId":"271bd401-0110-4d31-b13a-3b22a9c08542",
 			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
 			"toNode":"2cc186b7-9bb5-4a01-a7f7-8db87e36841d"
 		},
 		{
+			"label":"level",
+			"connectionId":"77877033-2ed6-4116-9223-cdcdf2f1c0a9",
+			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
+			"toNode":"d80a21ee-c153-49c7-b96b-e40270622173"
+		},
+		{
 			"label":"+",
-			"connectionId":"5832312f-f799-47f0-967c-08d7b8f41047",
-			"fromNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad",
-			"toNode":"1c5f7427-67d3-403b-b384-283bbc761238"
+			"connectionId":"d5c34ea8-eacf-4586-9942-74340fca9693",
+			"fromNode":"d80a21ee-c153-49c7-b96b-e40270622173",
+			"toNode":"b8c45dd1-5781-41ae-802a-cfa038d20a25"
 		},
 		{
 			"label":"bundles",
-			"connectionId":"38d142cb-2bbe-457e-afcd-43a965cf7405",
-			"fromNode":"1c5f7427-67d3-403b-b384-283bbc761238",
+			"connectionId":"a211bf4f-24a8-407f-85ff-a8c2249c7319",
+			"fromNode":"b8c45dd1-5781-41ae-802a-cfa038d20a25",
 			"toNode":"2acbe6de-f64b-42e3-b4bd-74a61e39ee4c"
 		}
 	]

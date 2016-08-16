@@ -20,7 +20,7 @@ namespace AssetBundleGraph {
 					loadFilePath,
 					loadFilePath,
 					() => {
-						throw new NodeException(nodeName + ": Load Path is empty.", nodeId);
+						//throw new NodeException(nodeName + ": Load Path is empty.", nodeId);
 					}, 
 					() => {
 						throw new NodeException(nodeName + ": Directory not found: " + loadFilePath, nodeId);
@@ -86,7 +86,7 @@ namespace AssetBundleGraph {
 				loadFilePath,
 				loadFilePath,
 				() => {
-					throw new AssetBundleGraphBuildException(nodeName + ": Load Path is empty.");
+					//throw new AssetBundleGraphBuildException(nodeName + ": Load Path is empty.");
 				}, 
 				() => {
 					throw new AssetBundleGraphBuildException(nodeName + ": Directory not found: " + loadFilePath);

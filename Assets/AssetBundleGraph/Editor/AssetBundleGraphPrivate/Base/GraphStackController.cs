@@ -831,7 +831,7 @@ namespace AssetBundleGraph {
 						*/
 						case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 							var currentLoadFilePath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
-							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
+							var executor = new IntegratedGUILoader(WithAssetsPath(currentLoadFilePath));
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -926,7 +926,7 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 							var currentLoadFilePath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
 
-							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
+							var executor = new IntegratedGUILoader(WithAssetsPath(currentLoadFilePath));
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -1054,6 +1054,11 @@ namespace AssetBundleGraph {
 			var assetPath = Application.dataPath;
 			var projectPath = Directory.GetParent(assetPath).ToString();
 			return FileController.PathCombine(projectPath, pathUnderProjectFolder);
+		}
+
+		public static string WithAssetsPath (string pathUnderAssetsFolder) {
+			var assetPath = Application.dataPath;
+			return FileController.PathCombine(assetPath, pathUnderAssetsFolder);
 		}
 
 		public static T Executor<T> (string typeStr, string nodeId) where T : INodeBase {
@@ -1221,7 +1226,7 @@ namespace AssetBundleGraph {
 			return ShrinkedCurrentPlatform();
 		}
 
-		public static string ProjectName () {
+		public static string GetProjectName () {
 			var assetsPath = Application.dataPath;
 			var projectFolderNameArray = assetsPath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
 			var projectFolderName = projectFolderNameArray[projectFolderNameArray.Length - 2] + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;

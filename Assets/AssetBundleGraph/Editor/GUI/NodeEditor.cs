@@ -24,7 +24,7 @@ namespace AssetBundleGraph {
 		private void DoInspectorLoaderGUI (Node node) {
 			if (node.loadPath == null) return;
 
-			EditorGUILayout.HelpBox("Loader: load files from path.", MessageType.Info);
+			EditorGUILayout.HelpBox("Loader: Load list of files in given directory path.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -40,21 +40,21 @@ namespace AssetBundleGraph {
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				EditorGUILayout.LabelField("Load Path:");
 				var newLoadPath = EditorGUILayout.TextField(
-					GraphStackController.ProjectName(), 
+					GraphStackController.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH, 
 					GraphStackController.ValueFromPlatformAndPackage(
 						node.loadPath.ReadonlyDict(), 
 						node.currentPlatform
 					).ToString()
 				);
-				var loaderNodePath = GraphStackController.WithProjectPath(newLoadPath);
+				var loaderNodePath = GraphStackController.WithAssetsPath(newLoadPath);
 				IntegratedGUILoader.ValidateLoadPath(
 					newLoadPath,
 					loaderNodePath,
 					() => {
-						EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
+						//EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
 					},
 					() => {
-						EditorGUILayout.HelpBox("directory not found:" + loaderNodePath, MessageType.Error);
+						//EditorGUILayout.HelpBox("Directory not found:" + loaderNodePath, MessageType.Error);
 					}
 				);
 
@@ -493,7 +493,7 @@ namespace AssetBundleGraph {
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				EditorGUILayout.LabelField("Export Path:");
 				var newExportPath = EditorGUILayout.TextField(
-					GraphStackController.ProjectName(), 
+					GraphStackController.GetProjectName(), 
 					GraphStackController.ValueFromPlatformAndPackage(
 						node.exportPath.ReadonlyDict(), 
 						node.currentPlatform
