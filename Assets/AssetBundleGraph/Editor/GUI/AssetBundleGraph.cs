@@ -37,6 +37,12 @@ namespace AssetBundleGraph {
 			nodeExceptionPool.Clear();
 		}
 
+		private bool isAnyIssueFound {
+			get {
+				return nodeExceptionPool.Count > 0;
+			}
+		}
+
 		private static void ShowErrorOnNodes (List<Node> nodes) {
 			foreach (var node in nodes) {
 				node.RenewErrorSource();
@@ -745,6 +751,13 @@ namespace AssetBundleGraph {
 
 				GUILayout.FlexibleSpace();
 
+				if(isAnyIssueFound) {
+					GUIStyle errorStyle = new GUIStyle("ErrorLabel");
+					errorStyle.alignment = TextAnchor.MiddleCenter;
+					GUILayout.Label("All errors needs to be fixed before building", errorStyle);
+					GUILayout.FlexibleSpace();
+				}
+
 				GUIStyle tbLabel = new GUIStyle(EditorStyles.toolbar);
 
 				tbLabel.alignment = TextAnchor.MiddleCenter;
@@ -755,9 +768,11 @@ namespace AssetBundleGraph {
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 				GUILayout.Label(AssetBundleGraphPlatformSettings.BuildTargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
+				GUI.enabled = !isAnyIssueFound;
 				if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
 					Run();
 				}
+				GUI.enabled = true;
 			}
 
 			/*
