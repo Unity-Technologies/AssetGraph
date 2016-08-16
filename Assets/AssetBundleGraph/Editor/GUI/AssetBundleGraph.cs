@@ -29,6 +29,8 @@ namespace AssetBundleGraph {
 
 		private bool initialized;
 
+		private bool showErrors;
+
 		public static void AddNodeException (NodeException nodeEx) {
 			nodeExceptionPool.Add(nodeEx);
 		}
@@ -748,10 +750,7 @@ namespace AssetBundleGraph {
 			return nodeDatas;
 		}
 
-		public void OnGUI () {
-
-			Init();
-
+		private void DrawGUIToolBar() {
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
 					Setup();
@@ -781,20 +780,17 @@ namespace AssetBundleGraph {
 					Run();
 				}
 				GUI.enabled = true;
-			}
+			}		
+		}
 
-			/*
-				scroll view.
-			*/
-			// var scaledScrollPos = Node.ScaleEffect(scrollPos);
+		private void DrawGUINodeGraph() {
 			scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-			// scrollPos = scrollPos + (movedScrollPos - scaledScrollPos);
 			{
-				
+
 				// draw node window x N.
 				{
 					BeginWindows();
-					
+
 					nodes.ForEach(node => node.DrawNode());
 
 					EndWindows();
@@ -804,8 +800,8 @@ namespace AssetBundleGraph {
 				foreach (var node in nodes) {
 					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECT_STARTED);
 				}
-				
-				
+
+
 				// draw connections.
 				foreach (var con in connections) {
 					if (connectionThroughputs.ContainsKey(con.connectionId)) { 
@@ -816,7 +812,7 @@ namespace AssetBundleGraph {
 					}
 				}
 
-				
+
 
 				// draw connection output point marks.
 				foreach (var node in nodes) {
@@ -827,17 +823,17 @@ namespace AssetBundleGraph {
 					draw connecting line if modifing connection.
 				*/
 				switch (modifyMode) {
-					case ModifyMode.CONNECT_STARTED: {
+				case ModifyMode.CONNECT_STARTED: {
 						// from start node to mouse.
 						DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition, currentEventSource);
 
 						break;
 					}
-					case ModifyMode.CONNECT_ENDED: {
+				case ModifyMode.CONNECT_ENDED: {
 						// do nothing
 						break;
 					}
-					case ModifyMode.SELECTION_STARTED: {
+				case ModifyMode.SELECTION_STARTED: {
 						GUI.DrawTexture(new Rect(selection.x, selection.y, Event.current.mousePosition.x - selection.x, Event.current.mousePosition.y - selection.y), selectionTex);
 						break;
 					}
@@ -848,12 +844,12 @@ namespace AssetBundleGraph {
 				*/
 				switch (Event.current.type) {
 
-					// draw line while dragging.
-					case EventType.MouseDrag: {
+				// draw line while dragging.
+				case EventType.MouseDrag: {
 						switch (modifyMode) {
-							case ModifyMode.CONNECT_ENDED: {
+						case ModifyMode.CONNECT_ENDED: {
 								switch (Event.current.button) {
-									case 0:{// left click
+								case 0:{// left click
 										if (Event.current.command) {
 											scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
 											modifyMode = ModifyMode.SCALING_STARTED;
@@ -864,7 +860,7 @@ namespace AssetBundleGraph {
 										modifyMode = ModifyMode.SELECTION_STARTED;
 										break;
 									}
-									case 2:{// middle click.
+								case 2:{// middle click.
 										scalePoint = new ScalePoint(Event.current.mousePosition, Node.scaleFactor, 0);
 										modifyMode = ModifyMode.SCALING_STARTED;
 										break;
@@ -872,11 +868,11 @@ namespace AssetBundleGraph {
 								}
 								break;
 							}
-							case ModifyMode.SELECTION_STARTED: {
+						case ModifyMode.SELECTION_STARTED: {
 								// do nothing.
 								break;
 							}
-							case ModifyMode.SCALING_STARTED: {
+						case ModifyMode.SCALING_STARTED: {
 								var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
 								var distance = baseDistance / Node.SCALE_WIDTH;
 								var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
@@ -903,12 +899,12 @@ namespace AssetBundleGraph {
 					use rawType for detect for detectiong mouse-up which raises outside of window.
 				*/
 				switch (Event.current.rawType) {
-					case EventType.MouseUp: {
+				case EventType.MouseUp: {
 						switch (modifyMode) {
-							/*
+						/*
 								select contained nodes & connections.
 							*/
-							case ModifyMode.SELECTION_STARTED: {
+						case ModifyMode.SELECTION_STARTED: {
 								var x = 0f;
 								var y = 0f;
 								var width = 0f;
@@ -936,8 +932,8 @@ namespace AssetBundleGraph {
 								var activeObjectIds = new List<string>();
 
 								var selectedRect = new Rect(x, y, width, height);
-								
-								
+
+
 								foreach (var node in nodes) {
 									var nodeRect = new Rect(node.GetRect());
 									nodeRect.x = nodeRect.x * Node.scaleFactor;
@@ -980,7 +976,7 @@ namespace AssetBundleGraph {
 								break;
 							}
 
-							case ModifyMode.SCALING_STARTED: {
+						case ModifyMode.SCALING_STARTED: {
 								modifyMode = ModifyMode.CONNECT_ENDED;
 								break;
 							}
@@ -988,14 +984,23 @@ namespace AssetBundleGraph {
 						break;
 					}
 				}
-				
+
 				// set rect for scroll.
 				if (nodes.Any()) {
 					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
 				}
 			}
 			EditorGUILayout.EndScrollView();
+		}
 
+		public void OnGUI () {
+
+			Init();
+
+			DrawGUIToolBar();
+
+
+			DrawGUINodeGraph();
 
 			/*
 				detect 

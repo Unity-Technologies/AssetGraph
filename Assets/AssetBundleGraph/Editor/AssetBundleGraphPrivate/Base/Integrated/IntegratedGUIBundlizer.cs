@@ -15,12 +15,18 @@ namespace AssetBundleGraph {
 		}
 
 		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
-			ValidateBundleNameTemplate(
-				bundleNameTemplate,
-				() => {
-					throw new NodeException(nodeName + ":Bundle Name Template is empty.", nodeId);
-				}
-			);
+
+			try {
+				ValidateBundleNameTemplate(
+					bundleNameTemplate,
+					() => {
+						throw new NodeException(nodeName + ":Bundle Name Template is empty.", nodeId);
+					}
+				);
+			} catch (NodeException e) {
+				AssetBundleGraph.AddNodeException(e);
+				return;
+			}
 			
 			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
 			
