@@ -38,6 +38,7 @@ namespace AssetBundleGraph {
 			importer.generateMipsInLinearSpace = importerSource.generateMipsInLinearSpace;
 			importer.grayscaleToAlpha = importerSource.grayscaleToAlpha;
 			importer.heightmapScale = importerSource.heightmapScale;
+
 			importer.isReadable = importerSource.isReadable;
 			importer.lightmap = importerSource.lightmap;
 			importer.linearTexture = importerSource.linearTexture;
@@ -48,9 +49,10 @@ namespace AssetBundleGraph {
 			importer.mipmapFadeDistanceStart = importerSource.mipmapFadeDistanceStart;
 			importer.mipmapFilter = importerSource.mipmapFilter;
 			importer.normalmap = importerSource.normalmap;
+
 			importer.normalmapFilter = importerSource.normalmapFilter;
 			importer.npotScale = importerSource.npotScale;
-			// importer.qualifiesForSpritePacking = importerSource.qualifiesForSpritePacking;
+			// importer.qualifiesForSpritePacking is read only
 			importer.spriteBorder = importerSource.spriteBorder;
 			importer.spriteImportMode = importerSource.spriteImportMode;
 			importer.spritePackingTag = importerSource.spritePackingTag;
@@ -58,6 +60,7 @@ namespace AssetBundleGraph {
 			importer.spritePixelsPerUnit = importerSource.spritePixelsPerUnit;
 			importer.spritesheet = importerSource.spritesheet;
 			importer.textureFormat = importerSource.textureFormat;
+
 			importer.textureType = importerSource.textureType;
 			importer.wrapMode = importerSource.wrapMode;
 		}
@@ -87,7 +90,7 @@ namespace AssetBundleGraph {
 			if (target.normalmap != compareBase.normalmap) return false;
 			if (target.normalmapFilter != compareBase.normalmapFilter) return false;
 			if (target.npotScale != compareBase.npotScale) return false;
-			// if (target.qualifiesForSpritePacking != compareBase.qualifiesForSpritePacking) return false;
+			// target.qualifiesForSpritePacking is read only
 			if (target.spriteBorder != compareBase.spriteBorder) return false;
 			if (target.spriteImportMode != compareBase.spriteImportMode) return false;
 			if (target.spritePackingTag != compareBase.spritePackingTag) return false;
@@ -154,6 +157,7 @@ namespace AssetBundleGraph {
 			importer.bakeIK = importerSource.bakeIK;
 			importer.clipAnimations = importerSource.clipAnimations;
 			// importer.defaultClipAnimations = importerSource.defaultClipAnimations;
+
 			importer.extraExposedTransformPaths = importerSource.extraExposedTransformPaths;
 			// importer.fileScale = importerSource.fileScale;
 			importer.generateAnimations = importerSource.generateAnimations;
@@ -164,6 +168,7 @@ namespace AssetBundleGraph {
 			importer.importBlendShapes = importerSource.importBlendShapes;
 			// importer.importedTakeInfos = importerSource.importedTakeInfos;
 			importer.importMaterials = importerSource.importMaterials;
+
 			// importer.isBakeIKSupported = importerSource.isBakeIKSupported;
 			// importer.isFileScaleUsed = importerSource.isFileScaleUsed;
 			importer.isReadable = importerSource.isReadable;
@@ -174,6 +179,7 @@ namespace AssetBundleGraph {
 			importer.meshCompression = importerSource.meshCompression;
 			importer.motionNodeName = importerSource.motionNodeName;
 			importer.importNormals = importerSource.importNormals;
+
 			importer.normalSmoothingAngle = importerSource.normalSmoothingAngle;
 			importer.optimizeGameObjects = importerSource.optimizeGameObjects;
 			importer.optimizeMesh = importerSource.optimizeMesh;
@@ -184,14 +190,12 @@ namespace AssetBundleGraph {
 			importer.secondaryUVPackMargin = importerSource.secondaryUVPackMargin;
 			importer.sourceAvatar = importerSource.sourceAvatar;
 			importer.swapUVChannels = importerSource.swapUVChannels;
+
 			importer.importTangents = importerSource.importTangents;
 			// importer.transformPaths = importerSource.transformPaths;
 			importer.useFileUnits = importerSource.useFileUnits;
 		}
 
-		// public void OnPostprocessModel (GameObject g) {}
-		// public void OnAssignMaterialModel (Material material, Renderer renderer) {}
-		
 		public static bool IsSameModelSetting (ModelImporter target, ModelImporter compareBase) {
 			if (target.addCollider != compareBase.addCollider) return false;
 			if (target.animationCompression != compareBase.animationCompression) return false;
