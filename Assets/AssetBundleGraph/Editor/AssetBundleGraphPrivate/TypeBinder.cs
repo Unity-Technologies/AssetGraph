@@ -61,7 +61,6 @@ namespace AssetBundleGraph {
 			".sh",
 			".json",
 			".js",
-			".unity",
 		};
 
 		public static Type AssumeTypeOfAsset (string assetPath) {
