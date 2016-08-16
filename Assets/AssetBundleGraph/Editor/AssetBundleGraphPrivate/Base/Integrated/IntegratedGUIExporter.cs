@@ -61,7 +61,9 @@ namespace AssetBundleGraph {
 
 				foreach (var source in inputSources) {
 					if (isRun) {
-						if (!Directory.Exists(exportFilePath)) Directory.CreateDirectory(exportFilePath);
+						if (!Directory.Exists(exportFilePath)) {
+							Directory.CreateDirectory(exportFilePath);
+						}
 					}
 					
 					var destinationSourcePath = source.importedPath;
@@ -84,8 +86,12 @@ namespace AssetBundleGraph {
 					var parentDir = Directory.GetParent(destination).ToString();
 
 					if (isRun) {
-						if (!Directory.Exists(parentDir)) Directory.CreateDirectory(parentDir);
-						if (File.Exists(destination)) File.Delete(destination);
+						if (!Directory.Exists(parentDir)) {
+							Directory.CreateDirectory(parentDir);
+						}
+						if (File.Exists(destination)) {
+							File.Delete(destination);
+						}
 						if (string.IsNullOrEmpty(source.importedPath)) {
 							failedExports.Add(source.absoluteSourcePath);
 							continue;
