@@ -24,7 +24,7 @@ namespace AssetBundleGraph {
 		private void DoInspectorLoaderGUI (Node node) {
 			if (node.loadPath == null) return;
 
-			EditorGUILayout.HelpBox("Loader: Load list of files in given directory path.", MessageType.Info);
+			EditorGUILayout.HelpBox("Loader: Load assets in given directory path.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -74,7 +74,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorFilterScriptGUI (Node node) {
-			EditorGUILayout.HelpBox("Filter: filtering files by script.", MessageType.Info);
+			EditorGUILayout.HelpBox("Filter(Script): Filter given assets by script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			EditorGUILayout.LabelField("Script Path", node.scriptPath);
@@ -88,7 +88,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorFilterGUI (Node node) {
-			EditorGUILayout.HelpBox("Filter: filtering files by keywords and types.", MessageType.Info);
+			EditorGUILayout.HelpBox("Filter: Filter given assets by keywords and types.", MessageType.Info);
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
@@ -182,7 +182,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorImportSettingGUI (Node node) {
-			EditorGUILayout.HelpBox("ImportSetting: applying settings.", MessageType.Info);
+			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -237,7 +237,7 @@ namespace AssetBundleGraph {
 		private void DoInspectorGroupingGUI (Node node) {
 			if (node.groupingKeyword == null) return;
 
-			EditorGUILayout.HelpBox("Grouping: grouping files by one keyword.", MessageType.Info);
+			EditorGUILayout.HelpBox("Grouping: Create group of assets.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -255,10 +255,10 @@ namespace AssetBundleGraph {
 				IntegratedGUIGrouping.ValidateGroupingKeyword(
 					newGroupingKeyword,
 					() => {
-						EditorGUILayout.HelpBox("groupingKeyword is empty.", MessageType.Error);
+//						EditorGUILayout.HelpBox("groupingKeyword is empty.", MessageType.Error);
 					},
 					() => {
-						EditorGUILayout.HelpBox("grouping keyword does not contain " + AssetBundleGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + newGroupingKeyword, MessageType.Error);
+//						EditorGUILayout.HelpBox("grouping keyword does not contain " + AssetBundleGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + newGroupingKeyword, MessageType.Error);
 					}
 				);
 
@@ -277,14 +277,14 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorPrefabricatorScriptGUI (Node node) {
-			EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
+			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			EditorGUILayout.LabelField("Script Path", node.scriptPath);
 		}
 
 		private void DoInspectorPrefabricatorGUI (Node node) {
-			EditorGUILayout.HelpBox("Prefabricator: generate prefab by PrefabricatorBase extended script.", MessageType.Info);
+			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
@@ -320,7 +320,7 @@ namespace AssetBundleGraph {
 		private void DoInspectorBundlizerGUI (Node node) {
 			if (node.bundleNameTemplate == null) return;
 
-			EditorGUILayout.HelpBox("Bundlizer: bundle resources to AssetBundle by template.", MessageType.Info);
+			EditorGUILayout.HelpBox("Bundlizer: Create asset bundle settings with given group of assets.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -339,7 +339,7 @@ namespace AssetBundleGraph {
 				IntegratedGUIBundlizer.ValidateBundleNameTemplate(
 					bundleNameTemplate,
 					() => {
-						EditorGUILayout.HelpBox("no Bundle Name Template set.", MessageType.Error);
+//						EditorGUILayout.HelpBox("No Bundle Name Template set.", MessageType.Error);
 					}
 				);
 
@@ -387,7 +387,7 @@ namespace AssetBundleGraph {
 		private void DoInspectorBundleBuilderGUI (Node node) {
 			if (node.enabledBundleOptions == null) return;
 
-			EditorGUILayout.HelpBox("BundleBuilder: generate AssetBundle by AssetBundle name settings.", MessageType.Info);
+			EditorGUILayout.HelpBox("BundleBuilder: Build asset bundles with given asset bundle settings.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -483,7 +483,7 @@ namespace AssetBundleGraph {
 		private void DoInspectorExporterGUI (Node node) {
 			if (node.exportPath == null) return;
 
-			EditorGUILayout.HelpBox("Exporter: export files to path.", MessageType.Info);
+			EditorGUILayout.HelpBox("Exporter: Export given files to output directory.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
