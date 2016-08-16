@@ -173,7 +173,9 @@ namespace AssetBundleGraph {
 			importer.materialSearch = importerSource.materialSearch;
 			importer.meshCompression = importerSource.meshCompression;
 			importer.motionNodeName = importerSource.motionNodeName;
-			importer.normalImportMode = importerSource.normalImportMode;
+
+			importer.importNormals = importerSource.importNormals;
+
 			importer.normalSmoothingAngle = importerSource.normalSmoothingAngle;
 			importer.optimizeGameObjects = importerSource.optimizeGameObjects;
 			importer.optimizeMesh = importerSource.optimizeMesh;
@@ -183,9 +185,8 @@ namespace AssetBundleGraph {
 			importer.secondaryUVHardAngle = importerSource.secondaryUVHardAngle;
 			importer.secondaryUVPackMargin = importerSource.secondaryUVPackMargin;
 			importer.sourceAvatar = importerSource.sourceAvatar;
-			importer.splitTangentsAcrossSeams = importerSource.splitTangentsAcrossSeams;
 			importer.swapUVChannels = importerSource.swapUVChannels;
-			importer.tangentImportMode = importerSource.tangentImportMode;
+			importer.importTangents = importerSource.importTangents;
 			// importer.transformPaths = importerSource.transformPaths;
 			importer.useFileUnits = importerSource.useFileUnits;
 		}
@@ -302,7 +303,7 @@ namespace AssetBundleGraph {
 			if (target.materialSearch != compareBase.materialSearch) return false;
 			if (target.meshCompression != compareBase.meshCompression) return false;
 			if (target.motionNodeName != compareBase.motionNodeName) return false;
-			if (target.normalImportMode != compareBase.normalImportMode) return false;
+			if (target.importNormals != compareBase.importNormals) return false;
 			if (target.normalSmoothingAngle != compareBase.normalSmoothingAngle) return false;
 			if (target.optimizeGameObjects != compareBase.optimizeGameObjects) return false;
 			if (target.optimizeMesh != compareBase.optimizeMesh) return false;
@@ -313,9 +314,8 @@ namespace AssetBundleGraph {
 			if (target.secondaryUVHardAngle != compareBase.secondaryUVHardAngle) return false;
 			if (target.secondaryUVPackMargin != compareBase.secondaryUVPackMargin) return false;
 			if (target.sourceAvatar != compareBase.sourceAvatar) return false;
-			if (target.splitTangentsAcrossSeams != compareBase.splitTangentsAcrossSeams) return false;
 			if (target.swapUVChannels != compareBase.swapUVChannels) return false;
-			if (target.tangentImportMode != compareBase.tangentImportMode) return false;
+			if (target.importTangents != compareBase.importTangents) return false;
 			// if (target.transformPaths != compareBase.transformPaths) return false;
 			if (target.useFileUnits != compareBase.useFileUnits) return false;
 
