@@ -505,10 +505,15 @@ namespace AssetBundleGraph {
 					newExportPath,
 					exporterrNodePath,
 					() => {
-						EditorGUILayout.HelpBox("export path is empty.", MessageType.Error);
+						//EditorGUILayout.HelpBox("export path is empty.", MessageType.Error);
 					},
 					() => {
-						EditorGUILayout.HelpBox("directory not found:" + exporterrNodePath, MessageType.Error);
+						using (new EditorGUILayout.HorizontalScope()) {
+							EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
+							if(GUILayout.Button("Create directory")) {
+							}
+						}
+						//EditorGUILayout.HelpBox("directory not found:" + exporterrNodePath, MessageType.Error);
 					}
 				);
 
