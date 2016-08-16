@@ -28,7 +28,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.GetCurrentPlatformPackageFolder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -66,7 +66,7 @@ namespace AssetBundleGraph {
 				}
 			);
 			
-			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
+			var recommendedBundleOutputDir = FileController.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, GraphStackController.GetCurrentPlatformPackageFolder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 

@@ -830,7 +830,7 @@ namespace AssetBundleGraph {
 							GUIs
 						*/
 						case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-							var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
+							var currentLoadFilePath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
 							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
@@ -849,7 +849,7 @@ namespace AssetBundleGraph {
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-							var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
+							var executor = new IntegratedGUIGrouping(GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -866,8 +866,8 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-							var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.bundleNameTemplate);
-							var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
+							var bundleNameTemplate = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleNameTemplate);
+							var bundleUseOutputResources = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
 							
 							var useOutputResources = false;
 							switch (bundleUseOutputResources) {
@@ -883,14 +883,14 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-							var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(nodeKind, currentNodeData.enabledBundleOptions);
+							var bundleOptions = GetGetCurrentPlatformPackageOrDefaultFromDictList(nodeKind, currentNodeData.enabledBundleOptions);
 							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-							var exportPath = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.exportFilePath);
+							var exportPath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.exportFilePath);
 							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
@@ -924,7 +924,7 @@ namespace AssetBundleGraph {
 							GUIs
 						*/
 						case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-							var currentLoadFilePath = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
+							var currentLoadFilePath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
 
 							var executor = new IntegratedGUILoader(WithProjectPath(currentLoadFilePath));
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
@@ -944,7 +944,7 @@ namespace AssetBundleGraph {
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-							var executor = new IntegratedGUIGrouping(Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
+							var executor = new IntegratedGUIGrouping(GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -967,8 +967,8 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-							var bundleNameTemplate = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.bundleNameTemplate);
-							var bundleUseOutputResources = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
+							var bundleNameTemplate = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleNameTemplate);
+							var bundleUseOutputResources = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
 							
 							var useOutputResources = false;
 							switch (bundleUseOutputResources) {
@@ -984,14 +984,14 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-							var bundleOptions = Current_Platform_Package_OrDefaultFromDictList(nodeKind, currentNodeData.enabledBundleOptions);
+							var bundleOptions = GetGetCurrentPlatformPackageOrDefaultFromDictList(nodeKind, currentNodeData.enabledBundleOptions);
 							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-							var exportPath = Current_Platform_Package_OrDefaultFromDict(nodeKind, currentNodeData.exportFilePath);
+							var exportPath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.exportFilePath);
 							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
@@ -1065,7 +1065,7 @@ namespace AssetBundleGraph {
 		}
 
 		public static List<string> GetCachedDataByNodeKind (AssetBundleGraphSettings.NodeKind nodeKind, string nodeId) {
-			var platform_package_key_candidate = GraphStackController.Current_Platform_Package_Folder();
+			var platformPackageKeyCandidate = GraphStackController.GetCurrentPlatformPackageFolder();
 
 			switch (nodeKind) {
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
@@ -1078,7 +1078,7 @@ namespace AssetBundleGraph {
 					var cachedPathBase = FileController.PathCombine(
 						AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, 
 						nodeId,
-						platform_package_key_candidate
+						platformPackageKeyCandidate
 					);
 
 					// no cache folder, no cache.
@@ -1107,7 +1107,7 @@ namespace AssetBundleGraph {
 					var cachedPathBase = FileController.PathCombine(
 						AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, 
 						nodeId,
-						platform_package_key_candidate
+						platformPackageKeyCandidate
 					);
 
 					// no cache folder, no cache.
@@ -1167,22 +1167,22 @@ namespace AssetBundleGraph {
 			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}
 
-		public static List<string> Current_Platform_Package_OrDefaultFromDictList (AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> packageDict) {
-			var platform_package_key_candidate = Current_Platform_Package_Folder();
+		public static List<string> GetGetCurrentPlatformPackageOrDefaultFromDictList (AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> packageDict) {
+			var platformPackageKeyCandidate = GetCurrentPlatformPackageFolder();
 			
-			if (packageDict.ContainsKey(platform_package_key_candidate)) return packageDict[platform_package_key_candidate];
+			if (packageDict.ContainsKey(platformPackageKeyCandidate)) return packageDict[platformPackageKeyCandidate];
 			
 			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
 			
 			throw new Exception("node kind:" + kind + " Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
 		}
 
-		public static string Current_Platform_Package_OrDefaultFromDict (AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> packageDict) {
-			var platform_package_key_candidate = Current_Platform_Package_Folder();
+		public static string GetCurrentPlatformPackageOrDefaultFromDict (AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> packageDict) {
+			var platformPackageKeyCandidate = GetCurrentPlatformPackageFolder();
 			/*
 				check best match for platform + pacakge.
 			*/
-			if (packageDict.ContainsKey(platform_package_key_candidate)) return packageDict[platform_package_key_candidate];
+			if (packageDict.ContainsKey(platformPackageKeyCandidate)) return packageDict[platformPackageKeyCandidate];
 			
 			/*
 				check next match for defaultPlatform + package.
@@ -1203,7 +1203,7 @@ namespace AssetBundleGraph {
 			return currentPlatformCandidate;
 		}
 
-		public static string Current_Platform_Package_Folder () {
+		public static string GetCurrentPlatformPackageFolder () {
 			var currentPlatformCandidate = ShrinkedCurrentPlatform();
 
 			return Platform_Package_Key(currentPlatformCandidate);

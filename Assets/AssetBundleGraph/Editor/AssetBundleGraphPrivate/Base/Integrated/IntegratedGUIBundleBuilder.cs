@@ -36,7 +36,7 @@ namespace AssetBundleGraph {
 			// RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
 			
 			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
-			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.Current_Platform_Package_Folder());
+			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.GetCurrentPlatformPackageFolder());
 			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
 			
@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 				platform's bundle & manifest. 
 				e.g. iOS & iOS.manifest.
 			*/
-			var currentPlatform_Package_BundleFile = GraphStackController.Current_Platform_Package_Folder();
+			var currentPlatform_Package_BundleFile = GraphStackController.GetCurrentPlatformPackageFolder();
 			var currentPlatform_Package_BundleFileManifest = currentPlatform_Package_BundleFile + AssetBundleGraphSettings.MANIFEST_FOOTER;
 			
 			intendedAssetNames.Add(currentPlatform_Package_BundleFile);

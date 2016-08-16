@@ -22,7 +22,7 @@ namespace AssetBundleGraph {
 				throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before prefabricated.", nodeId);
 			}
 				
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());				
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.GetCurrentPlatformPackageFolder());				
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			
 			foreach (var groupKey in groupedSources.Keys) {
@@ -100,7 +100,7 @@ namespace AssetBundleGraph {
 				throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before prefabricated.", nodeId);
 			}
 			
-			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.Current_Platform_Package_Folder());
+			var recommendedPrefabOutputDirectoryPath = FileController.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, nodeId, GraphStackController.GetCurrentPlatformPackageFolder());
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			var cachedOrGenerated = new List<string>();
