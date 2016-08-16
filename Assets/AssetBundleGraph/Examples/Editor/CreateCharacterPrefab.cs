@@ -11,12 +11,12 @@ using System.Collections.Generic;
 	Drag & Drop this C# script to AssetBundleGraph.
 */
 public class CreateCharacterPrefab : AssetBundleGraph.PrefabricatorBase {
-	public override void Estimate (string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+	public override void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
 		var prefabName = groupKey + "_chara.prefab";
 		Prefabricate(prefabName);
 	}
 	
-	public override void Run (string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+	public override void CreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 		/*
 			create character's prefab.
 

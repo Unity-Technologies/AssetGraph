@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 					return newPrefabOutputPath;
 				};
 
-				Estimate(groupKey, assets, recommendedPrefabPath, Prefabricate);
+				EstimatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
 
 				if (!isUsed) {
 					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
@@ -169,7 +169,7 @@ namespace AssetBundleGraph {
 					execute inheritee's input method.
 				*/
 				try {
-					Run(groupKey, assets, recommendedPrefabPath, Prefabricate);
+					CreatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
 				} catch (Exception e) {
 					Debug.LogError("Prefabricator:" + this + " error:" + e);
 					throw new NodeException("Prefabricator:" + this + " error:" + e, nodeId);
@@ -244,13 +244,14 @@ namespace AssetBundleGraph {
 			isUsed = true;
 		}
 		
-		public virtual void Estimate (string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
-			Debug.LogError("should implement \"public override void Estimate (List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
+		public virtual void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+			Debug.LogError(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this);
+			throw new NodeException(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this, nodeId);
 		}
 
-
-		public virtual void Run (string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
-			Debug.LogError("should implement \"public override void Run (List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir)\" in class:" + this);
+		public virtual void CreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+			Debug.LogError(nodeName + ":Subclass did not implement \"CreatePrefab ()\" method:" + this);
+			throw new NodeException(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this, nodeId);
 		}
 
 

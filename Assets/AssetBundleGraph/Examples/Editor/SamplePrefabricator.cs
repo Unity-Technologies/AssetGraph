@@ -6,16 +6,35 @@ using System.Collections.Generic;
 
 public class SamplePrefabricator : AssetBundleGraph.PrefabricatorBase {
 	
-	public override void Estimate (string groupKey, List<AssetBundleGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+	public override void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+		if( sources.Count < 3 ) {
+			throw new AssetBundleGraph.NodeException("SamplePrefabricator needs at least 3 assets to create Prefab.", nodeId);
+		}
+		if( sources[0].assetType != typeof(Texture2D) ) {
+			throw new AssetBundleGraph.NodeException("First asset is not Texture.", nodeId);
+		}
+		if( sources[2].assetType != typeof(Material) ) {
+			throw new AssetBundleGraph.NodeException("Third asset is not Material.", nodeId);
+		}
 		Prefabricate("prefab.prefab");
 	}
 	
-	public override void Run (string groupKey, List<AssetBundleGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+	public override void CreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 
 		/*
 			you can see what incoming to this Prefabricator at the Inspector between Prefabricator to next node.
 			these codes are based on that information.
 		*/
+
+		if( sources.Count < 3 ) {
+			throw new AssetBundleGraph.NodeException("Not enough assets are given to create Prefab.", nodeId);
+		}
+		if( sources[0].assetType != typeof(Texture2D) ) {
+			throw new AssetBundleGraph.NodeException("First asset is not Texture.", nodeId);
+		}
+		if( sources[2].assetType != typeof(Material) ) {
+			throw new AssetBundleGraph.NodeException("Third asset is not Material.", nodeId);
+		}
 
 		// get texture.
 		var textureAssetPath = sources[0].assetPath;
