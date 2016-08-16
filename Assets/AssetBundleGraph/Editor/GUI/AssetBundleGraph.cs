@@ -61,6 +61,14 @@ namespace AssetBundleGraph {
 			var window = GetWindow<AssetBundleGraph>();
 		}
 
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
+		public static bool BuildFromMenuValidator () {
+			var window = GetWindow<AssetBundleGraph>();
+
+			window.Setup();
+			return !window.isAnyIssueFound;
+		}
+
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
 			Run();
