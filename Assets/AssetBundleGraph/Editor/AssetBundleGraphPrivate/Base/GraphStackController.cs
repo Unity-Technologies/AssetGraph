@@ -145,10 +145,10 @@ namespace AssetBundleGraph {
 							on validation, filter script receives all groups to only one group. group key is "0".
 						*/
 						if (kind == AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT) {
-							var outoutLabelsSource = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
-							var outoutLabelsSet = new HashSet<string>();
-							foreach (var source in outoutLabelsSource) {
-								outoutLabelsSet.Add(source.ToString());
+							var outputLabelsSource = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+							var outputLabelsSet = new HashSet<string>();
+							foreach (var source in outputLabelsSource) {
+								outputLabelsSet.Add(source.ToString());
 							}
 
 							var latestLabels = new HashSet<string>();
@@ -167,9 +167,9 @@ namespace AssetBundleGraph {
 								Output
 							);
 
-							if (!outoutLabelsSet.SetEquals(latestLabels)) {
+							if (!outputLabelsSet.SetEquals(latestLabels)) {
 								changed = true;
-								newNodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] = latestLabels.ToList();
+								newNodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] = latestLabels.ToList();
 							}
 						}
 						break;
@@ -251,6 +251,7 @@ namespace AssetBundleGraph {
 
 				var connectionLabel = connectionDict[AssetBundleGraphSettings.CONNECTION_LABEL] as string;
 				var fromNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
+				var fromNodePointId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID] as string;
 				var toNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE] as string;
 				
 				// detect start node.
@@ -261,6 +262,17 @@ namespace AssetBundleGraph {
 					}
 					).ToList();
 				if (!fromNodeCandidates.Any()) {
+					changed = true;
+					continue;
+				}
+
+				
+				// start node should contain specific connection point.
+				var candidateNode = fromNodeCandidates[0];
+				var candidateOutputPointIdsSources = candidateNode[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+				var candidateOutputPointIds = new List<string>();
+				foreach (var candidateOutputPointIdsSource in candidateOutputPointIdsSources) candidateOutputPointIds.Add(candidateOutputPointIdsSource as string);
+				if (!candidateOutputPointIdsSources.Contains(fromNodePointId)) {
 					changed = true;
 					continue;
 				}
@@ -280,7 +292,7 @@ namespace AssetBundleGraph {
 				// this connection has start node & end node.
 				// detect connectionLabel.
 				var fromNode = fromNodeCandidates[0];
-				var connectionLabelsSource = fromNode[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
+				var connectionLabelsSource = fromNode[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
 				var connectionLabels = new List<string>();
 				foreach (var connectionLabelSource in connectionLabelsSource) {
 					connectionLabels.Add(connectionLabelSource as string);

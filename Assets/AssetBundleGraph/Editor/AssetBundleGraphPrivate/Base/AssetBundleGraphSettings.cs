@@ -111,8 +111,8 @@ namespace AssetBundleGraph {
 		public const string NODE_POS = "pos";
 		public const string NODE_POS_X = "x";
 		public const string NODE_POS_Y = "y";
-		public const string NODE_OUTPUT_LABELS = "outputLabels";
-		public const string NODE_PACKAGES = "packages";
+		public const string NODE_OUTPUTPOINT_LABELS = "outputPointLabels";
+		public const string NODE_OUTPUTPOINT_IDS = "outputPointIds";
 
 		// node dependent settings.
 		public const string NODE_LOADER_LOAD_PATH = "loadPath";
@@ -133,6 +133,7 @@ namespace AssetBundleGraph {
 		public const string CONNECTION_LABEL = "label";
 		public const string CONNECTION_ID = "connectionId";
 		public const string CONNECTION_FROMNODE = "fromNode";
+		public const string CONNECTION_FROMNODE_CONPOINT_ID = "fromNodeConPointId";
 		public const string CONNECTION_TONODE = "toNode";
 		
 		// by default, AssetBundleGraph's node has only 1 InputPoint. and 

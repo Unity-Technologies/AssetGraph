@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEditor;
 
 namespace AssetBundleGraph {
-	public class OutputPoint : ConnectionPoint {
-		public OutputPoint (string id) : base (id, false, true) {}
+public class OutputPoint : ConnectionPoint {
+		public OutputPoint (string pointId, string label) : base (pointId, label, false, true) {}
 
 		public override void UpdatePos (int index, int max, float width, float height) {
 			var y = ((height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT/2f;

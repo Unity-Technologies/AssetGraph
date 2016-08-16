@@ -1,7 +1,6 @@
 using System;
 
 using UnityEngine;
-using UnityEditor;
 
 namespace AssetBundleGraph {
 	[Serializable] public class ConnectionPoint {
@@ -13,8 +12,8 @@ namespace AssetBundleGraph {
 		[SerializeField] public Rect buttonRect;
 		[SerializeField] public string buttonStyle;
 
-		public ConnectionPoint (string label, bool input, bool output) {
-			this.pointId = Guid.NewGuid().ToString();
+		public ConnectionPoint (string pointId, string label, bool input, bool output) {
+			this.pointId = pointId;
 			this.label = label;
 			this.isInput = input;
 			this.isOutput = output;

@@ -447,7 +447,7 @@ namespace AssetBundleGraph {
 		}
 			
 		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
-			connectionPoints.Insert(addedIndex, new OutputPoint(keyword));
+			connectionPoints.Insert(addedIndex, new OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
@@ -473,7 +473,7 @@ namespace AssetBundleGraph {
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex != -1) return;
 			
-			connectionPoints.Add(new OutputPoint(AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL));
+			connectionPoints.Add(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL));
 			UpdateNodeRect();
 		}
 		
@@ -783,14 +783,22 @@ namespace AssetBundleGraph {
 						.Select(p => p.label)
 						.ToList();
 		}
+		
+		public List<string> OutputPointIds () {
+			return connectionPoints
+						.Where(p => p.isOutput)
+						.Select(p => p.pointId)
+						.ToList();
+		}
 
-		public ConnectionPoint ConnectionPointFromLabel (string label) {
+		public OutputPoint ConnectionPointFromConPointId (string pointId) {
+			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
+			return targetPoints[0] as OutputPoint;
+		}
+
+		public InputPoint ConnectionPointFromLabel (string label) {
 			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
-			if (!targetPoints.Any()) {
-				Debug.LogError("no connection label:" + label + " exists in node name:" + name);
-				return null;
-			}
-			return targetPoints[0];
+			return targetPoints[0] as InputPoint;
 		}
 
 		public void DrawNode () {
@@ -1141,18 +1149,18 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
-		public Vector2 GlobalConnectionPointPosition(ConnectionPoint p) {
+		public Vector2 GlobalConnectionPointPosition(ConnectionPoint point) {
 			var x = 0f;
 			var y = 0f;
-
-			if (p.isInput) {
+			
+			if (point.isInput) {
 				x = baseRect.x;
-				y = baseRect.y + p.buttonRect.y + (p.buttonRect.height / 2f) - 1f;
+				y = baseRect.y + point.buttonRect.y + (point.buttonRect.height / 2f) - 1f;
 			}
 
-			if (p.isOutput) {
+			if (point.isOutput) {
 				x = baseRect.x + baseRect.width;
-				y = baseRect.y + p.buttonRect.y + (p.buttonRect.height / 2f) - 1f;
+				y = baseRect.y + point.buttonRect.y + (point.buttonRect.height / 2f) - 1f;
 			}
 
 			return new Vector2(x, y);

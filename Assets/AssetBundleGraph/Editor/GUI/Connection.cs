@@ -23,10 +23,10 @@ namespace AssetBundleGraph {
 		[SerializeField] public string label;
 		[SerializeField] public string connectionId;
 
-		[SerializeField] public string startNodeId;
-		[SerializeField] public ConnectionPoint outputPoint;
+		[SerializeField] public string outputNodeId;
+		[SerializeField] public OutputPoint outputPoint;
 
-		[SerializeField] public string endNodeId;
+		[SerializeField] public string inputNodeId;
 		[SerializeField] public ConnectionPoint inputPoint;
 
 		[SerializeField] public ConnectionInspector conInsp;
@@ -35,7 +35,7 @@ namespace AssetBundleGraph {
 
 		private Rect buttonRect;
 
-		public static Connection LoadConnection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
+		public static Connection LoadConnection (string label, string connectionId, string startNodeId, OutputPoint output, string endNodeId, InputPoint input) {
 			return new Connection(
 				label,
 				connectionId,
@@ -46,7 +46,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Connection NewConnection (string label, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
+		public static Connection NewConnection (string label, string startNodeId, OutputPoint output, string endNodeId, InputPoint input) {
 			return new Connection(
 				label,
 				Guid.NewGuid().ToString(),
@@ -57,16 +57,16 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		private Connection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
+		private Connection (string label, string connectionId, string startNodeId, OutputPoint output, string endNodeId, InputPoint input) {
 			conInsp = ScriptableObject.CreateInstance<ConnectionInspector>();
 			conInsp.hideFlags = HideFlags.DontSave;
 
 			this.label = label;
 			this.connectionId = connectionId;
 
-			this.startNodeId = startNodeId;
+			this.outputNodeId = startNodeId;
 			this.outputPoint = output;
-			this.endNodeId = endNodeId;
+			this.inputNodeId = endNodeId;
 			this.inputPoint = input;
 
 			connectionButtonStyle = "sv_label_0";
@@ -132,29 +132,34 @@ namespace AssetBundleGraph {
 			return buttonRect;
 		}
 		
+		/**
+			throughputListDict contains:
+				group/
+					throughput assets
+		*/
 		public void DrawConnection (List<Node> nodes, Dictionary<string, List<ThroughputAsset>> throughputListDict) {
-			var startNodes = nodes.Where(node => node.nodeId == startNodeId).ToList();
+			var startNodes = nodes.Where(node => node.nodeId == outputNodeId).ToList();
 			if (!startNodes.Any()) return;
+			
+			var startPoint = startNodes[0].GlobalConnectionPointPosition(outputPoint);
+			startPoint = Node.ScaleEffect(startPoint);
+			var startV3 = new Vector3(startPoint.x, startPoint.y, 0f);
 
-			var start = startNodes[0].GlobalConnectionPointPosition(outputPoint);
-			start = Node.ScaleEffect(start);
-			var startV3 = new Vector3(start.x, start.y, 0f);
-
-			var endNodes = nodes.Where(node => node.nodeId == endNodeId).ToList();
+			var endNodes = nodes.Where(node => node.nodeId == inputNodeId).ToList();
 			if (!endNodes.Any()) return;
 
-			var end = endNodes[0].GlobalConnectionPointPosition(inputPoint);
-			end = Node.ScaleEffect(end);
-			var endV3 = new Vector3(end.x, end.y + 1f, 0f);
+			var endPoint = endNodes[0].GlobalConnectionPointPosition(inputPoint);
+			endPoint = Node.ScaleEffect(endPoint);
+			var endV3 = new Vector3(endPoint.x, endPoint.y + 1f, 0f);
 			
-			var centerPoint = start + ((end - start) / 2);
+			var centerPoint = startPoint + ((endPoint - startPoint) / 2);
 			var centerPointV3 = new Vector3(centerPoint.x, centerPoint.y, 0f);
 
-			var pointDistance = (end.x - start.x) / 3f;
+			var pointDistance = (endPoint.x - startPoint.x) / 3f;
 			if (pointDistance < AssetBundleGraphGUISettings.CONNECTION_CURVE_LENGTH) pointDistance = AssetBundleGraphGUISettings.CONNECTION_CURVE_LENGTH;
 
-			var startTan = new Vector3(start.x + pointDistance, start.y, 0f);
-			var endTan = new Vector3(end.x - pointDistance, end.y, 0f);
+			var startTan = new Vector3(startPoint.x + pointDistance, startPoint.y, 0f);
+			var endTan = new Vector3(endPoint.x - pointDistance, endPoint.y, 0f);
 
 			Handles.DrawBezier(startV3, endV3, startTan, endTan, Color.gray, null, 4f);
 
@@ -246,9 +251,9 @@ namespace AssetBundleGraph {
 
 		public bool IsSameDetail (Node start, ConnectionPoint output, Node end, ConnectionPoint input) {
 			if (
-				startNodeId == start.nodeId &&
+				outputNodeId == start.nodeId &&
 				outputPoint == output && 
-				endNodeId == end.nodeId &&
+				inputNodeId == end.nodeId &&
 				inputPoint == input
 			) {
 				return true;
