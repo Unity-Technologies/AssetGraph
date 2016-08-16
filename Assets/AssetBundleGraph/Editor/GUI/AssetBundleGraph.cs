@@ -216,7 +216,6 @@ namespace AssetBundleGraph {
 
 			// load other textures
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
-			selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
 
 			if (nodes.Any()) UpdateSpacerRect();
 		}
@@ -236,7 +235,15 @@ namespace AssetBundleGraph {
 
 		public ConnectionPoint modifingConnnectionPoint;
 
-		private Texture2D selectionTex;
+		private Texture2D _selectionTex;
+		private Texture2D selectionTex {
+			get{
+				if(_selectionTex == null) {
+					_selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
+				}
+				return _selectionTex;
+			}
+		}
 
 		public enum ModifyMode : int {
 			CONNECT_STARTED,
@@ -280,7 +287,7 @@ namespace AssetBundleGraph {
 				this.type = type;
 			}
 		}
-		[SerializeField] private CopyField copyField = new CopyField();
+		private CopyField copyField = new CopyField();
 		
 		// hold selection start data.
 		public struct AssetBundleGraphSelection {
@@ -517,7 +524,7 @@ namespace AssetBundleGraph {
 			try {
 				Setup();
 			} catch (Exception e) {
-				Debug.LogError("reload error:" + e);
+				Debug.LogError("Reload Error:" + e);
 			}
 		}
 
@@ -530,7 +537,7 @@ namespace AssetBundleGraph {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
-				Debug.LogError("no data found. new data is generated.");
+				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. New setting file created.");
 				return;
 			}
 
@@ -1224,6 +1231,11 @@ namespace AssetBundleGraph {
 						}
 
 						case "Paste": {
+
+							if(copyField.datas == null)  {
+								break;
+							}
+
 							var nodeNames = nodes.Select(node => node.name).ToList();
 							var duplicatingData = new List<Node>();
 
