@@ -106,9 +106,16 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, new List<string>());
 		}
 
-		public static void ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action NotExist) {
-			if (string.IsNullOrEmpty(currentExportFilePath)) NullOrEmpty();
-			if (!Directory.Exists(combinedPath)) NotExist();
+		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {
+			if (string.IsNullOrEmpty(currentExportFilePath)) {
+				NullOrEmpty();
+				return false;
+			}
+			if (!Directory.Exists(combinedPath)) {
+				DoesNotExist();
+				return false;
+			}
+			return true;
 		}
 	}
 }

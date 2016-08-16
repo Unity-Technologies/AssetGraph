@@ -501,7 +501,7 @@ namespace AssetBundleGraph {
 				);
 
 				var exporterrNodePath = GraphStackController.WithProjectPath(newExportPath);
-				IntegratedGUIExporter.ValidateExportPath(
+				if(IntegratedGUIExporter.ValidateExportPath(
 					newExportPath,
 					exporterrNodePath,
 					() => {
@@ -522,7 +522,20 @@ namespace AssetBundleGraph {
 							EditorGUILayout.LabelField(s);
 						}
 					}
-				);
+				)) {
+					using (new EditorGUILayout.HorizontalScope()) {
+						GUILayout.FlexibleSpace();
+						#if UNITY_EDITOR_OSX
+						string buttonName = "Reveal in Finder";
+						#else
+						string buttonName = "Show in Explorer";
+						#endif 
+						if(GUILayout.Button(buttonName)) {
+							EditorUtility.RevealInFinder(exporterrNodePath);
+						}
+					}
+				}
+
 
 				if (newExportPath != GraphStackController.ValueFromPlatformAndPackage(
 					node.exportPath.ReadonlyDict(),
