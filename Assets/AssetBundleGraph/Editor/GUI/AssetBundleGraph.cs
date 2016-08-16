@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 		*/
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
-			var window = GetWindow<AssetBundleGraph>();
+			GetWindow<AssetBundleGraph>();
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]

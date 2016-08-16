@@ -173,9 +173,7 @@ namespace AssetBundleGraph {
 			importer.materialSearch = importerSource.materialSearch;
 			importer.meshCompression = importerSource.meshCompression;
 			importer.motionNodeName = importerSource.motionNodeName;
-
 			importer.importNormals = importerSource.importNormals;
-
 			importer.normalSmoothingAngle = importerSource.normalSmoothingAngle;
 			importer.optimizeGameObjects = importerSource.optimizeGameObjects;
 			importer.optimizeMesh = importerSource.optimizeMesh;

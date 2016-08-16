@@ -536,8 +536,6 @@ namespace AssetBundleGraph {
 				messageActions = new List<Action>();
 			}
 
-			var basePlatform = node.currentPlatform;
-
 			messageActions.Clear();
 
 			switch (node.kind) {
