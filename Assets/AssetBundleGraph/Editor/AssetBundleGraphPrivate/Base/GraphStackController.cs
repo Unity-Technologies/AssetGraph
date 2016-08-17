@@ -762,7 +762,7 @@ namespace AssetBundleGraph {
 			var orderedNodeOutputPointIds = nodeDatas.Where(node => node.nodeId == nodeId).SelectMany(node => node.outputPointIds).ToList();
 
 			/*
-				get node's outputPoint ordered connection ids. 
+				get connection ids which is orderd by node's outputPoint-order. 
 			*/
 			var orderedConnectionIds = new List<string>(nonOrderedConnectionsFromThisNodeToChildNode.Count);
 			foreach (var orderedNodeOutputPointId in orderedNodeOutputPointIds) {
@@ -776,7 +776,7 @@ namespace AssetBundleGraph {
 			}
 			
 			/*
-				FilterNode and BundlizerNode uses multiple output connections.
+				FilterNode and BundlizerNode uses specific multiple output connections.
 				ExportNode does not have output.
 				but all other nodes has only one output connection and uses first connection.
 			*/
@@ -882,7 +882,28 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-							var executor = new IntegratedGUIFilter(orderedConnectionIds, currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
+							/*
+								Filter requires "outputPoint ordered exist connection Id and Fake connection Id" for
+								exhausting assets by keyword and type correctly.
+
+								outputPoint which has connection can through assets by keyword and keytype,
+								also outputPoint which doesn't have connection should take assets by keyword and keytype.
+							*/
+							var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
+							for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
+								var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
+								
+								foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
+									var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.fromNodeOutputPointId;
+									if (orderedNodeOutputPointId == connectionOutputPointId) {
+										orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.connectionId;
+										break;
+									} else {
+										orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID;
+									}
+								}
+							}
+							var executor = new IntegratedGUIFilter(orderedConnectionIdsAndFakeConnectionIds, currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
 							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -911,21 +932,50 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							/*
+								Bundlizer requires assetOutputConnectionId and additional resourceOutputConnectionId.
+								both-connected, or both-not-connected, or one of them is connected. 4 patterns exists.
+								
+								Bundler Node's outputPoint [0] is always the point for assetOutputConnectionId.
+								Bundler Node's outputPoint [1] is always the point for resourceOutputConnectionId.
+								
+								if one of these outputPoint don't have connection, use Fake connection id for correct output.
+
+								
+								unorderedConnectionId \
+														----> orderedConnectionIdsAndFakeConnectionIds. 
+								orderedOutputPointId  / 
+							*/
+							var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
+							for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
+								var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
+								
+								foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
+									var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.fromNodeOutputPointId;
+									if (orderedNodeOutputPointId == connectionOutputPointId) {
+										orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.connectionId;
+										break;
+									} else {
+										orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
+									}
+								}
+							}
+
 							var bundleNameTemplate = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleNameTemplate);
 							var bundleUseOutputResources = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
 							
 							var useOutputResources = false;
-							var outputSourceConnectionId = string.Empty;
+							var resourcesOutputConnectionId = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
 							switch (bundleUseOutputResources) {
 								case "true" :{
 									useOutputResources = true;
-									outputSourceConnectionId = orderedConnectionIds[1];
+									resourcesOutputConnectionId = orderedConnectionIdsAndFakeConnectionIds[1];
 									break;
 								}
 							}
 							
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources, outputSourceConnectionId);
-							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], useOutputResources, resourcesOutputConnectionId);
+							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -979,7 +1029,28 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-							var executor = new IntegratedGUIFilter(orderedConnectionIds, currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
+							/*
+								Filter requires "outputPoint ordered exist connection Id and Fake connection Id" for
+								exhausting assets by keyword and type correctly.
+
+								outputPoint which has connection can through assets by keyword and keytype,
+								also outputPoint which doesn't have connection should take assets by keyword and keytype.
+							*/
+							var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
+							for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
+								var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
+								
+								foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
+									var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.fromNodeOutputPointId;
+									if (orderedNodeOutputPointId == connectionOutputPointId) {
+										orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.connectionId;
+										break;
+									} else {
+										orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID;
+									}
+								}
+							}
+							var executor = new IntegratedGUIFilter(orderedConnectionIdsAndFakeConnectionIds, currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
 							executor.Setup(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -1014,21 +1085,50 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							/*
+								Bundlizer requires assetOutputConnectionId and additional resourceOutputConnectionId.
+								both-connected, or both-not-connected, or one of them is connected. 4 patterns exists.
+								
+								Bundler Node's outputPoint [0] is always the point for assetOutputConnectionId.
+								Bundler Node's outputPoint [1] is always the point for resourceOutputConnectionId.
+								
+								if one of these outputPoint don't have connection, use Fake connection id for correct output.
+
+								
+								unorderedConnectionId \
+														----> orderedConnectionIdsAndFakeConnectionIds. 
+								orderedOutputPointId  / 
+							*/
+							var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
+							for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
+								var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
+								
+								foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
+									var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.fromNodeOutputPointId;
+									if (orderedNodeOutputPointId == connectionOutputPointId) {
+										orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.connectionId;
+										break;
+									} else {
+										orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
+									}
+								}
+							}
+
 							var bundleNameTemplate = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleNameTemplate);
 							var bundleUseOutputResources = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
 							
 							var useOutputResources = false;
-							var outputSourceConnectionId = string.Empty;
+							var resourcesOutputConnectionId = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
 							switch (bundleUseOutputResources) {
 								case "true" :{
 									useOutputResources = true;
-									outputSourceConnectionId = orderedConnectionIds[1];
+									resourcesOutputConnectionId = orderedConnectionIdsAndFakeConnectionIds[1];
 									break;
 								}
 							}
 							
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources, outputSourceConnectionId);
-							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], useOutputResources, resourcesOutputConnectionId);
+							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 

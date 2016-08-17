@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIFilter : INodeBase {
-		private readonly List<string> connectionIdsFromThisNodeToChildNodes;
+		private readonly string[] connectionIdsFromThisNodeToChildNodesOrFakeIds;
 		private readonly List<string> containsKeywords;
 		private readonly List<string> containsKeytypes;
-		public IntegratedGUIFilter (List<string> connectionIdsFromThisNodeToChildNodes, List<string> containsKeywords, List<string> containsKeytypes) {
-			this.connectionIdsFromThisNodeToChildNodes = connectionIdsFromThisNodeToChildNodes;
+		public IntegratedGUIFilter (string[] connectionIdsFromThisNodeToChildNodes, List<string> containsKeywords, List<string> containsKeytypes) {
+			this.connectionIdsFromThisNodeToChildNodesOrFakeIds = connectionIdsFromThisNodeToChildNodes;
 			this.containsKeywords = containsKeywords;
 			this.containsKeytypes = containsKeytypes;
 		}
@@ -115,9 +115,9 @@ namespace AssetBundleGraph {
 				exhaustiveAssets.Add(new ExhaustiveAssetPathData(asset.absoluteSourcePath, asset.importedPath));
 			}
 
-			for (var i = 0; i < connectionIdsFromThisNodeToChildNodes.Count; i++) {
+			for (var i = 0; i < connectionIdsFromThisNodeToChildNodesOrFakeIds.Length; i++) {
 				// these 3 parameters depends on their contents order.
-				var connectionId = connectionIdsFromThisNodeToChildNodes[i];
+				var connectionId = connectionIdsFromThisNodeToChildNodesOrFakeIds[i];
 				var keyword = containsKeywords[i];
 				var keytype = containsKeytypes[i];
 				
@@ -140,7 +140,7 @@ namespace AssetBundleGraph {
 						if (typeMatchedAssetsAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
 					}
 
-					FilterResultReceiver(connectionId, typeMatchedAssetsAbsolutePaths);
+					if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) FilterResultReceiver(connectionId, typeMatchedAssetsAbsolutePaths);
 					continue;
 				}
 				
@@ -150,7 +150,7 @@ namespace AssetBundleGraph {
 					if (keywordMatchedAssetAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
 				}
 
-				FilterResultReceiver(connectionId, keywordMatchedAssetAbsolutePaths);
+				if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) FilterResultReceiver(connectionId, keywordMatchedAssetAbsolutePaths);
 			}
 		}
 		

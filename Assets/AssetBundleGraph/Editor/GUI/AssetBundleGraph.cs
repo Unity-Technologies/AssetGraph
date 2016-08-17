@@ -486,7 +486,6 @@ namespace AssetBundleGraph {
 
 			var connectionList = new List<Dictionary<string, string>>();
 			foreach (var connection in connections) {
-				try {
 				var connectionDict = new Dictionary<string, string>{
 					{AssetBundleGraphSettings.CONNECTION_LABEL, connection.label},
 					{AssetBundleGraphSettings.CONNECTION_ID, connection.connectionId},
@@ -496,14 +495,6 @@ namespace AssetBundleGraph {
 				};
 				
 				connectionList.Add(connectionDict);
-				} catch (Exception e) {
-					Debug.LogError("connection:" + connection);
-					Debug.LogError("connection.label:" + connection.label);
-					Debug.LogError("connection.connectionId:" + connection.connectionId);
-					Debug.LogError("connection.outputNodeId:" + connection.outputNodeId);
-					Debug.LogError("connection.outputPoint:" + connection.outputPoint);
-					Debug.LogError("connection.outputPoint.pointId:" + connection.outputPoint.pointId);
-				}
 			}
 
 			var graphData = new Dictionary<string, object>{
