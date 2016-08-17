@@ -101,6 +101,7 @@ namespace AssetBundleGraph {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
 							node.BeforeSave();
 							node.filterContainsKeywords.RemoveAt(i);
+							node.filterContainsKeytypes.RemoveAt(i);
 							node.DeleteFilterOutputPoint(i);
 						}
 						else {
