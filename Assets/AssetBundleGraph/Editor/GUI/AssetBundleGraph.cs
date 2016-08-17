@@ -74,7 +74,7 @@ namespace AssetBundleGraph {
 			var window = GetWindow<AssetBundleGraph>();
 			window.Run();
 		}
-
+		
 		public enum ScriptType : int {
 			SCRIPT_PREFABRICATOR,
 			SCRIPT_FINALLY
@@ -644,6 +644,10 @@ namespace AssetBundleGraph {
 			switch (Selection.activeObject.GetType().ToString()) {
 				case "AssetBundleGraph.ConnectionInspector": {
 					var con = ((ConnectionInspector)Selection.activeObject).con;
+					
+					// null when multiple connection deleted.
+					if (string.IsNullOrEmpty(con.connectionId)) return; 
+					
 					if (currentConnectionThroughputs.ContainsKey(con.connectionId)) {
 						((ConnectionInspector)Selection.activeObject).UpdateThroughputs(currentConnectionThroughputs[con.connectionId]);
 					}
