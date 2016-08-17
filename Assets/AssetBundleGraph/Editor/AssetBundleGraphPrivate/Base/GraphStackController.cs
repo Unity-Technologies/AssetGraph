@@ -73,10 +73,10 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static List<string> CreateCustomFilterInstanceForScript (string scriptType) {
-			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptType);
+		public static List<string> CreateCustomFilterInstanceForScript (string scriptClassName) {
+			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptClassName);
 			if (nodeScriptInstance == null) {
-				Debug.LogError("Failed to create instance for " + scriptType + ". No such class found in assembly.");
+				Debug.LogError("Failed to create instance for " + scriptClassName + ". No such class found in assembly.");
 				return new List<string>();
 			}
 
@@ -130,14 +130,14 @@ namespace AssetBundleGraph {
 					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
+						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 				
-						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
 						
 						// warn if no class found.
 						if (nodeScriptInstance == null) {
 							changed = true;
-							Debug.LogError("Node could not be created properly because AssetBundleGraph failed to create script instance for " + scriptType + ". No such class found in assembly.");
+							Debug.LogError("Node could not be created properly because AssetBundleGraph failed to create script instance for " + scriptClassName + ". No such class found in assembly.");
 							continue;
 						}
 
@@ -188,17 +188,17 @@ namespace AssetBundleGraph {
 						prefabricator GUI node with script.
 					*/
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-						var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
-						if (string.IsNullOrEmpty(scriptType)) {
-							Debug.LogWarning(nodeName  + ": " + kind + " found but no script name assigned.");
+						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
+						if (string.IsNullOrEmpty(scriptClassName)) {
+							Debug.LogWarning(nodeName  + ": No script name assigned.");
 							break;
 						}
 
-						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptType);
+						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
 						
 						// warn if no class found.
 						if (nodeScriptInstance == null) {
-							Debug.LogError(nodeName  + " could not be created properly because AssetBundleGraph failed to create script instance for " + scriptType + ". No such class found in assembly.");
+							Debug.LogError(nodeName  + " could not be created properly because AssetBundleGraph failed to create script instance for " + scriptClassName + ". No such class found in assembly.");
 						}
 						break;
 					}
@@ -478,13 +478,13 @@ namespace AssetBundleGraph {
 
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-						var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
+						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 						nodeDatas.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
-								scriptType:scriptType
+								scriptClassName:scriptClassName
 							)
 						);
 						break;
@@ -817,14 +817,14 @@ namespace AssetBundleGraph {
 							Scripts
 						*/
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
-							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<FilterBase>(scriptType, nodeId);
+							var scriptClassName = currentNodeData.scriptClassName;
+							var executor = Executor<FilterBase>(scriptClassName, nodeId);
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
+							var scriptClassName = currentNodeData.scriptClassName;
+							var executor = Executor<PrefabricatorBase>(scriptClassName, nodeId);
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -859,12 +859,12 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-							var scriptType = currentNodeData.scriptType;
-							if (string.IsNullOrEmpty(scriptType)) {
+							var scriptClassName = currentNodeData.scriptClassName;
+							if (string.IsNullOrEmpty(scriptClassName)) {
 								Debug.LogError(nodeName  + ": " + nodeKind + " found but no script name assigned. Configure valid script name from editor.");
 								break;
 							}
-							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
+							var executor = Executor<PrefabricatorBase>(scriptClassName, nodeId);
 							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -911,14 +911,14 @@ namespace AssetBundleGraph {
 							Scripts
 						*/
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
-							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<FilterBase>(scriptType, nodeId);
+							var scriptClassName = currentNodeData.scriptClassName;
+							var executor = Executor<FilterBase>(scriptClassName, nodeId);
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-							var scriptType = currentNodeData.scriptType;
-							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
+							var scriptClassName = currentNodeData.scriptClassName;
+							var executor = Executor<PrefabricatorBase>(scriptClassName, nodeId);
 							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -954,14 +954,14 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-							var scriptType = currentNodeData.scriptType;
-							if (string.IsNullOrEmpty(scriptType)) {
-								AssetBundleGraph.AddNodeException(new NodeException("prefabriator class at node:" + nodeName + " is empty, please set valid script type.", nodeId));
+							var scriptClassName = currentNodeData.scriptClassName;
+							if (string.IsNullOrEmpty(scriptClassName)) {
+								AssetBundleGraph.AddNodeException(new NodeException(nodeName + ": Classname is empty. Set valid classname.", nodeId));
 //								Debug.LogError("prefabriator class at node:" + nodeName + " is empty, please set valid script type.");
 								break;
 							}
 							try {
-								var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
+								var executor = Executor<PrefabricatorBase>(scriptClassName, nodeId);
 								executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
 							} catch (NodeException e) {
 								AssetBundleGraph.AddNodeException(e);
@@ -1173,21 +1173,29 @@ namespace AssetBundleGraph {
 
 		public static List<string> ValueFromPlatformAndPackage (Dictionary<string, List<string>> packageDict, string platform) {
 			var key = Platform_Package_Key(platform);
-			if (packageDict.ContainsKey(key)) return packageDict[key];
+			if (packageDict.ContainsKey(key)) {
+				return packageDict[key];
+			}
 
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
+			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
+				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
+			}
 
-			throw new Exception("Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
+			throw new AssetBundleGraphException("Default setting not found.");
 		}
 
 		public static List<string> GetGetCurrentPlatformPackageOrDefaultFromDictList (AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> packageDict) {
 			var platformPackageKeyCandidate = GetCurrentPlatformPackageFolder();
 			
-			if (packageDict.ContainsKey(platformPackageKeyCandidate)) return packageDict[platformPackageKeyCandidate];
+			if (packageDict.ContainsKey(platformPackageKeyCandidate)) {
+				return packageDict[platformPackageKeyCandidate];
+			}
 			
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			
-			throw new Exception("node kind:" + kind + " Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
+			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
+				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
+			}
+
+			throw new AssetBundleGraphException("Default setting not found.");
 		}
 
 		public static string GetCurrentPlatformPackageOrDefaultFromDict (AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> packageDict) {
@@ -1195,20 +1203,24 @@ namespace AssetBundleGraph {
 			/*
 				check best match for platform + pacakge.
 			*/
-			if (packageDict.ContainsKey(platformPackageKeyCandidate)) return packageDict[platformPackageKeyCandidate];
+			if (packageDict.ContainsKey(platformPackageKeyCandidate)) {
+				return packageDict[platformPackageKeyCandidate];
+			}
 			
 			/*
 				check next match for defaultPlatform + package.
 			*/
 			var defaultPlatformAndCurrentPackageCandidate = Default_Platform_Package_Folder();
-			if (packageDict.ContainsKey(defaultPlatformAndCurrentPackageCandidate)) return packageDict[defaultPlatformAndCurrentPackageCandidate];
+			if (packageDict.ContainsKey(defaultPlatformAndCurrentPackageCandidate)) {
+				return packageDict[defaultPlatformAndCurrentPackageCandidate];
+			}
 
 			/*
 				check default platform.
 			*/
 			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
 			
-			throw new Exception("node kind:" + kind + " Failed to detect default package setting. this kind of node settings should contains at least 1 Default setting.");
+			throw new AssetBundleGraphException("Default setting not found.");
 		}
 
 		public static string ShrinkedCurrentPlatform () {
@@ -1251,7 +1263,7 @@ namespace AssetBundleGraph {
 		public List<ConnectionData> connectionDataOfParents = new List<ConnectionData>();
 
 		// for All script nodes & prefabricator, bundlizer GUI.
-		public readonly string scriptType;
+		public readonly string scriptClassName;
 
 		// for Loader Script
 		public readonly Dictionary<string, string> loadFilePath;
@@ -1283,7 +1295,7 @@ namespace AssetBundleGraph {
 			string nodeId, 
 			AssetBundleGraphSettings.NodeKind nodeKind, 
 			string nodeName = null,
-			string scriptType = null,
+			string scriptClassName = null,
 			Dictionary<string, string> loadPath = null,
 			Dictionary<string, string> exportPath = null,
 			List<string> filterContainsKeywords = null,
@@ -1299,7 +1311,7 @@ namespace AssetBundleGraph {
 			this.nodeKind = nodeKind;
 			this.nodeName = nodeName;
 			
-			this.scriptType = null;
+			this.scriptClassName = null;
 			this.loadFilePath = null;
 			this.exportFilePath = null;
 			this.containsKeywords = null;
@@ -1325,7 +1337,7 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					this.scriptType = scriptType;
+					this.scriptClassName = scriptClassName;
 					break;
 				}
 

@@ -106,7 +106,7 @@ namespace AssetBundleGraph {
 		public const string NODE_NAME = "name";
 		public const string NODE_ID = "id";
 		public const string NODE_KIND = "kind";
-		public const string NODE_SCRIPT_TYPE = "scriptType";
+		public const string NODE_SCRIPT_CLASSNAME = "scriptClassName";
 		public const string NODE_SCRIPT_PATH = "scriptPath";
 		public const string NODE_POS = "pos";
 		public const string NODE_POS_X = "x";

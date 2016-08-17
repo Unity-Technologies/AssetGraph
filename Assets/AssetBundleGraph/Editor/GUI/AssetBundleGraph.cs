@@ -1054,11 +1054,10 @@ namespace AssetBundleGraph {
 
 					foreach (var refe in refs) {
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-							var type = ((MonoScript)refe).GetClass();
-							
-							var inherited = IsAcceptableScriptType(type);
+							Type scriptTypeInfo = ((MonoScript)refe).GetClass();							
+							Type inheritedTypeInfo = IsDragAndDropAcceptableScriptType(scriptTypeInfo);
 
-							if (inherited != null) {
+							if (inheritedTypeInfo != null) {
 								// at least one asset is script. change interface.
 								DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
 								break;
@@ -1081,15 +1080,15 @@ namespace AssetBundleGraph {
 						var path = item.Key;
 						var refe = (MonoScript)item.Value;
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-							var type = refe.GetClass();
-							var inherited = IsAcceptableScriptType(type);
+							Type scriptTypeInfo = refe.GetClass();
+							Type inheritedTypeInfo = IsDragAndDropAcceptableScriptType(scriptTypeInfo);
 
-							if (inherited != null) {
+							if (inheritedTypeInfo != null) {
 								var dropPos = Event.current.mousePosition;
 								var scriptName = refe.name;
-								var scriptType = scriptName;// name = type.
+								var scriptClassName = scriptName;
 								var scriptPath = path;
-								AddNodeFromCode(scriptName, scriptType, scriptPath, inherited, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
+								AddNodeFromCode(scriptName, scriptClassName, scriptPath, inheritedTypeInfo, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
 								shouldSave = true;
 							}
 						}
@@ -1352,7 +1351,7 @@ namespace AssetBundleGraph {
 				
 				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 					break;
 				}
@@ -1374,7 +1373,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 					break;
 				}
@@ -1428,10 +1427,10 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
+					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
 
-					var newNode = Node.CreateScriptNode(currentNodesCount, name, id, kind, scriptType, scriptPath, x, y);
+					var newNode = Node.CreateScriptNode(currentNodesCount, name, id, kind, scriptClassName, scriptPath, x, y);
 
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUT_LABELS] as List<object>;
 					foreach (var outputLabelSource in outputLabelsList) {
@@ -1553,7 +1552,7 @@ namespace AssetBundleGraph {
 			throw new AssetBundleGraphException("Could not find way to create node: " + name + " kind:" + kindSource);
 		}
 
-		private Type IsAcceptableScriptType (Type type) {
+		private Type IsDragAndDropAcceptableScriptType (Type type) {
 			if (typeof(FilterBase).IsAssignableFrom(type)) {
 				return typeof(FilterBase);
 			}
@@ -1564,15 +1563,15 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
-		private void AddNodeFromCode (string scriptName, string scriptType, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
+		private void AddNodeFromCode (string scriptName, string scriptClassName, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
 			Node newNode = null;
 			if (scriptBaseType == typeof(FilterBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT;
-				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
 				
 				// add output point to this node.
 				// setup this filter then add output point by result of setup.
-				var outputPointLabels = GraphStackController.CreateCustomFilterInstanceForScript(scriptName);
+				var outputPointLabels = GraphStackController.CreateCustomFilterInstanceForScript(scriptClassName);
 
 				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				foreach (var outputPointLabel in outputPointLabels) {
@@ -1582,14 +1581,14 @@ namespace AssetBundleGraph {
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			
 			
 			if (newNode == null) {
-				Debug.LogError("Could not add node from code. " + scriptType + "(base:" + scriptBaseType + 
+				Debug.LogError("Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
 					") is not supported to create from code.");
 				return;
 			}

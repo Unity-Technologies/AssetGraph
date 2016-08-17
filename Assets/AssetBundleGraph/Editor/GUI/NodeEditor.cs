@@ -294,11 +294,11 @@ namespace AssetBundleGraph {
 				/*
 					check prefabricator script-type string.
 				*/
-				if (string.IsNullOrEmpty(node.scriptType)) {
+				if (string.IsNullOrEmpty(node.scriptClassName)) {
 					s.fontStyle = FontStyle.Bold;
 					s.fontSize  = 12;
 				} else {
-					var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptType);
+					var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptClassName);
 
 					if (loadedType == null) {
 						s.fontStyle = FontStyle.Bold;
@@ -307,11 +307,11 @@ namespace AssetBundleGraph {
 				}
 
 
-				var newScriptType = EditorGUILayout.TextField("Script Type", node.scriptType, s);
+				var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptClassName, s);
 
-				if (newScriptType != node.scriptType) {
+				if (newScriptClass != node.scriptClassName) {
 					node.BeforeSave();
-					node.scriptType = newScriptType;
+					node.scriptClassName = newScriptClass;
 					node.Save();
 				}
 			}

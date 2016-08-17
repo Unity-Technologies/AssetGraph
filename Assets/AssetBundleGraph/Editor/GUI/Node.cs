@@ -278,7 +278,7 @@ namespace AssetBundleGraph {
 		[SerializeField] public string nodeId;
 		[SerializeField] public AssetBundleGraphSettings.NodeKind kind;
 
-		[SerializeField] public string scriptType;
+		[SerializeField] public string scriptClassName;
 		[SerializeField] public string scriptPath;
 		[SerializeField] public SerializablePseudoDictionary loadPath;
 		[SerializeField] public SerializablePseudoDictionary exportPath;
@@ -348,7 +348,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node CreateScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
+		public static Node CreateScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -356,7 +356,7 @@ namespace AssetBundleGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				scriptType: scriptType,
+				scriptClassName: scriptClassName,
 				scriptPath: scriptPath
 			);
 		}
@@ -502,7 +502,7 @@ namespace AssetBundleGraph {
 			AssetBundleGraphSettings.NodeKind kind, 
 			float x, 
 			float y,
-			string scriptType = null, 
+			string scriptClassName = null, 
 			string scriptPath = null, 
 			Dictionary<string, string> loadPath = null, 
 			Dictionary<string, string> exportPath = null, 
@@ -521,7 +521,7 @@ namespace AssetBundleGraph {
 			this.name = name;
 			this.nodeId = nodeId;
 			this.kind = kind;
-			this.scriptType = scriptType;
+			this.scriptClassName = scriptClassName;
 			this.scriptPath = scriptPath;
 			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
 			if (exportPath != null) this.exportPath = new SerializablePseudoDictionary(exportPath);
@@ -591,7 +591,7 @@ namespace AssetBundleGraph {
 				this.kind, 
 				newX,
 				newY,
-				this.scriptType,
+				this.scriptClassName,
 				this.scriptPath,
 				(this.loadPath != null) ? loadPath.ReadonlyDict() : null,
 				(this.exportPath != null) ? this.exportPath.ReadonlyDict() : null,

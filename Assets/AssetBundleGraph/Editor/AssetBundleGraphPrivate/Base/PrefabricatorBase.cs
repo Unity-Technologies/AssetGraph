@@ -249,9 +249,9 @@ namespace AssetBundleGraph {
 		}
 
 
-		public static void ValidatePrefabScriptType (string prefabScriptType, Action NullOrEmpty, Action PrefabTypeIsNull) {
-			if (string.IsNullOrEmpty(prefabScriptType)) NullOrEmpty();
-			var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(prefabScriptType);
+		public static void ValidatePrefabScriptClassName (string prefabScriptClassName, Action NullOrEmpty, Action PrefabTypeIsNull) {
+			if (string.IsNullOrEmpty(prefabScriptClassName)) NullOrEmpty();
+			var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(prefabScriptClassName);
 			if (loadedType == null) PrefabTypeIsNull();
 		}
 	}
