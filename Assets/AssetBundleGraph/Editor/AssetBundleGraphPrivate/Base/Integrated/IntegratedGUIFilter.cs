@@ -54,7 +54,7 @@ namespace AssetBundleGraph {
 				try {
 					Filter(inputSources, _PreOutput);
 				} catch (Exception e) {
-					Debug.LogError("Filter:" + this + " error:" + e);
+					Debug.LogError(nodeName + " Error:" + e);
 				}
 			}
 		}
@@ -65,7 +65,9 @@ namespace AssetBundleGraph {
 				var overlappingCheckList = new List<string>();
 				for (var i = 0; i < containsKeywords.Count; i++) {
 					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
-					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) throw new Exception("filter keywords and type combination are overlapping:" + containsKeywords[i] + " type:" + containsKeytypes[i]);
+					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
+						throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
+					}
 					overlappingCheckList.Add(keywordAndKeytypeCombind);
 				}
 			}
@@ -93,7 +95,7 @@ namespace AssetBundleGraph {
 				try {
 					Filter(inputSources, _Output);
 				} catch (Exception e) {
-					Debug.LogError("Filter:" + this + " error:" + e);
+					Debug.LogError(nodeName + " Error:" + e);
 				}
 			}
 		}

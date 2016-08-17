@@ -1,0 +1,29 @@
+ManifestFileVersion: 0
+CRC: 842134093
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 42bb01851a4496e8555c88636c0100cb
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 47070b455f9a75bd91f1a94123137c9f
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 83
+  Script: {instanceID: 0}
+Assets:
+- Assets/SampleAssets/bgms/Stage_2/bgm.wav
+- Assets/SampleAssets/ses/Stage_2/ShotFiring.wav
+- Assets/SampleAssets/ses/Stage_2/shoot.wav
+- Assets/SampleAssets/ses/All/EngineIdle.aif
+- Assets/SampleAssets/ses/All/EngineDriving.aif
+- Assets/SampleAssets/ses/All/beep.mp3
+- Assets/SampleAssets/images/ID_0/Spaceship.png
+- Assets/SampleAssets/ses/Stage_2/TankExplosion.wav
+- Assets/SampleAssets/ses/Stage_1/ShellExplosion.wav
+- Assets/SampleAssets/bgms/Stage_1/bgm.mp3
+- Assets/SampleAssets/ses/Stage_1/ShotCharging.wav
+- Assets/SampleAssets/ses/Stage_1/boom.wav
+Dependencies: []

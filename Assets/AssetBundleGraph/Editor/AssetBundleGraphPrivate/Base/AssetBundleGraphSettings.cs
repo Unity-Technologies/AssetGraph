@@ -24,7 +24,7 @@ namespace AssetBundleGraph {
 		public const string ASSETS_PATH = "Assets/";
 		public const string ASSETBUNDLEGRAPH_PATH = ASSETS_PATH + "AssetBundleGraph/";
 		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETBUNDLEGRAPH_PATH + "Cache/";
-		public const string SCRIPTSAMPLE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/ScriptSample/";
+		public const string SCRIPT_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/ScriptTemplate/";
 		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
 		
 		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
@@ -106,7 +106,7 @@ namespace AssetBundleGraph {
 		public const string NODE_NAME = "name";
 		public const string NODE_ID = "id";
 		public const string NODE_KIND = "kind";
-		public const string NODE_SCRIPT_TYPE = "scriptType";
+		public const string NODE_SCRIPT_CLASSNAME = "scriptClassName";
 		public const string NODE_SCRIPT_PATH = "scriptPath";
 		public const string NODE_POS = "pos";
 		public const string NODE_POS_X = "x";
@@ -141,10 +141,10 @@ namespace AssetBundleGraph {
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
 		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL = "bundled assets";
+		public const string BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL = "bundled assets";
 
 		public const string BUNDLIZER_FAKE_CONNECTION_ID = "b_______-____-____-____-____________";
-		
+
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";
 		

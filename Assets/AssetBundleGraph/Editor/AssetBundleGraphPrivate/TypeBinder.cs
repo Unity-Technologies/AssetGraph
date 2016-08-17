@@ -71,7 +71,7 @@ namespace AssetBundleGraph {
 			// check by asset importer type.
 			var importer = AssetImporter.GetAtPath(assetPath);
 			if (importer == null) {
-				Debug.LogError("failed to assume the assetType of assetPath:" + assetPath + " 's importer is null, this asset is ignored from Unity.");
+				Debug.LogWarning("Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
 				return typeof(object);
 			}
 

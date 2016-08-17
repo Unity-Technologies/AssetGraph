@@ -24,8 +24,10 @@ namespace AssetBundleGraph {
 			
 			if (groupedSources.Keys.Count == 0) return;
 			
-			// shrink group to 1 group.
-			if (1 < groupedSources.Keys.Count) Debug.LogWarning("importSetting shrinking group to \"" + groupedSources.Keys.ToList()[0] + "\" forcely.");
+			// ImportSetting merges multiple incoming groups into one, so warn this
+			if (1 < groupedSources.Keys.Count) {
+				Debug.LogWarning(nodeName + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			}
 
 			var inputSources = new List<InternalAssetData>();
 			foreach (var groupKey in groupedSources.Keys) {
@@ -121,8 +123,12 @@ namespace AssetBundleGraph {
 				}
 			
 
-				if (alreadyImported.Any()) Debug.LogError("importSetting:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
-				if (ignoredResource.Any()) Debug.LogError("importSetting:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
+				if (alreadyImported.Any()) {
+					Debug.LogError("importSetting:" + string.Join(", ", alreadyImported.ToArray()) + " are already imported.");
+				}
+				if (ignoredResource.Any()) {
+					Debug.LogError("importSetting:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
+				}
 
 				outputDict[groupedSources.Keys.ToList()[0]] = assumedImportedAssetDatas;
 			}
@@ -142,17 +148,16 @@ namespace AssetBundleGraph {
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
 				(string samplePath) => {
-					Debug.LogWarning("No Sample Directory found:" + samplePath);
+					Debug.LogWarning(nodeName + ": No ImportSettings Directory found for asset:" + samplePath);
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException("No sample file found:" + samplePath);
+					throw new AssetBundleGraphBuildException(nodeName + ": No saved ImportSettings found for asset:" + samplePath);
 				},
 				(string samplePath) => {
-					Debug.Log("Using import setting:" + samplePath);
 					sampleAssetPath = samplePath;
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException("importSetting error:" + samplePath);
+					throw new AssetBundleGraphBuildException(nodeName + ": Too many ImportSettings found. please open editor and resolve issue:" + samplePath);
 				}
 			);
 			
@@ -161,8 +166,10 @@ namespace AssetBundleGraph {
 			var the1stGroupKey = groupedSources.Keys.ToList()[0];
 			
 			
-			// shrink group to 1 group.
-			if (1 < groupedSources.Keys.Count) Debug.LogWarning("importSetting shrinking group to \"" + the1stGroupKey + "\" forcely.");
+			// ImportSetting merges multiple incoming groups into one, so warn this
+			if (1 < groupedSources.Keys.Count) {
+				Debug.LogWarning(nodeName + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			}
 
 			var inputSources = new List<InternalAssetData>();
 			foreach (var groupKey in groupedSources.Keys) {

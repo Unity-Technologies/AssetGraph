@@ -31,7 +31,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			Export(nodeId, labelToNext, groupedSources, Output, false);
+			Export(nodeName, nodeId, labelToNext, groupedSources, Output, false);
 		}
 		
 		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
@@ -46,10 +46,10 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(nodeId, labelToNext, groupedSources, Output, true);
+			Export(nodeName, nodeId, labelToNext, groupedSources, Output, true);
 		}
 
-		private void Export (string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output, bool isRun) {
+		private void Export (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output, bool isRun) {
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
 
@@ -106,7 +106,7 @@ namespace AssetBundleGraph {
 			}
 
 			if (failedExports.Any()) {
-				Debug.LogError("[Exporter] Given files failed to export: " + string.Join(", ", failedExports.ToArray()) + " must be imported before export.");
+				Debug.LogError(nodeName + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
 			Output(nodeId, labelToNext, outputDict, new List<string>());

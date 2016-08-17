@@ -1,0 +1,32 @@
+ManifestFileVersion: 0
+CRC: 3528354219
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: cf2a3db8b21b6981594e978d4d185461
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 682d18ec161ce2d3806a6407573c7615
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+Assets:
+- Assets/SampleAssets/models/ID_1/Cactus.fbx
+- Assets/SampleAssets/images/ID_1/Bullet.png
+- Assets/SampleAssets/models/ID_1/Building01.fbx
+Dependencies: []

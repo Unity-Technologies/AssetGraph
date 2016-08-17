@@ -1,75 +1,78 @@
 {
-	"lastModified":"08/17/2016 12:59:16",
+	"lastModified":"08/17/2016 15:37:28",
 	"nodes":[
 		{
 			"name":"Loader0",
-			"id":"bd3eda15-cb62-47ca-a833-3d1633930903",
+			"id":"11cefc5d-28b3-4862-b980-ca7b87136622",
 			"kind":"LOADER_GUI",
 			"outputPointLabels":[
 				"+"
 			],
 			"outputPointIds":[
-				"b271511e-9563-403a-bb55-8056719f7f7d"
+				"5b8167f5-b834-4d0a-abdb-f7ad84f91809"
 			],
 			"pos":{
-				"x":14,
-				"y":19
+				"x":51,
+				"y":47
 			},
 			"loadPath":{
-				"Default":"SampleAssets"
+				"Default":""
 			}
 		},
 		{
 			"name":"Filter0",
-			"id":"cf4803f0-6c5b-4b78-8244-dfe9ccaf5cf7",
+			"id":"d18c186b-b619-43ac-aad5-f00e434d7d58",
 			"kind":"FILTER_GUI",
 			"outputPointLabels":[
-				"*",
-				"*",
+				"images",
+				"models",
 				"bgms",
 				"ses",
+				"*",
 				"*"
 			],
 			"outputPointIds":[
-				"e0246bc0-ac73-458e-8049-7b5d8943c40b",
-				"ddb64680-c8ce-4e1a-a0f7-7b1201a891a8",
-				"a7d1ac10-1bda-47af-be7b-bf3e4a736fce",
-				"fe66b299-99ef-4650-9990-255fe66baca7",
-				"6cf8c32b-7ad6-4bb4-a13b-d99cf8a520ec"
+				"83892e67-c3f2-4bb2-bdb2-a8aa8c97852e",
+				"95b14107-0869-4b23-9b6c-dbfb5d7ac761",
+				"6269cd45-7460-4767-82b0-f4bc8acf2b2c",
+				"684d884c-59d1-4c7f-986d-6ba5b637a83a",
+				"30d4a658-b209-48bc-81fe-9a21cef8056d",
+				"7b85c5eb-8c09-4da3-825b-af06a7942bee"
 			],
 			"pos":{
-				"x":56,
-				"y":101
+				"x":16,
+				"y":148
 			},
 			"filterContainsKeywords":[
-				"*",
-				"*",
+				"images",
+				"models",
 				"bgms",
 				"ses",
+				"*",
 				"*"
 			],
 			"filterContainsKeytypes":[
-				"UnityEditor.TextureImporter",
+				"Any",
 				"UnityEditor.ModelImporter",
 				"Any",
-				"UnityEditor.AudioImporter",
 				"Any",
+				"UnityEngine.SceneManagement.Scene",
 				"Any"
 			]
 		},
 		{
 			"name":"ImportSetting0",
-			"id":"4aefbdf3-024a-4fb8-97aa-6026c6d0cfbf",
+			"id":"d5123b6b-7b39-42f0-bff1-58fe5b26b110",
 			"kind":"IMPORTSETTING_GUI",
 			"outputPointLabels":[
 				"+"
 			],
 			"outputPointIds":[
-				"ef942ab3-d53d-4d81-b0d3-2ebea9b5226b"
+				"5efa32bc-c7ac-48b0-835a-38b8716bb5ea"
 			],
 			"pos":{
-				"x":292,
-				"y":45
+				"x":274,
+				"y":58
 			},
 			"importerPackages":{
 				"Default":""
@@ -77,58 +80,304 @@
 		},
 		{
 			"name":"ImportSetting1",
-			"id":"97fb8d70-5eee-48ad-ad23-81730c2a070e",
+			"id":"94ce93a8-bfbe-423b-95d6-4caa76425ee1",
 			"kind":"IMPORTSETTING_GUI",
 			"outputPointLabels":[
 				"+"
 			],
 			"outputPointIds":[
-				"00d7e8aa-183e-4fe5-a320-a4a8b6804393"
+				"c5fc2c27-eff9-48e7-b72f-730d21b7dd31"
 			],
 			"pos":{
-				"x":296,
-				"y":108
+				"x":285,
+				"y":115
 			},
 			"importerPackages":{
 				"Default":""
+			}
+		},
+		{
+			"name":"ImportSetting2",
+			"id":"24fced59-88c8-4253-bc48-e22054ecbc49",
+			"kind":"IMPORTSETTING_GUI",
+			"outputPointLabels":[
+				"+"
+			],
+			"outputPointIds":[
+				"d3dbc893-2cba-43a3-b73b-477fd23db5a4"
+			],
+			"pos":{
+				"x":295,
+				"y":189
+			},
+			"importerPackages":{
+				"Default":""
+			}
+		},
+		{
+			"name":"ImportSetting3",
+			"id":"b0d7c623-e444-4008-a5bc-83aac52b6b55",
+			"kind":"IMPORTSETTING_GUI",
+			"outputPointLabels":[
+				"+"
+			],
+			"outputPointIds":[
+				"61dcf4f1-4d0b-4cc9-91af-f4391cf5e4c7"
+			],
+			"pos":{
+				"x":293,
+				"y":255
+			},
+			"importerPackages":{
+				"Default":""
+			}
+		},
+		{
+			"name":"Filter1",
+			"id":"2c3d41a7-d411-4a1d-b753-ab6018198a04",
+			"kind":"FILTER_GUI",
+			"outputPointLabels":[
+				
+			],
+			"outputPointIds":[
+				
+			],
+			"pos":{
+				"x":287,
+				"y":312
+			},
+			"filterContainsKeywords":[
+				
+			],
+			"filterContainsKeytypes":[
+				
+			]
+		},
+		{
+			"name":"Filter2",
+			"id":"990fb757-4d72-4ac1-8f7b-260c2c0540ff",
+			"kind":"FILTER_GUI",
+			"outputPointLabels":[
+				
+			],
+			"outputPointIds":[
+				
+			],
+			"pos":{
+				"x":283,
+				"y":382
+			},
+			"filterContainsKeywords":[
+				
+			],
+			"filterContainsKeytypes":[
+				
+			]
+		},
+		{
+			"name":"Grouping0",
+			"id":"18076c27-6b6a-4767-95f9-dd8b4f44a508",
+			"kind":"GROUPING_GUI",
+			"outputPointLabels":[
+				"+"
+			],
+			"outputPointIds":[
+				"a822f0da-101e-4f9d-8123-f8e97dedd9bd"
+			],
+			"pos":{
+				"x":510,
+				"y":94
+			},
+			"groupingKeyword":{
+				"Default":"/ID_*/"
+			}
+		},
+		{
+			"name":"Bundlizer0",
+			"id":"683ab33a-2111-4b27-be34-fc4a9ab82766",
+			"kind":"BUNDLIZER_GUI",
+			"outputPointLabels":[
+				"bundles"
+			],
+			"outputPointIds":[
+				"c47158fb-0e13-45e3-bf82-b682fd6dd4c7"
+			],
+			"pos":{
+				"x":533,
+				"y":157
+			},
+			"bundleNameTemplate":{
+				"Default":"bundle_*.assetbundle"
+			},
+			"bundleUseOutput":{
+				"Default":"false"
+			}
+		},
+		{
+			"name":"Bundlizer1",
+			"id":"eb6d7d0a-5942-4d09-b7eb-3785f3195f2c",
+			"kind":"BUNDLIZER_GUI",
+			"outputPointLabels":[
+				"bundles"
+			],
+			"outputPointIds":[
+				"563ae1ee-365e-4c78-86d1-b56cd4d9b2eb"
+			],
+			"pos":{
+				"x":536,
+				"y":229
+			},
+			"bundleNameTemplate":{
+				"Default":"bundle_*.assetbundle"
+			},
+			"bundleUseOutput":{
+				"Default":"false"
+			}
+		},
+		{
+			"name":"BundleBuilder0",
+			"id":"cd5e87cc-ce32-420e-8a8e-3592e39cd115",
+			"kind":"BUNDLEBUILDER_GUI",
+			"outputPointLabels":[
+				"+"
+			],
+			"outputPointIds":[
+				"2d5d1588-40e7-4745-8054-beb836f0a89a"
+			],
+			"pos":{
+				"x":795,
+				"y":194
+			},
+			"enabledBundleOptions":{
+				"Default":[
+					
+				]
+			}
+		},
+		{
+			"name":"Exporter0",
+			"id":"8daf2965-9a44-4833-b673-337003a0a8b4",
+			"kind":"EXPORTER_GUI",
+			"outputPointLabels":[
+				
+			],
+			"outputPointIds":[
+				
+			],
+			"pos":{
+				"x":883,
+				"y":290
+			},
+			"exportPath":{
+				"Default":"ExportFolder"
 			}
 		}
 	],
 	"connections":[
 		{
 			"label":"+",
-			"connectionId":"c3bb8631-e1d0-4cb4-93e0-4fe80aac797a",
-			"fromNode":"bd3eda15-cb62-47ca-a833-3d1633930903",
-			"fromNodeConPointId":"b271511e-9563-403a-bb55-8056719f7f7d",
-			"toNode":"cf4803f0-6c5b-4b78-8244-dfe9ccaf5cf7"
+			"connectionId":"749557a2-65bc-4a81-9603-44d2e7f07cef",
+			"fromNode":"11cefc5d-28b3-4862-b980-ca7b87136622",
+			"fromNodeConPointId":"5b8167f5-b834-4d0a-abdb-f7ad84f91809",
+			"toNode":"d18c186b-b619-43ac-aad5-f00e434d7d58"
+		},
+		{
+			"label":"images",
+			"connectionId":"973a16ba-6480-475c-8130-e0ad482a6928",
+			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"fromNodeConPointId":"83892e67-c3f2-4bb2-bdb2-a8aa8c97852e",
+			"toNode":"d5123b6b-7b39-42f0-bff1-58fe5b26b110"
+		},
+		{
+			"label":"models",
+			"connectionId":"bfd95b4a-9368-4d7f-8634-dd8c4d87d9b8",
+			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"fromNodeConPointId":"95b14107-0869-4b23-9b6c-dbfb5d7ac761",
+			"toNode":"94ce93a8-bfbe-423b-95d6-4caa76425ee1"
+		},
+		{
+			"label":"bgms",
+			"connectionId":"ef98b0b4-9b87-4864-ba4c-ba1112d07042",
+			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"fromNodeConPointId":"6269cd45-7460-4767-82b0-f4bc8acf2b2c",
+			"toNode":"24fced59-88c8-4253-bc48-e22054ecbc49"
 		},
 		{
 			"label":"ses",
-			"connectionId":"079a7fa3-3072-427d-9a5e-8976fdfd99d2",
-			"fromNode":"cf4803f0-6c5b-4b78-8244-dfe9ccaf5cf7",
-			"fromNodeConPointId":"fe66b299-99ef-4650-9990-255fe66baca7",
-			"toNode":"4c90962c-341b-4e4f-9371-0a468032bf98"
+			"connectionId":"36ad53f2-eb7b-40f3-8b2b-f61596c20b04",
+			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"fromNodeConPointId":"684d884c-59d1-4c7f-986d-6ba5b637a83a",
+			"toNode":"b0d7c623-e444-4008-a5bc-83aac52b6b55"
 		},
 		{
 			"label":"*",
-			"connectionId":"28de9770-04ba-4950-8056-7459f6714056",
-			"fromNode":"cf4803f0-6c5b-4b78-8244-dfe9ccaf5cf7",
-			"fromNodeConPointId":"e0246bc0-ac73-458e-8049-7b5d8943c40b",
-			"toNode":"4aefbdf3-024a-4fb8-97aa-6026c6d0cfbf"
+			"connectionId":"2c3da65a-6fcf-476e-934c-072ed0d6c23e",
+			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"fromNodeConPointId":"30d4a658-b209-48bc-81fe-9a21cef8056d",
+			"toNode":"2c3d41a7-d411-4a1d-b753-ab6018198a04"
 		},
 		{
 			"label":"*",
-			"connectionId":"99a4b811-461d-4d3f-ab2a-1a3bac3785ac",
-			"fromNode":"cf4803f0-6c5b-4b78-8244-dfe9ccaf5cf7",
-			"fromNodeConPointId":"6cf8c32b-7ad6-4bb4-a13b-d99cf8a520ec",
-			"toNode":"e9313ab7-6568-4d74-ae98-cda5fcba180c"
+			"connectionId":"7952a9ba-16c2-4407-b8d3-3478ef1af6e5",
+			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"fromNodeConPointId":"7b85c5eb-8c09-4da3-825b-af06a7942bee",
+			"toNode":"990fb757-4d72-4ac1-8f7b-260c2c0540ff"
 		},
 		{
-			"label":"*",
-			"connectionId":"116ca403-bffa-42b5-8661-d61129404007",
-			"fromNode":"cf4803f0-6c5b-4b78-8244-dfe9ccaf5cf7",
-			"fromNodeConPointId":"ddb64680-c8ce-4e1a-a0f7-7b1201a891a8",
-			"toNode":"97fb8d70-5eee-48ad-ad23-81730c2a070e"
+			"label":"+",
+			"connectionId":"252bc193-e719-4c68-8cd4-aadec3368992",
+			"fromNode":"d5123b6b-7b39-42f0-bff1-58fe5b26b110",
+			"fromNodeConPointId":"5efa32bc-c7ac-48b0-835a-38b8716bb5ea",
+			"toNode":"18076c27-6b6a-4767-95f9-dd8b4f44a508"
+		},
+		{
+			"label":"+",
+			"connectionId":"b7c74cd2-ff1c-4d76-a5e3-3bcca5645f68",
+			"fromNode":"94ce93a8-bfbe-423b-95d6-4caa76425ee1",
+			"fromNodeConPointId":"c5fc2c27-eff9-48e7-b72f-730d21b7dd31",
+			"toNode":"18076c27-6b6a-4767-95f9-dd8b4f44a508"
+		},
+		{
+			"label":"+",
+			"connectionId":"2103d8b2-f11c-4d41-974a-302a746a1013",
+			"fromNode":"18076c27-6b6a-4767-95f9-dd8b4f44a508",
+			"fromNodeConPointId":"a822f0da-101e-4f9d-8123-f8e97dedd9bd",
+			"toNode":"683ab33a-2111-4b27-be34-fc4a9ab82766"
+		},
+		{
+			"label":"+",
+			"connectionId":"209fca28-876d-4b0b-8431-a69d15069eda",
+			"fromNode":"24fced59-88c8-4253-bc48-e22054ecbc49",
+			"fromNodeConPointId":"d3dbc893-2cba-43a3-b73b-477fd23db5a4",
+			"toNode":"eb6d7d0a-5942-4d09-b7eb-3785f3195f2c"
+		},
+		{
+			"label":"+",
+			"connectionId":"df4258ce-443e-45b5-81a5-50e41f3f928e",
+			"fromNode":"b0d7c623-e444-4008-a5bc-83aac52b6b55",
+			"fromNodeConPointId":"61dcf4f1-4d0b-4cc9-91af-f4391cf5e4c7",
+			"toNode":"eb6d7d0a-5942-4d09-b7eb-3785f3195f2c"
+		},
+		{
+			"label":"bundles",
+			"connectionId":"ef3f4f30-788d-4456-98c3-91a9df07e972",
+			"fromNode":"683ab33a-2111-4b27-be34-fc4a9ab82766",
+			"fromNodeConPointId":"c47158fb-0e13-45e3-bf82-b682fd6dd4c7",
+			"toNode":"cd5e87cc-ce32-420e-8a8e-3592e39cd115"
+		},
+		{
+			"label":"bundles",
+			"connectionId":"e16c5cac-eb08-4a6b-810a-b95cf999aa3d",
+			"fromNode":"eb6d7d0a-5942-4d09-b7eb-3785f3195f2c",
+			"fromNodeConPointId":"563ae1ee-365e-4c78-86d1-b56cd4d9b2eb",
+			"toNode":"cd5e87cc-ce32-420e-8a8e-3592e39cd115"
+		},
+		{
+			"label":"+",
+			"connectionId":"f63211fe-af3c-44e0-b820-688b34931adf",
+			"fromNode":"cd5e87cc-ce32-420e-8a8e-3592e39cd115",
+			"fromNodeConPointId":"2d5d1588-40e7-4745-8054-beb836f0a89a",
+			"toNode":"8daf2965-9a44-4833-b673-337003a0a8b4"
 		}
 	]
 }

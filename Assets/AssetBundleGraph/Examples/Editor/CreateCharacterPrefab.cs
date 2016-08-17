@@ -11,7 +11,7 @@ using System.Collections.Generic;
 	Drag & Drop this C# script to AssetBundleGraph.
 */
 public class CreateCharacterPrefab : AssetBundleGraph.PrefabricatorBase {
-	public override void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+	public override void ValidateCanCreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
 		var prefabName = groupKey + "_chara.prefab";
 		Prefabricate(prefabName);
 	}

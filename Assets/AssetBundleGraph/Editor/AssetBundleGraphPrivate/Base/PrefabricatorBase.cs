@@ -52,16 +52,15 @@ namespace AssetBundleGraph {
 				Func<string, string> Prefabricate = (string prefabName) => {
 					var newPrefabOutputPath = Path.Combine(recommendedPrefabPath, prefabName);
 					generated.Add(newPrefabOutputPath);
-					// set used.
-					PrefabricateIsUsed();
+					isPrefabricateFunctionCalled = true;
 
 					return newPrefabOutputPath;
 				};
 
-				EstimatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
+				ValidateCanCreatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
 
-				if (!isUsed) {
-					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
+				if (!isPrefabricateFunctionCalled) {
+					Debug.LogWarning(nodeName +": Prefabricate delegate was not called. Prefab might not be created properly.");
 				}
 
 				foreach (var generatedPrefabPath in generated) {
@@ -146,16 +145,15 @@ namespace AssetBundleGraph {
 						AssetDatabase.SaveAssets();
 						generated.Add(newPrefabOutputPath);
 						cachedOrGenerated.Add(newPrefabOutputPath);
-						Debug.Log("AssetBundleGraph prefab:" + newPrefabOutputPath + " created.");
+						Debug.Log(nodeName + " created new prefab: " + newPrefabOutputPath );
 					} else {
 						// cached.
 						usedCache.Add(newPrefabOutputPath);
 						cachedOrGenerated.Add(newPrefabOutputPath);
-						Debug.Log("AssetBundleGraph prefab:" + newPrefabOutputPath + " is already cached. if want to regenerate forcely, set Prefabricate(baseObject, prefabName, true) <- forcely regenerate prefab.");
+						Debug.Log(nodeName + " used cached prefab: " + newPrefabOutputPath );
 					}
 
-					// set used.
-					PrefabricateIsUsed();
+					isPrefabricateFunctionCalled = true;
 
 					return newPrefabOutputPath;
 				};
@@ -171,14 +169,13 @@ namespace AssetBundleGraph {
 				try {
 					CreatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
 				} catch (Exception e) {
-					Debug.LogError("Prefabricator:" + this + " error:" + e);
-					throw new NodeException("Prefabricator:" + this + " error:" + e, nodeId);
+					Debug.LogError(nodeName + " Error:" + e);
+					throw new NodeException(nodeName + " Error:" + e, nodeId);
 				}
 
-				if (!isUsed) {
-					Debug.LogWarning("should use 'Prefabricate' method for create prefab in Prefabricator for cache.");
+				if (!isPrefabricateFunctionCalled) {
+					Debug.LogWarning(nodeName +": Prefabricate delegate was not called. Prefab might not be created properly.");
 				}
-				
 
 				/*
 					ready assets-output-data from this node to next output.
@@ -239,25 +236,22 @@ namespace AssetBundleGraph {
 			Output(nodeId, labelToNext, outputDict, usedCache);
 		}
 
-		private bool isUsed = false;
-		private void PrefabricateIsUsed () {
-			isUsed = true;
-		}
-		
-		public virtual void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
-			Debug.LogError(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this);
-			throw new NodeException(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this, nodeId);
+		private bool isPrefabricateFunctionCalled = false;
+
+		public virtual void ValidateCanCreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+			Debug.LogError(nodeName + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this);
+			throw new NodeException(nodeName + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, nodeId);
 		}
 
 		public virtual void CreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 			Debug.LogError(nodeName + ":Subclass did not implement \"CreatePrefab ()\" method:" + this);
-			throw new NodeException(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this, nodeId);
+			throw new NodeException(nodeName + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, nodeId);
 		}
 
 
-		public static void ValidatePrefabScriptType (string prefabScriptType, Action NullOrEmpty, Action PrefabTypeIsNull) {
-			if (string.IsNullOrEmpty(prefabScriptType)) NullOrEmpty();
-			var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(prefabScriptType);
+		public static void ValidatePrefabScriptClassName (string prefabScriptClassName, Action NullOrEmpty, Action PrefabTypeIsNull) {
+			if (string.IsNullOrEmpty(prefabScriptClassName)) NullOrEmpty();
+			var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(prefabScriptClassName);
 			if (loadedType == null) PrefabTypeIsNull();
 		}
 	}

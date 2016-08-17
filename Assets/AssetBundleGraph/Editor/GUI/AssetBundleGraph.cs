@@ -124,7 +124,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 					default: {
-						throw new Exception("AssetBundleGraph error:" + currentParams[0] + " is not valid platform. by default.");
+						throw new AssetBundleGraphException(currentParams[0] + " is not supported.");
 					}
 				}
 			}
@@ -145,17 +145,17 @@ namespace AssetBundleGraph {
 
 			switch (scriptType) {
 				case ScriptType.SCRIPT_PREFABRICATOR: {
-					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPTSAMPLE_PATH, "MyPrefabricator.cs.sample");
+					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabricator.cs.template");
 					destinationPath = FileController.PathCombine(destinationBasePath, "MyPrefabricator.cs");
 					break;
 				}
 				case ScriptType.SCRIPT_FINALLY: {
-					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPTSAMPLE_PATH, "MyFinally.cs.sample");
+					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyFinally.cs.template");
 					destinationPath = FileController.PathCombine(destinationBasePath, "MyFinally.cs");
 					break;
 				}
 				default: {
-					Debug.LogError("undefined script type:" + scriptType);
+					Debug.LogError("Unknown script type found:" + scriptType);
 					break;
 				}
 			}
@@ -216,7 +216,6 @@ namespace AssetBundleGraph {
 
 			// load other textures
 			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
-			selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
 
 			if (nodes.Any()) UpdateSpacerRect();
 		}
@@ -236,7 +235,15 @@ namespace AssetBundleGraph {
 
 		public ConnectionPoint modifingConnnectionPoint;
 
-		private Texture2D selectionTex;
+		private Texture2D _selectionTex;
+		private Texture2D selectionTex {
+			get{
+				if(_selectionTex == null) {
+					_selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
+				}
+				return _selectionTex;
+			}
+		}
 
 		public enum ModifyMode : int {
 			CONNECT_STARTED,
@@ -280,7 +287,7 @@ namespace AssetBundleGraph {
 				this.type = type;
 			}
 		}
-		[SerializeField] private CopyField copyField = new CopyField();
+		private CopyField copyField = new CopyField();
 		
 		// hold selection start data.
 		public struct AssetBundleGraphSelection {
@@ -355,7 +362,7 @@ namespace AssetBundleGraph {
 				try {
 					deserialized = Json.Deserialize(dataStr) as Dictionary<string, object>;
 				} catch (Exception e) {
-					Debug.LogError("data load error:" + e + " at path:" + graphDataPath);
+					Debug.LogError("Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + graphDataPath);
 					return;
 				}
 
@@ -520,7 +527,7 @@ namespace AssetBundleGraph {
 			try {
 				Setup();
 			} catch (Exception e) {
-				Debug.LogError("reload error:" + e);
+				Debug.LogError("Error occured during reload:" + e);
 			}
 		}
 
@@ -533,7 +540,7 @@ namespace AssetBundleGraph {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
-				Debug.LogError("no data found. new data is generated.");
+				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. Creating from scratch...");
 				return;
 			}
 
@@ -568,7 +575,7 @@ namespace AssetBundleGraph {
 			var graphDataPath = FileController.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			if (!File.Exists(graphDataPath)) {
 				RenewData();
-				Debug.LogError("no data found. new data is generated.");
+				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. Creating from scratch...");
 				return;
 			}
 
@@ -663,7 +670,9 @@ namespace AssetBundleGraph {
 					.ToList();
 			foreach (var typeStr in finallyBasedTypeRunner) {
 				var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
-				if (finallyScriptInstance == null) throw new Exception("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(FinallyBase));
+				if (finallyScriptInstance == null) {
+					throw new AssetBundleGraphException("Running post process script failed because AssetBundleGraph failed to create script instance for " + typeStr + ". No such class found in assembly.");
+				}
 				var finallyInstance = (FinallyBase)finallyScriptInstance;
 
 				finallyInstance.Run(nodeThroughputs, isRun);
@@ -1048,11 +1057,10 @@ namespace AssetBundleGraph {
 
 					foreach (var refe in refs) {
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-							var type = ((MonoScript)refe).GetClass();
-							
-							var inherited = IsAcceptableScriptType(type);
+							Type scriptTypeInfo = ((MonoScript)refe).GetClass();							
+							Type inheritedTypeInfo = IsDragAndDropAcceptableScriptType(scriptTypeInfo);
 
-							if (inherited != null) {
+							if (inheritedTypeInfo != null) {
 								// at least one asset is script. change interface.
 								DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
 								break;
@@ -1075,15 +1083,15 @@ namespace AssetBundleGraph {
 						var path = item.Key;
 						var refe = (MonoScript)item.Value;
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-							var type = refe.GetClass();
-							var inherited = IsAcceptableScriptType(type);
+							Type scriptTypeInfo = refe.GetClass();
+							Type inheritedTypeInfo = IsDragAndDropAcceptableScriptType(scriptTypeInfo);
 
-							if (inherited != null) {
+							if (inheritedTypeInfo != null) {
 								var dropPos = Event.current.mousePosition;
 								var scriptName = refe.name;
-								var scriptType = scriptName;// name = type.
+								var scriptClassName = scriptName;
 								var scriptPath = path;
-								AddNodeFromCode(scriptName, scriptType, scriptPath, inherited, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
+								AddNodeFromCode(scriptName, scriptClassName, scriptPath, inheritedTypeInfo, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
 								shouldSave = true;
 							}
 						}
@@ -1226,6 +1234,11 @@ namespace AssetBundleGraph {
 						}
 
 						case "Paste": {
+
+							if(copyField.datas == null)  {
+								break;
+							}
+
 							var nodeNames = nodes.Select(node => node.name).ToList();
 							var duplicatingData = new List<Node>();
 
@@ -1240,11 +1253,15 @@ namespace AssetBundleGraph {
 
   									switch (pasteType) {
   										case CopyType.COPYTYPE_COPY: {
-  											if (2 <= nameOverlapping.Count) continue;
+											if (2 <= nameOverlapping.Count) {
+												continue;
+											}
   											break;
   										}
   										case CopyType.COPYTYPE_CUT: {
-  											if (1 <= nameOverlapping.Count) continue;
+											if (1 <= nameOverlapping.Count) {
+												continue;
+											}
   											break;
   										}
   									}
@@ -1253,7 +1270,9 @@ namespace AssetBundleGraph {
 								}
 							}
 
-							if (!duplicatingData.Any()) break;
+							if (!duplicatingData.Any()) {
+								break;
+							}
 
 							Undo.RecordObject(this, "Paste");
 							foreach (var newNode in duplicatingData) {
@@ -1337,7 +1356,7 @@ namespace AssetBundleGraph {
 				
 				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 					break;
 				}
@@ -1359,7 +1378,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] = node.scriptType;
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 					break;
 				}
@@ -1376,7 +1395,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + node.kind);
+					Debug.LogError(node.name + " is defined as unknown kind of node. value:" + node.kind);
 					break;
 				}
 			}
@@ -1400,7 +1419,7 @@ namespace AssetBundleGraph {
 					var loadPath = new Dictionary<string, string>();
 					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
 
-					var newNode = Node.LoaderNode(currentNodesCount, name, id, kind, loadPath, x, y);
+					var newNode = Node.CreateLoaderNode(currentNodesCount, name, id, kind, loadPath, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1416,10 +1435,10 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					var scriptType = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_TYPE] as string;
+					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
 
-					var newNode = Node.ScriptNode(currentNodesCount, name, id, kind, scriptType, scriptPath, x, y);
+					var newNode = Node.CreateScriptNode(currentNodesCount, name, id, kind, scriptClassName, scriptPath, x, y);
 
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1445,7 +1464,7 @@ namespace AssetBundleGraph {
 						filterContainsKeytypes.Add(filterContainsKeytypeSource.ToString());
 					}
 
-					var newNode = Node.GUINodeForFilter(currentNodesCount, name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
+					var newNode = Node.CreateGUIFilterNode(currentNodesCount, name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
 
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1463,7 +1482,7 @@ namespace AssetBundleGraph {
 					var defaultPlatformAndPackages = new Dictionary<string, string>();
 					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
-					var newNode = Node.GUINodeForImport(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
+					var newNode = Node.CreateGUIImportNode(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1481,7 +1500,7 @@ namespace AssetBundleGraph {
 					var groupingKeyword = new Dictionary<string, string>();
 					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
 
-					var newNode = Node.GUINodeForGrouping(currentNodesCount, name, id, kind, groupingKeyword, x, y);
+					var newNode = Node.CreateGUIGroupingNode(currentNodesCount, name, id, kind, groupingKeyword, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1504,7 +1523,7 @@ namespace AssetBundleGraph {
 					var bundleUseOutput = new Dictionary<string, string>();
 					foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string; 
 					
-					var newNode = Node.GUINodeForBundlizer(currentNodesCount, name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
+					var newNode = Node.CreateBundlizerNode(currentNodesCount, name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1528,7 +1547,7 @@ namespace AssetBundleGraph {
 						foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
 					}
 
-					var newNode = Node.GUINodeForBundleBuilder(currentNodesCount, name, id, kind, bundleOptions, x, y);
+					var newNode = Node.CreateBundleBuilderNode(currentNodesCount, name, id, kind, bundleOptions, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1546,38 +1565,40 @@ namespace AssetBundleGraph {
 					var exportPath = new Dictionary<string, string>();
 					foreach (var platform_package_key in exportPathSource.Keys) exportPath[platform_package_key] = exportPathSource[platform_package_key] as string;
 
-					var newNode = Node.ExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
+					var newNode = Node.CreateExporterNode(currentNodesCount, name, id, kind, exportPath, x, y);
 					return newNode;
 				}
 
 				default: {
-					Debug.LogError("kind not found:" + kind);
+					Debug.LogError(name + " is defined as unknown kind of node. value:" + kind);
 					break;
 				}
 			}
 
-			Debug.LogError("failed to detect." + kindSource);
-			// error. returns empty node.
-			return new Node();
+			throw new AssetBundleGraphException("Could not find way to create node: " + name + " kind:" + kindSource);
 		}
 
-		private Type IsAcceptableScriptType (Type type) {
-			if (typeof(FilterBase).IsAssignableFrom(type)) return typeof(FilterBase);
-			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) return typeof(PrefabricatorBase);
-			Debug.LogError("failed to accept:" + type);
+		private Type IsDragAndDropAcceptableScriptType (Type type) {
+			if (typeof(FilterBase).IsAssignableFrom(type)) {
+				return typeof(FilterBase);
+			}
+			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) {
+				return typeof(PrefabricatorBase);
+			}
+
 			return null;
 		}
 
-		private void AddNodeFromCode (string scriptName, string scriptType, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
+		private void AddNodeFromCode (string scriptName, string scriptClassName, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
 			Node newNode = null;
 
 			if (scriptBaseType == typeof(FilterBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT;
-				newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
 				
 				// add output point to this node.
 				// setup this filter then add output point by result of setup.
-				var outputPointLabels = GraphStackController.GetLabelsFromSetupFilter(scriptName);
+				var outputPointLabels = GraphStackController.CreateCustomFilterInstanceForScript(scriptClassName);
 
 				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				foreach (var outputPointLabel in outputPointLabels) {
@@ -1587,14 +1608,15 @@ namespace AssetBundleGraph {
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = Node.ScriptNode(nodes.Count, scriptName, nodeId, kind, scriptType, scriptPath, x, y);
+				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
 				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			
 			
 			if (newNode == null) {
-				Debug.LogError("failed to add node. no type found, scriptName:" + scriptName + " scriptPath:" + scriptPath + " scriptBaseType:" + scriptBaseType);
+				Debug.LogError("Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
+					") is not supported to create from code.");
 				return;
 			}
 
@@ -1612,7 +1634,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
-					newNode = Node.LoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
+					newNode = Node.CreateLoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
 					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
@@ -1620,7 +1642,7 @@ namespace AssetBundleGraph {
 				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					var newFilterKeywords = new List<string>();
 					var newFilterKeytypes = new List<string>();
-					newNode = Node.GUINodeForFilter(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
+					newNode = Node.CreateGUIFilterNode(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -1630,7 +1652,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
-					newNode = Node.GUINodeForImport(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
+					newNode = Node.CreateGUIImportNode(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1641,14 +1663,14 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT}
 					};
 
-					newNode = Node.GUINodeForGrouping(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
+					newNode = Node.CreateGUIGroupingNode(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-					newNode = Node.GUINodeForPrefabricator(nodes.Count, nodeName, nodeId, kind, x, y);
+					newNode = Node.CreatePrefabricatorNode(nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1663,7 +1685,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.BUNDLIZER_USEOUTPUT_DEFAULT}	
 					};
 
-					newNode = Node.GUINodeForBundlizer(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
+					newNode = Node.CreateBundlizerNode(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;
@@ -1674,7 +1696,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, new List<string>()}
 					};
 
-					newNode = Node.GUINodeForBundleBuilder(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
+					newNode = Node.CreateBundleBuilderNode(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -1685,12 +1707,12 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
 					};
 
-					newNode = Node.ExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
+					newNode = Node.CreateExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
 					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {
-					Debug.LogError("no kind match:" + kind);
+					Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + kind);
 					break;
 				}
 			}
@@ -1871,7 +1893,6 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							// Debug.Log("unconsumed or ignored event:" + e.eventType);
 							modifyMode = ModifyMode.CONNECT_ENDED;
 							break;
 						}
@@ -2035,7 +2056,6 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							// Debug.Log("unconsumed or ignored event:" + e.eventType);
 							break;
 						}
 					}
@@ -2146,7 +2166,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				default: {
-					Debug.LogError("no kind match:" + newNode.kind);
+					Debug.LogError(newNode.name + " is defined as unknown kind of node. value:" + newNode.kind);
 					break;
 				}
 			}
@@ -2227,7 +2247,6 @@ namespace AssetBundleGraph {
 							break;
 						}
 						default: {
-							// Debug.Log("unconsumed or ignored event:" + e.eventType);
 							break;
 						}
 					}

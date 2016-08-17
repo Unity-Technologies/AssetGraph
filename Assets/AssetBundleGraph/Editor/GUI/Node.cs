@@ -278,7 +278,7 @@ namespace AssetBundleGraph {
 		[SerializeField] public string nodeId;
 		[SerializeField] public AssetBundleGraphSettings.NodeKind kind;
 
-		[SerializeField] public string scriptType;
+		[SerializeField] public string scriptClassName;
 		[SerializeField] public string scriptPath;
 		[SerializeField] public SerializablePseudoDictionary loadPath;
 		[SerializeField] public SerializablePseudoDictionary exportPath;
@@ -324,7 +324,7 @@ namespace AssetBundleGraph {
 		private float progress;
 		private bool running;
 
-		public static Node LoaderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
+		public static Node CreateLoaderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -336,7 +336,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node ExporterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportPath, float x, float y) {
+		public static Node CreateExporterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -348,7 +348,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node ScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptType, string scriptPath, float x, float y) {
+		public static Node CreateScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -356,12 +356,12 @@ namespace AssetBundleGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				scriptType: scriptType,
+				scriptClassName: scriptClassName,
 				scriptPath: scriptPath
 			);
 		}
 
-		public static Node GUINodeForFilter (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
+		public static Node CreateGUIFilterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -374,7 +374,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForImport (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
+		public static Node CreateGUIImportNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -386,19 +386,7 @@ namespace AssetBundleGraph {
 			);
 		}
 		
-		public static Node GUINodeForModify (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> modifierPackages, float x, float y) {
-			return new Node(
-				index: index,
-				name: name,
-				nodeId: nodeId,
-				kind: kind,
-				x: x,
-				y: y,
-				modifierPackages: modifierPackages
-			);
-		}
-
-		public static Node GUINodeForGrouping (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
+		public static Node CreateGUIGroupingNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -410,7 +398,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForPrefabricator (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static Node CreatePrefabricatorNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -421,7 +409,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForBundlizer (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
+		public static Node CreateBundlizerNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -434,7 +422,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Node GUINodeForBundleBuilder (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
+		public static Node CreateBundleBuilderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
 			return new Node(
 				index: index,
 				name: name,
@@ -445,14 +433,14 @@ namespace AssetBundleGraph {
 				enabledBundleOptions: enabledBundleOptions
 			);
 		}
-			
-		public void FilterOutputPointsAdded (int addedIndex, string keyword) {
+
+		public void AddFilterOutputPoint (int addedIndex, string keyword) {
 			connectionPoints.Insert(addedIndex, new OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
 
-		public void FilterOutputPointsDeleted (int deletedIndex) {
+		public void DeleteFilterOutputPoint (int deletedIndex) {
 			var deletedConnectionPoint = connectionPoints[deletedIndex];
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
 			connectionPoints.RemoveAt(deletedIndex);
@@ -460,7 +448,7 @@ namespace AssetBundleGraph {
 			UpdateNodeRect();
 		}
 
-		public void FilterOutputPointsLabelChanged (int changedIndex, string latestLabel) {
+		public void RenameFilterOutputPointLabel (int changedIndex, string latestLabel) {
 			connectionPoints[changedIndex].label = latestLabel;
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex]));
 			Save();
@@ -469,16 +457,16 @@ namespace AssetBundleGraph {
 		
 		
 		
-		public void BundlizerUseOutputResources () {
-			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+		public void AddBundlizerDependencyOutput () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex != -1) return;
 			
-			connectionPoints.Add(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL));
+			connectionPoints.Add(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL));
 			UpdateNodeRect();
 		}
 		
-		public void BundlizerUnuseOutputResources () {
-			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL);
+		public void RemoveBundlizerDependencyOutput () {
+			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex == -1) return;
 			
 			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
@@ -514,7 +502,7 @@ namespace AssetBundleGraph {
 			AssetBundleGraphSettings.NodeKind kind, 
 			float x, 
 			float y,
-			string scriptType = null, 
+			string scriptClassName = null, 
 			string scriptPath = null, 
 			Dictionary<string, string> loadPath = null, 
 			Dictionary<string, string> exportPath = null, 
@@ -533,7 +521,7 @@ namespace AssetBundleGraph {
 			this.name = name;
 			this.nodeId = nodeId;
 			this.kind = kind;
-			this.scriptType = scriptType;
+			this.scriptClassName = scriptClassName;
 			this.scriptPath = scriptPath;
 			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
 			if (exportPath != null) this.exportPath = new SerializablePseudoDictionary(exportPath);
@@ -589,7 +577,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -603,7 +591,7 @@ namespace AssetBundleGraph {
 				this.kind, 
 				newX,
 				newY,
-				this.scriptType,
+				this.scriptClassName,
 				this.scriptPath,
 				(this.loadPath != null) ? loadPath.ReadonlyDict() : null,
 				(this.exportPath != null) ? this.exportPath.ReadonlyDict() : null,
@@ -652,7 +640,7 @@ namespace AssetBundleGraph {
 				}
 				
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -703,7 +691,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -751,7 +739,7 @@ namespace AssetBundleGraph {
 				}
 
 				default: {
-					Debug.LogError("failed to match:" + this.kind);
+					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
 			}
@@ -804,7 +792,7 @@ namespace AssetBundleGraph {
 		public void DrawNode () {
 			var scaledBaseRect = ScaleEffect(baseRect);
 
-			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, UpdateNodeEvent, string.Empty, nodeInterfaceTypeStr);
+			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, nodeInterfaceTypeStr);
 
 			baseRect.position = baseRect.position + (movedRect.position - scaledBaseRect.position);
 		}
@@ -825,10 +813,16 @@ namespace AssetBundleGraph {
 			return scaledVector2;
 		}
 
+		private void DrawThisNode(int id) {
+			HandleNodeEvent ();
+			DrawNodeContents();
+			GUI.DragWindow();
+		}
+
 		/**
 			retrieve mouse events for this node in this AssetGraoh window.
 		*/
-		private void UpdateNodeEvent (int id) {
+		private void HandleNodeEvent () {
 			switch (Event.current.type) {
 
 				/*
@@ -935,11 +929,6 @@ namespace AssetBundleGraph {
 					Event.current.Use();
 				}
 			}
-
-
-			DrawNodeContents();
-
-			GUI.DragWindow();
 		}
 
 		public void DrawConnectionInputPointMark (OnNodeEvent eventSource, bool justConnecting) {
@@ -1014,35 +1003,22 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawNodeContents () {
+
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
-			
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
-			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					GUI.contentColor = Color.black;
-					break;
-				}
-				default: {
-					GUI.contentColor = Color.white;
-					break;
-				}
-			}
-			 
 			GUI.Label(nodeTitleRect, name, style);
 
-			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
+			if (running) {
+				EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
+			}
 
 			style.alignment = defaultAlignment;
 
-			/*
-				draw error mark if errors exists.
-			*/
 			if (hasErrors) { 
-				EditorGUI.HelpBox(new Rect(0f, -6f, 100f, 100f), string.Empty, MessageType.Error);
+				EditorGUI.HelpBox(new Rect(4f, -6f, 100f, 100f), string.Empty, MessageType.Error);
 			}
 		}
 
