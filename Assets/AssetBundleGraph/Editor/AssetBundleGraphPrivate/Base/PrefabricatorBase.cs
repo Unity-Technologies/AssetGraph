@@ -57,7 +57,7 @@ namespace AssetBundleGraph {
 					return newPrefabOutputPath;
 				};
 
-				EstimatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
+				ValidateCanCreatePrefab(nodeName, nodeId, groupKey, assets, recommendedPrefabPath, Prefabricate);
 
 				if (!isPrefabricateFunctionCalled) {
 					Debug.LogWarning(nodeName +": Prefabricate delegate was not called. Prefab might not be created properly.");
@@ -238,14 +238,14 @@ namespace AssetBundleGraph {
 
 		private bool isPrefabricateFunctionCalled = false;
 
-		public virtual void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
-			Debug.LogError(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this);
-			throw new NodeException(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this, nodeId);
+		public virtual void ValidateCanCreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+			Debug.LogError(nodeName + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this);
+			throw new NodeException(nodeName + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, nodeId);
 		}
 
 		public virtual void CreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetInfo> sources, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
 			Debug.LogError(nodeName + ":Subclass did not implement \"CreatePrefab ()\" method:" + this);
-			throw new NodeException(nodeName + ":Subclass did not implement \"EstimatePrefab ()\" method:" + this, nodeId);
+			throw new NodeException(nodeName + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, nodeId);
 		}
 
 

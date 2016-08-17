@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class SamplePrefabricator : AssetBundleGraph.PrefabricatorBase {
 	
-	public override void EstimatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
+	public override void ValidateCanCreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.AssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
 		if( sources.Count < 3 ) {
 			throw new AssetBundleGraph.NodeException("SamplePrefabricator needs at least 3 assets to create Prefab.", nodeId);
 		}

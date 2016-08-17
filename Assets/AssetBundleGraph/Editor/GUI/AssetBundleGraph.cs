@@ -145,12 +145,12 @@ namespace AssetBundleGraph {
 
 			switch (scriptType) {
 				case ScriptType.SCRIPT_PREFABRICATOR: {
-					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPTSAMPLE_PATH, "MyPrefabricator.cs.sample");
+					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabricator.cs.template");
 					destinationPath = FileController.PathCombine(destinationBasePath, "MyPrefabricator.cs");
 					break;
 				}
 				case ScriptType.SCRIPT_FINALLY: {
-					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPTSAMPLE_PATH, "MyFinally.cs.sample");
+					sourceFileName = FileController.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyFinally.cs.template");
 					destinationPath = FileController.PathCombine(destinationBasePath, "MyFinally.cs");
 					break;
 				}
