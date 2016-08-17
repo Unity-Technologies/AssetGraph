@@ -861,7 +861,7 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 							var scriptClassName = currentNodeData.scriptClassName;
 							if (string.IsNullOrEmpty(scriptClassName)) {
-								Debug.LogError(nodeName  + ": " + nodeKind + " found but no script name assigned. Configure valid script name from editor.");
+								Debug.LogError(nodeName + ": Classname is empty. Set valid classname. Configure valid script name from editor.");
 								break;
 							}
 							var executor = Executor<PrefabricatorBase>(scriptClassName, nodeId);

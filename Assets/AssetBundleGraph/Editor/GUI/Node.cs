@@ -784,7 +784,7 @@ namespace AssetBundleGraph {
 		public void DrawNode () {
 			var scaledBaseRect = ScaleEffect(baseRect);
 
-			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, UpdateNodeEvent, string.Empty, nodeInterfaceTypeStr);
+			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, nodeInterfaceTypeStr);
 
 			baseRect.position = baseRect.position + (movedRect.position - scaledBaseRect.position);
 		}
@@ -805,10 +805,16 @@ namespace AssetBundleGraph {
 			return scaledVector2;
 		}
 
+		private void DrawThisNode(int id) {
+			HandleNodeEvent ();
+			DrawNodeContents();
+			GUI.DragWindow();
+		}
+
 		/**
 			retrieve mouse events for this node in this AssetGraoh window.
 		*/
-		private void UpdateNodeEvent (int id) {
+		private void HandleNodeEvent () {
 			switch (Event.current.type) {
 
 				/*
@@ -915,11 +921,6 @@ namespace AssetBundleGraph {
 					Event.current.Use();
 				}
 			}
-
-
-			DrawNodeContents();
-
-			GUI.DragWindow();
 		}
 
 		public void DrawConnectionInputPointMark (OnNodeEvent eventSource, bool justConnecting) {
@@ -994,35 +995,22 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawNodeContents () {
+
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
-			
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
-			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					GUI.contentColor = Color.black;
-					break;
-				}
-				default: {
-					GUI.contentColor = Color.white;
-					break;
-				}
-			}
-			 
 			GUI.Label(nodeTitleRect, name, style);
 
-			if (running) EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
+			if (running) {
+				EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
+			}
 
 			style.alignment = defaultAlignment;
 
-			/*
-				draw error mark if errors exists.
-			*/
 			if (hasErrors) { 
-				EditorGUI.HelpBox(new Rect(0f, -6f, 100f, 100f), string.Empty, MessageType.Error);
+				EditorGUI.HelpBox(new Rect(4f, -6f, 100f, 100f), string.Empty, MessageType.Error);
 			}
 		}
 
