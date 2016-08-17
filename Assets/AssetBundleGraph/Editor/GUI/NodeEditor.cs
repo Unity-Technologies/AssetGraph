@@ -512,6 +512,7 @@ namespace AssetBundleGraph {
 							EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
 							if(GUILayout.Button("Create directory")) {
 								Directory.CreateDirectory(exporterrNodePath);
+								node.Save();
 							}
 						}
 						EditorGUILayout.Space();
