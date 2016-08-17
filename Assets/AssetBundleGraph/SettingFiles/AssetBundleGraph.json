@@ -1,5 +1,5 @@
 {
-	"lastModified":"08/16/2016 18:52:13",
+	"lastModified":"08/17/2016 11:06:39",
 	"nodes":[
 		{
 			"name":"Loader0",
@@ -9,11 +9,11 @@
 				"+"
 			],
 			"pos":{
-				"x":30,
-				"y":32
+				"x":64,
+				"y":82
 			},
 			"loadPath":{
-				"Default":"Assets/SampleAssets"
+				"Default":"SampleAssets"
 			}
 		},
 		{
@@ -29,8 +29,8 @@
 				"ses"
 			],
 			"pos":{
-				"x":44,
-				"y":161
+				"x":39,
+				"y":271
 			},
 			"filterContainsKeywords":[
 				"images",
@@ -125,26 +125,12 @@
 				"+"
 			],
 			"pos":{
-				"x":566,
-				"y":154
+				"x":570,
+				"y":182
 			},
 			"groupingKeyword":{
 				"Default":"/ID_*/"
 			}
-		},
-		{
-			"name":"Prefabricator0",
-			"id":"dfbba7c3-fcc0-40b0-af18-ff6754526bad",
-			"kind":"PREFABRICATOR_GUI",
-			"outputLabels":[
-				"+"
-			],
-			"pos":{
-				"x":741,
-				"y":159
-			},
-			"scriptType":"SamplePrefabricator",
-			"scriptPath":""
 		},
 		{
 			"name":"Bundlizer1",
@@ -154,8 +140,8 @@
 				"bundles"
 			],
 			"pos":{
-				"x":959,
-				"y":347
+				"x":774,
+				"y":371
 			},
 			"bundleNameTemplate":{
 				"Default":"bundle_b_*.assetbundle"
@@ -172,8 +158,8 @@
 				"+"
 			],
 			"pos":{
-				"x":1314,
-				"y":299
+				"x":1229,
+				"y":281
 			},
 			"enabledBundleOptions":{
 				"Default":[
@@ -227,8 +213,8 @@
 				"+"
 			],
 			"pos":{
-				"x":385,
-				"y":282
+				"x":469,
+				"y":278
 			},
 			"groupingKeyword":{
 				"Default":"/Group_*/"
@@ -239,18 +225,68 @@
 			"id":"ad0c7ffc-b6c6-4777-b21b-3cb241ef7619",
 			"kind":"FILTER_GUI",
 			"outputLabels":[
-				
+				"keyword",
+				"keyword",
+				"keyword"
 			],
 			"pos":{
-				"x":294,
-				"y":478
+				"x":321,
+				"y":493
 			},
 			"filterContainsKeywords":[
-				
+				"keyword",
+				"keyword",
+				"keyword"
 			],
 			"filterContainsKeytypes":[
-				
+				"Any",
+				"UnityEditor.TextureImporter",
+				"UnityEngine.Animation"
 			]
+		},
+		{
+			"name":"Grouping2",
+			"id":"2b5b5e50-b41d-4963-975c-8111845780b2",
+			"kind":"GROUPING_GUI",
+			"outputLabels":[
+				"+"
+			],
+			"pos":{
+				"x":575,
+				"y":74
+			},
+			"groupingKeyword":{
+				"Default":"/ID_*/"
+			}
+		},
+		{
+			"name":"Grouping3",
+			"id":"a98d6065-f6ed-4019-b322-a85d74951e77",
+			"kind":"GROUPING_GUI",
+			"outputLabels":[
+				"+"
+			],
+			"pos":{
+				"x":771,
+				"y":87
+			},
+			"groupingKeyword":{
+				"Default":"/ID_*/"
+			}
+		},
+		{
+			"name":"Prefabricator0",
+			"id":"b6865d0b-ad44-4efe-99b7-f66b42dbbe09",
+			"kind":"PREFABRICATOR_GUI",
+			"outputLabels":[
+				"+"
+			],
+			"pos":{
+				"x":797,
+				"y":261
+			},
+			"scriptClassName":"",
+			"scriptPath":null
 		}
 	],
 	"connections":[
@@ -277,12 +313,6 @@
 			"connectionId":"44a2ff07-e69b-43b3-8f59-6aa22731b7e9",
 			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
 			"toNode":"1e234f6e-a5d5-42cc-9efd-579ea9c075ef"
-		},
-		{
-			"label":"+",
-			"connectionId":"cd2e6051-8f32-4543-9f50-80b0578dbdfa",
-			"fromNode":"2cc186b7-9bb5-4a01-a7f7-8db87e36841d",
-			"toNode":"66c749d4-8493-48c8-b12c-91f24a44aa24"
 		},
 		{
 			"label":"+",
@@ -321,12 +351,6 @@
 			"toNode":"2cc186b7-9bb5-4a01-a7f7-8db87e36841d"
 		},
 		{
-			"label":"+",
-			"connectionId":"5832312f-f799-47f0-967c-08d7b8f41047",
-			"fromNode":"dfbba7c3-fcc0-40b0-af18-ff6754526bad",
-			"toNode":"1c5f7427-67d3-403b-b384-283bbc761238"
-		},
-		{
 			"label":"bundles",
 			"connectionId":"38d142cb-2bbe-457e-afcd-43a965cf7405",
 			"fromNode":"1c5f7427-67d3-403b-b384-283bbc761238",
@@ -343,6 +367,36 @@
 			"connectionId":"849931b5-24a2-4abe-8d74-543cb8964b46",
 			"fromNode":"e5d22144-9a26-48f5-b1f7-c57bb553fd5e",
 			"toNode":"ad0c7ffc-b6c6-4777-b21b-3cb241ef7619"
+		},
+		{
+			"label":"keyword",
+			"connectionId":"91bb1796-e016-4c86-b1d5-0ead461845bd",
+			"fromNode":"ad0c7ffc-b6c6-4777-b21b-3cb241ef7619",
+			"toNode":"813382b2-28e5-4e7a-bee7-db072acb9109"
+		},
+		{
+			"label":"+",
+			"connectionId":"b3658753-d5a8-4b5e-83e7-506aef12ec33",
+			"fromNode":"2cc186b7-9bb5-4a01-a7f7-8db87e36841d",
+			"toNode":"2b5b5e50-b41d-4963-975c-8111845780b2"
+		},
+		{
+			"label":"+",
+			"connectionId":"4078e8b0-fbc4-4391-9dd0-9a89fb556526",
+			"fromNode":"2b5b5e50-b41d-4963-975c-8111845780b2",
+			"toNode":"a98d6065-f6ed-4019-b322-a85d74951e77"
+		},
+		{
+			"label":"+",
+			"connectionId":"3c9f6149-87cc-41a4-9a1a-476b9901ffd4",
+			"fromNode":"66c749d4-8493-48c8-b12c-91f24a44aa24",
+			"toNode":"a98d6065-f6ed-4019-b322-a85d74951e77"
+		},
+		{
+			"label":"+",
+			"connectionId":"856c29ae-c5bb-4a1d-ac27-24b07fab10bd",
+			"fromNode":"a98d6065-f6ed-4019-b322-a85d74951e77",
+			"toNode":"1c5f7427-67d3-403b-b384-283bbc761238"
 		}
 	]
 }
