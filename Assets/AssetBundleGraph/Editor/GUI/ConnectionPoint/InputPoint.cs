@@ -1,7 +1,8 @@
+using System;
 using UnityEngine;
 
 namespace AssetBundleGraph {
-	public class InputPoint : ConnectionPoint {
+	[Serializable] public class InputPoint : ConnectionPoint {
 		public InputPoint (string label) : base ("fixedId", label, true, false) {}
 		
 		public override void UpdatePos (int index, int max, float width, float height) {

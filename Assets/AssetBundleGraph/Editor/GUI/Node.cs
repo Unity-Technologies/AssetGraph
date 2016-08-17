@@ -793,12 +793,12 @@ namespace AssetBundleGraph {
 
 		public OutputPoint ConnectionPointFromConPointId (string pointId) {
 			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
-			return targetPoints[0] as OutputPoint;
+			return (OutputPoint)targetPoints[0];
 		}
-
+		
 		public InputPoint ConnectionPointFromLabel (string label) {
 			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
-			return targetPoints[0] as InputPoint;
+			return (InputPoint)targetPoints[0];
 		}
 
 		public void DrawNode () {

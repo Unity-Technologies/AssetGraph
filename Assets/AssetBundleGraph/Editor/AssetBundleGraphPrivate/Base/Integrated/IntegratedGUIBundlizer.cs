@@ -8,10 +8,12 @@ namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeBase {
 		private readonly string bundleNameTemplate;
 		private readonly bool outputResource;
+		private readonly string outputSourceConnectionId;
 		
-		public IntegratedGUIBundlizer (string bundleNameTemplate, bool outputResource) {
+		public IntegratedGUIBundlizer (string bundleNameTemplate, bool outputResource, string outputSourceConnectionId) {
 			this.bundleNameTemplate = bundleNameTemplate;
 			this.outputResource = outputResource;
+			this.outputSourceConnectionId = outputSourceConnectionId;
 		}
 
 		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
@@ -54,7 +56,7 @@ namespace AssetBundleGraph {
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+				Output(nodeId, outputSourceConnectionId, groupedSources, new List<string>());
 			}
 		}
 		
@@ -92,7 +94,7 @@ namespace AssetBundleGraph {
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_RESOURCES_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+				Output(nodeId, outputSourceConnectionId, groupedSources, new List<string>());
 			}
 		}
 

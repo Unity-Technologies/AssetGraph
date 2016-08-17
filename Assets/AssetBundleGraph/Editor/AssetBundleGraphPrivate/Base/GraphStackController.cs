@@ -424,8 +424,9 @@ namespace AssetBundleGraph {
 				var connectionId = connectionDict[AssetBundleGraphSettings.CONNECTION_ID] as string;
 				var connectionLabel = connectionDict[AssetBundleGraphSettings.CONNECTION_LABEL] as string;
 				var fromNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
+				var fromNodeOutputPointId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID] as string;
 				var toNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE] as string;
-				connections.Add(new ConnectionData(connectionId, connectionLabel, fromNodeId, toNodeId));
+				connections.Add(new ConnectionData(connectionId, connectionLabel, fromNodeId, fromNodeOutputPointId, toNodeId));
 			}
 
 			var nodeDatas = new List<NodeData>();
@@ -440,6 +441,12 @@ namespace AssetBundleGraph {
 				
 				var nodeName = nodeDict[AssetBundleGraphSettings.NODE_NAME] as string;
 				
+				var nodeOutputPointIdsSources = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+				var outputPointIds = new List<string>();
+				foreach (var nodeOutputPointIdsSource in nodeOutputPointIdsSources) {
+					outputPointIds.Add(nodeOutputPointIdsSource as string);
+				}
+
 				switch (nodeKind) {
 					case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPathSource = nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
@@ -455,6 +462,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
+								outputPointIds:outputPointIds,
 								loadPath:loadPath
 							)
 						);
@@ -475,6 +483,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
+								outputPointIds:outputPointIds,
 								exportPath:exportPath
 							)
 						);
@@ -492,6 +501,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
+								outputPointIds:outputPointIds,
 								scriptType:scriptType
 							)
 						);
@@ -516,6 +526,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
+								outputPointIds:outputPointIds,
 								filterContainsKeywords:filterContainsKeywords,
 								filterContainsKeytypes:filterContainsKeytypes
 							)
@@ -538,6 +549,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
+								outputPointIds:outputPointIds,
 								importerPackages:importerPackages
 							)
 						);
@@ -559,6 +571,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
+								outputPointIds:outputPointIds,
 								groupingKeyword:groupingKeyword
 							)
 						);
@@ -585,6 +598,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
+								outputPointIds:outputPointIds,
 								bundleNameTemplate:bundleNameTemplate,
 								bundleUseOutput:bundleUseOutput
 							)
@@ -618,6 +632,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName, 
+								outputPointIds:outputPointIds,
 								enabledBundleOptions:enabledBundleOptions
 							)
 						);
@@ -708,7 +723,7 @@ namespace AssetBundleGraph {
 
 			var nodeName = currentNodeData.nodeName;
 			var nodeKind = currentNodeData.nodeKind;
-
+			
 			/*
 				run parent nodes of this node.
 				search connections which are incoming to this node.
@@ -717,12 +732,12 @@ namespace AssetBundleGraph {
 			foreach (var connectionDataOfParent in currentNodeData.connectionDataOfParents) {
 				var fromNodeId = connectionDataOfParent.fromNodeId;
 				var usedConnectionId = connectionDataOfParent.connectionId;
-				
+
 				if (usedConnectionIds.Contains(usedConnectionId)) throw new NodeException("connection loop detected.", fromNodeId);
 				
 				usedConnectionIds.Add(usedConnectionId);
 				
-				var parentNode = nodeDatas.Where(relation => relation.nodeId == fromNodeId).ToList();
+				var parentNode = nodeDatas.Where(node => node.nodeId == fromNodeId).ToList();
 				if (!parentNode.Any()) return;
 
 				var parentNodeKind = parentNode[0].nodeKind;
@@ -734,24 +749,40 @@ namespace AssetBundleGraph {
 			}
 
 			/*
+				childNode: this node.
 				run after parent run.
 			*/
-			var connectionLabelsFromThisNodeToChildNode = connectionDatas
+
+			// connections Ids from this node to child nodes. non-ordered.
+			// actual running order depends on order of Node's OutputPoint order.
+			var nonOrderedConnectionsFromThisNodeToChildNode = connectionDatas
 				.Where(con => con.fromNodeId == nodeId)
-				.Select(con => con.connectionLabel)
 				.ToList();
+			
+			var orderedNodeOutputPointIds = nodeDatas.Where(node => node.nodeId == nodeId).SelectMany(node => node.outputPointIds).ToList();
 
 			/*
-				this is label of connection.
-
-				will be ignored in Filter node,
-				because the Filter node will generate new label of connection by itself.
+				get node's outputPoint ordered connection ids. 
 			*/
-			var labelToChild = string.Empty;
-			if (connectionLabelsFromThisNodeToChildNode.Any()) {
-				labelToChild = connectionLabelsFromThisNodeToChildNode[0];
+			var orderedConnectionIds = new List<string>(nonOrderedConnectionsFromThisNodeToChildNode.Count);
+			foreach (var orderedNodeOutputPointId in orderedNodeOutputPointIds) {
+				foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
+					var nonOrderedConnectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.fromNodeOutputPointId;
+					if (orderedNodeOutputPointId == nonOrderedConnectionOutputPointId) {
+						orderedConnectionIds.Add(nonOrderedConnectionFromThisNodeToChildNode.connectionId);
+						continue;
+					} 
+				} 
 			}
-
+			
+			/*
+				FilterNode and BundlizerNode uses multiple output connections.
+				ExportNode does not have output.
+				but all other nodes has only one output connection and uses first connection.
+			*/
+			var firstConnectionIdFromThisNodeToChildNode = string.Empty;
+			if (orderedConnectionIds.Any()) firstConnectionIdFromThisNodeToChildNode = orderedConnectionIds[0];
+			
 			if (updateHandler != null) updateHandler(nodeId, 0f);
 
 			/*
@@ -783,16 +814,19 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<InternalAssetData>> result, List<string> justCached) => {
+			/*
+				the Action which is executed from Node.
+				store result data records to resultDict.
+			*/
+			Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string targetConnectionId, Dictionary<string, List<InternalAssetData>> result, List<string> justCached) => {
 				var targetConnectionIds = connectionDatas
-					.Where(con => con.fromNodeId == dataSourceNodeId) // from this node
-					.Where(con => con.connectionLabel == connectionLabel) // from this label
+					.Where(con => con.connectionId == targetConnectionId)
 					.Select(con => con.connectionId)
 					.ToList();
 				
 				if (!targetConnectionIds.Any()) {
-					// if no connection, no results for next.
-					// save results to resultDict with endpoint node's id.
+					// if next connection does not exist, no results for next.
+					// save results to resultDict with this endpoint node's id.
 					resultDict[dataSourceNodeId] = new Dictionary<string, List<InternalAssetData>>();
 					foreach (var groupKey in result.Keys) {
 						if (!resultDict[dataSourceNodeId].ContainsKey(groupKey)) resultDict[dataSourceNodeId][groupKey] = new List<InternalAssetData>();
@@ -801,7 +835,6 @@ namespace AssetBundleGraph {
 					return;
 				}
 				
-				var targetConnectionId = targetConnectionIds[0];
 				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
 				
 				/*
@@ -827,13 +860,13 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<FilterBase>(scriptType, nodeId);
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
@@ -844,25 +877,25 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 							var currentLoadFilePath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
 							var executor = new IntegratedGUILoader(WithAssetsPath(currentLoadFilePath));
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							var executor = new IntegratedGUIFilter(orderedConnectionIds, currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
+							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 							var executor = new IntegratedGUIImportSetting();
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 							var executor = new IntegratedGUIGrouping(GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -873,7 +906,7 @@ namespace AssetBundleGraph {
 								break;
 							}
 							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -882,29 +915,31 @@ namespace AssetBundleGraph {
 							var bundleUseOutputResources = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
 							
 							var useOutputResources = false;
+							var outputSourceConnectionId = string.Empty;
 							switch (bundleUseOutputResources) {
 								case "true" :{
 									useOutputResources = true;
+									outputSourceConnectionId = orderedConnectionIds[1];
 									break;
 								}
 							}
 							
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources, outputSourceConnectionId);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 							var bundleOptions = GetGetCurrentPlatformPackageOrDefaultFromDictList(nodeKind, currentNodeData.enabledBundleOptions);
 							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 							var exportPath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.exportFilePath);
 							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-							executor.Run(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -921,13 +956,13 @@ namespace AssetBundleGraph {
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<FilterBase>(scriptType, nodeId);
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
 							var scriptType = currentNodeData.scriptType;
 							var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
@@ -939,25 +974,25 @@ namespace AssetBundleGraph {
 							var currentLoadFilePath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.loadFilePath);
 
 							var executor = new IntegratedGUILoader(WithAssetsPath(currentLoadFilePath));
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-							var executor = new IntegratedGUIFilter(currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							var executor = new IntegratedGUIFilter(orderedConnectionIds, currentNodeData.containsKeywords, currentNodeData.containsKeytypes);
+							executor.Setup(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 							var executor = new IntegratedGUIImportSetting();
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 						
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 							var executor = new IntegratedGUIGrouping(GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -970,7 +1005,7 @@ namespace AssetBundleGraph {
 							}
 							try {
 								var executor = Executor<PrefabricatorBase>(scriptType, nodeId);
-								executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+								executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							} catch (NodeException e) {
 								AssetBundleGraph.AddNodeException(e);
 								break;
@@ -983,29 +1018,31 @@ namespace AssetBundleGraph {
 							var bundleUseOutputResources = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.bundleUseOutput).ToLower();
 							
 							var useOutputResources = false;
+							var outputSourceConnectionId = string.Empty;
 							switch (bundleUseOutputResources) {
 								case "true" :{
 									useOutputResources = true;
+									outputSourceConnectionId = orderedConnectionIds[1];
 									break;
 								}
 							}
 							
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources);
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, useOutputResources, outputSourceConnectionId);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 							var bundleOptions = GetGetCurrentPlatformPackageOrDefaultFromDictList(nodeKind, currentNodeData.enabledBundleOptions);
 							var executor = new IntegratedGUIBundleBuilder(bundleOptions, nodeDatas.Select(nodeData => nodeData.nodeId).ToList());
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 							var exportPath = GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.exportFilePath);
 							var executor = new IntegratedGUIExporter(WithProjectPath(exportPath));
-							executor.Setup(nodeName, nodeId, labelToChild, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
@@ -1251,8 +1288,7 @@ namespace AssetBundleGraph {
 		public readonly string nodeName;
 		public readonly string nodeId;
 		public readonly AssetBundleGraphSettings.NodeKind nodeKind;
-		
-		public List<ConnectionData> connectionDataOfParents = new List<ConnectionData>();
+		public readonly List<string> outputPointIds;
 
 		// for All script nodes & prefabricator, bundlizer GUI.
 		public readonly string scriptType;
@@ -1281,12 +1317,16 @@ namespace AssetBundleGraph {
 		// for BundleBuilder GUI data
 		public readonly Dictionary<string, List<string>> enabledBundleOptions;
 
+		
+		public List<ConnectionData> connectionDataOfParents = new List<ConnectionData>();
+
 		private bool done;
 
 		public NodeData (
 			string nodeId, 
 			AssetBundleGraphSettings.NodeKind nodeKind, 
-			string nodeName = null,
+			string nodeName,
+			List<string> outputPointIds,
 			string scriptType = null,
 			Dictionary<string, string> loadPath = null,
 			Dictionary<string, string> exportPath = null,
@@ -1302,7 +1342,8 @@ namespace AssetBundleGraph {
 			this.nodeId = nodeId;
 			this.nodeKind = nodeKind;
 			this.nodeName = nodeName;
-			
+			this.outputPointIds = outputPointIds;
+
 			this.scriptType = null;
 			this.loadFilePath = null;
 			this.exportFilePath = null;
@@ -1384,12 +1425,14 @@ namespace AssetBundleGraph {
 		public readonly string connectionId;
 		public readonly string connectionLabel;
 		public readonly string fromNodeId;
+		public readonly string fromNodeOutputPointId;
 		public readonly string toNodeId;
 
-		public ConnectionData (string connectionId, string connectionLabel, string fromNodeId, string toNodeId) {
+		public ConnectionData (string connectionId, string connectionLabel, string fromNodeId, string fromNodeOutputPointId, string toNodeId) {
 			this.connectionId = connectionId;
 			this.connectionLabel = connectionLabel;
 			this.fromNodeId = fromNodeId;
+			this.fromNodeOutputPointId = fromNodeOutputPointId;
 			this.toNodeId = toNodeId;
 		}
 
@@ -1397,6 +1440,7 @@ namespace AssetBundleGraph {
 			this.connectionId = connection.connectionId;
 			this.connectionLabel = connection.connectionLabel;
 			this.fromNodeId = connection.fromNodeId;
+			this.fromNodeOutputPointId = connection.fromNodeOutputPointId;
 			this.toNodeId = connection.toNodeId;
 		}
 	}

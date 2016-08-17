@@ -364,10 +364,10 @@ namespace AssetBundleGraph {
 
 				var validatedDataDict = GraphStackController.ValidateStackedGraph(deserialized);
 
-				var validatedDate = deserialized[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED] as string;
+				var validatedDate = validatedDataDict[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED] as string;
 				if (lastModifiedStr != validatedDate) {
 					// save validated graph data.
-					UpdateGraphData(deserialized);
+					UpdateGraphData(validatedDataDict);
 
 					// reload
 					var dataStr2 = string.Empty;
@@ -486,6 +486,7 @@ namespace AssetBundleGraph {
 
 			var connectionList = new List<Dictionary<string, string>>();
 			foreach (var connection in connections) {
+				try {
 				var connectionDict = new Dictionary<string, string>{
 					{AssetBundleGraphSettings.CONNECTION_LABEL, connection.label},
 					{AssetBundleGraphSettings.CONNECTION_ID, connection.connectionId},
@@ -493,7 +494,16 @@ namespace AssetBundleGraph {
 					{AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID, connection.outputPoint.pointId},
 					{AssetBundleGraphSettings.CONNECTION_TONODE, connection.inputNodeId}
 				};
+				
 				connectionList.Add(connectionDict);
+				} catch (Exception e) {
+					Debug.LogError("connection:" + connection);
+					Debug.LogError("connection.label:" + connection.label);
+					Debug.LogError("connection.connectionId:" + connection.connectionId);
+					Debug.LogError("connection.outputNodeId:" + connection.outputNodeId);
+					Debug.LogError("connection.outputPoint:" + connection.outputPoint);
+					Debug.LogError("connection.outputPoint.pointId:" + connection.outputPoint.pointId);
+				}
 			}
 
 			var graphData = new Dictionary<string, object>{
@@ -747,7 +757,7 @@ namespace AssetBundleGraph {
 					var targetNodeName = currentNodes.Where(node => node.nodeId == targetConnection.outputNodeId).Select(node => node.name).FirstOrDefault();
 					
 					var nodeThroughput = throughputs[nodeOrConnectionId];
-
+					
 					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
 					foreach (var groupKey in nodeThroughput.Keys) {
 						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
@@ -1176,7 +1186,6 @@ namespace AssetBundleGraph {
 							}
 
 							SaveGraphWithReload();
-							InitializeGraph();
 
 							activeObject = RenewActiveObject(new List<string>());
 							UpdateActivationOfObjects(activeObject);
@@ -2216,7 +2225,6 @@ namespace AssetBundleGraph {
 							break;
 						}
 						case OnConnectionEvent.EventType.EVENT_CONNECTION_DELETED: {
-							
 							Undo.RecordObject(this, "Delete Connection");
 
 							var deletedConnectionId = e.eventSourceCon.connectionId;
@@ -2261,7 +2269,6 @@ namespace AssetBundleGraph {
 			create new connection if same relationship is not exist yet.
 		*/
 		private void AddConnection (string label, Node startNode, OutputPoint startPoint, Node endNode, InputPoint endPoint) {
-			
 			Undo.RecordObject(this, "Add Connection");
 
 			var connectionsFromThisNode = connections

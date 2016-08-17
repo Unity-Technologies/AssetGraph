@@ -1,7 +1,8 @@
+using System;
 using UnityEngine;
 
 namespace AssetBundleGraph {
-public class OutputPoint : ConnectionPoint {
+[Serializable] public class OutputPoint : ConnectionPoint {
 		public OutputPoint (string pointId, string label) : base (pointId, label, false, true) {}
 
 		public override void UpdatePos (int index, int max, float width, float height) {
