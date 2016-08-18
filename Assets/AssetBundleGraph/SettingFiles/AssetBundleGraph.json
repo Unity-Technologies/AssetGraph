@@ -1,104 +1,73 @@
 {
-	"lastModified":"08/17/2016 23:59:57",
+	"lastModified":"08/18/2016 22:52:54",
 	"nodes":[
 		{
+			"name":"Filter0",
+			"id":"cfa17a11-ff84-4bbc-8bba-68da08e02d22",
+			"kind":"FILTER_GUI",
+			"outputPointLabels":[
+				"a",
+				"v"
+			],
+			"outputPointIds":[
+				"5b4d5f92-43b6-40fd-b279-10d68be68588",
+				"10e54101-f2eb-4b83-8932-7c1475050e54"
+			],
+			"pos":{
+				"x":52,
+				"y":123
+			},
+			"filterContainsKeywords":[
+				"a",
+				"v"
+			],
+			"filterContainsKeytypes":[
+				"Any",
+				"Any"
+			]
+		},
+		{
 			"name":"Loader0",
-			"id":"11cefc5d-28b3-4862-b980-ca7b87136622",
+			"id":"978e5f05-8202-4167-bcd0-ce3ecdd42626",
 			"kind":"LOADER_GUI",
 			"outputPointLabels":[
 				"+"
 			],
 			"outputPointIds":[
-				"5b8167f5-b834-4d0a-abdb-f7ad84f91809"
+				"a2b11044-7cb0-47f4-9276-7e8aeafadf34"
 			],
 			"pos":{
-				"x":10,
-				"y":17
+				"x":27,
+				"y":18
 			},
 			"loadPath":{
 				"Default":""
 			}
 		},
 		{
-			"name":"Filter0",
-			"id":"d18c186b-b619-43ac-aad5-f00e434d7d58",
+			"name":"Filter1",
+			"id":"ddcf19d6-897d-458a-85e2-25d59ec77821",
 			"kind":"FILTER_GUI",
 			"outputPointLabels":[
-				"images",
-				"models",
-				"bgms",
-				"ses",
-				"*",
-				"*"
+				
 			],
 			"outputPointIds":[
-				"83892e67-c3f2-4bb2-bdb2-a8aa8c97852e",
-				"95b14107-0869-4b23-9b6c-dbfb5d7ac761",
-				"6269cd45-7460-4767-82b0-f4bc8acf2b2c",
-				"684d884c-59d1-4c7f-986d-6ba5b637a83a",
-				"30d4a658-b209-48bc-81fe-9a21cef8056d",
-				"7b85c5eb-8c09-4da3-825b-af06a7942bee"
+				
 			],
 			"pos":{
-				"x":26,
-				"y":162
+				"x":289,
+				"y":77
 			},
 			"filterContainsKeywords":[
-				"images",
-				"models",
-				"bgms",
-				"ses",
-				"*",
-				"*"
+				
 			],
 			"filterContainsKeytypes":[
-				"Any",
-				"UnityEditor.ModelImporter",
-				"Any",
-				"Any",
-				"UnityEngine.SceneManagement.Scene",
-				"Any"
+				
 			]
 		},
 		{
-			"name":"ImportSetting0",
-			"id":"d5123b6b-7b39-42f0-bff1-58fe5b26b110",
-			"kind":"IMPORTSETTING_GUI",
-			"outputPointLabels":[
-				"+"
-			],
-			"outputPointIds":[
-				"5efa32bc-c7ac-48b0-835a-38b8716bb5ea"
-			],
-			"pos":{
-				"x":274,
-				"y":58
-			},
-			"importerPackages":{
-				"Default":""
-			}
-		},
-		{
-			"name":"ImportSetting1",
-			"id":"94ce93a8-bfbe-423b-95d6-4caa76425ee1",
-			"kind":"IMPORTSETTING_GUI",
-			"outputPointLabels":[
-				"+"
-			],
-			"outputPointIds":[
-				"c5fc2c27-eff9-48e7-b72f-730d21b7dd31"
-			],
-			"pos":{
-				"x":283,
-				"y":123
-			},
-			"importerPackages":{
-				"Default":""
-			}
-		},
-		{
 			"name":"Filter2",
-			"id":"990fb757-4d72-4ac1-8f7b-260c2c0540ff",
+			"id":"17a153da-1f97-4ece-a047-1955cb868f4f",
 			"kind":"FILTER_GUI",
 			"outputPointLabels":[
 				
@@ -107,8 +76,8 @@
 				
 			],
 			"pos":{
-				"x":283,
-				"y":382
+				"x":293,
+				"y":157
 			},
 			"filterContainsKeywords":[
 				
@@ -121,24 +90,24 @@
 	"connections":[
 		{
 			"label":"+",
-			"connectionId":"749557a2-65bc-4a81-9603-44d2e7f07cef",
-			"fromNode":"11cefc5d-28b3-4862-b980-ca7b87136622",
-			"fromNodeConPointId":"5b8167f5-b834-4d0a-abdb-f7ad84f91809",
-			"toNode":"d18c186b-b619-43ac-aad5-f00e434d7d58"
+			"connectionId":"a694e11f-615c-4717-954f-7abf3c2e85f1",
+			"fromNode":"978e5f05-8202-4167-bcd0-ce3ecdd42626",
+			"fromNodeConPointId":"a2b11044-7cb0-47f4-9276-7e8aeafadf34",
+			"toNode":"cfa17a11-ff84-4bbc-8bba-68da08e02d22"
 		},
 		{
-			"label":"images",
-			"connectionId":"278db614-b4c5-452e-9b09-06517f6b6c56",
-			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
-			"fromNodeConPointId":"83892e67-c3f2-4bb2-bdb2-a8aa8c97852e",
-			"toNode":"d5123b6b-7b39-42f0-bff1-58fe5b26b110"
+			"label":"a",
+			"connectionId":"bb8c7d0f-61a6-47d1-b3eb-3e5998dbb702",
+			"fromNode":"cfa17a11-ff84-4bbc-8bba-68da08e02d22",
+			"fromNodeConPointId":"5b4d5f92-43b6-40fd-b279-10d68be68588",
+			"toNode":"ddcf19d6-897d-458a-85e2-25d59ec77821"
 		},
 		{
-			"label":"models",
-			"connectionId":"90454d03-d63c-4e89-b473-240376313d9c",
-			"fromNode":"d18c186b-b619-43ac-aad5-f00e434d7d58",
-			"fromNodeConPointId":"95b14107-0869-4b23-9b6c-dbfb5d7ac761",
-			"toNode":"94ce93a8-bfbe-423b-95d6-4caa76425ee1"
+			"label":"v",
+			"connectionId":"ea65063c-efe2-40af-864c-928c37804e2c",
+			"fromNode":"cfa17a11-ff84-4bbc-8bba-68da08e02d22",
+			"fromNodeConPointId":"10e54101-f2eb-4b83-8932-7c1475050e54",
+			"toNode":"17a153da-1f97-4ece-a047-1955cb868f4f"
 		}
 	]
 }

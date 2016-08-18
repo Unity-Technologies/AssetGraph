@@ -442,7 +442,7 @@ namespace AssetBundleGraph {
 
 		public void DeleteFilterOutputPoint (int deletedIndex) {
 			var deletedConnectionPoint = connectionPoints[deletedIndex];
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(deletedIndex);
 			Save();
 			UpdateNodeRect();
@@ -450,7 +450,7 @@ namespace AssetBundleGraph {
 
 		public void RenameFilterOutputPointLabel (int changedIndex, string latestLabel) {
 			connectionPoints[changedIndex].label = latestLabel;
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex]));
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex].pointId));
 			Save();
 			UpdateNodeRect();
 		}
@@ -466,16 +466,16 @@ namespace AssetBundleGraph {
 		}
 		
 		public void RemoveBundlizerDependencyOutput () {
+			Debug.LogError("RemoveBundlizerDependencyOutput これ発生したあとに、Undoするとポイントが増えてる気がする");
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex == -1) return;
 			
 			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
-			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint));
+			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(outputResurceLabelIndex);
 			UpdateNodeRect();
+			Debug.LogError("調整はできてる。");
 		}
-		
-		
 
 		public void BeforeSave () {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
@@ -849,8 +849,8 @@ namespace AssetBundleGraph {
 				*/
 				case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
-
-					if (result != null) {
+					
+					if (!string.IsNullOrEmpty(result)) {
 						if (scaleFactor == SCALE_MAX) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
 						break;
 					}
@@ -867,7 +867,7 @@ namespace AssetBundleGraph {
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
 						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
-							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, this, Event.current.mousePosition, connectionPoint));
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, this, Event.current.mousePosition, connectionPoint.pointId));
 							return;
 						}
 					}
@@ -938,7 +938,8 @@ namespace AssetBundleGraph {
 
 			if (justConnecting && eventSource != null) {
 				if (eventSource.eventSourceNode.nodeId != this.nodeId) {
-					if (eventSource.eventSourceConnectionPoint.isOutput) {
+					var connectionPoint = eventSource.eventSourceNode.ConnectionPointFromConPointId(eventSource.conPointId);
+					if (connectionPoint.isOutput) {
 						defaultPointTex = enablePointMarkTex;
 					}
 				}
@@ -966,7 +967,8 @@ namespace AssetBundleGraph {
 
 			if (justConnecting && eventSource != null) {
 				if (eventSource.eventSourceNode.nodeId != this.nodeId) {
-					if (eventSource.eventSourceConnectionPoint.isInput) {
+					var connectionPoint = eventSource.eventSourceNode.ConnectionPointFromConPointId(eventSource.conPointId);
+					if (connectionPoint.isInput) {
 						defaultPointTex = enablePointMarkTex;
 					}
 				}
@@ -986,7 +988,7 @@ namespace AssetBundleGraph {
 					// eventPosition is contained by outputPointRect.
 					if (outputPointRect.Contains(globalMousePosition)) {
 						if (current.type == EventType.MouseDown) {
-							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, current.mousePosition, point));
+							Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, current.mousePosition, point.pointId));
 						}
 					}
 				}
@@ -1050,18 +1052,18 @@ namespace AssetBundleGraph {
 			RefreshConnectionPos();
 		}
 
-		private ConnectionPoint IsOverConnectionPoint (List<ConnectionPoint> points, Vector2 touchedPoint) {
+		private string IsOverConnectionPoint (List<ConnectionPoint> points, Vector2 touchedPoint) {
 			foreach (var p in points) {
 				if (p.buttonRect.x <= touchedPoint.x && 
 					touchedPoint.x <= p.buttonRect.x + p.buttonRect.width && 
 					p.buttonRect.y <= touchedPoint.y && 
 					touchedPoint.y <= p.buttonRect.y + p.buttonRect.height
 				) {
-					return p;
+					return p.pointId;
 				}
 			}
 			
-			return null;
+			return string.Empty;
 		}
 
 		public Rect GetRect () {

@@ -1729,8 +1729,8 @@ namespace AssetBundleGraph {
 
 		private void DrawStraightLineFromCurrentEventSourcePointTo (Vector2 to, OnNodeEvent eventSource) {
 			if (eventSource == null) return;
-
-			var p = eventSource.eventSourceNode.GlobalConnectionPointPosition(eventSource.eventSourceConnectionPoint);
+			var targetConPoint = eventSource.eventSourceNode.ConnectionPointFromConPointId(eventSource.conPointId);
+			var p = eventSource.eventSourceNode.GlobalConnectionPointPosition(targetConPoint);
 			Handles.DrawLine(new Vector3(p.x, p.y, 0f), new Vector3(to.x, to.y, 0f));
 		}
 
@@ -1809,10 +1809,10 @@ namespace AssetBundleGraph {
 							if (currentEventSource == null) break;
 
 							var sourceNode = currentEventSource.eventSourceNode;
-							var sourceConnectionPoint = currentEventSource.eventSourceConnectionPoint;
+							var sourceConnectionPoint = sourceNode.ConnectionPointFromConPointId(currentEventSource.conPointId);
 							
 							var targetNode = e.eventSourceNode;
-							var targetConnectionPoint = e.eventSourceConnectionPoint;
+							var targetConnectionPoint = targetNode.ConnectionPointFromConPointId(e.conPointId);
 
 							if (sourceNode.nodeId == targetNode.nodeId) break;
 
@@ -1864,7 +1864,7 @@ namespace AssetBundleGraph {
 
 							if (!candidatePoints.Any()) break;
 
-							var sourcePoint = currentEventSource.eventSourceConnectionPoint;
+							var sourcePoint = currentEventSource.eventSourceNode.ConnectionPointFromConPointId(currentEventSource.conPointId);
 							
 							// limit by connectable or not.
 							var connectableCandidates = candidatePoints.Where(point => IsConnectablePointFromTo(sourcePoint, point)).ToList();
@@ -1874,7 +1874,7 @@ namespace AssetBundleGraph {
 							var connectablePoint = connectableCandidates.First();
 							
 							var startNode = e.eventSourceNode;
-							var startConnectionPoint = currentEventSource.eventSourceConnectionPoint;
+							var startConnectionPoint = currentEventSource.eventSourceNode.ConnectionPointFromConPointId(currentEventSource.conPointId);
 							var endNode = nodeUnderMouse;
 							var endConnectionPoint = connectablePoint;
 
@@ -1883,7 +1883,7 @@ namespace AssetBundleGraph {
 								startNode = nodeUnderMouse;
 								startConnectionPoint = connectablePoint;
 								endNode = e.eventSourceNode;
-								endConnectionPoint = currentEventSource.eventSourceConnectionPoint;
+								endConnectionPoint = currentEventSource.eventSourceNode.ConnectionPointFromConPointId(currentEventSource.conPointId);
 							}
 							
 							var outputPoint = startConnectionPoint;
@@ -2069,16 +2069,19 @@ namespace AssetBundleGraph {
 
 			switch (e.eventType) {
 				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
-					var deletedConnectionPoint = e.eventSourceConnectionPoint;
+					var deletedConnectionPoint = e.eventSourceNode.ConnectionPointFromConPointId(e.conPointId);
 					var deletedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == deletedConnectionPoint.pointId).ToList();
 					
 					if (!deletedOutputPointConnections.Any()) break;
+					
+					// あ、線がdeleteされてない？
+
 
 					connections.Remove(deletedOutputPointConnections[0]);
 					break;
 				}
 				case OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
-					var labelChangedConnectionPoint = e.eventSourceConnectionPoint;
+					var labelChangedConnectionPoint = e.eventSourceNode.ConnectionPointFromConPointId(e.conPointId);
 					var changedLabel = labelChangedConnectionPoint.label;
 
 					var labelChangedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == labelChangedConnectionPoint.pointId).ToList();
@@ -2287,7 +2290,7 @@ namespace AssetBundleGraph {
 
 			var connectionsFromThisNode = connections
 				.Where(con => con.outputNodeId == startNode.nodeId)
-				.Where(con => con.outputPoint == startPoint)
+				.Where(con => con.outputPoint.pointId == startPoint.pointId)
 				.ToList();
 			if (connectionsFromThisNode.Any()) {
 				var alreadyExistConnection = connectionsFromThisNode[0];

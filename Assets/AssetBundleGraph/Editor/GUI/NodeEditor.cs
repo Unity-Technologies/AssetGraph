@@ -366,7 +366,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 				}
-
+				
 				var result = EditorGUILayout.ToggleLeft("Asset Output for Dependency", useOrNot);
 
 				if (result != useOrNot) {
