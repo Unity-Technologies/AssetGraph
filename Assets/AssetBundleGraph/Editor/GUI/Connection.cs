@@ -24,7 +24,7 @@ namespace AssetBundleGraph {
 		[SerializeField] public string connectionId;
 
 		[SerializeField] public string outputNodeId;
-		[SerializeField] public OutputPoint outputPoint;
+		[SerializeField] public ConnectionPoint outputPoint;
 
 		[SerializeField] public string inputNodeId;
 		[SerializeField] public ConnectionPoint inputPoint;
@@ -35,7 +35,7 @@ namespace AssetBundleGraph {
 
 		private Rect buttonRect;
 
-		public static Connection LoadConnection (string label, string connectionId, string startNodeId, OutputPoint output, string endNodeId, InputPoint input) {
+		public static Connection LoadConnection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			return new Connection(
 				label,
 				connectionId,
@@ -46,7 +46,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static Connection NewConnection (string label, string startNodeId, OutputPoint output, string endNodeId, InputPoint input) {
+		public static Connection NewConnection (string label, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			return new Connection(
 				label,
 				Guid.NewGuid().ToString(),
@@ -57,7 +57,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		private Connection (string label, string connectionId, string startNodeId, OutputPoint output, string endNodeId, InputPoint input) {
+		private Connection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			conInsp = ScriptableObject.CreateInstance<ConnectionInspector>();
 			conInsp.hideFlags = HideFlags.DontSave;
 

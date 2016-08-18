@@ -435,7 +435,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddFilterOutputPoint (int addedIndex, string keyword) {
-			connectionPoints.Insert(addedIndex, new OutputPoint(Guid.NewGuid().ToString(), keyword));
+			connectionPoints.Insert(addedIndex, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
@@ -461,7 +461,7 @@ namespace AssetBundleGraph {
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex != -1) return;
 			
-			connectionPoints.Add(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL));
+			connectionPoints.Add(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL));
 			UpdateNodeRect();
 		}
 		
@@ -779,14 +779,14 @@ namespace AssetBundleGraph {
 						.ToList();
 		}
 
-		public OutputPoint ConnectionPointFromConPointId (string pointId) {
+		public ConnectionPoint ConnectionPointFromConPointId (string pointId) {
 			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
-			return (OutputPoint)targetPoints[0];
+			return targetPoints[0];
 		}
 		
-		public InputPoint ConnectionPointFromLabel (string label) {
+		public ConnectionPoint ConnectionPointFromLabel (string label) {
 			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
-			return (InputPoint)targetPoints[0];
+			return targetPoints[0];
 		}
 
 		public void DrawNode () {

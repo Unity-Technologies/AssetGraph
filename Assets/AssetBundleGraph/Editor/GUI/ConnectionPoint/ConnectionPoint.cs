@@ -19,6 +19,23 @@ namespace AssetBundleGraph {
 			this.isOutput = output;
 		}
 
-		public virtual void UpdatePos (int index, int max, float width, float height) {}
-	}
+		public void UpdatePos (int index, int max, float width, float height) {
+			if (isInput) {
+				var y = (height - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT)/2f + 1f;
+				buttonRect = new Rect(0,y, AssetBundleGraphGUISettings.INPUT_POINT_WIDTH, AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT);
+			}
+
+			if (isOutput) {
+				var y = ((height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT/2f;
+				buttonRect = new Rect(width - AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH + 1f, y + 1f, AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH, AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT);
+			} 
+		}
+
+        public static ConnectionPoint InputPoint (string label) {
+			return new ConnectionPoint("fixedId", label, true, false);
+        }
+		public static ConnectionPoint OutputPoint (string pointId, string label) {
+			return new ConnectionPoint(pointId, label, false, true);
+        }
+    }
 }

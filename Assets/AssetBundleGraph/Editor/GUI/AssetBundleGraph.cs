@@ -455,9 +455,9 @@ namespace AssetBundleGraph {
 			// add default input if node is not NodeKind.LOADER_GUI.
 			foreach (var node in currentNodes) {
 				if (node.kind == AssetBundleGraphSettings.NodeKind.LOADER_GUI) continue;// no input point.
-				node.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				node.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 			}
-
+			
 			// load connections
 			var connectionsSource = deserializedData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS] as List<object>;
 			foreach (var connectionSource in connectionsSource) {
@@ -1431,7 +1431,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1450,7 +1450,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1476,7 +1476,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1494,7 +1494,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1512,7 +1512,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1535,7 +1535,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1559,7 +1559,7 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < outputIdsList.Count; i++) {
 						var pointId = outputIdsList[i] as string;
 						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(new OutputPoint(pointId, label));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
 					}
 					return newNode;
 				}
@@ -1604,17 +1604,17 @@ namespace AssetBundleGraph {
 				// setup this filter then add output point by result of setup.
 				var outputPointLabels = GraphStackController.CreateCustomFilterInstanceForScript(scriptClassName);
 
-				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				foreach (var outputPointLabel in outputPointLabels) {
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  outputPointLabel));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  outputPointLabel));
 				}
 			}
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
 				newNode = Node.CreateScriptNode(nodes.Count, scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
-				newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			
 			
@@ -1639,7 +1639,7 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateLoaderNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
@@ -1647,7 +1647,7 @@ namespace AssetBundleGraph {
 					var newFilterKeywords = new List<string>();
 					var newFilterKeytypes = new List<string>();
 					newNode = Node.CreateGUIFilterNode(nodes.Count, nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				
@@ -1657,8 +1657,8 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateGUIImportNode(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
@@ -1668,15 +1668,15 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateGUIGroupingNode(nodes.Count, nodeName, nodeId, kind, newGroupingKeywords, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
 					newNode = Node.CreatePrefabricatorNode(nodes.Count, nodeName, nodeId, kind, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
@@ -1690,8 +1690,8 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateBundlizerNode(nodes.Count, nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;
 				}
 
@@ -1701,8 +1701,8 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateBundleBuilderNode(nodes.Count, nodeName, nodeId, kind, bundleOptions, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
@@ -1712,7 +1712,7 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateExporterNode(nodes.Count, nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {
@@ -1831,8 +1831,8 @@ namespace AssetBundleGraph {
 								endConnectionPoint = sourceConnectionPoint;
 							}
 
-							var outputPoint = (OutputPoint)startConnectionPoint;
-							var inputPoint = (InputPoint)endConnectionPoint;
+							var outputPoint = startConnectionPoint;
+							var inputPoint = endConnectionPoint;
 							
 							var label = startConnectionPoint.label;
 							
@@ -1886,8 +1886,8 @@ namespace AssetBundleGraph {
 								endConnectionPoint = currentEventSource.eventSourceConnectionPoint;
 							}
 							
-							var outputPoint = (OutputPoint)startConnectionPoint;
-							var inputPoint = (InputPoint)endConnectionPoint;
+							var outputPoint = startConnectionPoint;
+							var inputPoint = endConnectionPoint;
 							
 							var label = startConnectionPoint.label;
 
@@ -2123,50 +2123,50 @@ namespace AssetBundleGraph {
 
 			switch (newNode.kind) {
 				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					foreach (var outputPointLabel in newNode.filterContainsKeywords) {
-						newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), outputPointLabel));
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), outputPointLabel));
 					}
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(new OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode.AddConnectionPoint(new InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {
@@ -2282,7 +2282,7 @@ namespace AssetBundleGraph {
 		/**
 			create new connection if same relationship is not exist yet.
 		*/
-		private void AddConnection (string label, Node startNode, OutputPoint startPoint, Node endNode, InputPoint endPoint) {
+		private void AddConnection (string label, Node startNode, ConnectionPoint startPoint, Node endNode, ConnectionPoint endPoint) {
 			Undo.RecordObject(this, "Add Connection");
 
 			var connectionsFromThisNode = connections
