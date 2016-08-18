@@ -1132,7 +1132,7 @@ namespace AssetBundleGraph {
 							}
 							
 							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], useOutputResources, resourcesOutputConnectionId);
-							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
+							executor.Setup(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
 
