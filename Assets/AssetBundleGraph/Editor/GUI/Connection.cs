@@ -141,14 +141,14 @@ namespace AssetBundleGraph {
 			var startNodes = nodes.Where(node => node.nodeId == outputNodeId).ToList();
 			if (!startNodes.Any()) return;
 			
-			var startPoint = startNodes[0].GlobalConnectionPointPosition(outputPoint);
+			var startPoint = startNodes[0].GlobalConnectionPointPosition(outputPoint.pointId);
 			startPoint = Node.ScaleEffect(startPoint);
 			var startV3 = new Vector3(startPoint.x, startPoint.y, 0f);
 
 			var endNodes = nodes.Where(node => node.nodeId == inputNodeId).ToList();
 			if (!endNodes.Any()) return;
 
-			var endPoint = endNodes[0].GlobalConnectionPointPosition(inputPoint);
+			var endPoint = endNodes[0].GlobalConnectionPointPosition(inputPoint.pointId);
 			endPoint = Node.ScaleEffect(endPoint);
 			var endV3 = new Vector3(endPoint.x, endPoint.y + 1f, 0f);
 			

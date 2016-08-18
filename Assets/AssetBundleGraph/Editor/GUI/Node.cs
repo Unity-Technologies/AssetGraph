@@ -849,7 +849,7 @@ namespace AssetBundleGraph {
 				*/
 				case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
-					
+
 					if (!string.IsNullOrEmpty(result)) {
 						if (scaleFactor == SCALE_MAX) Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
 						break;
@@ -1005,7 +1005,6 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawNodeContents () {
-
 			var style = EditorStyles.label;
 			var defaultAlignment = style.alignment;
 			style.alignment = TextAnchor.MiddleCenter;
@@ -1127,7 +1126,9 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
-		public Vector2 GlobalConnectionPointPosition(ConnectionPoint point) {
+		public Vector2 GlobalConnectionPointPosition(string pointId) {
+			var point = ConnectionPointFromConPointId(pointId);
+
 			var x = 0f;
 			var y = 0f;
 			

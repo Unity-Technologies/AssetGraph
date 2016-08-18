@@ -1730,7 +1730,7 @@ namespace AssetBundleGraph {
 		private void DrawStraightLineFromCurrentEventSourcePointTo (Vector2 to, OnNodeEvent eventSource) {
 			if (eventSource == null) return;
 			var targetConPoint = eventSource.eventSourceNode.ConnectionPointFromConPointId(eventSource.conPointId);
-			var p = eventSource.eventSourceNode.GlobalConnectionPointPosition(targetConPoint);
+			var p = eventSource.eventSourceNode.GlobalConnectionPointPosition(targetConPoint.pointId);
 			Handles.DrawLine(new Vector3(p.x, p.y, 0f), new Vector3(to.x, to.y, 0f));
 		}
 
