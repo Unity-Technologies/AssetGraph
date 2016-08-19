@@ -40,7 +40,9 @@ namespace AssetBundleGraph {
 				var inputSources = groupedSources[groupKey];
 				
 				var reservedBundlePath = BundlizeAssets(nodeName, groupKey, inputSources, recommendedBundleOutputDir, false);
-				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
+				if (string.IsNullOrEmpty(reservedBundlePath)) {
+					continue;
+				}
 
 				var outputSources = new List<InternalAssetData>();
 
@@ -89,14 +91,18 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = outputSources;
 			}
 			
-			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
+			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
+				Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
+			}
 			
 			/*
 				generate additional output:
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				if (resourcesOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, resourcesOutputConnectionId, groupedSources, new List<string>());
+				if (resourcesOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
+					Output(nodeId, resourcesOutputConnectionId, groupedSources, new List<string>());
+				}
 			}
 		}
 
@@ -129,7 +135,9 @@ namespace AssetBundleGraph {
 				var source = sources[i];
 
 				// if already bundled in this running, avoid changing that name.
-				if (source.isBundled) continue;
+				if (source.isBundled) {
+					continue;
+				}
 				
 				if (isRun) {
 					if (GraphStackController.IsMetaFile(source.importedPath)) continue;	
