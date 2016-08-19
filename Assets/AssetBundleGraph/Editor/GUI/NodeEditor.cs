@@ -88,7 +88,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorFilterGUI (Node node) {
-			EditorGUILayout.HelpBox("Filter: Filter given assets by keywords and types.", MessageType.Info);
+			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
@@ -253,6 +253,9 @@ namespace AssetBundleGraph {
 						node.currentPlatform
 					).ToString()
 				);
+				EditorGUILayout.HelpBox("Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", MessageType.Info);
+
+
 				IntegratedGUIGrouping.ValidateGroupingKeyword(
 					newGroupingKeyword,
 					() => {

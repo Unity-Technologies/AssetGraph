@@ -719,11 +719,15 @@ namespace AssetBundleGraph {
 			Action<string, float> updateHandler=null
 		) {
 			var currentNodeDatas = nodeDatas.Where(relation => relation.nodeId == nodeId).ToList();
-			if (!currentNodeDatas.Any()) return;
+			if (!currentNodeDatas.Any()) {
+				return;
+			}
 
 			var currentNodeData = currentNodeDatas[0];
 
-			if (currentNodeData.IsAlreadyDone()) return;
+			if (currentNodeData.IsAlreadyDone()) {
+				return;
+			}
 
 			var nodeName = currentNodeData.nodeName;
 			var nodeKind = currentNodeData.nodeKind;
@@ -737,12 +741,16 @@ namespace AssetBundleGraph {
 				var fromNodeId = connectionDataOfParent.fromNodeId;
 				var usedConnectionId = connectionDataOfParent.connectionId;
 
-				if (usedConnectionIds.Contains(usedConnectionId)) throw new NodeException("connection loop detected.", fromNodeId);
+				if (usedConnectionIds.Contains(usedConnectionId)) {
+					throw new NodeException("connection loop detected.", fromNodeId);
+				}
 				
 				usedConnectionIds.Add(usedConnectionId);
 				
 				var parentNode = nodeDatas.Where(node => node.nodeId == fromNodeId).ToList();
-				if (!parentNode.Any()) return;
+				if (!parentNode.Any()) {
+					return;
+				}
 
 				var parentNodeKind = parentNode[0].nodeKind;
 
@@ -822,7 +830,9 @@ namespace AssetBundleGraph {
 				the Action which is executed from Node.
 				store result data records to resultDict.
 			*/
-			Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = (string dataSourceNodeId, string targetConnectionId, Dictionary<string, List<InternalAssetData>> result, List<string> justCached) => {
+			Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output = 
+				(string dataSourceNodeId, string targetConnectionId, Dictionary<string, List<InternalAssetData>> result, List<string> justCached) => 
+			{
 				var targetConnectionIds = connectionDatas
 					.Where(con => con.connectionId == targetConnectionId)
 					.Select(con => con.connectionId)
@@ -833,24 +843,32 @@ namespace AssetBundleGraph {
 					// save results to resultDict with this endpoint node's id.
 					resultDict[dataSourceNodeId] = new Dictionary<string, List<InternalAssetData>>();
 					foreach (var groupKey in result.Keys) {
-						if (!resultDict[dataSourceNodeId].ContainsKey(groupKey)) resultDict[dataSourceNodeId][groupKey] = new List<InternalAssetData>();
+						if (!resultDict[dataSourceNodeId].ContainsKey(groupKey)) {
+							resultDict[dataSourceNodeId][groupKey] = new List<InternalAssetData>();
+						}
 						resultDict[dataSourceNodeId][groupKey].AddRange(result[groupKey]);
 					}
 					return;
 				}
 				
-				if (!resultDict.ContainsKey(targetConnectionId)) resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
+				if (!resultDict.ContainsKey(targetConnectionId)) {
+					resultDict[targetConnectionId] = new Dictionary<string, List<InternalAssetData>>();
+				}
 				
 				/*
 					merge connection result by group key.
 				*/
 				foreach (var groupKey in result.Keys) {
-					if (!resultDict[targetConnectionId].ContainsKey(groupKey)) resultDict[targetConnectionId][groupKey] = new List<InternalAssetData>();
+					if (!resultDict[targetConnectionId].ContainsKey(groupKey)) {
+						resultDict[targetConnectionId][groupKey] = new List<InternalAssetData>();
+					}
 					resultDict[targetConnectionId][groupKey].AddRange(result[groupKey]);
 				}
 
 				if (isActualRun) {
-					if (!cachedDict.ContainsKey(nodeId)) cachedDict[nodeId] = new List<string>();
+					if (!cachedDict.ContainsKey(nodeId)) {
+						cachedDict[nodeId] = new List<string>();
+					}
 					cachedDict[nodeId].AddRange(justCached);
 				}
 			};
