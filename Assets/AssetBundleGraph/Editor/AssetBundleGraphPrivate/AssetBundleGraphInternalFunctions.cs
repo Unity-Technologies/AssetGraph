@@ -9,9 +9,11 @@ namespace AssetBundleGraph {
 
 			var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
 
-			// if asset is null, this asset is not yet imported or denied by file extension.
-			// forcely set that type to "object".
-			if (asset == null) return typeof(object);
+			// If asset is null, this asset is not imported yet, or unsupported type of file
+			// so we set this to object type.
+			if (asset == null) {
+				return typeof(object);
+			}
 			return asset.GetType();
 		}
 	}	
