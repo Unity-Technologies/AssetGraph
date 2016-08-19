@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIFilter : INodeBase {
@@ -122,37 +123,37 @@ namespace AssetBundleGraph {
 				var connectionId = connectionIdsFromThisNodeToChildNodesOrFakeIds[i];
 				var keyword = containsKeywords[i];
 				var keytype = containsKeytypes[i];
+
+				// filter by keyword first
+				List<ExhaustiveAssetPathData> keywordContainsAssets = exhaustiveAssets.Where(
+					assetData => 
+					!assetData.isFilterExhausted && 
+					Regex.IsMatch(assetData.importedPath, keyword, RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace)
+				).ToList();
 				
-				var keywordContainsAssets = exhaustiveAssets.Where(assetData => !assetData.isFilterExhausted && assetData.importedPath.Contains(keyword)).ToList();
-				
-				// if keyword is wildcard, use type for constraint. pass all remaining assets.
-				if (keyword == AssetBundleGraphSettings.FILTER_KEYWORD_WILDCARD) keywordContainsAssets = exhaustiveAssets.Where(assetData => !assetData.isFilterExhausted).ToList(); 
-				
-				// type constraint.
-				if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
-					var typeMatchedAssetsAbsolutePaths = new List<string>();
-					
-					foreach (var containedAssetData in keywordContainsAssets) {
+				var typeMatchedAssetsAbsolutePaths = new List<string>();
+
+				// then, filter by type
+				foreach (var containedAssetData in keywordContainsAssets) {
+					if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
 						var assumedType = TypeBinder.AssumeTypeOfAsset(containedAssetData.importedPath);
-						if (assumedType != null && keytype == assumedType.ToString()) typeMatchedAssetsAbsolutePaths.Add(containedAssetData.absoluteSourcePath);
+						if (assumedType == null || keytype != assumedType.ToString()) {
+							continue;
+						}
 					}
-					
-					// these assets are exhausted.
-					foreach (var exhaustiveAsset in exhaustiveAssets) {
-						if (typeMatchedAssetsAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
-					}
-
-					if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) FilterResultReceiver(connectionId, typeMatchedAssetsAbsolutePaths);
-					continue;
+					typeMatchedAssetsAbsolutePaths.Add(containedAssetData.absoluteSourcePath);
 				}
-				
-				var keywordMatchedAssetAbsolutePaths = keywordContainsAssets.Select(assetData => assetData.absoluteSourcePath).ToList();
-				// these assets are exhausted.
+
+				// mark assets as exhausted.
 				foreach (var exhaustiveAsset in exhaustiveAssets) {
-					if (keywordMatchedAssetAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
+					if (typeMatchedAssetsAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) {
+						exhaustiveAsset.isFilterExhausted = true;
+					}
 				}
 
-				if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) FilterResultReceiver(connectionId, keywordMatchedAssetAbsolutePaths);
+				if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) {
+					FilterResultReceiver(connectionId, typeMatchedAssetsAbsolutePaths);
+				}
 			}
 		}
 		
