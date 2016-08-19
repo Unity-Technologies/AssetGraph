@@ -17,6 +17,9 @@ Assets/AssetBundleGraph/SavedSettings*
 Assets/AssetBundleGraph/SettingFiles*
 Assets/TestAssets*
 Assets/SampleAssets*
+Assets/AssetBundleSample*
+Assets/AssetBundleManager*
+AssetBundles*
 
 Assets/AssetGraph/Cache/*
 
