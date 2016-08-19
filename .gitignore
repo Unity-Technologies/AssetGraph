@@ -18,6 +18,8 @@ Assets/AssetBundleGraph/SettingFiles*
 Assets/TestAssets*
 Assets/SampleAssets*
 
+AssetBundles*
+
 Assets/AssetGraph/Cache/*
 
 
