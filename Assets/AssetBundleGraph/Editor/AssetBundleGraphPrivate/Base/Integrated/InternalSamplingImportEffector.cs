@@ -5,10 +5,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-/*
-	this class is effector of import setting node.
-	forcely effect settings from source obj to target obj.
-*/
 namespace AssetBundleGraph {
 	public class InternalSamplingImportEffector {
 		
@@ -19,7 +15,7 @@ namespace AssetBundleGraph {
 		}
 		
 		/*
-			Psuade Unity's import handlers.
+			Pseudo import handlers.
 		*/
 		// public void OnPostprocessGameObjectWithUserProperties (GameObject g, string[] propNames, object[] values) {}
 
