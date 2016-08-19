@@ -148,7 +148,7 @@ namespace AssetBundleGraph {
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
 				(string samplePath) => {
-					Debug.LogWarning(nodeName + ": No ImportSettings Directory found for asset:" + samplePath);
+					throw new AssetBundleGraphBuildException(nodeName + ": No ImportSettings Directory found for this node:" + nodeName + " please supply assets to this node.");
 				},
 				(string samplePath) => {
 					throw new AssetBundleGraphBuildException(nodeName + ": No saved ImportSettings found for asset:" + samplePath);
@@ -183,6 +183,8 @@ namespace AssetBundleGraph {
 				if need, apply importSetting to file.
 			*/
 			var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
+			Debug.LogError("sampleAssetPath:" + sampleAssetPath + " samplingAssetImporter:" + samplingAssetImporter);
+
 			var effector = new InternalSamplingImportEffector(samplingAssetImporter);
 			var samplingAssetImporterTypeStr = samplingAssetImporter.GetType().ToString();
 			

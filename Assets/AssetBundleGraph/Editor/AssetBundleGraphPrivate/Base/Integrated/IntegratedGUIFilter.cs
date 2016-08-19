@@ -6,9 +6,11 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIFilter : INodeBase {
+		private readonly string[] connectionIdsFromThisNodeToChildNodesOrFakeIds;
 		private readonly List<string> containsKeywords;
 		private readonly List<string> containsKeytypes;
-		public IntegratedGUIFilter (List<string> containsKeywords, List<string> containsKeytypes) {
+		public IntegratedGUIFilter (string[] connectionIdsFromThisNodeToChildNodes, List<string> containsKeywords, List<string> containsKeytypes) {
+			this.connectionIdsFromThisNodeToChildNodesOrFakeIds = connectionIdsFromThisNodeToChildNodes;
 			this.containsKeywords = containsKeywords;
 			this.containsKeytypes = containsKeytypes;
 		}
@@ -34,7 +36,7 @@ namespace AssetBundleGraph {
 
 				var inputSources = groupedSources[groupKey];
 				
-				Action<string, List<string>> _PreOutput = (string label, List<string> outputSources) => {
+				Action<string, List<string>> _PreOutput = (string connectionId, List<string> outputSources) => {
 					var outputs = new List<InternalAssetData>();
 					
 					foreach (var outputSource in outputSources) {
@@ -46,7 +48,7 @@ namespace AssetBundleGraph {
 					}
 					
 					outputDict[groupKey] = outputs;
-					Output(nodeId, label, outputDict, new List<string>());
+					Output(nodeId, connectionId, outputDict, new List<string>());
 				};
 				
 				try {
@@ -75,7 +77,7 @@ namespace AssetBundleGraph {
 
 				var inputSources = groupedSources[groupKey];
 				
-				Action<string, List<string>> _Output = (string label, List<string> outputSources) => {
+				Action<string, List<string>> _Output = (string connectionId, List<string> outputSources) => {
 					var outputs = new List<InternalAssetData>();
 					
 					foreach (var outputSource in outputSources) {
@@ -87,7 +89,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(nodeId, label, outputDict, new List<string>());
+					Output(nodeId, connectionId, outputDict, new List<string>());
 				};
 				
 				try {
@@ -115,7 +117,9 @@ namespace AssetBundleGraph {
 				exhaustiveAssets.Add(new ExhaustiveAssetPathData(asset.absoluteSourcePath, asset.importedPath));
 			}
 
-			for (var i = 0; i < containsKeywords.Count; i++) {
+			for (var i = 0; i < connectionIdsFromThisNodeToChildNodesOrFakeIds.Length; i++) {
+				// these 3 parameters depends on their contents order.
+				var connectionId = connectionIdsFromThisNodeToChildNodesOrFakeIds[i];
 				var keyword = containsKeywords[i];
 				var keytype = containsKeytypes[i];
 				
@@ -138,17 +142,17 @@ namespace AssetBundleGraph {
 						if (typeMatchedAssetsAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
 					}
 
-					FilterResultReceiver(keyword, typeMatchedAssetsAbsolutePaths);
+					if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) FilterResultReceiver(connectionId, typeMatchedAssetsAbsolutePaths);
 					continue;
 				}
 				
-				var containsAssetAbsolutePaths = keywordContainsAssets.Select(assetData => assetData.absoluteSourcePath).ToList();
+				var keywordMatchedAssetAbsolutePaths = keywordContainsAssets.Select(assetData => assetData.absoluteSourcePath).ToList();
 				// these assets are exhausted.
 				foreach (var exhaustiveAsset in exhaustiveAssets) {
-					if (containsAssetAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
+					if (keywordMatchedAssetAbsolutePaths.Contains(exhaustiveAsset.absoluteSourcePath)) exhaustiveAsset.isFilterExhausted = true;
 				}
 
-				FilterResultReceiver(keyword, containsAssetAbsolutePaths);
+				if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) FilterResultReceiver(connectionId, keywordMatchedAssetAbsolutePaths);
 			}
 		}
 		

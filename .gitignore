@@ -12,6 +12,11 @@ Assets/AssetGraph/Temp/Bundlized/ID_0_7_RunBundlizer/bundle.assetbundle
 
 Assets/AssetGraph/Temp/Prefabricated/ID_0_5_RunPrefabricator/prefab.prefab
 
+Assets/AssetBundleGraph/Cache*
+Assets/AssetBundleGraph/SavedSettings*
+Assets/AssetBundleGraph/SettingFiles*
+Assets/TestAssets*
+Assets/SampleAssets*
 
 Assets/AssetGraph/Cache/*
 

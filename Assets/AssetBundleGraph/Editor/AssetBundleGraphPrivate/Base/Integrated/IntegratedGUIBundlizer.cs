@@ -7,14 +7,18 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeBase {
 		private readonly string bundleNameTemplate;
+		private readonly string assetsOutputConnectionId;
 		private readonly bool outputResource;
+		private readonly string resourcesOutputConnectionId;
 		
-		public IntegratedGUIBundlizer (string bundleNameTemplate, bool outputResource) {
+		public IntegratedGUIBundlizer (string bundleNameTemplate, string assetsConnectionId, bool outputResource, string resourcesConnectionId) {
 			this.bundleNameTemplate = bundleNameTemplate;
+			this.assetsOutputConnectionId = assetsConnectionId;
 			this.outputResource = outputResource;
+			this.resourcesOutputConnectionId = resourcesConnectionId;
 		}
 
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeName, string nodeId, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 
 			try {
 				ValidateBundleNameTemplate(
@@ -47,18 +51,18 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = outputSources;
 			}
 			
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
 			
 			/*
 				generate additional output:
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+				if (resourcesOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, resourcesOutputConnectionId, groupedSources, new List<string>());
 			}
 		}
 		
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {
@@ -85,14 +89,14 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = outputSources;
 			}
 			
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
 			
 			/*
 				generate additional output:
 				output bundle resources for next node, for generate another AssetBundles with dependency.
 			*/
 			if (outputResource) {
-				Output(nodeId, AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL, groupedSources, new List<string>());
+				if (resourcesOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, resourcesOutputConnectionId, groupedSources, new List<string>());
 			}
 		}
 

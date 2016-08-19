@@ -101,6 +101,7 @@ namespace AssetBundleGraph {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
 							node.BeforeSave();
 							node.filterContainsKeywords.RemoveAt(i);
+							node.filterContainsKeytypes.RemoveAt(i);
 							node.DeleteFilterOutputPoint(i);
 						}
 						else {
@@ -365,7 +366,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 				}
-
+				
 				var result = EditorGUILayout.ToggleLeft("Asset Output for Dependency", useOrNot);
 
 				if (result != useOrNot) {
@@ -512,6 +513,7 @@ namespace AssetBundleGraph {
 							EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
 							if(GUILayout.Button("Create directory")) {
 								Directory.CreateDirectory(exporterrNodePath);
+								node.Save();
 							}
 						}
 						EditorGUILayout.Space();
