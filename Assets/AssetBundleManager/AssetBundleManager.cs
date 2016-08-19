@@ -46,7 +46,9 @@ namespace AssetBundles
 		static AssetBundleManifest m_AssetBundleManifest = null;
 	#if UNITY_EDITOR	
 		static int m_SimulateAssetBundleInEditor = -1;
+		static int m_ClearCacheOnPlay = -1;
 		const string kSimulateAssetBundles = "SimulateAssetBundles";
+		const string kClearCacheOnPlay = "ClearCacheOnPlay";
 	#endif
 	
 		static Dictionary<string, LoadedAssetBundle> m_LoadedAssetBundles = new Dictionary<string, LoadedAssetBundle> ();
@@ -110,7 +112,24 @@ namespace AssetBundles
 				}
 			}
 		}
-		
+	
+		public static bool CleanCacheOnPlay
+		{
+			get {
+				if (m_ClearCacheOnPlay == -1)
+					m_ClearCacheOnPlay = EditorPrefs.GetBool(kClearCacheOnPlay, false) ? 1 : 0;
+
+				return m_ClearCacheOnPlay != 0;
+			}
+			set {
+				int newValue = value ? 1 : 0;
+				if (newValue != m_ClearCacheOnPlay)
+				{
+					m_ClearCacheOnPlay = newValue;
+					EditorPrefs.SetBool(kClearCacheOnPlay, value);
+				}
+			}
+		}
 	
 		#endif
 	
@@ -211,6 +230,13 @@ namespace AssetBundles
 				return null;
 	#endif
 	
+	#if UNITY_EDITOR	
+			if(CleanCacheOnPlay) {
+				Log (LogType.Info, "AssetBundleManager cleaned local cache.");
+				Caching.CleanCache();
+			}
+	#endif
+
 			LoadAssetBundle(manifestAssetBundleName, true);
 			var operation = new AssetBundleLoadManifestOperation (manifestAssetBundleName, "AssetBundleManifest", typeof(AssetBundleManifest));
 			m_InProgressOperations.Add (operation);
@@ -339,9 +365,12 @@ namespace AssetBundles
 				dependencies[i] = RemapVariantName (dependencies[i]);
 				
 			// Record and load all dependencies.
-			m_Dependencies.Add(assetBundleName, dependencies);
-			for (int i=0;i<dependencies.Length;i++)
+			m_Dependencies.Add(assetBundleName, dependencies); 
+			Debug.Log("[Dependency]" + assetBundleName + " => " + string.Concat(dependencies));
+			for (int i=0;i<dependencies.Length;i++) {
+				Debug.Log("[Loading Dependency] loading" + dependencies[i]);
 				LoadAssetBundleInternal(dependencies[i], false);
+			}
 		}
 	
 		// Unload assetbundle and its dependencies.
