@@ -36,9 +36,9 @@ namespace AssetBundleGraph {
 		}
 
 		/**
-			new assets which is generated through ImportSettings.
+			new assets which is generated through ImportSettings or Modifier.
 		*/
-		public static InternalAssetData InternalAssetDataByImporter (string traceId, string absoluteSourcePath, string sourceBasePath, string fileNameAndExtension, string pathUnderSourceBase, string importedPath, string assetId, Type assetType) {
+		public static InternalAssetData InternalAssetDataByImporterOrModifier (string traceId, string absoluteSourcePath, string sourceBasePath, string fileNameAndExtension, string pathUnderSourceBase, string importedPath, string assetId, Type assetType) {
 			return new InternalAssetData(
 				traceId:traceId,
 				absoluteSourcePath:absoluteSourcePath,

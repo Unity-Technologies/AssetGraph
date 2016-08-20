@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			this.loadFilePath = loadFilePath;
 		}
 
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 
 			try {
 				ValidateLoadPath(
@@ -78,10 +78,10 @@ namespace AssetBundleGraph {
 				{"0", outputSource}
 			};
 
-			Output(nodeId, labelToNext, outputDir, new List<string>());
+			Output(nodeId, connectionIdToNextNode, outputDir, new List<string>());
 		}
 		
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateLoadPath(
 				loadFilePath,
 				loadFilePath,
@@ -130,7 +130,7 @@ namespace AssetBundleGraph {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, labelToNext, outputDir, new List<string>());
+				Output(nodeId, connectionIdToNextNode, outputDir, new List<string>());
 			} catch (Exception e) {
 				Debug.LogError(nodeName + " Error:" + e);
 			}

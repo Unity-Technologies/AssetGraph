@@ -18,7 +18,7 @@ namespace AssetBundleGraph {
 			this.resourcesOutputConnectionId = resourcesConnectionId;
 		}
 
-		public void Setup (string nodeName, string nodeId, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 
 			try {
 				ValidateBundleNameTemplate(
@@ -64,7 +64,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeName, string nodeId, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateBundleNameTemplate(
 				bundleNameTemplate,
 				() => {

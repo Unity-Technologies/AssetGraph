@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace AssetBundleGraph {
 	public static class TypeBinder {
-		public static List<string> KeyTypes = new List<string>{
+		public static readonly List<string> KeyTypes = new List<string>{
 			// empty
 			AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE,
 			
@@ -35,7 +35,7 @@ namespace AssetBundleGraph {
 			typeof(Scene).ToString(),
 		};
 		
-		public static Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
+		public static readonly Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
 			// others(Assets)
 			{".anim", typeof(Animation)},
 			{".controller", typeof(Animator)},
@@ -56,8 +56,8 @@ namespace AssetBundleGraph {
 			// {"", typeof(Sprite)},
 		};
 
-		public static List<string> IgnoreExtension = new List<string>{
-			"",
+		public static readonly List<string> IgnoredExtension = new List<string>{
+			string.Empty,
 			".manifest",
 			".assetbundle",
 			".sample",
@@ -92,7 +92,7 @@ namespace AssetBundleGraph {
 				return AssumeTypeBindingByExtension[extension];
 			}
 
-			if (IgnoreExtension.Contains(extension)) {
+			if (IgnoredExtension.Contains(extension)) {
 				return null;
 			}
 			
@@ -100,5 +100,12 @@ namespace AssetBundleGraph {
 			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'object'.");
 			return typeof(object);
 		}
+
+		/**
+			明示的に対応している ModifierOperator の型を記述する。
+		*/
+		public static Dictionary<string, Type> SupportedModifierOperationTarget = new Dictionary<string, Type> {
+			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)}
+		};
 	}
 }

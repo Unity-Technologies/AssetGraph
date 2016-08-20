@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class FilterBase : INodeBase {
-		public void Setup (string nodeName, string nodeId, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string connectionIdToNextNode, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -25,7 +25,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(nodeId, label, outputDict, new List<string>());
+					Output(connectionIdToNextNode, label, outputDict, new List<string>());
 				};
 				try {
 					In(absoluteSourcePaths, _PreOutput);
@@ -35,7 +35,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (string nodeName, string nodeId, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string connectionIdToNextNode, string _, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<InternalAssetData>>();
 
@@ -54,7 +54,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(nodeId, label, outputDict, new List<string>());
+					Output(connectionIdToNextNode, label, outputDict, new List<string>());
 				};
 				try {
 					In(absoluteSourcePaths, _Output);

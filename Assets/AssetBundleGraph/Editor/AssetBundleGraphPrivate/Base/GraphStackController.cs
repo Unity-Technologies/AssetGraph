@@ -178,6 +178,7 @@ namespace AssetBundleGraph {
 					case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
 					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 					case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
 					case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
 					case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 						// nothing to do.
@@ -560,6 +561,30 @@ namespace AssetBundleGraph {
 						break;
 					}
 
+					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+						var modifierPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
+						var modifierPackages = new Dictionary<string, string>();
+
+						if (modifierPackagesSource == null) {
+							
+							modifierPackagesSource = new Dictionary<string, object>();
+						}
+						foreach (var platform_package_key in modifierPackagesSource.Keys) {
+							modifierPackages[platform_package_key] = string.Empty;
+						}
+						
+						nodeDatas.Add(
+							new NodeData(
+								nodeId:nodeId, 
+								nodeKind:nodeKind, 
+								nodeName:nodeName,
+								outputPointIds:outputPointIds,
+								modifierPackages:modifierPackages
+							)
+						);
+						break;
+					}
+
 					case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 						var groupingKeywordSource = nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
 						var groupingKeyword = new Dictionary<string, string>();
@@ -935,6 +960,12 @@ namespace AssetBundleGraph {
 							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
+
+						case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+							var executor = new IntegratedGUIModifier();
+							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
 						
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 							var executor = new IntegratedGUIGrouping(GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
@@ -1082,6 +1113,12 @@ namespace AssetBundleGraph {
 							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
+
+						case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+							var executor = new IntegratedGUIModifier();
+							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+							break;
+						}
 						
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 							var executor = new IntegratedGUIGrouping(GetCurrentPlatformPackageOrDefaultFromDict(nodeKind, currentNodeData.groupingKeyword));
@@ -1220,6 +1257,7 @@ namespace AssetBundleGraph {
 				}
 			}
 		}
+		
 
 		public static string WithProjectPath (string pathUnderProjectFolder) {
 			var assetPath = Application.dataPath;
@@ -1245,7 +1283,11 @@ namespace AssetBundleGraph {
 
 			switch (nodeKind) {
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					// no cache exists without file itself.
+					// no cache file exists for importSetting.
+					return new List<string>();
+				}
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					// no cache file exists for modifier.
 					return new List<string>();
 				}
 				
@@ -1443,6 +1485,8 @@ namespace AssetBundleGraph {
 
 		// for Importer GUI data
 		public readonly Dictionary<string, string> importerPackages;
+		
+		// for Modifier GUI data
 		public readonly Dictionary<string, string> modifierPackages;
 
 		// for Grouping GUI data
@@ -1504,8 +1548,6 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					this.scriptClassName = scriptClassName;
@@ -1520,6 +1562,11 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.importerPackages = importerPackages;
+					break;
+				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.modifierPackages = modifierPackages;
 					break;
 				}
 				

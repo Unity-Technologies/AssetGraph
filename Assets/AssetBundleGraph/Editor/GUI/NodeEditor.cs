@@ -235,6 +235,10 @@ namespace AssetBundleGraph {
 			}
 			UpdateDeleteSetting(node);
 		}
+
+		private void DoInspectorModifierGUI (Node node) {
+			Debug.LogError("modifier node insp.");
+		}
 		private void DoInspectorGroupingGUI (Node node) {
 			if (node.groupingKeyword == null) return;
 
@@ -580,6 +584,9 @@ namespace AssetBundleGraph {
 				break;
 			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI :
 				DoInspectorImportSettingGUI(node);
+				break;
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI :
+				DoInspectorModifierGUI(node);
 				break;
 			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
 				DoInspectorGroupingGUI(node);

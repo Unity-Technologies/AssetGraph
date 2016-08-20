@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 	*/
 	public class IntegratedGUIImportSetting : INodeBase {
 		
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
 			
@@ -91,7 +91,7 @@ namespace AssetBundleGraph {
 					}
 				}
 				
-				var newData = InternalAssetData.InternalAssetDataByImporter(
+				var newData = InternalAssetData.InternalAssetDataByImporterOrModifier(
 					inputSource.traceId,
 					inputSource.absoluteSourcePath,
 					inputSource.sourceBasePath,
@@ -133,10 +133,10 @@ namespace AssetBundleGraph {
 				outputDict[groupedSources.Keys.ToList()[0]] = assumedImportedAssetDatas;
 			}
 
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -183,8 +183,7 @@ namespace AssetBundleGraph {
 				if need, apply importSetting to file.
 			*/
 			var samplingAssetImporter = AssetImporter.GetAtPath(sampleAssetPath);
-			Debug.LogError("sampleAssetPath:" + sampleAssetPath + " samplingAssetImporter:" + samplingAssetImporter);
-
+			
 			var effector = new InternalSamplingImportEffector(samplingAssetImporter);
 			var samplingAssetImporterTypeStr = samplingAssetImporter.GetType().ToString();
 			
@@ -279,7 +278,7 @@ namespace AssetBundleGraph {
 			
 			outputDict[the1stGroupKey] = outputSources;
 
-			Output(nodeId, labelToNext, outputDict, usedCache);
+			Output(nodeId, connectionIdToNextNode, outputDict, usedCache);
 		}
 
 		public static void ValidateImportSample (string samplePath, 

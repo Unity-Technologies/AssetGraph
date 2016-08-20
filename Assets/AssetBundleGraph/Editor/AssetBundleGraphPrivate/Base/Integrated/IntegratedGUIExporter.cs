@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			this.exportFilePath = exportFilePath;
 		}
 		
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 
 			try {
 				ValidateExportPath(
@@ -31,10 +31,10 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			Export(nodeName, nodeId, labelToNext, groupedSources, Output, false);
+			Export(nodeName, nodeId, connectionIdToNextNode, groupedSources, Output, false);
 		}
 		
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			ValidateExportPath(
 				exportFilePath,
 				exportFilePath,
@@ -46,7 +46,7 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(nodeName, nodeId, labelToNext, groupedSources, Output, true);
+			Export(nodeName, nodeId, connectionIdToNextNode, groupedSources, Output, true);
 		}
 
 		private void Export (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output, bool isRun) {

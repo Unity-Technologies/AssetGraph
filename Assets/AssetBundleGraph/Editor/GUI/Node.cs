@@ -385,6 +385,18 @@ namespace AssetBundleGraph {
 				importerPackages: importerPackages
 			);
 		}
+
+		public static Node CreateGUIModifierNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> modifierPackages, float x, float y) {
+			return new Node(
+				index: index,
+				name: name,
+				nodeId: nodeId,
+				kind: kind,
+				x: x,
+				y: y,
+				modifierPackages: modifierPackages
+			);
+		}
 		
 		public static Node CreateGUIGroupingNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
 			return new Node(
@@ -553,6 +565,11 @@ namespace AssetBundleGraph {
 					this.nodeInterfaceTypeStr = "flow node 2";
 					break;
 				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 6";
+					break;
+				}
 				
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
@@ -619,6 +636,12 @@ namespace AssetBundleGraph {
 					break;
 				}
 
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					Debug.LogError("packageのキーを消す");
+					// importerPackages.Remove(platformPackageKey);
+					break;
+				}
+
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					groupingKeyword.Remove(platformPackageKey);
 					break;
@@ -667,6 +690,11 @@ namespace AssetBundleGraph {
 					this.nodeInterfaceTypeStr = "flow node 2 on";
 					break;
 				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 6 on";
+					break;
+				}
 				
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3 on";
@@ -713,6 +741,11 @@ namespace AssetBundleGraph {
 				
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2";
+					break;
+				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
 				

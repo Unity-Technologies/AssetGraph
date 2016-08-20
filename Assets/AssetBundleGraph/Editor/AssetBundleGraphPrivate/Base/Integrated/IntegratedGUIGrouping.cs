@@ -1,28 +1,27 @@
-using UnityEngine;
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace AssetBundleGraph {
-	public class IntegratedGUIGrouping : INodeBase {
+namespace AssetBundleGraph
+{
+    public class IntegratedGUIGrouping : INodeBase {
 		private readonly string groupingKeyword;
 
 		public IntegratedGUIGrouping (string groupingKeyword) {
 			this.groupingKeyword = groupingKeyword;
 		}
 
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			GroupingOutput(nodeName, nodeId, labelToNext, groupedSources, Output);
+		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			GroupingOutput(nodeName, nodeId, connectionIdToNextNode, groupedSources, Output);
 		}
 
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			GroupingOutput(nodeName, nodeId, labelToNext, groupedSources, Output);
+		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			GroupingOutput(nodeName, nodeId, connectionIdToNextNode, groupedSources, Output);
 		}
 
 
-		private void GroupingOutput (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		private void GroupingOutput (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 
 			try {
 				ValidateGroupingKeyword(
@@ -63,7 +62,7 @@ namespace AssetBundleGraph {
 				}
 			}
 			
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
 		}
 
 		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {

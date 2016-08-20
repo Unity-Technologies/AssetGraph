@@ -1375,6 +1375,11 @@ namespace AssetBundleGraph {
 					nodeDict[AssetBundleGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
 					break;
 				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] = node.modifierPackages.ReadonlyDict();
+					break;
+				}
 				
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
@@ -1487,6 +1492,26 @@ namespace AssetBundleGraph {
 					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
 
 					var newNode = Node.CreateGUIImportNode(currentNodesCount, name, id, kind, defaultPlatformAndPackages, x, y);
+					
+					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+					
+					for (var i = 0; i < outputIdsList.Count; i++) {
+						var pointId = outputIdsList[i] as string;
+						var label = outputLabelsList[i] as string;
+						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
+					}
+					return newNode;
+				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					var modifierPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
+					var modifierPackages = new Dictionary<string, string>();
+					foreach (var platform_package_key in modifierPackagesSource.Keys) {
+						modifierPackages[platform_package_key] = modifierPackagesSource[platform_package_key] as string;
+					}
+
+					var newNode = Node.CreateGUIModifierNode(currentNodesCount, name, id, kind, modifierPackages, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1657,6 +1682,17 @@ namespace AssetBundleGraph {
 					};
 
 					newNode = Node.CreateGUIImportNode(nodes.Count, nodeName, nodeId, kind, importerPackages, x, y);
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+					var modifierPackages = new Dictionary<string, string> {
+						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
+					};
+
+					newNode = Node.CreateGUIModifierNode(nodes.Count, nodeName, nodeId, kind, modifierPackages, x, y);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
@@ -2116,7 +2152,7 @@ namespace AssetBundleGraph {
 
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
-
+		
 		public void DuplicateNode (Node node) {
 			var newNode = node.DuplicatedNode(
 				nodes.Count,
@@ -2139,6 +2175,12 @@ namespace AssetBundleGraph {
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					break;
+				}
+
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;

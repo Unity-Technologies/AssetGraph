@@ -90,3 +90,16 @@ obj/*
 
 Assets/EditorGUI Style Viewer*
 Assets/EditorGUI Style Viewer/*
+Assets/SampleMat.mat
+
+Assets/SampleMat.mat.meta
+
+Assets/SampleRenderTex.renderTexture
+
+Assets/SampleRenderTex.renderTexture.meta
+
+Assets/sss.renderTexture
+
+Assets/sss.renderTexture.meta
+
+Assets/TestResourceAssets.meta

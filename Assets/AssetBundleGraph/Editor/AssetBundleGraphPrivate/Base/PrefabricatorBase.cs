@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class PrefabricatorBase : INodeBase {
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
+		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {			
 			var invalids = new List<string>();
 			foreach (var sources in groupedSources.Values) {
 				foreach (var source in sources) {
@@ -79,11 +79,11 @@ namespace AssetBundleGraph {
 			
 			} 				
 
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
 
 		}
 
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var invalids = new List<string>();
@@ -233,7 +233,7 @@ namespace AssetBundleGraph {
 			}
 
 
-			Output(nodeId, labelToNext, outputDict, usedCache);
+			Output(nodeId, connectionIdToNextNode, outputDict, usedCache);
 		}
 
 		private bool isPrefabricateFunctionCalled = false;

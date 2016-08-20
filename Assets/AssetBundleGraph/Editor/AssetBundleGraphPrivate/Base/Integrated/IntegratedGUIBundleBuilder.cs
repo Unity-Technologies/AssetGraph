@@ -16,10 +16,9 @@ namespace AssetBundleGraph {
 //			this.relatedNodeIds = relatedNodeIds;
 		}
 
-		public void Setup (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+		public void Setup (string nodeName, string connectionIdToNextNode, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			/*
-				forcely merge to group ["0"].
-				these are came from bundlizer.
+				merge multi group into ["0"] group.
 			*/
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
 			outputDict["0"] = new List<InternalAssetData>();
@@ -29,13 +28,12 @@ namespace AssetBundleGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			Output(connectionIdToNextNode, labelToNext, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			// RemoveOtherPlatformAndPackageBundleSettings(relatedNodeIds, package);
+		public void Run (string nodeName, string connectionIdToNextNode, string labelToNext, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			
-			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, nodeId);
+			var recommendedBundleOutputDirSource = FileController.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, connectionIdToNextNode);
 			var recommendedBundleOutputDir = FileController.PathCombine(recommendedBundleOutputDirSource, GraphStackController.GetCurrentPlatformPackageFolder());
 			if (!Directory.Exists(recommendedBundleOutputDir)) Directory.CreateDirectory(recommendedBundleOutputDir);
 
@@ -159,7 +157,7 @@ namespace AssetBundleGraph {
 			outputDict["0"] = outputSources;
 			
 			var usedCache = new List<string>(alreadyCached);
-			Output(nodeId, labelToNext, outputDict, usedCache);
+			Output(connectionIdToNextNode, labelToNext, outputDict, usedCache);
 		}
 		
 		
