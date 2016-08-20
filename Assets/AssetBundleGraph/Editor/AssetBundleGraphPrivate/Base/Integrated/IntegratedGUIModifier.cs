@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeBase {
@@ -14,7 +13,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 			
-			// ImportSetting merges multiple incoming groups into one. why -> see IntegratedGUIImporterSetting. same behaviour preferred.
+			// Modifier merges multiple incoming groups into one.
 			if (1 < groupedSources.Keys.Count) {
 				Debug.LogWarning(nodeName + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
 			}
@@ -66,11 +65,11 @@ namespace AssetBundleGraph {
 			var opDataPath = FileController.PathCombine(opDataFolderPath, AssetBundleGraphSettings.MODIFIER_OPERATION_DATA_NANE);
 			if (!File.Exists(opDataPath)) {
 				// type is already assumed.
-				if (!TypeBinder.SupportedModifierOperationTarget.ContainsKey(modifierType)) {
+				if (!TypeBinder.SupportedModifierOperationDefinition.ContainsKey(modifierType)) {
 					throw new NodeException("unsupported ModifierOperation Type:" + modifierType, nodeId);
 				}
 
-				var operatorType = TypeBinder.SupportedModifierOperationTarget[modifierType];
+				var operatorType = TypeBinder.SupportedModifierOperationDefinition[modifierType];
 
 				var operatorInstance = Activator.CreateInstance(operatorType) as ModifierOperators.OperatorBase;
 
@@ -80,8 +79,7 @@ namespace AssetBundleGraph {
 					generated json data is typed as supported ModifierOperation type.
 				*/
 				var jsonData = JsonUtility.ToJson(defaultRenderTextureOp);
-				
-				using (var sw = new StreamWriter(opDataPath, true)) {
+				using (var sw = new StreamWriter(opDataPath)) {
 					sw.WriteLine(jsonData);
 				}
 			}
@@ -100,28 +98,77 @@ namespace AssetBundleGraph {
 			
 			var outputSources = new List<InternalAssetData>();
 
-			// /*
-			// 	all assets types are same and do nothing to assets in setup.
-			// */
-			// foreach (var inputSource in inputSources) {
-			// 	var modifyTargetAssetPath = inputSource.importedPath;
+			/*
+				all assets types are same and do nothing to assets in setup.
+			*/
+			foreach (var inputSource in inputSources) {
+				var modifyTargetAssetPath = inputSource.importedPath;
 				
-			// 	var newData = InternalAssetData.InternalAssetDataByImporterOrModifier(
-			// 		inputSource.traceId,
-			// 		inputSource.absoluteSourcePath,
-			// 		inputSource.sourceBasePath,
-			// 		inputSource.fileNameAndExtension,
-			// 		inputSource.pathUnderSourceBase,
-			// 		inputSource.importedPath,
-			// 		null,
-			// 		inputSource.assetType
-			// 	);
+				var newData = InternalAssetData.InternalAssetDataByImporterOrModifier(
+					inputSource.traceId,
+					inputSource.absoluteSourcePath,
+					inputSource.sourceBasePath,
+					inputSource.fileNameAndExtension,
+					inputSource.pathUnderSourceBase,
+					inputSource.importedPath,
+					null,
+					inputSource.assetType
+				);
 
-			// 	outputSources.Add(newData);
-			// }
+				outputSources.Add(newData);
+			}
 
-			// 実行時のブロック
-			// 実行時には、データ生成とかはしないが内容の有無のチェックとかはする。エラーで吹っ飛ばす専門。
+			var outputDict = new Dictionary<string, List<InternalAssetData>>();
+			outputDict[groupMergeKey] = outputSources;
+
+			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
+		}
+
+		
+		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
+			if (groupedSources.Keys.Count == 0) {
+				return;
+			}
+			
+			// Modifier merges multiple incoming groups into one.
+			if (1 < groupedSources.Keys.Count) {
+				Debug.LogWarning(nodeName + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			}
+
+			var groupMergeKey = groupedSources.Keys.ToList()[0];
+
+			// merge all assets into single list.
+			var inputSources = new List<InternalAssetData>();
+			foreach (var groupKey in groupedSources.Keys) {
+				inputSources.AddRange(groupedSources[groupKey]);
+			}
+			
+			if (!inputSources.Any()) {
+				return;
+			} 
+
+			// load type from 1st asset of flow.
+			var modifierType = TypeBinder.AssumeTypeOfAsset(inputSources[0].importedPath).ToString();
+
+			// modifierType is fixed.
+
+			var modifierOperationDataFolderPath = AssetBundleGraphSettings.MODIFIER_OPERATION_DATAS_PLACE;
+			var opDataFolderPath = FileController.PathCombine(modifierOperationDataFolderPath, nodeId);
+			var opDataPath = FileController.PathCombine(opDataFolderPath, AssetBundleGraphSettings.MODIFIER_OPERATION_DATA_NANE);
+			
+			// validate saved data.
+			ValidateModifiyOperationData(
+				nodeId,
+				() => {
+					throw new NodeException("このノードのOperationDataがないのでSetupしてね", nodeId);
+				},
+				() => {
+					/*do nothing.*/
+				}
+			);
+			
+			var outputSources = new List<InternalAssetData>();
+
 			var loadedModifierOperationData = string.Empty;
 			using (var sr = new StreamReader(opDataPath)) {
 				loadedModifierOperationData = sr.ReadLine();
@@ -133,14 +180,14 @@ namespace AssetBundleGraph {
 			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(loadedModifierOperationData);
 			var dataTypeString = deserializedDataObject.dataType;
 			
-			if (!TypeBinder.SupportedModifierOperationTarget.ContainsKey(dataTypeString)) {
+			if (!TypeBinder.SupportedModifierOperationDefinition.ContainsKey(dataTypeString)) {
 				throw new NodeException("unsupported ModifierOperation Type:" + modifierType, nodeId);
 			} 
 
-			var modifyOperatorType = TypeBinder.SupportedModifierOperationTarget[dataTypeString];
+			var modifyOperatorType = TypeBinder.SupportedModifierOperationDefinition[dataTypeString];
 			
 			/*
-				make generic method as desired typed.
+				make generic method for genearte desired typed ModifierOperator instance.
 			*/
 			var modifyOperatorInstance = typeof(IntegratedGUIModifier)
 				.GetMethod("FromJson")
@@ -151,9 +198,9 @@ namespace AssetBundleGraph {
 			foreach (var inputSource in inputSources) {
 				var modifyTargetAssetPath = inputSource.importedPath;
 
-				var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(modifyTargetAssetPath);
+				var modifyOperationTargetAsset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(modifyTargetAssetPath);
 
-				if (!modifyOperatorInstance.IsChanged(asset)) {
+				if (!modifyOperatorInstance.IsChanged(modifyOperationTargetAsset)) {
 					var notChangedData = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
 						inputSource.importedPath,
 						AssetDatabase.AssetPathToGUID(inputSource.importedPath),
@@ -165,22 +212,23 @@ namespace AssetBundleGraph {
 					continue;
 				}
 
-				// isChanged = true;
-				// modifyOperatorInstance.Modify(modifyTargetAssetPath);
+				isChanged = true;
+				modifyOperatorInstance.Modify(modifyOperationTargetAsset);
 				
-				// var newData = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
-				// 	inputSource.importedPath,
-				// 	AssetDatabase.AssetPathToGUID(inputSource.importedPath),
-				// 	AssetBundleGraphInternalFunctions.GetAssetType(inputSource.importedPath),
-				// 	true,// marked as changed.
-				// 	false
-				// );
+				var newData = InternalAssetData.InternalAssetDataGeneratedByImporterOrModifierOrPrefabricator(
+					inputSource.importedPath,
+					AssetDatabase.AssetPathToGUID(inputSource.importedPath),
+					AssetBundleGraphInternalFunctions.GetAssetType(inputSource.importedPath),
+					true,// marked as changed.
+					false
+				);
 				
-				// outputSources.Add(newData);
+				outputSources.Add(newData);
 			}
 
 			if (isChanged) {
-				AssetDatabase.Refresh();// 変更を加えたAssetの設定をデータベースに反映させないといけない。
+				// apply asset setting changes to AssetDatabase.
+				AssetDatabase.Refresh();
 			}
 
 			var outputDict = new Dictionary<string, List<InternalAssetData>>();
@@ -189,14 +237,14 @@ namespace AssetBundleGraph {
 			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
 		}
 
+		/**
+			caution.
+			do not delete this method.
+			this method is called through reflection for adopt Generic type in Runtime.
+		*/
 		public T FromJson<T> (string source) {
 			return JsonUtility.FromJson<T>(source);
 		}
-		
-		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
-			
-		}
-
 		
 		/**
 			限定的なチェックが出来る。
@@ -222,14 +270,4 @@ namespace AssetBundleGraph {
 			validAssetOperationDataFound();
 		}
 	}
-
-    public class ModifierOperation<T> where T : UnityEngine.Object {
-        public bool IsChanged (string modifyTargetAssetPath) {
-            throw new NotImplementedException();
-        }
-
-        public void Modify (string modifyTargetAssetPath) {
-            throw new NotImplementedException();
-        }
-    }
 }
