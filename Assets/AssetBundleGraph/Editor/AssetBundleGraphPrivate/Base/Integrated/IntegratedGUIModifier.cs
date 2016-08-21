@@ -43,6 +43,11 @@ namespace AssetBundleGraph {
 			foreach (var inputSource in inputSources) {
 				var modifyTargetAssetPath = inputSource.importedPath; 
 				var assumedType = TypeBinder.AssumeTypeOfAsset(modifyTargetAssetPath);
+				
+				if (assumedType == null || assumedType == typeof(object)) {
+					continue;
+				}
+
 				if (first) {
 					first = false;
 					modifierType = assumedType.ToString();
@@ -50,8 +55,7 @@ namespace AssetBundleGraph {
 				}
 
 				if (modifierType != assumedType.ToString()) {
-					Debug.LogError("type mismatch found:" + assumedType + " 実行時、流れ込んでくる素材の中に不純物がふくまれているエラー");
-					return;
+					throw new NodeException("multiple Asset Type detected. consider reduce Asset Type number to only 1 by Filter. detected Asset Types is:" + modifierType + " , and " + assumedType.ToString(), nodeId);
 				}
 			}
 			
@@ -270,23 +274,6 @@ namespace AssetBundleGraph {
 			return JsonUtility.FromJson<T>(source);
 		}
 		
-		/**
-			限定的なチェックが出来る。
-			・nodeに対応したファイルが存在するかどうか
-			のみだ。
-
-			それ以外の情報を得るには、
-			・setupで流れ込んでくるデータの情報が必須。
-
-			これはImporterと同じだね。
-			ファイル存在チェック以上のチェックは、SetupとかRunで行おう。
-
-			デフォルトプラットフォームとそれ以外とで、扱いが異ならないように、
-			・まずその他のプラットフォームのデータの有無を確認 -> この処理は汎用化しないと。
-			・なくても、デフォルトのものがあればそれを使う
-
-			という感じ。
-		*/
 		public static void ValidateModifiyOperationData (
 			string modifierNodeId,
 			string targetPlatform,
