@@ -528,6 +528,7 @@ namespace AssetBundleGraph {
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInfo>();
+			this.nodeInsp.hideFlags = HideFlags.HideAndDontSave;
 			
 			this.nodeWindowId = index;
 			this.name = name;

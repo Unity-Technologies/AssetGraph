@@ -59,7 +59,7 @@ namespace AssetBundleGraph {
 
 		private Connection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
 			conInsp = ScriptableObject.CreateInstance<ConnectionInspector>();
-			conInsp.hideFlags = HideFlags.DontSave;
+			conInsp.hideFlags = HideFlags.HideAndDontSave;
 
 			this.label = label;
 			this.connectionId = connectionId;
