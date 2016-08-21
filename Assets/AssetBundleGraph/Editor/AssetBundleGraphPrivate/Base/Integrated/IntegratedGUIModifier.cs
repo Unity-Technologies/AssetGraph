@@ -8,6 +8,12 @@ using System.IO;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeBase {
+		private readonly string currentPlatformStr;
+
+		public IntegratedGUIModifier (string modifierTargetPlatform) {
+			this.currentPlatformStr = modifierTargetPlatform;
+		}
+
 		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<InternalAssetData>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<InternalAssetData>>, List<string>> Output) {
 			if (groupedSources.Keys.Count == 0) {
 				return;
@@ -48,39 +54,46 @@ namespace AssetBundleGraph {
 					return;
 				}
 			}
-
-			// modifierType is fixed.
-
-			// generate modifier operation data if data is not exist yet.
-			var modifierOperationDataFolderPath = AssetBundleGraphSettings.MODIFIER_OPERATION_DATAS_PLACE;
-			if (!Directory.Exists(modifierOperationDataFolderPath)) {
-				Directory.CreateDirectory(modifierOperationDataFolderPath);
+			
+			// modifierType is fixed. check support.
+			if (!TypeBinder.SupportedModifierOperatorDefinition.ContainsKey(modifierType)) {
+				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", nodeId);
 			}
 
-			var opDataFolderPath = FileController.PathCombine(modifierOperationDataFolderPath, nodeId);
-			if (!Directory.Exists(opDataFolderPath)) {
-				Directory.CreateDirectory(opDataFolderPath);
-			} 
-
-			var opDataPath = FileController.PathCombine(opDataFolderPath, AssetBundleGraphSettings.MODIFIER_OPERATION_DATA_NANE);
-			if (!File.Exists(opDataPath)) {
-				// type is already assumed.
-				if (!TypeBinder.SupportedModifierOperationDefinition.ContainsKey(modifierType)) {
-					throw new NodeException("unsupported ModifierOperation Type:" + modifierType, nodeId);
+			// generate modifierOperatorData if data is not exist yet.
+			{
+				var modifierOperatorDataFolderPath = AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE;
+				if (!Directory.Exists(modifierOperatorDataFolderPath)) {
+					Directory.CreateDirectory(modifierOperatorDataFolderPath);
 				}
 
-				var operatorType = TypeBinder.SupportedModifierOperationDefinition[modifierType];
+				var opDataFolderPath = FileController.PathCombine(modifierOperatorDataFolderPath, nodeId);
+				if (!Directory.Exists(opDataFolderPath)) {
+					Directory.CreateDirectory(opDataFolderPath);
+				} 
 
-				var operatorInstance = Activator.CreateInstance(operatorType) as ModifierOperators.OperatorBase;
-
-				var defaultRenderTextureOp = operatorInstance.DefaultSetting();
+				// ready default platform path.
+				var modifierOperatorDataPathForDefaultPlatform = FileController.PathCombine(opDataFolderPath, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
 
 				/*
-					generated json data is typed as supported ModifierOperation type.
+					create default platform ModifierOperatorData if not exist.
+					default ModifierOperatorData is the target platform for every platform by default.
 				*/
-				var jsonData = JsonUtility.ToJson(defaultRenderTextureOp);
-				using (var sw = new StreamWriter(opDataPath)) {
-					sw.WriteLine(jsonData);
+				if (!File.Exists(modifierOperatorDataPathForDefaultPlatform)) {
+					var operatorType = TypeBinder.SupportedModifierOperatorDefinition[modifierType];
+
+					var operatorInstance = Activator.CreateInstance(operatorType) as ModifierOperators.OperatorBase;
+
+					var defaultRenderTextureOp = operatorInstance.DefaultSetting();
+
+					/*
+						generated json data is typed as supported ModifierOperation type.
+					*/
+					var jsonData = JsonUtility.ToJson(defaultRenderTextureOp);
+					var prettified = AssetBundleGraph.PrettifyJson(jsonData);
+					using (var sw = new StreamWriter(modifierOperatorDataPathForDefaultPlatform)) {
+						sw.WriteLine(prettified);
+					}
 				}
 			}
 		
@@ -88,8 +101,9 @@ namespace AssetBundleGraph {
 			// validate saved data.
 			ValidateModifiyOperationData(
 				nodeId,
+				currentPlatformStr,
 				() => {
-					throw new NodeException("このノードのOperationDataがないのでSetupしてね", nodeId);
+					throw new NodeException("No ModifierOperatorData found. please Setup first.", nodeId);
 				},
 				() => {
 					/*do nothing.*/
@@ -150,17 +164,18 @@ namespace AssetBundleGraph {
 			// load type from 1st asset of flow.
 			var modifierType = TypeBinder.AssumeTypeOfAsset(inputSources[0].importedPath).ToString();
 
-			// modifierType is fixed.
+			// modifierType is fixed. check support.
+			if (!TypeBinder.SupportedModifierOperatorDefinition.ContainsKey(modifierType)) {
+				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", nodeId);
+			}
 
-			var modifierOperationDataFolderPath = AssetBundleGraphSettings.MODIFIER_OPERATION_DATAS_PLACE;
-			var opDataFolderPath = FileController.PathCombine(modifierOperationDataFolderPath, nodeId);
-			var opDataPath = FileController.PathCombine(opDataFolderPath, AssetBundleGraphSettings.MODIFIER_OPERATION_DATA_NANE);
-			
+
 			// validate saved data.
 			ValidateModifiyOperationData(
 				nodeId,
+				currentPlatformStr,
 				() => {
-					throw new NodeException("このノードのOperationDataがないのでSetupしてね", nodeId);
+					throw new NodeException("No ModifierOperatorData found. please Setup first.", nodeId);
 				},
 				() => {
 					/*do nothing.*/
@@ -169,22 +184,31 @@ namespace AssetBundleGraph {
 			
 			var outputSources = new List<InternalAssetData>();
 
-			var loadedModifierOperationData = string.Empty;
-			using (var sr = new StreamReader(opDataPath)) {
-				loadedModifierOperationData = sr.ReadLine();
+			var modifierOperatorDataPathForTargetPlatform = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(currentPlatformStr));
+
+			// if runtime platform specified modifierOperatorData is nof found, 
+			// use default platform modifierOperatorData.
+			if (!File.Exists(modifierOperatorDataPathForTargetPlatform)) {
+				modifierOperatorDataPathForTargetPlatform = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+			} 
+
+			var loadedModifierOperatorData = string.Empty;
+			using (var sr = new StreamReader(modifierOperatorDataPathForTargetPlatform)) {
+				loadedModifierOperatorData = sr.ReadToEnd();
 			}
 
 			/*
-				read saved modifierOperation type for detect data type.
+				read saved modifierOperator type for detect data type.
 			*/
-			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(loadedModifierOperationData);
+			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(loadedModifierOperatorData);
 			var dataTypeString = deserializedDataObject.dataType;
-			
-			if (!TypeBinder.SupportedModifierOperationDefinition.ContainsKey(dataTypeString)) {
-				throw new NodeException("unsupported ModifierOperation Type:" + modifierType, nodeId);
+
+			// sadly, if loaded assetType is no longer supported or not.
+			if (!TypeBinder.SupportedModifierOperatorDefinition.ContainsKey(dataTypeString)) {
+				throw new NodeException("unsupported ModifierOperator Type:" + modifierType, nodeId);
 			} 
 
-			var modifyOperatorType = TypeBinder.SupportedModifierOperationDefinition[dataTypeString];
+			var modifyOperatorType = TypeBinder.SupportedModifierOperatorDefinition[dataTypeString];
 			
 			/*
 				make generic method for genearte desired typed ModifierOperator instance.
@@ -192,7 +216,7 @@ namespace AssetBundleGraph {
 			var modifyOperatorInstance = typeof(IntegratedGUIModifier)
 				.GetMethod("FromJson")
 				.MakeGenericMethod(modifyOperatorType)// set desired generic type here.
-				.Invoke(this, new object[] { loadedModifierOperationData }) as ModifierOperators.OperatorBase;
+				.Invoke(this, new object[] { loadedModifierOperatorData }) as ModifierOperators.OperatorBase;
 			
 			var isChanged = false;
 			foreach (var inputSource in inputSources) {
@@ -256,18 +280,78 @@ namespace AssetBundleGraph {
 
 			これはImporterと同じだね。
 			ファイル存在チェック以上のチェックは、SetupとかRunで行おう。
+
+			デフォルトプラットフォームとそれ以外とで、扱いが異ならないように、
+			・まずその他のプラットフォームのデータの有無を確認 -> この処理は汎用化しないと。
+			・なくても、デフォルトのものがあればそれを使う
+
+			という感じ。
 		*/
 		public static void ValidateModifiyOperationData (
 			string modifierNodeId,
+			string targetPlatform,
 			Action noAssetOperationDataFound,
 			Action validAssetOperationDataFound
 		) {
-			var opDataPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATION_DATAS_PLACE, modifierNodeId, AssetBundleGraphSettings.MODIFIER_OPERATION_DATA_NANE); 
-			if (!File.Exists(opDataPath)) {
-				noAssetOperationDataFound();
+			var platformOpDataPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, modifierNodeId, ModifierOperatiorDataName(targetPlatform));
+			if (File.Exists(platformOpDataPath)) {
+				validAssetOperationDataFound();
+				return;
+			}
+			
+			// if platform data is not exist, search default one.
+			var defaultPlatformOpDataPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, modifierNodeId, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+			if (File.Exists(defaultPlatformOpDataPath)) {
+				validAssetOperationDataFound();
+				return;
 			}
 
-			validAssetOperationDataFound();
+			noAssetOperationDataFound();
 		}
-	}
+
+		/**
+			always returns Default platform's ModifierOperator's target asset type name.
+		*/
+		public static string ModifierOperationTargetTypeName (string nodeId) {
+			var defaultModifierOperatorDataPath = ModifierDataPathForDefaultPlatform(nodeId);
+			
+			if (!File.Exists(defaultModifierOperatorDataPath)) {
+				return string.Empty;
+			}
+
+			var dataStr = string.Empty;
+			using (var sr = new StreamReader(defaultModifierOperatorDataPath)) {
+				dataStr = sr.ReadToEnd();
+			}
+
+			if (string.IsNullOrEmpty(dataStr)) {
+				return string.Empty;
+			}
+
+			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(dataStr);
+			return deserializedDataObject.dataType;
+		}
+
+		public static string ModifierDataPathForeachPlatform (string nodeId, string platformStr) {
+			return FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(platformStr));
+		}
+
+		public static string ModifierDataPathForDefaultPlatform (string nodeId) {
+			return FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+		}
+
+        public static void DeletePlatformData(string nodeId, string platformStr) {
+            var platformOpdataPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(platformStr));
+			if (File.Exists(platformOpdataPath)) {
+				File.Delete(platformOpdataPath);
+			} 
+        }
+
+		public static string ModifierOperatiorDataName (string platformStr) {
+			if (platformStr == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) {
+				return AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_PREFIX + "." + AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_SUFFIX;
+			}
+			return AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_PREFIX + "." + platformStr + "." + AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_SUFFIX;
+		}
+    }
 }

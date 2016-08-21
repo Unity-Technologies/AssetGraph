@@ -104,7 +104,7 @@ namespace AssetBundleGraph {
 		/**
 			明示的に対応している ModifierOperator の型を記述する。
 		*/
-		public static Dictionary<string, Type> SupportedModifierOperationDefinition = new Dictionary<string, Type> {
+		public static Dictionary<string, Type> SupportedModifierOperatorDefinition = new Dictionary<string, Type> {
 			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)}
 		};
 	}

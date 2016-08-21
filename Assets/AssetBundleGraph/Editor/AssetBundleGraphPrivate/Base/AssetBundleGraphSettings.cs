@@ -17,6 +17,7 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
+		public const string GUI_TEXT_MENU_DELETE_MODIFIER_OPERATOR_DATAS = "Window/AssetBundleGraph/Clear Modifier Datas";
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
@@ -32,8 +33,9 @@ namespace AssetBundleGraph {
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
 
 		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
-		public const string MODIFIER_OPERATION_DATAS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierOperationDatas";
-		public const string MODIFIER_OPERATION_DATA_NANE = "modifierOperation.json";
+		public const string MODIFIER_OPERATOR_DATAS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierOperatorDatas";
+		public const string MODIFIER_OPERATOR_DATA_NANE_PREFIX = "modifierOperatorData";
+		public const string MODIFIER_OPERATOR_DATA_NANE_SUFFIX = "json";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -124,7 +126,6 @@ namespace AssetBundleGraph {
 		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
 		public const string NODE_FILTER_CONTAINS_KEYTYPES = "filterContainsKeytypes";
 		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
-		public const string NODE_MODIFIER_PACKAGES = "modifierPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		public const string NODE_BUNDLIZER_USE_OUTPUT = "bundleUseOutput";

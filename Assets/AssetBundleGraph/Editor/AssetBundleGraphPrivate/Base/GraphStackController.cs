@@ -562,24 +562,12 @@ namespace AssetBundleGraph {
 					}
 
 					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-						var modifierPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
-						var modifierPackages = new Dictionary<string, string>();
-
-						if (modifierPackagesSource == null) {
-							
-							modifierPackagesSource = new Dictionary<string, object>();
-						}
-						foreach (var platform_package_key in modifierPackagesSource.Keys) {
-							modifierPackages[platform_package_key] = string.Empty;
-						}
-						
 						nodeDatas.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
-								outputPointIds:outputPointIds,
-								modifierPackages:modifierPackages
+								outputPointIds:outputPointIds
 							)
 						);
 						break;
@@ -962,7 +950,7 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-							var executor = new IntegratedGUIModifier();
+							var executor = new IntegratedGUIModifier(ShrinkedCurrentPlatform());
 							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -1115,7 +1103,7 @@ namespace AssetBundleGraph {
 						}
 
 						case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-							var executor = new IntegratedGUIModifier();
+							var executor = new IntegratedGUIModifier(ShrinkedCurrentPlatform());
 							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}

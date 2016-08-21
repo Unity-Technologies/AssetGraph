@@ -181,6 +181,12 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_MODIFIER_OPERATOR_DATAS)] public static void DeleteModifierSetting () {
+			FileController.RemakeDirectory(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE);
+
+			AssetDatabase.Refresh();
+		}
+		
 
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
@@ -1377,7 +1383,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] = node.modifierPackages.ReadonlyDict();
+					// nothing to add.
 					break;
 				}
 				
@@ -1505,13 +1511,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var modifierPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
-					var modifierPackages = new Dictionary<string, string>();
-					foreach (var platform_package_key in modifierPackagesSource.Keys) {
-						modifierPackages[platform_package_key] = modifierPackagesSource[platform_package_key] as string;
-					}
-
-					var newNode = Node.CreateGUIModifierNode(currentNodesCount, name, id, kind, modifierPackages, x, y);
+					var newNode = Node.CreateGUIModifierNode(currentNodesCount, name, id, kind, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1688,11 +1688,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var modifierPackages = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
-
-					newNode = Node.CreateGUIModifierNode(nodes.Count, nodeName, nodeId, kind, modifierPackages, x, y);
+					newNode = Node.CreateGUIModifierNode(nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;

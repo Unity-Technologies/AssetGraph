@@ -142,7 +142,7 @@ namespace AssetBundleGraph {
 								newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], s, GUILayout.Width(120));
 								var currentIndex = i;
 								if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
-									Node.ShowFilterKeyTypeMenu(
+									ShowFilterKeyTypeMenu(
 										node.filterContainsKeytypes[currentIndex],
 										(string selectedTypeStr) => {
 											node.BeforeSave();
@@ -191,11 +191,11 @@ namespace AssetBundleGraph {
 			if (packageEditMode) {
 				EditorGUI.BeginDisabledGroup(true);
 			}
-			/*
-							importer node has no platform key. 
-							platform key is contained by Unity's importer inspector itself.
-						*/
 
+			/*
+				importer node has no platform key. 
+				platform key is contained by Unity's importer inspector itself.
+			*/
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var nodeId = node.nodeId;
 
@@ -237,8 +237,132 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorModifierGUI (Node node) {
-			Debug.LogError("modifier node insp.");
+			EditorGUILayout.HelpBox("Modifier: Force apply asset settings to given assets.", MessageType.Info);
+			UpdateNodeName(node);
+
+			GUILayout.Space(10f);
+
+			var currentModifierTargetType = IntegratedGUIModifier.ModifierOperationTargetTypeName(node.nodeId);
+
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				var isOperationDataExist = false;
+				IntegratedGUIModifier.ValidateModifiyOperationData(
+					node.nodeId,
+					node.currentPlatform,
+					() => {
+						GUILayout.Label("No modifier data found, please Reload first.");
+					},
+					() => {
+						isOperationDataExist = true;
+					}
+				);
+				
+				if (!isOperationDataExist) {
+					return;
+				}
+				
+				using (new EditorGUILayout.HorizontalScope()) {
+					GUILayout.Label("Target Type:");
+					GUILayout.Label(currentModifierTargetType);
+				}
+
+				/*
+					reset whole platform's data for this modifier.
+				*/
+				if (GUILayout.Button("Reset Modifier")) {
+					var modifierFolderPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
+					FileController.RemakeDirectory(modifierFolderPath);
+					node.Save();
+					modifierOperatorInstance = null;
+					return;
+				}
+			}
+			
+			var currentPlatform = node.currentPlatform;
+			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+
+			/*
+				if platform tab is changed, renew modifierOperatorInstance for that tab.
+			*/
+			if (currentPlatform != node.currentPlatform) {
+				modifierOperatorInstance = null;
+			}
+
+			/*
+				reload modifierOperator instance from saved modifierOperator data.
+			*/
+			if (modifierOperatorInstance == null) {
+				var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
+
+				// choose default modifierOperatorData if platform specified file is not exist.
+				if (!File.Exists(modifierOperatorDataPath)) {
+					modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForDefaultPlatform(node.nodeId);
+				}
+				
+				var loadedModifierOperatorDataStr = string.Empty;
+				using (var sr = new StreamReader(modifierOperatorDataPath)) {
+					loadedModifierOperatorDataStr = sr.ReadToEnd();
+				} 
+
+				var modifierOperatorType = TypeBinder.SupportedModifierOperatorDefinition[currentModifierTargetType];
+
+				/*
+					create instance from saved modifierOperator data.
+				*/
+				modifierOperatorInstance = typeof(NodeEditor)
+					.GetMethod("FromJson")
+					.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
+					.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
+			}
+
+			/*
+				Show ModifierOperator Inspector.
+			*/
+			if (modifierOperatorInstance != null) {
+				Action changed = () => {
+					var data = JsonUtility.ToJson(modifierOperatorInstance);
+					var prettified = AssetBundleGraph.PrettifyJson(data);
+
+					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
+
+					using (var sw = new StreamWriter(modifierOperatorDataPath)) {
+						sw.Write(prettified);
+					}
+
+					// reflect change of data.
+					AssetDatabase.Refresh();
+					
+					modifierOperatorInstance = null;
+				};
+
+				GUILayout.Space(10f);
+
+				modifierOperatorInstance.DrawInspector(changed);
+			}
+
+			var deleted = UpdateDeleteSetting(node);
+			if (deleted) {
+				// source platform depended data is deleted. reload instance for reloading instance from data.
+				modifierOperatorInstance = null;
+			}
 		}
+
+		public T FromJson<T> (string source) {
+			return JsonUtility.FromJson<T>(source);
+		}  
+
+		/*
+			・NonSerializedをセットしないと、ModifierOperators.OperatorBase型に戻ってしまう。
+			・SerializeFieldにする or なにもつけないと、もれなくModifierOperators.OperatorBase型にもどる
+			・Undo/Redoを行うためには、ModifierOperators.OperatorBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
+			・ModifierOperators.OperatorBase意外に晒していい型がない
+
+			という無茶苦茶な難題があります。
+			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
+			っていうのが相反するようです。うーんどうしよう。
+		*/
+		[NonSerialized] private ModifierOperators.OperatorBase modifierOperatorInstance;
+
 		private void DoInspectorGroupingGUI (Node node) {
 			if (node.groupingKeyword == null) return;
 
@@ -624,6 +748,28 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		private void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
+			var menu = new GenericMenu();
+			
+			menu.AddDisabledItem(new GUIContent(current));
+			
+			menu.AddSeparator(string.Empty);
+			
+			for (var i = 0; i < TypeBinder.KeyTypes.Count; i++) {
+				var type = TypeBinder.KeyTypes[i];
+				if (type == current) continue;
+				
+				menu.AddItem(
+					new GUIContent(type),
+					false,
+					() => {
+						ExistSelected(type);
+					}
+				);
+			}
+			menu.ShowAsContext();
+		}
+
 		private void UpdateNodeName (Node node) {
 			var newName = EditorGUILayout.TextField("Node Name", node.name);
 
@@ -685,11 +831,12 @@ namespace AssetBundleGraph {
 		}
 
 
-		private void UpdateDeleteSetting (Node currentNode) {
+		private bool UpdateDeleteSetting (Node currentNode) {
 			var currentNodePlatformPackageKey = GraphStackController.Platform_Package_Key(currentNode.currentPlatform);
 
-			if (currentNodePlatformPackageKey == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) return;
+			if (currentNodePlatformPackageKey == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) return false;
 
+			var deleted = false;
 			using (new EditorGUILayout.HorizontalScope()) {
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("Use Default Setting", GUILayout.Width(150))) {
@@ -697,8 +844,10 @@ namespace AssetBundleGraph {
 					currentNode.DeleteCurrentPackagePlatformKey(currentNodePlatformPackageKey);
 					GUI.FocusControl(string.Empty);
 					currentNode.Save();
+					deleted = true;
 				}
 			}
+			return deleted;
 		}
 	}
 }
