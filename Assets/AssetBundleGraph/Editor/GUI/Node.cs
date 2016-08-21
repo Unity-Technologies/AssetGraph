@@ -475,7 +475,6 @@ namespace AssetBundleGraph {
 		}
 		
 		public void RemoveBundlizerDependencyOutput () {
-			Debug.LogError("RemoveBundlizerDependencyOutput これ発生したあとに、Undoするとポイントが増えてる気がする");
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex == -1) return;
 			
@@ -483,7 +482,6 @@ namespace AssetBundleGraph {
 			Emit(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(outputResurceLabelIndex);
 			UpdateNodeRect();
-			Debug.LogError("調整はできてる。");
 		}
 
 		public void BeforeSave () {
