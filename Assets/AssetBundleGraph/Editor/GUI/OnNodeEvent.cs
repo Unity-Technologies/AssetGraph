@@ -23,11 +23,11 @@ namespace AssetBundleGraph {
 		}
 
 		public readonly EventType eventType;
-		public readonly Node eventSourceNode;
+		public readonly NodeGUI eventSourceNode;
 		public readonly string conPointId;
 		public readonly Vector2 globalMousePosition;
 
-		public OnNodeEvent (EventType type, Node node, Vector2 localMousePos, string conPointId) {
+		public OnNodeEvent (EventType type, NodeGUI node, Vector2 localMousePos, string conPointId) {
 			this.eventType = type;
 			this.eventSourceNode = node;
 			this.conPointId = conPointId;
