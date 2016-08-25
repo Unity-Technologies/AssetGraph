@@ -29,12 +29,12 @@ namespace AssetBundleGraph {
 		public static GraphDescription BuildGraphDescriptionFromJson (Dictionary<string, object> deserializedJsonData) {
 			var nodeIds = new List<string>();
 			var nodesSource = deserializedJsonData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES] as List<object>;
-			
+
 			var connectionsSource = deserializedJsonData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS] as List<object>;
 			var allConnections = new List<ConnectionData>();
 			foreach (var connectionSource in connectionsSource) {
 				var connectionDict = connectionSource as Dictionary<string, object>;
-				
+
 				var connectionId = connectionDict[AssetBundleGraphSettings.CONNECTION_ID] as string;
 				var connectionLabel = connectionDict[AssetBundleGraphSettings.CONNECTION_LABEL] as string;
 				var fromNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
@@ -52,9 +52,9 @@ namespace AssetBundleGraph {
 
 				var kindSource = nodeDict[AssetBundleGraphSettings.NODE_KIND] as string;
 				var nodeKind = AssetBundleGraphSettings.NodeKindFromString(kindSource);
-				
+
 				var nodeName = nodeDict[AssetBundleGraphSettings.NODE_NAME] as string;
-				
+
 				var nodeOutputPointIdsSources = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 				var outputPointIds = new List<string>();
 				foreach (var nodeOutputPointIdsSource in nodeOutputPointIdsSources) {
@@ -62,11 +62,11 @@ namespace AssetBundleGraph {
 				}
 
 				switch (nodeKind) {
-					case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 						var loadPathSource = nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
 						var loadPath = new Dictionary<string, string>();
 						if (loadPathSource == null) {
-							
+
 							loadPathSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
@@ -82,12 +82,12 @@ namespace AssetBundleGraph {
 						);
 						break;
 					}
-					case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 						var exportPathSource = nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
 						var exportTo = new Dictionary<string, string>();
 
 						if (exportPathSource == null) {
-							
+
 							exportPathSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in exportPathSource.Keys) {
@@ -106,11 +106,11 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 
-					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 						allNodes.Add(
 							new NodeData(
@@ -124,19 +124,19 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-					case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 						var containsKeywordsSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
 						var filterContainsKeywords = new List<string>();
 						foreach (var containsKeywordSource in containsKeywordsSource) {
 							filterContainsKeywords.Add(containsKeywordSource.ToString());
 						}
-						
+
 						var containsKeytypesSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
 						var filterContainsKeytypes = new List<string>();
 						foreach (var containsKeytypeSource in containsKeytypesSource) {
 							filterContainsKeytypes.Add(containsKeytypeSource.ToString());
 						}
-						
+
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
@@ -149,17 +149,17 @@ namespace AssetBundleGraph {
 						);
 						break;
 					}
-					
-					case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+
+				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 						var importerPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
 						var importerPackages = new Dictionary<string, string>();
 
 						if (importerPackagesSource == null) {
-							
+
 							importerPackagesSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in importerPackagesSource.Keys) importerPackages[platform_package_key] = string.Empty;
-						
+
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
@@ -172,40 +172,28 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-						var modifierPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_MODIFIER_PACKAGES] as Dictionary<string, object>;
-						var modifierPackages = new Dictionary<string, string>();
-
-						if (modifierPackagesSource == null) {
-							
-							modifierPackagesSource = new Dictionary<string, object>();
-						}
-						foreach (var platform_package_key in modifierPackagesSource.Keys) {
-							modifierPackages[platform_package_key] = string.Empty;
-						}
-						
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
 								outputPointIds:outputPointIds,
-								modifierPackages:modifierPackages
 							)
 						);
 						break;
 					}
 
-					case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 						var groupingKeywordSource = nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
 						var groupingKeyword = new Dictionary<string, string>();
-						
+
 						if (groupingKeywordSource == null) {
-							
+
 							groupingKeywordSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
-						
+
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
@@ -218,21 +206,21 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 						var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 						var bundleNameTemplate = new Dictionary<string, string>();
 						if (bundleNameTemplateSource == null) {
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-						
+
 						var bundleUseOutputSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
 						var bundleUseOutput = new Dictionary<string, string>();
 						if (bundleUseOutputSource == null) {
 							bundleUseOutputSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string;
-						
+
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
@@ -246,14 +234,14 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-					case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 						var enabledBundleOptionsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
 
 						// default is empty. all settings are disabled.
 						var enabledBundleOptions = new Dictionary<string, List<string>>();
 
 						if (enabledBundleOptionsSource == null) {
-							
+
 							enabledBundleOptionsSource = new Dictionary<string, object>();
 						}
 						foreach (var platform_package_key in enabledBundleOptionsSource.Keys) {
@@ -266,7 +254,7 @@ namespace AssetBundleGraph {
 								enabledBundleOptions[platform_package_key].Add(enabledBundleOption as string);
 							}
 						}
-						
+
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
@@ -279,13 +267,13 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-					default: {
+				default: {
 						Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + nodeKind);
 						break;
 					}
 				}
 			}
-			
+
 			/*
 				collect node's child. for detecting endpoint of relationship.
 			*/
@@ -305,9 +293,8 @@ namespace AssetBundleGraph {
 					targetNode.AddConnectionToParent(connection);
 				}
 			}
-			
+
 			return new GraphDescription(noChildNodeIds, allNodes, allConnections);
 		}
-			
 	}
 }

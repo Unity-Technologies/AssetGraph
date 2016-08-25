@@ -123,7 +123,7 @@ namespace AssetBundleGraph {
 		/**
 		 * ModifierOperator map vs supported type
 		*/
-		public static Dictionary<string, Type> SupportedModifierOperationDefinition = new Dictionary<string, Type> {
+		public static Dictionary<string, Type> SupportedModifierOperatorDefinition = new Dictionary<string, Type> {
 			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)}
 		};
 	}

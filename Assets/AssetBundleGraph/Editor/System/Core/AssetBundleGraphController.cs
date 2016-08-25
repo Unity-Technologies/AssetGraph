@@ -27,8 +27,8 @@ namespace AssetBundleGraph {
 			/*
 				Validation: node names should not overlapping.
 			*/
-			var nodeNames = allNodes.Select(node => node.nodeName).ToList();
 			{
+				var nodeNames = allNodes.Select(node => node.nodeName).ToList();
 				var overlappings = nodeNames.GroupBy(x => x)
 					.Where(group => 1 < group.Count())
 					.Select(group => group.Key)
@@ -548,7 +548,6 @@ namespace AssetBundleGraph {
 							var scriptClassName = currentNodeData.scriptClassName;
 							if (string.IsNullOrEmpty(scriptClassName)) {
 								AssetBundleGraphEditorWindow.AddNodeException(new NodeException(nodeName + ": Classname is empty. Set valid classname.", nodeId));
-								//								Debug.LogError("prefabriator claAsset node:" + nodeName + " is empty, please set valid script type.");
 								break;
 							}
 							try {

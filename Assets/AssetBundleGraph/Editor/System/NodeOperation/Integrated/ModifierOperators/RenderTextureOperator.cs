@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
@@ -67,24 +69,24 @@ namespace AssetBundleGraph.ModifierOperators {
 
 	*/
 	[Serializable] public class RenderTextureOperator : OperatorBase {
-		[SerializeField] public Int32 width, height;
+		// [SerializeField] public Int32 width, height;
 
-		public enum AntiAliasing : int {
-			None = 1,
-			_2_Samples = 2,
-			_4_Samples = 4,
-			_8_Samples = 8
-		}
-		[SerializeField] public AntiAliasing antiAliasing;// 1, 2, 4, 8. 4type.
+		// public enum AntiAliasing : int {
+		// 	None = 1,
+		// 	_2_Samples = 2,
+		// 	_4_Samples = 4,
+		// 	_8_Samples = 8
+		// }
+		// [SerializeField] public AntiAliasing antiAliasing;// 1, 2, 4, 8. 4type.
 		
-		[SerializeField] public UnityEngine.RenderTextureFormat colorFormat;
+		// [SerializeField] public UnityEngine.RenderTextureFormat colorFormat;
 
 		public enum DepthBuffer : int {
 			NoDepthBuffer = 0,
 			_16bitDepth = 16,
 			_24bitDepth = 24
 		}
-		[SerializeField] public DepthBuffer depthBuffer;// 0, 16, 24. 3type.
+		// [SerializeField] public DepthBuffer depthBuffer;// 0, 16, 24. 3type.
 
 		[SerializeField] public UnityEngine.TextureWrapMode wrapMode;
 
@@ -97,20 +99,16 @@ namespace AssetBundleGraph.ModifierOperators {
 		public RenderTextureOperator () {}
 
 		private RenderTextureOperator (
-			Int32 width, Int32 height,
-			AntiAliasing antiAliasing,
-			UnityEngine.RenderTextureFormat colorFormat,
-			DepthBuffer depthBuffer,
+			// Int32 width, Int32 height,
+			// AntiAliasing antiAliasing,
+			// UnityEngine.RenderTextureFormat colorFormat,
+			// DepthBuffer depthBuffer,
 			UnityEngine.TextureWrapMode wrapMode,
 			UnityEngine.FilterMode filterMode,
 			Int32 anisoLevel
 		) {
 			this.dataType = "UnityEngine.RenderTexture";
-			this.width = width;
-			this.height = height;
-			this.antiAliasing = antiAliasing;
-			this.colorFormat = colorFormat;
-			this.depthBuffer = depthBuffer;
+			
 			this.wrapMode = wrapMode;
 			this.filterMode = filterMode;
 			this.anisoLevel = anisoLevel;
@@ -121,10 +119,6 @@ namespace AssetBundleGraph.ModifierOperators {
 		*/
 		public override OperatorBase DefaultSetting () {
 			return new RenderTextureOperator(
-				256, 256,
-				AntiAliasing.None,
-				UnityEngine.RenderTextureFormat.ARGB32,
-				DepthBuffer._16bitDepth,
 				UnityEngine.TextureWrapMode.Clamp,
 				UnityEngine.FilterMode.Bilinear,
 				0
@@ -132,36 +126,104 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var t = asset as RenderTexture;
+			var renderTex = asset as RenderTexture;
 
 			var changed = false;
 
-			// if (t.width != this.width) changed = true;
-			// if (t.height != this.height) changed = true;
-			if (t.antiAliasing != (int)this.antiAliasing) changed = true; 
-			// if (t.format != this.colorFormat) changed = true; 
-			// if (t.depth != (int)this.depthBuffer) changed = true; 
-			if (t.wrapMode != this.wrapMode) changed = true; 
-			if (t.filterMode != this.filterMode) changed = true; 
-			if (t.anisoLevel != this.anisoLevel) changed = true;
+			if (renderTex.wrapMode != this.wrapMode) changed = true; 
+			if (renderTex.filterMode != this.filterMode) changed = true; 
+			if (renderTex.anisoLevel != this.anisoLevel) changed = true;
 
 			return changed; 
 		}
 
 		public override void Modify<T> (T asset) {
-			var t = asset as RenderTexture;
+			var renderTex = asset as RenderTexture;
+			
+			renderTex.wrapMode = this.wrapMode;
+			renderTex.filterMode = this.filterMode;
 
-			// コメントアウトしてあるパラメータは指定、変更できなかった、、、(Setting depth format of already created render texture is not supported!)とか出る
-			// 哀しい話ですが、変更できないパラメータはSerializeとかInspectorで表示しないでもいいかも、、
+			/*
+				depth parameter cannot change from code.
+				and anisoLevel can be change if asset's depth is 0. 
+			*/
+			if (renderTex.depth == (int)DepthBuffer.NoDepthBuffer) {
+				renderTex.anisoLevel = this.anisoLevel;
+			}
+		}
 
-			// t.width = this.width;
-			// t.height = this.height;
-			t.antiAliasing = (int)this.antiAliasing;
-			// t.format = this.colorFormat;
-			// t.depth = (int)this.depthBuffer;
-			t.wrapMode = this.wrapMode;
-			t.filterMode = this.filterMode;
-			t.anisoLevel = this.anisoLevel;
+		public override void DrawInspector (Action changed) {
+			// wrapMode
+			using (new GUILayout.HorizontalScope()) {
+				GUILayout.Label("Wrap Mode");
+				
+				var currentMode = this.wrapMode.ToString();
+
+				if (GUILayout.Button(currentMode, "Popup")) {
+					var menu = new GenericMenu();
+					foreach (var item in Enum.GetValues(typeof(UnityEngine.TextureWrapMode)).Cast<UnityEngine.TextureWrapMode>().ToList()) {
+						var isCurrentChoose = false;
+						if (item == this.wrapMode) {
+							isCurrentChoose = true;
+						}
+						var currentItem = item;
+
+						menu.AddItem(
+							new GUIContent(item.ToString()), 
+							isCurrentChoose, 
+							() => {
+								if (this.wrapMode != currentItem) {
+									this.wrapMode = currentItem;
+									changed();
+								}
+							}
+						);
+					}
+					menu.ShowAsContext();
+				}
+			}
+			
+			// filterMode
+			using (new GUILayout.HorizontalScope()) {
+				GUILayout.Label("Filter Mode");
+				
+				var currentMode = this.filterMode.ToString();
+
+				if (GUILayout.Button(currentMode, "Popup")) {
+					var menu = new GenericMenu();
+					foreach (var item in Enum.GetValues(typeof(UnityEngine.FilterMode)).Cast<UnityEngine.FilterMode>().ToList()) {
+						var isCurrentChoose = false;
+						if (item == this.filterMode) {
+							isCurrentChoose = true;
+						}
+						var currentItem = item;
+
+						menu.AddItem(
+							new GUIContent(item.ToString()), 
+							isCurrentChoose, 
+							() => {
+								if (this.filterMode != currentItem) {
+									this.filterMode = currentItem;
+									changed();
+								}
+							}
+						);
+					}
+					menu.ShowAsContext();
+				}
+			}
+
+			// anisoLevel
+			using (new GUILayout.HorizontalScope()) {
+				GUILayout.Label("Aniso Level");
+				
+				var changedVal = (int)EditorGUILayout.Slider(this.anisoLevel, 0, 16);
+				if (changedVal != this.anisoLevel) {
+					this.anisoLevel = changedVal;
+					changed();
+				}
+			}
+			EditorGUILayout.HelpBox("Aniso Level can be set if target Asset(RenderTexture)'s Depth Buffer is No depth buffer. ", MessageType.Info);
 		}
 	}
 

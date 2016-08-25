@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -33,7 +32,6 @@ namespace AssetBundleGraph {
 		[SerializeField] public List<string> filterContainsKeywords;
 		[SerializeField] public List<string> filterContainsKeytypes;
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
-		[SerializeField] public SerializablePseudoDictionary modifierPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
 		[SerializeField] public SerializablePseudoDictionary bundleUseOutput;
@@ -141,8 +139,7 @@ namespace AssetBundleGraph {
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
-				y: y,
-				modifierPackages: modifierPackages
+				y: y
 			);
 		}
 		
@@ -269,7 +266,6 @@ namespace AssetBundleGraph {
 			List<string> filterContainsKeywords = null, 
 			List<string> filterContainsKeytypes = null, 
 			Dictionary<string, string> importerPackages = null,
-			Dictionary<string, string> modifierPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
 			Dictionary<string, string> bundleUseOutput = null,
@@ -289,7 +285,6 @@ namespace AssetBundleGraph {
 			this.filterContainsKeywords = filterContainsKeywords;
 			this.filterContainsKeytypes = filterContainsKeytypes;
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
-			if (modifierPackages != null) this.modifierPackages = new SerializablePseudoDictionary(modifierPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
 			if (bundleUseOutput != null) this.bundleUseOutput = new SerializablePseudoDictionary(bundleUseOutput);
@@ -364,7 +359,6 @@ namespace AssetBundleGraph {
 				this.filterContainsKeywords,
 				this.filterContainsKeytypes,
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
-				(this.modifierPackages != null) ? this.modifierPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
 				(this.bundleUseOutput != null) ? this.bundleUseOutput.ReadonlyDict() : null,
@@ -386,8 +380,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					Debug.LogError("packageのキーを消す");
-					// importerPackages.Remove(platformPackageKey);
+					IntegratedGUIModifier.DeletePlatformData(nodeId, platformPackageKey);
 					break;
 				}
 

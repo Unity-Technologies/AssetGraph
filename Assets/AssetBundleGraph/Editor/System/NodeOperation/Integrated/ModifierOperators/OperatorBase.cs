@@ -22,5 +22,9 @@ namespace AssetBundleGraph.ModifierOperators {
 		public virtual void Modify<T> (T asset) {
 			throw new Exception("should override Modify method.");
 		}
+
+        public virtual void DrawInspector (Action changed) {
+            throw new Exception("should override DrawInspector method.");
+        }
     }
 }
