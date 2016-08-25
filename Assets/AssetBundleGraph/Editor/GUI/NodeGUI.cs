@@ -18,7 +18,7 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
 
-        [SerializeField] private int nodeWindowId;
+		[SerializeField] private int nodeWindowId;
 		[SerializeField] private Rect baseRect;
 
 		[SerializeField] public string name;
@@ -36,27 +36,27 @@ namespace AssetBundleGraph {
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
 		[SerializeField] public SerializablePseudoDictionary bundleUseOutput;
 		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
-		
+
 		// for platform-package specified parameter.
 		[SerializeField] public string currentPlatform = AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME;
-		
+
 		public static List<string> NodeSharedPackages = new List<string>();
 
 		[SerializeField] private string nodeInterfaceTypeStr;
 		[SerializeField] private BuildTarget currentBuildTarget;
 
 		[SerializeField] private NodeGUIInspectorHelper nodeInsp;
-		
+
 		/*
 			show error on node functions.
 		*/
 		private bool hasErrors = false;
 
-        public void RenewErrorSource () {
-            hasErrors = false;
+		public void RenewErrorSource () {
+			hasErrors = false;
 			this.nodeInsp.UpdateNode(this);
 			this.nodeInsp.UpdateErrors(new List<string>());
-        }
+		}
 		public void AppendErrorSources (List<string> errors) {
 			this.hasErrors = true;
 			this.nodeInsp.UpdateNode(this);
@@ -132,7 +132,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIModifierNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> modifierPackages, float x, float y) {
+		public static NodeGUI CreateGUIModifierNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new NodeGUI(
 				index: index,
 				name: name,
@@ -142,7 +142,7 @@ namespace AssetBundleGraph {
 				y: y
 			);
 		}
-		
+
 		public static NodeGUI CreateGUIGroupingNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
 			return new NodeGUI(
 				index: index,
@@ -211,27 +211,25 @@ namespace AssetBundleGraph {
 			Save();
 			UpdateNodeRect();
 		}
-		
-		
-		
+
+
+
 		public void AddBundlizerDependencyOutput () {
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex != -1) return;
-			
+
 			connectionPoints.Add(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL));
 			UpdateNodeRect();
 		}
-		
+
 		public void RemoveBundlizerDependencyOutput () {
-			Debug.LogError("RemoveBundlizerDependencyOutput これ発生したあとに、Undoするとポイントが増えてる気がする");
 			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
 			if (outputResurceLabelIndex == -1) return;
-			
+
 			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(outputResurceLabelIndex);
 			UpdateNodeRect();
-			Debug.LogError("調整はできてる。");
 		}
 
 		public void BeforeSave () {
@@ -273,7 +271,7 @@ namespace AssetBundleGraph {
 		) {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
 			this.nodeInsp.hideFlags = HideFlags.DontSave;
-			
+
 			this.nodeWindowId = index;
 			this.name = name;
 			this.nodeId = nodeId;
@@ -289,55 +287,55 @@ namespace AssetBundleGraph {
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
 			if (bundleUseOutput != null) this.bundleUseOutput = new SerializablePseudoDictionary(bundleUseOutput);
 			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
-			
+
 			this.baseRect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
-			
+
 			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				 {
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				{
 					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 5";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
 
-				default: {
+			default: {
 					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
@@ -369,42 +367,42 @@ namespace AssetBundleGraph {
 
 		public void DeleteCurrentPackagePlatformKey (string platformPackageKey) {
 			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
 					loadPath.Remove(platformPackageKey);
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					importerPackages.Remove(platformPackageKey);
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					IntegratedGUIModifier.DeletePlatformData(nodeId, platformPackageKey);
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					groupingKeyword.Remove(platformPackageKey);
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					bundleNameTemplate.Remove(platformPackageKey);
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					enabledBundleOptions.Remove(platformPackageKey);
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 					exportTo.Remove(platformPackageKey);
 					break;
 				}
-				
-				default: {
+
+			default: {
 					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
@@ -416,51 +414,51 @@ namespace AssetBundleGraph {
 			Selection.activeObject = nodeInsp;
 
 			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0 on";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1 on";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2 on";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6 on";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3 on";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				 {
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				{
 					this.nodeInterfaceTypeStr = "flow node 4 on";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 5 on";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6 on";
 					break;
 				}
 
-				default: {
+			default: {
 					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
@@ -469,51 +467,51 @@ namespace AssetBundleGraph {
 
 		public void SetInactive () {
 			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 0";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 2";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				 {
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				{
 					this.nodeInterfaceTypeStr = "flow node 4";
 					break;
 				}
-				
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 5";
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 6";
 					break;
 				}
 
-				default: {
+			default: {
 					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
 					break;
 				}
@@ -542,23 +540,23 @@ namespace AssetBundleGraph {
 
 		public List<string> OutputPointLabels () {
 			return connectionPoints
-						.Where(p => p.isOutput)
-						.Select(p => p.label)
-						.ToList();
+				.Where(p => p.isOutput)
+				.Select(p => p.label)
+				.ToList();
 		}
-		
+
 		public List<string> OutputPointIds () {
 			return connectionPoints
-						.Where(p => p.isOutput)
-						.Select(p => p.pointId)
-						.ToList();
+				.Where(p => p.isOutput)
+				.Select(p => p.pointId)
+				.ToList();
 		}
 
 		public ConnectionPoint ConnectionPointFromConPointId (string pointId) {
 			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
 			return targetPoints[0];
 		}
-		
+
 		public ConnectionPoint ConnectionPointFromLabel (string label) {
 			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
 			return targetPoints[0];
@@ -600,12 +598,12 @@ namespace AssetBundleGraph {
 		private void HandleNodeEvent () {
 			switch (Event.current.type) {
 
-				/*
+			/*
 					handling release of mouse drag from this node to another node.
 					this node doesn't know about where the other node is. the master only knows.
 					only emit event.
 				*/
-				case EventType.Ignore: {
+			case EventType.Ignore: {
 					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED, this, Event.current.mousePosition, null));
 					break;
 				}
@@ -613,7 +611,7 @@ namespace AssetBundleGraph {
 				/*
 					handling drag.
 				*/
-				case EventType.MouseDrag: {
+			case EventType.MouseDrag: {
 					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_MOVING, this, Event.current.mousePosition, null));
 					break;
 				}
@@ -622,7 +620,7 @@ namespace AssetBundleGraph {
 					check if the mouse-down point is over one of the connectionPoint in this node.
 					then emit event.
 				*/
-				case EventType.MouseDown: {
+			case EventType.MouseDown: {
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 
 					if (!string.IsNullOrEmpty(result)) {
@@ -639,7 +637,7 @@ namespace AssetBundleGraph {
 				retrieve mouse events for this node in|out of this AssetGraoh window.
 			*/
 			switch (Event.current.rawType) {
-				case EventType.MouseUp: {
+			case EventType.MouseUp: {
 					// if mouse position is on the connection point, emit mouse raised event.
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
@@ -658,9 +656,9 @@ namespace AssetBundleGraph {
 			if (scaleFactor == SCALE_MAX) {
 				foreach (var point in connectionPoints) {
 					switch (this.kind) {
-						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-						case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-						case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 							var label = point.label;
 							var labelRect = new Rect(point.buttonRect.x - baseRect.width, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
 
@@ -692,7 +690,7 @@ namespace AssetBundleGraph {
 			if (scaleFactor == SCALE_MAX) {
 				if (
 					Event.current.type == EventType.ContextClick
-					 || (Event.current.type == EventType.MouseUp && Event.current.button == 1)
+					|| (Event.current.type == EventType.MouseUp && Event.current.button == 1)
 				) {
 					var menu = new GenericMenu();
 					menu.AddItem(
@@ -752,7 +750,7 @@ namespace AssetBundleGraph {
 			}
 
 			var globalMousePosition = current.mousePosition;
-			
+
 			foreach (var point in connectionPoints) {
 				if (point.isOutput) {
 					var outputPointRect = OutputRect(point);
@@ -803,8 +801,8 @@ namespace AssetBundleGraph {
 		public void UpdateNodeRect () {
 			var contentWidth = this.name.Length;
 			switch (this.kind) {
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
 					if (longestFilterLengths.Any()) {
 						contentWidth = contentWidth + longestFilterLengths[0];
@@ -838,7 +836,7 @@ namespace AssetBundleGraph {
 					return p.pointId;
 				}
 			}
-			
+
 			return string.Empty;
 		}
 
@@ -908,7 +906,7 @@ namespace AssetBundleGraph {
 
 			var x = 0f;
 			var y = 0f;
-			
+
 			if (point.isInput) {
 				x = baseRect.x;
 				y = baseRect.y + point.buttonRect.y + (point.buttonRect.height / 2f) - 1f;
@@ -939,22 +937,22 @@ namespace AssetBundleGraph {
 					if (outputRect.Contains(globalPos)) containedPoints.Add(connectionPoint);
 				}
 			}
-			
+
 			return containedPoints;
 		}
-		
-		
+
+
 		public static void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
 			var menu = new GenericMenu();
-			
+
 			menu.AddDisabledItem(new GUIContent(current));
-			
+
 			menu.AddSeparator(string.Empty);
-			
+
 			for (var i = 0; i < TypeUtility.KeyTypes.Count; i++) {
 				var type = TypeUtility.KeyTypes[i];
 				if (type == current) continue;
-				
+
 				menu.AddItem(
 					new GUIContent(type),
 					false,

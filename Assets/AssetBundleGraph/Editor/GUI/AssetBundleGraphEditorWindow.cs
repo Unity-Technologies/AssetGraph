@@ -174,7 +174,7 @@ namespace AssetBundleGraph {
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_MODIFIER_OPERATOR_DATAS)] public static void DeleteModifierSetting () {
-			FileController.RemakeDirectory(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE);
+			FileUtility.RemakeDirectory(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE);
 
 			AssetDatabase.Refresh();
 		}
@@ -1510,7 +1510,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var newNode = Node.CreateGUIModifierNode(currentNodesCount, name, id, kind, x, y);
+					var newNode = NodeGUI.CreateGUIModifierNode(currentNodesCount, name, id, kind, x, y);
 
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1687,7 +1687,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					newNode = NodeGUI.CreateGUIModifierNode(nodes.Count, nodeName, nodeId, kind, modifierPackages, x, y);
+					newNode = NodeGUI.CreateGUIModifierNode(nodes.Count, nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;

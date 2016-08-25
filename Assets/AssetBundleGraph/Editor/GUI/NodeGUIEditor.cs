@@ -270,8 +270,8 @@ namespace AssetBundleGraph {
 					reset whole platform's data for this modifier.
 				*/
 				if (GUILayout.Button("Reset Modifier")) {
-					var modifierFolderPath = FileController.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
-					FileController.RemakeDirectory(modifierFolderPath);
+					var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
+					FileUtility.RemakeDirectory(modifierFolderPath);
 					node.Save();
 					modifierOperatorInstance = null;
 					return;
@@ -304,12 +304,12 @@ namespace AssetBundleGraph {
 					loadedModifierOperatorDataStr = sr.ReadToEnd();
 				} 
 
-				var modifierOperatorType = TypeBinder.SupportedModifierOperatorDefinition[currentModifierTargetType];
+				var modifierOperatorType = TypeUtility.SupportedModifierOperatorDefinition[currentModifierTargetType];
 
 				/*
 					create instance from saved modifierOperator data.
 				*/
-				modifierOperatorInstance = typeof(NodeEditor)
+				modifierOperatorInstance = typeof(NodeGUIEditor)
 					.GetMethod("FromJson")
 					.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
 					.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
@@ -321,7 +321,7 @@ namespace AssetBundleGraph {
 			if (modifierOperatorInstance != null) {
 				Action changed = () => {
 					var data = JsonUtility.ToJson(modifierOperatorInstance);
-					var prettified = AssetBundleGraph.PrettifyJson(data);
+					var prettified = AssetBundleGraphEditorWindow.PrettifyJson(data);
 
 					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
 
@@ -755,8 +755,8 @@ namespace AssetBundleGraph {
 			
 			menu.AddSeparator(string.Empty);
 			
-			for (var i = 0; i < TypeBinder.KeyTypes.Count; i++) {
-				var type = TypeBinder.KeyTypes[i];
+			for (var i = 0; i < TypeUtility.KeyTypes.Count; i++) {
+				var type = TypeUtility.KeyTypes[i];
 				if (type == current) continue;
 				
 				menu.AddItem(
@@ -831,7 +831,7 @@ namespace AssetBundleGraph {
 		}
 
 
-		private void UpdateDeleteSetting (NodeGUI currentNode) {
+		private bool UpdateDeleteSetting (NodeGUI currentNode) {
 			var currentNodePlatformPackageKey = SystemDataUtility.CreateKeyNameFromString(currentNode.currentPlatform);
 
 			if (currentNodePlatformPackageKey == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) return false;

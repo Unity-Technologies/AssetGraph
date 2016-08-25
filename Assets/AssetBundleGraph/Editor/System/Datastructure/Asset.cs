@@ -87,6 +87,22 @@ namespace AssetBundleGraph {
 		/**
 			Create Asset with new assetType configured
 		*/
+		public static Asset DuplicateAsset (Asset asset) {
+			return new Asset(
+				guid:asset.guid,
+				assetDatabaseId:asset.assetDatabaseId,
+				absoluteAssetPath:asset.absoluteAssetPath,
+				importFrom:asset.importFrom,
+				exportTo:asset.exportTo,
+				assetType:asset.assetType,
+				isNew:asset.isNew,
+				isBundled:asset.isBundled
+			);
+		}
+
+		/**
+			Create Asset with new assetType configured
+		*/
 		public static Asset DuplicateAssetWithNewType (Asset asset, Type newAssetType) {
 			return new Asset(
 				guid:asset.guid,

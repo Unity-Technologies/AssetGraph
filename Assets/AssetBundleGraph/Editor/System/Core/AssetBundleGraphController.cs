@@ -380,7 +380,7 @@ namespace AssetBundleGraph {
 						}
 
 					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-							var executor = new IntegratedGUIModifier();
+							var executor = new IntegratedGUIModifier(SystemDataUtility.GetCurrentPlatformShortName());
 							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -533,7 +533,7 @@ namespace AssetBundleGraph {
 						}
 
 					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-							var executor = new IntegratedGUIModifier();
+							var executor = new IntegratedGUIModifier(SystemDataUtility.GetCurrentPlatformShortName());
 							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}

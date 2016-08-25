@@ -178,7 +178,7 @@ namespace AssetBundleGraph {
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
-								outputPointIds:outputPointIds,
+								outputPointIds:outputPointIds
 							)
 						);
 						break;
