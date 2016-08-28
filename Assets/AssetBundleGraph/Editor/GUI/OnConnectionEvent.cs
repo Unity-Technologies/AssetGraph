@@ -8,9 +8,9 @@ namespace AssetBundleGraph {
 		}
 
 		public readonly EventType eventType;
-		public readonly Connection eventSourceCon;
+		public readonly ConnectionGUI eventSourceCon;
 
-		public OnConnectionEvent (EventType type, Connection con) {
+		public OnConnectionEvent (EventType type, ConnectionGUI con) {
 			this.eventType = type;
 			this.eventSourceCon = con;
 		}
