@@ -96,7 +96,12 @@ namespace AssetBundleGraph {
 							failedExports.Add(source.absoluteAssetPath);
 							continue;
 						}
-						File.Copy(source.importFrom, destination);
+						try {
+							File.Copy(source.importFrom, destination);
+						} catch(Exception e) {
+							failedExports.Add(source.importFrom);
+							Debug.LogError(nodeName + ": Error occured: " + e.Message);
+						}
 					}
 
 					var exportedAsset = Asset.CreateAssetWithExportPath(destination);
