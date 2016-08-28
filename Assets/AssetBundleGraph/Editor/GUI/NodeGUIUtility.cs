@@ -100,6 +100,10 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public static int GetNewWindowId() {
+			return NodeSingleton.s.nodeCreateCount++;
+		}
+
 		private class NodeSingleton {
 			public Action<OnNodeEvent> emitAction;
 
@@ -115,6 +119,8 @@ namespace AssetBundleGraph {
 			public string[] platformStrings;
 
 			public List<string> allNodeNames;
+
+			public int nodeCreateCount;
 
 			private static NodeSingleton s_singleton;
 

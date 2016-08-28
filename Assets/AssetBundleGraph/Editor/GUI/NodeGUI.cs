@@ -70,9 +70,8 @@ namespace AssetBundleGraph {
 		private float progress;
 		private bool running;
 
-		public static NodeGUI CreateLoaderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
+		public static NodeGUI CreateLoaderNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -82,9 +81,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateExporterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportTo, float x, float y) {
+		public static NodeGUI CreateExporterNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportTo, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -94,9 +92,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateScriptNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
+		public static NodeGUI CreateScriptNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -107,9 +104,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIFilterNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
+		public static NodeGUI CreateGUIFilterNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -120,9 +116,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIImportNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
+		public static NodeGUI CreateGUIImportNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -132,9 +127,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIModifierNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreateGUIModifierNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -143,9 +137,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIGroupingNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
+		public static NodeGUI CreateGUIGroupingNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -155,9 +148,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreatePrefabricatorNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -166,9 +158,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundlizerNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
+		public static NodeGUI CreateBundlizerNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -179,9 +170,8 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundleBuilderNode (int index, string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
+		public static NodeGUI CreateBundleBuilderNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
 			return new NodeGUI(
-				index: index,
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
@@ -251,7 +241,6 @@ namespace AssetBundleGraph {
 		public NodeGUI () {}
 
 		private NodeGUI (
-			int index, 
 			string name, 
 			string nodeId, 
 			AssetBundleGraphSettings.NodeKind kind, 
@@ -272,7 +261,7 @@ namespace AssetBundleGraph {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
 			this.nodeInsp.hideFlags = HideFlags.DontSave;
 
-			this.nodeWindowId = index;
+			this.nodeWindowId = NodeGUIUtility.GetNewWindowId();
 			this.name = name;
 			this.nodeId = nodeId;
 			this.kind = kind;
@@ -342,9 +331,8 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public NodeGUI DuplicatedNode (int newIndex, float newX, float newY) {
+		public NodeGUI DuplicatedNode (float newX, float newY) {
 			var duplicatedNode = new NodeGUI(
-				newIndex,
 				this.name,
 				Guid.NewGuid().ToString(),
 				this.kind, 
