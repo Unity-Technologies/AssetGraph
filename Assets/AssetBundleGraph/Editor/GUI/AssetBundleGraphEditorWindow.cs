@@ -1845,9 +1845,13 @@ namespace AssetBundleGraph {
 							var targetNode = e.eventSourceNode;
 							var targetConnectionPoint = targetNode.ConnectionPointFromConPointId(e.conPointId);
 
-							if (sourceNode.nodeId == targetNode.nodeId) break;
+							if (sourceNode.nodeId == targetNode.nodeId) {
+								break;
+							}
 
-							if (!IsConnectablePointFromTo(sourceConnectionPoint, targetConnectionPoint)) break;
+							if (!IsConnectablePointFromTo(sourceConnectionPoint, targetConnectionPoint)) {
+								break;
+							}
 
 							var startNode = sourceNode;
 							var startConnectionPoint = sourceConnectionPoint;
