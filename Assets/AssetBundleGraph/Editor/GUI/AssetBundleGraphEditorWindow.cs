@@ -1106,7 +1106,9 @@ namespace AssetBundleGraph {
 						}
 					}
 
-					if (shouldSave) SaveGraphWithReload();
+					if (shouldSave) {
+						SaveGraphWithReload();
+					}
 					break;
 				}
 
