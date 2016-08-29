@@ -34,6 +34,11 @@ namespace AssetBundleGraph {
         public static ConnectionPoint InputPoint (string label) {
 			return new ConnectionPoint(AssetBundleGraphSettings.NODE_INPUTPOINT_FIXED_LABEL, label, true, false);
         }
+
+		public static ConnectionPoint InputPoint (string pointId, string label) {
+			return new ConnectionPoint(pointId, label, true, false);
+		}
+
 		public static ConnectionPoint OutputPoint (string pointId, string label) {
 			return new ConnectionPoint(pointId, label, false, true);
         }

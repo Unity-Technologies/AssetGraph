@@ -1401,6 +1401,7 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
+					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] = node.variants.ReadonlyDict();
 					break;
 				}
 
@@ -1550,8 +1551,18 @@ namespace AssetBundleGraph {
 						bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
 					}
 
-					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, x, y);
+					var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
+					var variants = new Dictionary<string, string>();
+					foreach (var inputPointId in variantsSource.Keys) {
+						variants[inputPointId] = variantsSource[inputPointId] as string;
+					}
+
+					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, variants, x, y);
 					
+					foreach (var inputPointId in variants.Keys) {
+						newNode.AddConnectionPoint(ConnectionPoint.InputPoint(inputPointId, variants[inputPointId]));
+					}
+
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
 					
@@ -1714,9 +1725,11 @@ namespace AssetBundleGraph {
 					var newBundlizerKeyword = new Dictionary<string, string> {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT}
 					};
-					
-					newNode = NodeGUI.CreateBundlizerNode(nodeName, nodeId, kind, newBundlizerKeyword, x, y);
+					var variant = new Dictionary<string, string> ();
+
+					newNode = NodeGUI.CreateBundlizerNode(nodeName, nodeId, kind, newBundlizerKeyword, variant, x, y);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;
 				}

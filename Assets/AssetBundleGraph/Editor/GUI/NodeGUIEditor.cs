@@ -485,7 +485,49 @@ namespace AssetBundleGraph {
 					node.Save();
 				}
 
-				EditorGUILayout.HelpBox("Check this to enable asset output slot to create asset bundle which has dependency to asset bundle of this node.", MessageType.Info);
+				GUILayout.Label("Variants:");
+				for (int i = 0; i < node.variants.Keys.Count; ++i) {
+
+					var inputConnectionId = node.variants.Keys[i];
+
+					using (new GUILayout.HorizontalScope()) {
+						if (GUILayout.Button("-", GUILayout.Width(30))) {
+							node.BeforeSave();
+							node.variants.Remove(inputConnectionId);
+							node.DeleteInputPoint(inputConnectionId);
+						}
+						else {
+							var variantName = node.variants.Values[i];
+
+							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+							Action makeStyleBold = () => {
+								s.fontStyle = FontStyle.Bold;
+								s.fontSize = 12;
+							};
+
+							IntegratedGUIBundlizer.ValidateVariantName(variantName, node.variants.Values, 
+								makeStyleBold,
+								makeStyleBold,
+								makeStyleBold);
+
+							variantName = EditorGUILayout.TextField(variantName, s);
+
+							if (variantName != node.variants.Values[i]) {
+								node.BeforeSave();
+								node.variants.Values[i] = variantName;
+								node.RenameInputPoint(inputConnectionId, variantName);
+							}
+						}
+					}
+				}
+
+				if (GUILayout.Button("+")) {
+					node.BeforeSave();
+					var newid = Guid.NewGuid().ToString();
+					node.variants.Add(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+					node.AddInputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+				}
+
 			}
 
 			UpdateDeleteSetting(node);

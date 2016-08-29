@@ -34,6 +34,7 @@ namespace AssetBundleGraph {
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
+		[SerializeField] public SerializablePseudoDictionary variants;
 		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
 
 		// for platform-package specified parameter.
@@ -157,14 +158,15 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundlizerNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, float x, float y) {
+		public static NodeGUI CreateBundlizerNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> variants, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
-				bundleNameTemplate: bundleNameTemplate
+				bundleNameTemplate: bundleNameTemplate,
+				variants: variants
 			);
 		}
 
@@ -189,6 +191,31 @@ namespace AssetBundleGraph {
 			var deletedConnectionPoint = connectionPoints[deletedIndex];
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(deletedIndex);
+			Save();
+			UpdateNodeRect();
+		}
+
+		public void AddInputPoint (string guid, string label) {
+			connectionPoints.Add(ConnectionPoint.InputPoint(guid, label));
+			Save();
+			UpdateNodeRect();
+		}
+
+		public void DeleteInputPoint (string guid) {
+			var result = connectionPoints.RemoveAll( c => c.pointId == guid );
+			if(result > 0) {
+				NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, guid));
+				Save();
+				UpdateNodeRect();
+			}
+		}
+
+		public void RenameInputPoint (string guid, string label) {
+			connectionPoints.ForEach( c => { if( c.pointId == guid ) {
+					c.label = label; 
+					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, c.pointId));
+				}
+			});
 			Save();
 			UpdateNodeRect();
 		}
@@ -233,6 +260,7 @@ namespace AssetBundleGraph {
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
+			Dictionary<string, string> variants = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
@@ -251,6 +279,7 @@ namespace AssetBundleGraph {
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
+			if (variants != null) this.variants = new SerializablePseudoDictionary(variants);
 			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
 
 			this.baseRect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
@@ -323,6 +352,7 @@ namespace AssetBundleGraph {
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
+				(this.variants != null) ? this.variants.ReadonlyDict() : null,
 				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
 			);
 			return duplicatedNode;
@@ -615,46 +645,12 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			// draw & update connectionPoint button interface.
-			if (scaleFactor == SCALE_MAX) {
-				foreach (var point in connectionPoints) {
-					switch (this.kind) {
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-							var label = point.label;
-							var labelRect = new Rect(point.buttonRect.x - baseRect.width, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
-
-							var style = EditorStyles.label;
-							var defaultAlignment = style.alignment;
-							style.alignment = TextAnchor.MiddleRight;
-							GUI.Label(labelRect, label, style);
-							style.alignment = defaultAlignment;
-							break;
-						}
-					}
-
-
-					if (point.isInput) {
-						GUI.backgroundColor = Color.clear;
-						GUI.Button(point.buttonRect, NodeGUIUtility.inputPointTex, "AnimationKeyframeBackground");
-					}
-
-					if (point.isOutput) {
-						GUI.backgroundColor = Color.clear;
-						GUI.Button(point.buttonRect, NodeGUIUtility.outputPointTex, "AnimationKeyframeBackground");
-					}
-				}
-			}
-
 			/*
-				right click.
+				right click to open Context menu
 			*/
 			if (scaleFactor == SCALE_MAX) {
-				if (
-					Event.current.type == EventType.ContextClick
-					|| (Event.current.type == EventType.MouseUp && Event.current.button == 1)
-				) {
+				if (Event.current.type == EventType.ContextClick || (Event.current.type == EventType.MouseUp && Event.current.button == 1)) 
+				{
 					var menu = new GenericMenu();
 					menu.AddItem(
 						new GUIContent("Delete"),
@@ -743,9 +739,11 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawNodeContents () {
-			var style = EditorStyles.label;
-			var defaultAlignment = style.alignment;
+			var style = new GUIStyle(EditorStyles.label);
 			style.alignment = TextAnchor.MiddleCenter;
+
+			var connectionNodeStyle = new GUIStyle(EditorStyles.label);
+			connectionNodeStyle.alignment = TextAnchor.MiddleRight;
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
 			GUI.Label(nodeTitleRect, name, style);
@@ -754,10 +752,38 @@ namespace AssetBundleGraph {
 				EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
 			}
 
-			style.alignment = defaultAlignment;
-
 			if (hasErrors) { 
 				EditorGUI.HelpBox(new Rect(4f, -6f, 100f, 100f), string.Empty, MessageType.Error);
+			}
+
+			// draw & update connectionPoint button interface.
+			if (scaleFactor == SCALE_MAX) {
+				foreach (var point in connectionPoints) {
+					switch (this.kind) {
+					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+							var label = point.label;
+							// if point is output node, then label position offset is minus. otherwise plus.
+							var xOffset = (point.isOutput) ? - baseRect.width : 20f;
+							var labelRect = new Rect(point.buttonRect.x + xOffset, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
+
+							GUI.Label(labelRect, label, connectionNodeStyle);
+							break;
+						}
+					}
+
+
+					if (point.isInput) {
+						GUI.backgroundColor = Color.clear;
+						GUI.Button(point.buttonRect, NodeGUIUtility.inputPointTex, "AnimationKeyframeBackground");
+					}
+
+					if (point.isOutput) {
+						GUI.backgroundColor = Color.clear;
+						GUI.Button(point.buttonRect, NodeGUIUtility.outputPointTex, "AnimationKeyframeBackground");
+					}
+				}
 			}
 		}
 

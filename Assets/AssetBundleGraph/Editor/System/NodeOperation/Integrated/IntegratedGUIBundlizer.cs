@@ -3,15 +3,18 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeOperationBase {
 		private readonly string bundleNameTemplate;
 		private readonly string assetsOutputConnectionId;
+		private readonly Dictionary<string, string> variants;
 
-		public IntegratedGUIBundlizer (string bundleNameTemplate, string assetsConnectionId) {
+		public IntegratedGUIBundlizer (string bundleNameTemplate, string assetsConnectionId, Dictionary<string, string> variants) {
 			this.bundleNameTemplate = bundleNameTemplate;
 			this.assetsOutputConnectionId = assetsConnectionId;
+			this.variants = variants;
 		}
 
 		public void Setup (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
@@ -23,6 +26,20 @@ namespace AssetBundleGraph {
 						throw new NodeException(nodeName + ":Bundle Name Template is empty.", nodeId);
 					}
 				);
+
+				foreach(var name in variants.Values) {
+					ValidateVariantName(name, variants.Values.ToList(), 
+						() => {
+							throw new NodeException(nodeName + ":Variant is empty.", nodeId);
+						},
+						() => {
+							throw new NodeException(nodeName + ":Variant name cannot contain whitespace \"" + name + "\".", nodeId);
+						},
+						() => {
+							throw new NodeException(nodeName + ":Variant name already exists \"" + name + "\".", nodeId);
+						});
+				}
+
 			} catch (NodeException e) {
 				AssetBundleGraphEditorWindow.AddNodeException(e);
 				return;
@@ -137,6 +154,23 @@ namespace AssetBundleGraph {
 
 		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)) NullOrEmpty();
+		}
+
+		public static void ValidateVariantName (string variantName, List<string> names, Action NullOrEmpty, Action ContainsSpace, Action NameAlreadyExists) {
+			if (string.IsNullOrEmpty(variantName)) {
+				NullOrEmpty();
+			}
+			if(Regex.IsMatch(variantName, "\\s")) {
+				ContainsSpace();
+			}
+			var overlappings = names.GroupBy(x => x)
+				.Where(group => 1 < group.Count())
+				.Select(group => group.Key)
+				.ToList();
+
+			if (overlappings.Any()) {
+				NameAlreadyExists();
+			}
 		}
 	}
 }

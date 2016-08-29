@@ -434,7 +434,11 @@ namespace AssetBundleGraph {
 
 							var bundleNameTemplate = SystemDataUtility.GetCurrentPlatformValue(currentNodeData.bundleNameTemplate);
 
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0]);
+							/*
+							 * TODO: variants needs to be execute Setup/Run as many times as its variants
+							 */
+
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], currentNodeData.variants);
 							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -581,7 +585,11 @@ namespace AssetBundleGraph {
 
 							var bundleNameTemplate = SystemDataUtility.GetCurrentPlatformValue(currentNodeData.bundleNameTemplate);
 
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0]);
+							/*
+							 * TODO: variants needs to be execute Setup/Run as many times as its variants
+							 */
+
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], currentNodeData.variants);
 							executor.Setup(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}

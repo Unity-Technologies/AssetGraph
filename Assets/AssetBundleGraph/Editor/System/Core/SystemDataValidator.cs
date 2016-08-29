@@ -124,6 +124,11 @@ namespace AssetBundleGraph {
 							Debug.LogWarning(nodeName + " bundleNameTemplateSource is null. This could be caused because of deserialization error.");
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
+						var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
+						if (variantsSource == null) {
+							Debug.LogWarning(nodeName + " variantsSource is null. This could be caused because of deserialization error.");
+							variantsSource = new Dictionary<string, object>();
+						}
 						foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
 							var platform_package_bundleNameTemplate = bundleNameTemplateSource[platform_package_key] as string;
 							if (string.IsNullOrEmpty(platform_package_bundleNameTemplate)) {

@@ -16,6 +16,19 @@ namespace AssetBundleGraph {
 		[SerializeField] private List<string> keys = new List<string>();
 		[SerializeField] private List<string> values = new List<string>();
 
+
+		public List<string> Keys {
+			get {
+				return keys;
+			}
+		}
+
+		public List<string> Values {
+			get {
+				return values;
+			}
+		}
+
 		public SerializablePseudoDictionary (Dictionary<string, string> baseDict) {
 			var dict = new Dictionary<string, string>(baseDict);
 

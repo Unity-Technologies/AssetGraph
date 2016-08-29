@@ -164,12 +164,7 @@ namespace AssetBundleGraph {
 						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL);
 						break;
 					}
-					case AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL: {
-						var labelPointV3 = new Vector3(centerPointV3.x - ((AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL.Length * 6f) / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
-						break;
-					}
-					
+
 					default: {
 						var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
 						Handles.Label(labelPointV3, label);

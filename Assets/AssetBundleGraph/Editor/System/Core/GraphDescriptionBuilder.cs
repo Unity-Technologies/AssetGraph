@@ -222,13 +222,23 @@ namespace AssetBundleGraph {
 							bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
 						}
 
+						var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
+						var variants = new Dictionary<string, string>();
+						if (variantsSource == null) {
+							variantsSource = new Dictionary<string, object>();
+						}
+						foreach (var inputPointId in variantsSource.Keys) {
+							variants[inputPointId] = variantsSource[inputPointId] as string;
+						}
+
 						allNodes.Add(
 							new NodeData(
 								nodeId:nodeId, 
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
 								outputPointIds:outputPointIds,
-								bundleNameTemplate:bundleNameTemplate
+								bundleNameTemplate:bundleNameTemplate,
+								variants:variants
 							)
 						);
 						break;

@@ -128,6 +128,7 @@ namespace AssetBundleGraph {
 		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
+		public const string NODE_BUNDLIZER_VARIANTS = "variants";
 		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
@@ -145,7 +146,7 @@ namespace AssetBundleGraph {
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
 		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL = "bundled assets";
+		public const string BUNDLIZER_VARIANTNAME_DEFAULT = "";
 
 		public const string BUNDLIZER_FAKE_CONNECTION_ID = "b_______-____-____-____-____________";
 
