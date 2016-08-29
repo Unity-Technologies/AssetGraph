@@ -433,19 +433,8 @@ namespace AssetBundleGraph {
 							}
 
 							var bundleNameTemplate = SystemDataUtility.GetCurrentPlatformValue(currentNodeData.bundleNameTemplate);
-							var bundleUseOutputResources = SystemDataUtility.GetCurrentPlatformValue(currentNodeData.bundleUseOutput).ToLower();
 
-							var useOutputResources = false;
-							var resourcesOutputConnectionId = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
-							switch (bundleUseOutputResources) {
-							case "true" :{
-									useOutputResources = true;
-									resourcesOutputConnectionId = orderedConnectionIdsAndFakeConnectionIds[1];
-									break;
-								}
-							}
-
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], useOutputResources, resourcesOutputConnectionId);
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0]);
 							executor.Run(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -591,19 +580,8 @@ namespace AssetBundleGraph {
 							}
 
 							var bundleNameTemplate = SystemDataUtility.GetCurrentPlatformValue(currentNodeData.bundleNameTemplate);
-							var bundleUseOutputResources = SystemDataUtility.GetCurrentPlatformValue(currentNodeData.bundleUseOutput).ToLower();
 
-							var useOutputResources = false;
-							var resourcesOutputConnectionId = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
-							switch (bundleUseOutputResources) {
-							case "true" :{
-									useOutputResources = true;
-									resourcesOutputConnectionId = orderedConnectionIdsAndFakeConnectionIds[1];
-									break;
-								}
-							}
-
-							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0], useOutputResources, resourcesOutputConnectionId);
+							var executor = new IntegratedGUIBundlizer(bundleNameTemplate, orderedConnectionIdsAndFakeConnectionIds[0]);
 							executor.Setup(nodeName, nodeId, string.Empty, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}

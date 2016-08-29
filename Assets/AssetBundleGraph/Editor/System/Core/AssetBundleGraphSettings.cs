@@ -128,13 +128,11 @@ namespace AssetBundleGraph {
 		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
 		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
-		public const string NODE_BUNDLIZER_USE_OUTPUT = "bundleUseOutput";
 		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
 		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
-		public const string BUNDLIZER_USEOUTPUT_DEFAULT = "false";
-		
+
 		// connection const.
 		public const string CONNECTION_LABEL = "label";
 		public const string CONNECTION_ID = "connectionId";

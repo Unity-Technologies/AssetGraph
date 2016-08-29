@@ -130,13 +130,8 @@ namespace AssetBundleGraph {
 								Debug.LogWarning(nodeName + " Bundle Name Template is empty. Configure this from editor.");
 								break;
 							}
-						}
-						
-						var bundleUseOutputSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
-						if (bundleUseOutputSource == null) {
-							Debug.LogWarning(nodeName + " bundleUseOutputSource is null. This could be caused because of deserialization error.");
-							bundleUseOutputSource = new Dictionary<string, object>();
-						}
+						}						
+
 						break;
 					}
 

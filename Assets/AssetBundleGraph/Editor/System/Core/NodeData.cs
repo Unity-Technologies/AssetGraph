@@ -39,7 +39,6 @@ namespace AssetBundleGraph {
 
 		// for Bundlizer GUI data
 		public readonly Dictionary<string, string> bundleNameTemplate;
-		public readonly Dictionary<string, string> bundleUseOutput;
 
 		// for BundleBuilder GUI data
 		public readonly Dictionary<string, List<string>> enabledBundleOptions;
@@ -63,7 +62,6 @@ namespace AssetBundleGraph {
 			Dictionary<string, string> modifierPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
-			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			this.nodeId = nodeId;
@@ -79,7 +77,6 @@ namespace AssetBundleGraph {
 			this.modifierPackages = null;
 			this.groupingKeyword = null;
 			this.bundleNameTemplate = null;
-			this.bundleUseOutput = null;
 			this.enabledBundleOptions = null;
 
 			switch (nodeKind) {
@@ -122,7 +119,6 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					this.bundleNameTemplate = bundleNameTemplate;
-					this.bundleUseOutput = bundleUseOutput;
 					break;
 				}
 

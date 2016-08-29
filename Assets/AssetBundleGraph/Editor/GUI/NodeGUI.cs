@@ -34,7 +34,6 @@ namespace AssetBundleGraph {
 		[SerializeField] public SerializablePseudoDictionary importerPackages;
 		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
 		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
-		[SerializeField] public SerializablePseudoDictionary bundleUseOutput;
 		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
 
 		// for platform-package specified parameter.
@@ -158,15 +157,14 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundlizerNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> bundleUseOutput, float x, float y) {
+		public static NodeGUI CreateBundlizerNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
-				bundleNameTemplate: bundleNameTemplate,
-				bundleUseOutput: bundleUseOutput
+				bundleNameTemplate: bundleNameTemplate
 			);
 		}
 
@@ -199,26 +197,6 @@ namespace AssetBundleGraph {
 			connectionPoints[changedIndex].label = latestLabel;
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex].pointId));
 			Save();
-			UpdateNodeRect();
-		}
-
-
-
-		public void AddBundlizerDependencyOutput () {
-			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
-			if (outputResurceLabelIndex != -1) return;
-
-			connectionPoints.Add(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL));
-			UpdateNodeRect();
-		}
-
-		public void RemoveBundlizerDependencyOutput () {
-			var outputResurceLabelIndex = connectionPoints.FindIndex(p => p.label == AssetBundleGraphSettings.BUNDLIZER_DEPENDENCY_OUTPUTPOINT_LABEL);
-			if (outputResurceLabelIndex == -1) return;
-
-			var deletedConnectionPoint = connectionPoints[outputResurceLabelIndex];
-			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
-			connectionPoints.RemoveAt(outputResurceLabelIndex);
 			UpdateNodeRect();
 		}
 
@@ -255,7 +233,6 @@ namespace AssetBundleGraph {
 			Dictionary<string, string> importerPackages = null,
 			Dictionary<string, string> groupingKeyword = null,
 			Dictionary<string, string> bundleNameTemplate = null,
-			Dictionary<string, string> bundleUseOutput = null,
 			Dictionary<string, List<string>> enabledBundleOptions = null
 		) {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
@@ -274,7 +251,6 @@ namespace AssetBundleGraph {
 			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
 			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
 			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
-			if (bundleUseOutput != null) this.bundleUseOutput = new SerializablePseudoDictionary(bundleUseOutput);
 			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
 
 			this.baseRect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
@@ -347,7 +323,6 @@ namespace AssetBundleGraph {
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
-				(this.bundleUseOutput != null) ? this.bundleUseOutput.ReadonlyDict() : null,
 				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
 			);
 			return duplicatedNode;

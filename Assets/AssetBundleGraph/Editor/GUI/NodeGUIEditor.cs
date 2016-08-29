@@ -485,31 +485,6 @@ namespace AssetBundleGraph {
 					node.Save();
 				}
 
-				var isUseOutputResoruces = SystemDataUtility.GetPlatformValue(
-					node.bundleUseOutput.ReadonlyDict(), 
-					node.currentPlatform
-				).ToString().ToLower();
-
-				var useOrNot = false;
-				switch (isUseOutputResoruces) {
-				case "true": {
-						useOrNot = true;
-						break;
-					}
-				}
-				
-				var result = EditorGUILayout.ToggleLeft("Asset Output for Dependency", useOrNot);
-
-				if (result != useOrNot) {
-					node.BeforeSave();
-
-					if (result) node.AddBundlizerDependencyOutput();
-					else node.RemoveBundlizerDependencyOutput(); 
-
-					node.bundleUseOutput.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), result.ToString());
-					node.Save();
-				}
-
 				EditorGUILayout.HelpBox("Check this to enable asset output slot to create asset bundle which has dependency to asset bundle of this node.", MessageType.Info);
 			}
 

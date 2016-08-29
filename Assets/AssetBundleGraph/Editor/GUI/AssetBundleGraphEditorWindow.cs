@@ -1401,7 +1401,6 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
-					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] = node.bundleUseOutput.ReadonlyDict();
 					break;
 				}
 
@@ -1547,13 +1546,11 @@ namespace AssetBundleGraph {
 					
 					var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 					var bundleNameTemplate = new Dictionary<string, string>();
-					foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-					
-					var bundleUseOutputSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
-					var bundleUseOutput = new Dictionary<string, string>();
-					foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string; 
-					
-					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, bundleUseOutput, x, y);
+					foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
+						bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
+					}
+
+					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, x, y);
 					
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1718,11 +1715,7 @@ namespace AssetBundleGraph {
 						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT}
 					};
 					
-					var newBundleUseOutput = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.BUNDLIZER_USEOUTPUT_DEFAULT}	
-					};
-
-					newNode = NodeGUI.CreateBundlizerNode(nodeName, nodeId, kind, newBundlizerKeyword, newBundleUseOutput, x, y);
+					newNode = NodeGUI.CreateBundlizerNode(nodeName, nodeId, kind, newBundlizerKeyword, x, y);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;

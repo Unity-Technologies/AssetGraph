@@ -69,7 +69,9 @@ namespace AssetBundleGraph {
 
 							loadPathSource = new Dictionary<string, object>();
 						}
-						foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
+						foreach (var platform_package_key in loadPathSource.Keys) {
+							loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
+						}
 
 						allNodes.Add(
 							new NodeData(
@@ -158,7 +160,9 @@ namespace AssetBundleGraph {
 
 							importerPackagesSource = new Dictionary<string, object>();
 						}
-						foreach (var platform_package_key in importerPackagesSource.Keys) importerPackages[platform_package_key] = string.Empty;
+						foreach (var platform_package_key in importerPackagesSource.Keys) {
+							importerPackages[platform_package_key] = string.Empty;
+						}
 
 						allNodes.Add(
 							new NodeData(
@@ -192,7 +196,9 @@ namespace AssetBundleGraph {
 
 							groupingKeywordSource = new Dictionary<string, object>();
 						}
-						foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
+						foreach (var platform_package_key in groupingKeywordSource.Keys) {
+							groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
+						}
 
 						allNodes.Add(
 							new NodeData(
@@ -212,14 +218,9 @@ namespace AssetBundleGraph {
 						if (bundleNameTemplateSource == null) {
 							bundleNameTemplateSource = new Dictionary<string, object>();
 						}
-						foreach (var platform_package_key in bundleNameTemplateSource.Keys) bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-
-						var bundleUseOutputSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_USE_OUTPUT] as Dictionary<string, object>;
-						var bundleUseOutput = new Dictionary<string, string>();
-						if (bundleUseOutputSource == null) {
-							bundleUseOutputSource = new Dictionary<string, object>();
+						foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
+							bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
 						}
-						foreach (var platform_package_key in bundleUseOutputSource.Keys) bundleUseOutput[platform_package_key] = bundleUseOutputSource[platform_package_key] as string;
 
 						allNodes.Add(
 							new NodeData(
@@ -227,8 +228,7 @@ namespace AssetBundleGraph {
 								nodeKind:nodeKind, 
 								nodeName:nodeName,
 								outputPointIds:outputPointIds,
-								bundleNameTemplate:bundleNameTemplate,
-								bundleUseOutput:bundleUseOutput
+								bundleNameTemplate:bundleNameTemplate
 							)
 						);
 						break;

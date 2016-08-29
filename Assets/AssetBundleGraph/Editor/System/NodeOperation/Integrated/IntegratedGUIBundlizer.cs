@@ -8,14 +8,10 @@ namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeOperationBase {
 		private readonly string bundleNameTemplate;
 		private readonly string assetsOutputConnectionId;
-		private readonly bool outputResource;
-		private readonly string resourcesOutputConnectionId;
-		
-		public IntegratedGUIBundlizer (string bundleNameTemplate, string assetsConnectionId, bool outputResource, string resourcesConnectionId) {
+
+		public IntegratedGUIBundlizer (string bundleNameTemplate, string assetsConnectionId) {
 			this.bundleNameTemplate = bundleNameTemplate;
 			this.assetsOutputConnectionId = assetsConnectionId;
-			this.outputResource = outputResource;
-			this.resourcesOutputConnectionId = resourcesConnectionId;
 		}
 
 		public void Setup (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
@@ -57,13 +53,6 @@ namespace AssetBundleGraph {
 				Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
 			}
 			
-			/*
-				generate additional output:
-				output bundle resources for next node, for generate another AssetBundles with dependency.
-			*/
-			if (outputResource) {
-				if (resourcesOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) Output(nodeId, resourcesOutputConnectionId, groupedSources, new List<string>());
-			}
 		}
 		
 		public void Run (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
@@ -97,15 +86,6 @@ namespace AssetBundleGraph {
 				Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
 			}
 			
-			/*
-				generate additional output:
-				output bundle resources for next node, for generate another AssetBundles with dependency.
-			*/
-			if (outputResource) {
-				if (resourcesOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
-					Output(nodeId, resourcesOutputConnectionId, groupedSources, new List<string>());
-				}
-			}
 		}
 
 		public string BundlizeAssets (string nodeName, string groupkey, List<Asset> sources, string recommendedBundleOutputDir, bool isRun) {			
