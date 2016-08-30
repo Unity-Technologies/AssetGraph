@@ -2131,7 +2131,9 @@ namespace AssetBundleGraph {
 					var deletedConnectionPoint = e.eventSourceNode.ConnectionPointFromConPointId(e.conPointId);
 					var deletedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == deletedConnectionPoint.pointId).ToList();
 					
-					if (!deletedOutputPointConnections.Any()) break;
+					if (!deletedOutputPointConnections.Any()) {
+						break;
+					}
 					
 					// あ、線がdeleteされてない？
 

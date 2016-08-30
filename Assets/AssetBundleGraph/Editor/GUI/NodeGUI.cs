@@ -192,13 +192,13 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddFilterOutputPoint (int addedIndex, string keyword) {
-			connectionPoints.Insert(addedIndex, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
+			connectionPoints.Insert(addedIndex+1, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
 
 		public void DeleteFilterOutputPoint (int deletedIndex) {
-			var deletedConnectionPoint = connectionPoints[deletedIndex];
+			var deletedConnectionPoint = connectionPoints[deletedIndex+1];
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(deletedIndex);
 			Save();
@@ -212,9 +212,12 @@ namespace AssetBundleGraph {
 		}
 
 		public void DeleteInputPoint (string guid) {
-			var result = connectionPoints.RemoveAll( c => c.pointId == guid );
-			if(result > 0) {
+
+			int deletedIndex = connectionPoints.FindIndex( c => c.pointId == guid );
+
+			if(deletedIndex >= 0) {
 				NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, guid));
+				connectionPoints.RemoveAt(deletedIndex);
 				Save();
 				UpdateNodeRect();
 			}
@@ -231,7 +234,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void RenameFilterOutputPointLabel (int changedIndex, string latestLabel) {
-			connectionPoints[changedIndex].label = latestLabel;
+			connectionPoints[changedIndex+1].label = latestLabel;
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex].pointId));
 			Save();
 			UpdateNodeRect();
@@ -522,7 +525,11 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddConnectionPoint (ConnectionPoint adding) {
-			connectionPoints.Add(adding);
+			if(adding.label == AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL) {
+				connectionPoints.Insert(0, adding);
+			} else {
+				connectionPoints.Add(adding);
+			}
 			UpdateNodeRect();
 		}
 
@@ -691,13 +698,10 @@ namespace AssetBundleGraph {
 
 			foreach (var point in connectionPoints) {
 				if (point.isInput) {
+					var inputPointRect = GetInputRectForPoint(point);
+
 					GUI.DrawTexture(
-						new Rect(
-							baseRect.x - 2f, 
-							baseRect.y + (baseRect.height - AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE)/2f, 
-							AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
-							AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
-						), 
+						inputPointRect, 
 						defaultPointTex
 					);
 				}
@@ -722,7 +726,7 @@ namespace AssetBundleGraph {
 
 			foreach (var point in connectionPoints) {
 				if (point.isOutput) {
-					var outputPointRect = OutputRect(point);
+					var outputPointRect = GetOutputRectForPoint(point);
 
 					GUI.DrawTexture(
 						outputPointRect, 
@@ -739,10 +743,20 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private Rect OutputRect (ConnectionPoint outputPoint) {
+		private Rect GetOutputRectForPoint (ConnectionPoint outputPoint) {
 			return new Rect(
 				baseRect.x + baseRect.width - 8f, 
 				baseRect.y + outputPoint.buttonRect.y + 1f, 
+				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
+				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
+			);
+		}
+
+		private Rect GetInputRectForPoint (ConnectionPoint inputPoint) {
+
+			return new Rect(
+				baseRect.x - 2f, 
+				baseRect.y + inputPoint.buttonRect.y + 3f, 
 				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
 				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
 			);
@@ -752,8 +766,11 @@ namespace AssetBundleGraph {
 			var style = new GUIStyle(EditorStyles.label);
 			style.alignment = TextAnchor.MiddleCenter;
 
-			var connectionNodeStyle = new GUIStyle(EditorStyles.label);
-			connectionNodeStyle.alignment = TextAnchor.MiddleRight;
+			var connectionNodeStyleOutput = new GUIStyle(EditorStyles.label);
+			connectionNodeStyleOutput.alignment = TextAnchor.MiddleRight;
+
+			var connectionNodeStyleInput = new GUIStyle(EditorStyles.label);
+			connectionNodeStyleInput.alignment = TextAnchor.MiddleLeft;
 
 			var nodeTitleRect = new Rect(0, 0, baseRect.width * scaleFactor, baseRect.height * scaleFactor);
 			GUI.Label(nodeTitleRect, name, style);
@@ -761,9 +778,11 @@ namespace AssetBundleGraph {
 			if (running) {
 				EditorGUI.ProgressBar(new Rect(10f, baseRect.height - 20f, baseRect.width - 20f, 10f), progress, string.Empty);
 			}
-
-			if (hasErrors) { 
-				EditorGUI.HelpBox(new Rect(4f, -6f, 100f, 100f), string.Empty, MessageType.Error);
+			if (hasErrors) {
+				GUIStyle errorStyle = new GUIStyle("CN EntryError");
+				errorStyle.alignment = TextAnchor.MiddleCenter;
+				var labelSize = GUI.skin.label.CalcSize(new GUIContent(name));
+				EditorGUI.LabelField(new Rect((nodeTitleRect.width - labelSize.x )/2.0f - 28f, (nodeTitleRect.height-labelSize.y)/2.0f - 7f, 20f, 20f), string.Empty, errorStyle);
 			}
 
 			// draw & update connectionPoint button interface.
@@ -772,17 +791,20 @@ namespace AssetBundleGraph {
 					switch (this.kind) {
 					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
+						{
 							var label = point.label;
-							// if point is output node, then label position offset is minus. otherwise plus.
-							var xOffset = (point.isOutput) ? - baseRect.width : 20f;
-							var labelRect = new Rect(point.buttonRect.x + xOffset, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
+							if( label != AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL ) {
+								// if point is output node, then label position offset is minus. otherwise plus.
+								var xOffset = (point.isOutput) ? - baseRect.width : AssetBundleGraphGUISettings.INPUT_POINT_WIDTH;
+								var labelStyle = (point.isOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
+								var labelRect = new Rect(point.buttonRect.x + xOffset, point.buttonRect.y - (point.buttonRect.height/2), baseRect.width, point.buttonRect.height*2);
 
-							GUI.Label(labelRect, label, connectionNodeStyle);
+								GUI.Label(labelRect, label, labelStyle);
+							}
 							break;
 						}
 					}
-
 
 					if (point.isInput) {
 						GUI.backgroundColor = Color.clear;
@@ -798,13 +820,21 @@ namespace AssetBundleGraph {
 		}
 
 		public void UpdateNodeRect () {
-			var contentWidth = this.name.Length;
+			// UpdateNodeRect will be called outside OnGUI(), so it use inacurate but simple way to calcurate label width
+			// instead of CalcSize()
+			var contentLabelWordsLength = this.name.Length;
 			switch (this.kind) {
 			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					var longestFilterLengths = connectionPoints.OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
-					if (longestFilterLengths.Any()) {
-						contentWidth = contentWidth + longestFilterLengths[0];
+					
+					var inputLabels = connectionPoints.FindAll(con => con.isInput).OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
+					if (inputLabels.Any()) {
+						contentLabelWordsLength = contentLabelWordsLength + 1 + inputLabels[0];
+					}
+
+					var outputLabels = connectionPoints.FindAll(con => con.isOutput).OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
+					if (outputLabels.Any()) {
+						contentLabelWordsLength = contentLabelWordsLength + 1 + outputLabels[0];
 					}
 
 					// update node height by number of output connectionPoint.
@@ -820,8 +850,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			var newWidth = contentWidth * 12f;
-			if (newWidth < AssetBundleGraphGUISettings.NODE_BASE_WIDTH) newWidth = AssetBundleGraphGUISettings.NODE_BASE_WIDTH;
+			var newWidth = Mathf.Max(AssetBundleGraphGUISettings.NODE_BASE_WIDTH, contentLabelWordsLength * 10.0f);
 			baseRect = new Rect(baseRect.x, baseRect.y, newWidth, baseRect.height);
 
 			RefreshConnectionPos();
@@ -892,7 +921,7 @@ namespace AssetBundleGraph {
 
 			foreach (var connectionPoint in connectionPoints) {
 				if (connectionPoint.isOutput) {
-					var outputRect = OutputRect(connectionPoint);
+					var outputRect = GetOutputRectForPoint(connectionPoint);
 					if (outputRect.Contains(globalPos)) {
 						return true;
 					}
@@ -934,7 +963,7 @@ namespace AssetBundleGraph {
 
 				if (grobalConnectionPointRect.Contains(globalPos)) containedPoints.Add(connectionPoint);
 				if (connectionPoint.isOutput) {
-					var outputRect = OutputRect(connectionPoint);
+					var outputRect = GetOutputRectForPoint(connectionPoint);
 					if (outputRect.Contains(globalPos)) containedPoints.Add(connectionPoint);
 				}
 			}

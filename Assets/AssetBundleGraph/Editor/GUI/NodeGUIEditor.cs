@@ -69,7 +69,9 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (packageEditMode) EditorGUI.EndDisabledGroup();
+			if (packageEditMode) {
+				EditorGUI.EndDisabledGroup();
+			}
 			UpdateDeleteSetting(node);
 		}
 
@@ -525,7 +527,7 @@ namespace AssetBundleGraph {
 					node.BeforeSave();
 					var newid = Guid.NewGuid().ToString();
 					node.variants.Add(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
-					node.AddInputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+					node.AddInputPoint(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
 				}
 
 			}

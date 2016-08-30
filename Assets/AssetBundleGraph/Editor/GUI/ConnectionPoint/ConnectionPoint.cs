@@ -21,7 +21,7 @@ namespace AssetBundleGraph {
 
 		public void UpdatePos (int index, int max, float width, float height) {
 			if (isInput) {
-				var y = (height - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT)/2f + 1f;
+				var y = ((height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT/2f;
 				buttonRect = new Rect(0,y, AssetBundleGraphGUISettings.INPUT_POINT_WIDTH, AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT);
 			}
 
