@@ -118,7 +118,7 @@ namespace AssetBundleGraph {
 
 				Output(nodeId, connectionIdToNextNode, outputDir, new List<string>());
 			} catch (Exception e) {
-				Debug.LogError(nodeName + " Error:" + e);
+				throw new NodeException(e.Message, nodeId);
 			}
 		}
 
