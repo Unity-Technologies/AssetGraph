@@ -154,63 +154,17 @@ namespace AssetBundleGraph.ModifierOperators {
 
 		public override void DrawInspector (Action changed) {
 			// wrapMode
-			using (new GUILayout.HorizontalScope()) {
-				GUILayout.Label("Wrap Mode");
-				
-				var currentMode = this.wrapMode.ToString();
-
-				if (GUILayout.Button(currentMode, "Popup")) {
-					var menu = new GenericMenu();
-					foreach (var item in Enum.GetValues(typeof(UnityEngine.TextureWrapMode)).Cast<UnityEngine.TextureWrapMode>().ToList()) {
-						var isCurrentChoose = false;
-						if (item == this.wrapMode) {
-							isCurrentChoose = true;
-						}
-						var currentItem = item;
-
-						menu.AddItem(
-							new GUIContent(item.ToString()), 
-							isCurrentChoose, 
-							() => {
-								if (this.wrapMode != currentItem) {
-									this.wrapMode = currentItem;
-									changed();
-								}
-							}
-						);
-					}
-					menu.ShowAsContext();
-				}
+			var newWrapMode = (UnityEngine.TextureWrapMode)EditorGUILayout.Popup("Wrap Mode", (int)this.wrapMode, Enum.GetNames(typeof(UnityEngine.TextureWrapMode)), new GUILayoutOption[0]);
+			if (newWrapMode != this.wrapMode) {
+				this.wrapMode = newWrapMode;
+				changed();
 			}
 			
 			// filterMode
-			using (new GUILayout.HorizontalScope()) {
-				GUILayout.Label("Filter Mode");
-				
-				var currentMode = this.filterMode.ToString();
-
-				if (GUILayout.Button(currentMode, "Popup")) {
-					var menu = new GenericMenu();
-					foreach (var item in Enum.GetValues(typeof(UnityEngine.FilterMode)).Cast<UnityEngine.FilterMode>().ToList()) {
-						var isCurrentChoose = false;
-						if (item == this.filterMode) {
-							isCurrentChoose = true;
-						}
-						var currentItem = item;
-
-						menu.AddItem(
-							new GUIContent(item.ToString()), 
-							isCurrentChoose, 
-							() => {
-								if (this.filterMode != currentItem) {
-									this.filterMode = currentItem;
-									changed();
-								}
-							}
-						);
-					}
-					menu.ShowAsContext();
-				}
+			var newFilterMode = (UnityEngine.FilterMode)EditorGUILayout.Popup("Filter Mode", (int)this.filterMode, Enum.GetNames(typeof(UnityEngine.FilterMode)), new GUILayoutOption[0]);
+			if (newFilterMode != this.filterMode) {
+				this.filterMode = newFilterMode;
+				changed();
 			}
 
 			// anisoLevel
