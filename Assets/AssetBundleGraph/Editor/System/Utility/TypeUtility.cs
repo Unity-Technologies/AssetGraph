@@ -124,7 +124,21 @@ namespace AssetBundleGraph {
 		 * ModifierOperator map vs supported type
 		*/
 		public static Dictionary<string, Type> SupportedModifierOperatorDefinition = new Dictionary<string, Type> {
-			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)}
+			// {".anim", typeof(Animation)},
+			// {".controller", typeof(Animator)},
+			// {".mask", typeof(Avatar)},
+			// {".cubemap", typeof(Cubemap)},
+			// {".flare", typeof(Flare)},
+			// {".fontsettings", typeof(Font)},
+			// {".guiskin", typeof(GUISkin)},
+			// typeof(LightmapParameters).ToString(),
+			{"UnityEngine.Material", typeof(ModifierOperators.MaterialOperator)},
+			// {".physicMaterial", typeof(PhysicMaterial)},
+			// {".physicsMaterial2D", typeof(PhysicsMaterial2D)},
+			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)},
+			// // typeof(SceneAsset).ToString(),
+			// {".shader", typeof(Shader)},
+			// {".unity", typeof(Scene)},
 		};
 	}
 }
