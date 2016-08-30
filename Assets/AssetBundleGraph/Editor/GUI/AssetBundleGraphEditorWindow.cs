@@ -12,40 +12,212 @@ using MiniJSONForAssetBundleGraph;
 
 namespace AssetBundleGraph {
 	public class AssetBundleGraphEditorWindow : EditorWindow {
-		/*
-			exception pool for display node error.
-		*/
-		private static List<NodeException> nodeExceptionPool = new List<NodeException>();
+
+		[Serializable] 
+		public struct KeyObject {
+			public string key;
+
+			public KeyObject (string val) {
+				key = val;
+			}
+		}
+
+		[Serializable] 
+		public struct ActiveObject {
+			[SerializeField] public SerializablePseudoDictionary3 idPosDict;
+
+			public ActiveObject (Dictionary<string, Vector2> idPosDict) {
+				this.idPosDict = new SerializablePseudoDictionary3(idPosDict);
+			}
+		}
+
+		[Serializable] 
+		public struct CopyField {
+			[SerializeField] public List<string> datas;
+			[SerializeField] public CopyType type;
+
+			public CopyField (List<string> datas, CopyType type) {
+				this.datas = datas;
+				this.type = type;
+			}
+		}
+
+		// hold selection start data.
+		public struct AssetBundleGraphSelection {
+			public readonly float x;
+			public readonly float y;
+
+			public AssetBundleGraphSelection (Vector2 position) {
+				this.x = position.x;
+				this.y = position.y;
+			}
+		}
+
+		// hold scale start data.
+		public struct ScalePoint {
+			public readonly float x;
+			public readonly float y;
+			public readonly float startScale;
+			public readonly int scaledDistance;
+
+			public ScalePoint (Vector2 point, float scaleFactor, int scaledDistance) {
+				this.x = point.x;
+				this.y = point.y;
+				this.startScale = scaleFactor;
+				this.scaledDistance = scaledDistance;
+			}
+		}
+
+		public enum ModifyMode : int {
+			CONNECT_STARTED,
+			CONNECT_ENDED,
+			SELECTION_STARTED,
+			SCALING_STARTED,
+		}
+
+		public enum CopyType : int {
+			COPYTYPE_COPY,
+			COPYTYPE_CUT
+		}
+
+		public enum ScriptType : int {
+			SCRIPT_PREFABRICATOR,
+			SCRIPT_FINALLY
+		}
+
+
+		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
+		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
+		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 
 		private bool showErrors;
+		private OnNodeEvent currentEventSource;
+		public ConnectionPoint modifingConnnectionPoint;
+		private Texture2D _selectionTex;
+		private GUIContent _reloadButtonTexture;
+		private ModifyMode modifyMode;
+		private DateTime lastLoaded = DateTime.MinValue;
+		private Vector2 spacerRectRightBottom;
+		private Vector2 scrollPos = new Vector2(1500,0);
+		private Vector2 errorScrollPos = new Vector2(0,0);
+		private CopyField copyField = new CopyField();		
+		private AssetBundleGraphSelection selection;
+		private ScalePoint scalePoint;
 
-		public static void AddNodeException (NodeException nodeEx) {
-			nodeExceptionPool.Add(nodeEx);
-		}
-		
-		private static void ResetNodeExceptionPool () {
-			nodeExceptionPool.Clear();
-		}
+		private static Dictionary<string,Dictionary<string, List<DepreacatedThroughputAsset>>> s_connectionThroughputs = 
+			new Dictionary<string, Dictionary<string, List<DepreacatedThroughputAsset>>>();
+		private static List<NodeException> s_nodeExceptionPool = new List<NodeException>();
 
-		private bool isAnyIssueFound {
-			get {
-				return nodeExceptionPool.Count > 0;
+		private Texture2D selectionTex {
+			get{
+				if(_selectionTex == null) {
+					_selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
+				}
+				return _selectionTex;
 			}
 		}
 
-		private void ShowErrorOnNodes () {
-			foreach (var node in nodes) {
-				node.RenewErrorSource();
-				var errorsForeachNode = nodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
-				if (errorsForeachNode.Any()) {
-					node.AppendErrorSources(errorsForeachNode);
+		private GUIContent reloadButtonTexture {
+			get {
+				if( _reloadButtonTexture == null ) {
+					_reloadButtonTexture = EditorGUIUtility.IconContent("RotateTool");
+				}
+				return _reloadButtonTexture;
+			}
+		}
+
+		/**
+			build from commandline.
+		*/
+		public static void BuildFromCommandline () {
+			var argumentSources = new List<string>(System.Environment.GetCommandLineArgs());
+
+			var argumentStartIndex = argumentSources.FindIndex(arg => arg == "AssetBundleGraph.AssetBundleGraphEditorWindow.BuildFromCommandline") + 1;
+			var currentParams = argumentSources.GetRange(argumentStartIndex, argumentSources.Count - argumentStartIndex).ToList();
+
+			if (0 < currentParams.Count) {
+				/*
+					change platform for execute.
+				*/
+				switch (currentParams[0]) {
+				case "Web": 
+				case "Standalone": 
+				case "iOS": 
+				case "Android": 
+				case "BlackBerry": 
+				case "Tizen": 
+				case "XBox360": 
+				case "XboxOne": 
+				case "PS3": 
+				case "PSP2": 
+				case "PS4": 
+				case "StandaloneGLESEmu": 
+				case "Metro": 
+				case "WP8": 
+				case "WebGL": 
+				case "SamsungTV": {
+						// valid platform.
+						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetFromString(currentParams[0]));
+						break;
+					}
+				default: {
+						throw new AssetBundleGraphException(currentParams[0] + " is not supported.");
+					}
 				}
 			}
+
+			var window = GetWindow<AssetBundleGraphEditorWindow>();
+			window.Run();
+		}
+
+		public static BuildTarget BuildTargetFromString (string val) {
+			return (BuildTarget)Enum.Parse(typeof(BuildTarget), val);
+		}
+
+		public static void GenerateScript (ScriptType scriptType) {
+			var destinationBasePath = AssetBundleGraphSettings.USERSPACE_PATH;
+			var destinationPath = string.Empty;
+
+			var sourceFileName = string.Empty;
+
+			switch (scriptType) {
+			case ScriptType.SCRIPT_PREFABRICATOR: {
+					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabricator.cs.template");
+					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabricator.cs");
+					break;
+				}
+			case ScriptType.SCRIPT_FINALLY: {
+					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyFinally.cs.template");
+					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyFinally.cs");
+					break;
+				}
+			default: {
+					Debug.LogError("Unknown script type found:" + scriptType);
+					break;
+				}
+			}
+
+			if (string.IsNullOrEmpty(sourceFileName)) {
+				return;
+			}
+
+			FileUtility.CopyFileFromGlobalToLocal(sourceFileName, destinationPath);
+
+			AssetDatabase.Refresh();
 		}
 
 		/*
 			menu items
 		*/
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABRICATOR)]
+		public static void GeneratePrefabricator () {
+			GenerateScript(ScriptType.SCRIPT_PREFABRICATOR);
+		}
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_FINALLY)]
+		public static void GenerateFinally () {
+			GenerateScript(ScriptType.SCRIPT_FINALLY);
+		}
+			
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
 			GetWindow<AssetBundleGraphEditorWindow>();
@@ -64,109 +236,13 @@ namespace AssetBundleGraph {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
 			window.Run();
 		}
-		
-		public enum ScriptType : int {
-			SCRIPT_PREFABRICATOR,
-			SCRIPT_FINALLY
-		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABRICATOR)]
-		public static void GeneratePrefabricator () {
-			GenerateScript(ScriptType.SCRIPT_PREFABRICATOR);
-		}
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_FINALLY)]
-		public static void GenerateFinally () {
-			GenerateScript(ScriptType.SCRIPT_FINALLY);
-		}
-
-		/**
-			build from commandline.
-		*/
-		public static void BuildFromCommandline () {
-			var argumentSources = new List<string>(System.Environment.GetCommandLineArgs());
-
-			var argumentStartIndex = argumentSources.FindIndex(arg => arg == "AssetBundleGraph.AssetBundleGraphEditorWindow.BuildFromCommandline") + 1;
-			var currentParams = argumentSources.GetRange(argumentStartIndex, argumentSources.Count - argumentStartIndex).ToList();
-
-			if (0 < currentParams.Count) {
-				/*
-					change platform for execute.
-				*/
-				switch (currentParams[0]) {
-					case "Web": 
-					case "Standalone": 
-					case "iOS": 
-					case "Android": 
-					case "BlackBerry": 
-					case "Tizen": 
-					case "XBox360": 
-					case "XboxOne": 
-					case "PS3": 
-					case "PSP2": 
-					case "PS4": 
-					case "StandaloneGLESEmu": 
-					case "Metro": 
-					case "WP8": 
-					case "WebGL": 
-					case "SamsungTV": {
-						// valid platform.
-						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetFromString(currentParams[0]));
-						break;
-					}
-					default: {
-						throw new AssetBundleGraphException(currentParams[0] + " is not supported.");
-					}
-				}
-			}
-			
-			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run();
-		}
-
-		public static BuildTarget BuildTargetFromString (string val) {
-			return (BuildTarget)Enum.Parse(typeof(BuildTarget), val);
-		}
-
-		public static void GenerateScript (ScriptType scriptType) {
-			var destinationBasePath = AssetBundleGraphSettings.USERSPACE_PATH;
-			var destinationPath = string.Empty;
-
-			var sourceFileName = string.Empty;
-
-			switch (scriptType) {
-				case ScriptType.SCRIPT_PREFABRICATOR: {
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabricator.cs.template");
-					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabricator.cs");
-					break;
-				}
-				case ScriptType.SCRIPT_FINALLY: {
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyFinally.cs.template");
-					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyFinally.cs");
-					break;
-				}
-				default: {
-					Debug.LogError("Unknown script type found:" + scriptType);
-					break;
-				}
-			}
-
-			if (string.IsNullOrEmpty(sourceFileName)) {
-				return;
-			}
-			
-			FileUtility.CopyFileFromGlobalToLocal(sourceFileName, destinationPath);
-
-			AssetDatabase.Refresh();
-		}
-
-		
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
 			FileUtility.RemakeDirectory(AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
 
 			AssetDatabase.Refresh();
 		}
-		
-		
+
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS)] public static void DeleteImportSettingSample () {
 			FileUtility.RemakeDirectory(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE);
 
@@ -211,109 +287,35 @@ namespace AssetBundleGraph {
 			InitializeGraph();
 			Setup();
 
-			// load other textures
-			reloadButtonTexture = UnityEditor.EditorGUIUtility.IconContent("RotateTool");
-
-			if (nodes.Any()) UpdateSpacerRect();
-		}
-		
-		[Serializable] public struct KeyObject {
-			public string key;
-
-			public KeyObject (string val) {
-				key = val;
+			if (nodes.Any()) {
+				UpdateSpacerRect();
 			}
 		}
 
-		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
-		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
+		public static void AddNodeException (NodeException nodeEx) {
+			s_nodeExceptionPool.Add(nodeEx);
+		}
 
-		private OnNodeEvent currentEventSource;
+		private static void ResetNodeExceptionPool () {
+			s_nodeExceptionPool.Clear();
+		}
 
-		public ConnectionPoint modifingConnnectionPoint;
+		private bool isAnyIssueFound {
+			get {
+				return s_nodeExceptionPool.Count > 0;
+			}
+		}
 
-		private Texture2D _selectionTex;
-		private Texture2D selectionTex {
-			get{
-				if(_selectionTex == null) {
-					_selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
+		private void ShowErrorOnNodes () {
+			foreach (var node in nodes) {
+				node.RenewErrorSource();
+				var errorsForeachNode = s_nodeExceptionPool.Where(e => e.nodeId == node.nodeId).Select(e => e.reason).ToList();
+				if (errorsForeachNode.Any()) {
+					node.AppendErrorSources(errorsForeachNode);
 				}
-				return _selectionTex;
 			}
 		}
-
-		public enum ModifyMode : int {
-			CONNECT_STARTED,
-			CONNECT_ENDED,
-			SELECTION_STARTED,
-			SCALING_STARTED,
-		}
-		private ModifyMode modifyMode;
-
-		private DateTime lastLoaded = DateTime.MinValue;
-		
-		private Vector2 spacerRectRightBottom;
-		private Vector2 scrollPos = new Vector2(1500,0);
-		private Vector2 errorScrollPos = new Vector2(0,0);
-
-		private GUIContent reloadButtonTexture;
-
-		private static Dictionary<string,Dictionary<string, List<DepreacatedThroughputAsset>>> connectionThroughputs = new Dictionary<string, Dictionary<string, List<DepreacatedThroughputAsset>>>();
-
-
-		[Serializable] public struct ActiveObject {
-			[SerializeField] public SerializablePseudoDictionary3 idPosDict;
 			
-			public ActiveObject (Dictionary<string, Vector2> idPosDict) {
-				this.idPosDict = new SerializablePseudoDictionary3(idPosDict);
-			}
-		}
-		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
-
-		public enum CopyType : int {
-			COPYTYPE_COPY,
-			COPYTYPE_CUT
-		}
-
-		[Serializable] public struct CopyField {
-			[SerializeField] public List<string> datas;
-			[SerializeField] public CopyType type;
-
-			public CopyField (List<string> datas, CopyType type) {
-				this.datas = datas;
-				this.type = type;
-			}
-		}
-		private CopyField copyField = new CopyField();
-		
-		// hold selection start data.
-		public struct AssetBundleGraphSelection {
-			public readonly float x;
-			public readonly float y;
-
-			public AssetBundleGraphSelection (Vector2 position) {
-				this.x = position.x;
-				this.y = position.y;
-			}
-		}
-		private AssetBundleGraphSelection selection;
-
-		// hold scale start data.
-		public struct ScalePoint {
-			public readonly float x;
-			public readonly float y;
-			public readonly float startScale;
-			public readonly int scaledDistance;
-
-			public ScalePoint (Vector2 point, float scaleFactor, int scaledDistance) {
-				this.x = point.x;
-				this.y = point.y;
-				this.startScale = scaleFactor;
-				this.scaledDistance = scaledDistance;
-			}
-		}
-		private ScalePoint scalePoint;
-
 		public static Texture2D LoadTextureFromFile(string path) {
             Texture2D texture = new Texture2D(1, 1);
             texture.LoadImage(File.ReadAllBytes(path));
@@ -446,12 +448,26 @@ namespace AssetBundleGraph {
 			var nodesSource = deserializedData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES] as List<object>;
 			
 			foreach (var nodeDictSource in nodesSource) {
-				currentNodes.Add(CreateNodeGUIFromJson(nodeDictSource as Dictionary<string, object>));
+
+				var newNode = CreateNodeGUIFromJson(nodeDictSource as Dictionary<string, object>);
+
+				int id = -1;
+
+				foreach(var node in currentNodes) {
+					if(node.WindowId > id) {
+						id = node.WindowId;
+					}
+				}
+				newNode.WindowId = id + 1;
+
+				currentNodes.Add(newNode);
 			}
 
 			// add default input if node is not NodeKind.LOADER_GUI.
 			foreach (var node in currentNodes) {
-				if (node.kind == AssetBundleGraphSettings.NodeKind.LOADER_GUI) continue;// no input point.
+				if (node.kind == AssetBundleGraphSettings.NodeKind.LOADER_GUI) {
+					continue;// no input point.
+				}
 				node.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 			}
 			
@@ -557,13 +573,13 @@ namespace AssetBundleGraph {
 			NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.name).ToList());
 
 			// ready throughput datas.
-			connectionThroughputs = AssetBundleGraphController.PerformSetup(reloadedData);
+			s_connectionThroughputs = AssetBundleGraphController.PerformSetup(reloadedData);
 
-			RefreshInspector(connectionThroughputs);
+			RefreshInspector(s_connectionThroughputs);
 
 			ShowErrorOnNodes();
 
-			Finally(nodes, connections, connectionThroughputs, false);
+			Finally(nodes, connections, s_connectionThroughputs, false);
 		}
 
 		/**
@@ -627,16 +643,16 @@ namespace AssetBundleGraph {
 
 			
 			// run datas.
-			connectionThroughputs = AssetBundleGraphController.PerformRun(loadedData, updateHandler);
+			s_connectionThroughputs = AssetBundleGraphController.PerformRun(loadedData, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
 
-			RefreshInspector(connectionThroughputs);
+			RefreshInspector(s_connectionThroughputs);
 
 			ShowErrorOnNodes();
 
-			Finally(currentNodes, currentConnections, connectionThroughputs, true);
+			Finally(currentNodes, currentConnections, s_connectionThroughputs, true);
 		}
 
 		private static void RefreshInspector (Dictionary<string,Dictionary<string, List<DepreacatedThroughputAsset>>> currentConnectionThroughputs) {
@@ -817,7 +833,7 @@ namespace AssetBundleGraph {
 			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
 			{
 				using (new EditorGUILayout.VerticalScope()) {
-					foreach(NodeException e in nodeExceptionPool) {
+					foreach(NodeException e in s_nodeExceptionPool) {
 						EditorGUILayout.HelpBox(e.reason, MessageType.Error);
 						if( GUILayout.Button("Go to Node") ) {
 							SelectNode(e.nodeId);
@@ -849,8 +865,8 @@ namespace AssetBundleGraph {
 
 				// draw connections.
 				foreach (var con in connections) {
-					if (connectionThroughputs.ContainsKey(con.connectionId)) { 
-						var throughputListDict = connectionThroughputs[con.connectionId];
+					if (s_connectionThroughputs.ContainsKey(con.connectionId)) { 
+						var throughputListDict = s_connectionThroughputs[con.connectionId];
 						con.DrawConnection(nodes, throughputListDict);
 					} else {
 						con.DrawConnection(nodes, new Dictionary<string, List<DepreacatedThroughputAsset>>());
@@ -1658,7 +1674,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			nodes.Add(newNode);
+			AddNodeGUI(newNode);
 		}
 
 		private void AddNodeFromGUI (string nodeName, AssetBundleGraphSettings.NodeKind kind, string nodeId, float x, float y) {
@@ -1763,7 +1779,7 @@ namespace AssetBundleGraph {
 			if (newNode == null) return;
 			Undo.RecordObject(this, "Add Node");
 
-			nodes.Add(newNode);
+			AddNodeGUI(newNode);
 		}
 
 		private void DrawStraightLineFromCurrentEventSourcePointTo (Vector2 to, OnNodeEvent eventSource) {
@@ -2226,6 +2242,21 @@ namespace AssetBundleGraph {
 				}
 			}
 
+			AddNodeGUI(newNode);
+		}
+
+		private void AddNodeGUI(NodeGUI newNode) {
+
+			int id = -1;
+
+			foreach(var node in nodes) {
+				if(node.WindowId > id) {
+					id = node.WindowId;
+				}
+			}
+
+			newNode.WindowId = id + 1;
+				
 			nodes.Add(newNode);
 		}
 
@@ -2367,6 +2398,12 @@ namespace AssetBundleGraph {
 				connections[deletedConnectionIndex].SetInactive();
 				connections.RemoveAt(deletedConnectionIndex);
 			}
+		}
+
+		public int GetUnusedWindowId() {
+			int highest = 0;
+			nodes.ForEach((NodeGUI n) => { if(n.WindowId > highest) highest = n.WindowId; });
+			return highest + 1;
 		}
 	}
 }

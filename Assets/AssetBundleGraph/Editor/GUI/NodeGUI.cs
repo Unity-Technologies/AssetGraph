@@ -63,6 +63,16 @@ namespace AssetBundleGraph {
 			this.nodeInsp.UpdateErrors(errors);
 		}
 
+		public int WindowId {
+			get {
+				return nodeWindowId;
+			}
+
+			set {
+				nodeWindowId = value;
+			}
+		}
+
 		/*
 			show progress on node functions(unused. due to mainthread synchronization problem.)
 			can not update any visual on Editor while building AssetBundles through AssetBundleGraph.
@@ -266,7 +276,7 @@ namespace AssetBundleGraph {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
 			this.nodeInsp.hideFlags = HideFlags.DontSave;
 
-			this.nodeWindowId = NodeGUIUtility.GetNewWindowId();
+			this.nodeWindowId = 0;
 			this.name = name;
 			this.nodeId = nodeId;
 			this.kind = kind;
@@ -799,11 +809,13 @@ namespace AssetBundleGraph {
 
 					// update node height by number of output connectionPoint.
 					var outputPointCount = connectionPoints.Where(connectionPoint => connectionPoint.isOutput).ToList().Count;
-					if (1 < outputPointCount) {
-						this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT + (AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * (outputPointCount - 1)));
-					} else {
-						this.baseRect = new Rect(baseRect.x, baseRect.y, baseRect.width, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
-					}
+					var inputPointCount  = connectionPoints.Where(connectionPoint => connectionPoint.isInput).ToList().Count;
+					var larger = Mathf.Max(outputPointCount, inputPointCount);
+					this.baseRect = new Rect(baseRect.x, baseRect.y, 
+						baseRect.width, 
+						AssetBundleGraphGUISettings.NODE_BASE_HEIGHT + (AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * Mathf.Max(0, (larger - 1)))
+					);
+
 					break;
 				}
 			}
