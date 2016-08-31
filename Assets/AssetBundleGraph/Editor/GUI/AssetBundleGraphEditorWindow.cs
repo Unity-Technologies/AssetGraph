@@ -66,10 +66,15 @@ namespace AssetBundleGraph {
 		}
 		
 		public enum ScriptType : int {
+			SCRIPT_MODIFIER,
 			SCRIPT_PREFABRICATOR,
 			SCRIPT_FINALLY
 		}
 
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_MODIFIER)]
+		public static void GenerateModifier () {
+			GenerateScript(ScriptType.SCRIPT_MODIFIER);
+		}
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABRICATOR)]
 		public static void GeneratePrefabricator () {
 			GenerateScript(ScriptType.SCRIPT_PREFABRICATOR);
@@ -134,6 +139,11 @@ namespace AssetBundleGraph {
 			var sourceFileName = string.Empty;
 
 			switch (scriptType) {
+				case ScriptType.SCRIPT_MODIFIER: {
+					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyModifier.cs.template");
+					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyModifier.cs");
+					break;
+				}
 				case ScriptType.SCRIPT_PREFABRICATOR: {
 					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabricator.cs.template");
 					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabricator.cs");
@@ -1384,7 +1394,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					// nothing to add.
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 					break;
 				}
 				
@@ -1512,7 +1522,8 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var newNode = NodeGUI.CreateGUIModifierNode(name, id, kind, x, y);
+					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
+					var newNode = NodeGUI.CreateGUIModifierNode(name, id, kind, x, y, scriptClassName);
 
 					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
@@ -1697,7 +1708,8 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					newNode = NodeGUI.CreateGUIModifierNode(nodeName, nodeId, kind, x, y);
+					var defaultScriptClassName = string.Empty;
+					newNode = NodeGUI.CreateGUIModifierNode(nodeName, nodeId, kind, x, y, defaultScriptClassName);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;

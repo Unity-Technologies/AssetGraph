@@ -193,9 +193,9 @@ namespace AssetBundleGraph {
 			}
 			
 			/*
-							importer node has no platform key. 
-							platform key is contained by Unity's importer inspector itself.
-						*/
+				importer node has no platform key. 
+				platform key is contained by Unity's importer inspector itself.
+			*/
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var nodeId = node.nodeId;
 
@@ -245,105 +245,177 @@ namespace AssetBundleGraph {
 			var currentModifierTargetType = IntegratedGUIModifier.ModifierOperationTargetTypeName(node.nodeId);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var isOperationDataExist = false;
-				IntegratedGUIModifier.ValidateModifiyOperationData(
-					node.nodeId,
-					node.currentPlatform,
-					() => {
-						GUILayout.Label("No modifier data found, please Reload first.");
-					},
-					() => {
-						isOperationDataExist = true;
-					}
-				);
-				
-				if (!isOperationDataExist) {
-					return;
-				}
-				
-				using (new EditorGUILayout.HorizontalScope()) {
-					GUILayout.Label("Target Type:");
-					GUILayout.Label(currentModifierTargetType);
-				}
-
-				/*
-					reset whole platform's data for this modifier.
-				*/
-				if (GUILayout.Button("Reset Modifier")) {
-					var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
-					FileUtility.RemakeDirectory(modifierFolderPath);
-					node.Save();
-					modifierOperatorInstance = null;
-					return;
-				}
-			}
-			
-			var currentPlatform = node.currentPlatform;
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
-			/*
-				if platform tab is changed, renew modifierOperatorInstance for that tab.
-			*/
-			if (currentPlatform != node.currentPlatform) {
-				modifierOperatorInstance = null;
-			}
-
-			/*
-				reload modifierOperator instance from saved modifierOperator data.
-			*/
-			if (modifierOperatorInstance == null) {
-				var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
-
-				// choose default modifierOperatorData if platform specified file is not exist.
-				if (!File.Exists(modifierOperatorDataPath)) {
-					modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForDefaultPlatform(node.nodeId);
-				}
-				
-				var loadedModifierOperatorDataStr = string.Empty;
-				using (var sr = new StreamReader(modifierOperatorDataPath)) {
-					loadedModifierOperatorDataStr = sr.ReadToEnd();
-				} 
-
-				var modifierOperatorType = TypeUtility.SupportedModifierOperatorDefinition[currentModifierTargetType];
-
-				/*
-					create instance from saved modifierOperator data.
-				*/
-				modifierOperatorInstance = typeof(NodeGUIEditor)
-					.GetMethod("FromJson")
-					.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
-					.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
-			}
-
-			/*
-				Show ModifierOperator Inspector.
-			*/
-			if (modifierOperatorInstance != null) {
-				Action changed = () => {
-					var data = JsonUtility.ToJson(modifierOperatorInstance);
-					var prettified = AssetBundleGraphEditorWindow.PrettifyJson(data);
-
-					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
-
-					using (var sw = new StreamWriter(modifierOperatorDataPath)) {
-						sw.Write(prettified);
-					}
-
-					// reflect change of data.
-					AssetDatabase.Refresh();
+				// show incoming type of Assets and reset interface.
+				{
+					var isOperationDataExist = false;
+					IntegratedGUIModifier.ValidateModifiyOperationData(
+						node.nodeId,
+						node.currentPlatform,
+						() => {
+							GUILayout.Label("No modifier data found, please Reload first.");
+						},
+						() => {
+							isOperationDataExist = true;
+						}
+					);
 					
-					modifierOperatorInstance = null;
-				};
+					if (!isOperationDataExist) {
+						return;
+					}
+
+					using (new EditorGUILayout.HorizontalScope()) {
+						GUILayout.Label("Target Type:");
+						GUILayout.Label(currentModifierTargetType);
+					}
+
+					/*
+						reset whole platform's data for this modifier.
+					*/
+					if (GUILayout.Button("Reset Modifier")) {
+						var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
+						FileUtility.RemakeDirectory(modifierFolderPath);
+						node.Save();
+						modifierOperatorInstance = null;
+						return;
+					}
+				}
 
 				GUILayout.Space(10f);
 
-				modifierOperatorInstance.DrawInspector(changed);
-			}
+				var usingScriptMode = !string.IsNullOrEmpty(node.scriptClassName);
 
-			var deleted = UpdateDeleteSetting(node);
-			if (deleted) {
-				// source platform depended data is deleted. reload instance for reloading instance from data.
-				modifierOperatorInstance = null;
+				// use modifier script manually.
+				{
+					GUIStyle s = new GUIStyle("TextFieldDropDownText");
+					/*
+						check prefabricator script-type string.
+					*/
+					if (string.IsNullOrEmpty(node.scriptClassName)) {
+						s.fontStyle = FontStyle.Bold;
+						s.fontSize  = 12;
+					} else {
+						var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptClassName);
+
+						if (loadedType == null) {
+							s.fontStyle = FontStyle.Bold;
+							s.fontSize  = 12;
+						}
+					}
+					
+					var before = !string.IsNullOrEmpty(node.scriptClassName);
+					usingScriptMode = EditorGUILayout.ToggleLeft("Use ModifierOperator Script", !string.IsNullOrEmpty(node.scriptClassName));
+					
+					// detect mode changed.
+					if (before != usingScriptMode) {
+						// checked. initialize value of scriptClassName.
+						if (usingScriptMode) {
+							node.BeforeSave();
+							node.scriptClassName = "MyModifier";
+							node.Save();
+						}
+
+						// unchecked.
+						if (!usingScriptMode) {
+							node.BeforeSave();
+							node.scriptClassName = string.Empty;
+							node.Save();
+						}
+					}
+					
+					if (!usingScriptMode) {
+						EditorGUI.BeginDisabledGroup(true);	
+					}
+					GUILayout.Label("ここをドロップダウンにする。2");
+					var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptClassName, s);
+					if (newScriptClass != node.scriptClassName) {
+						node.BeforeSave();
+						node.scriptClassName = newScriptClass;
+						node.Save();
+					}
+					if (!usingScriptMode) {
+						EditorGUI.EndDisabledGroup();	
+					}
+				}
+
+				GUILayout.Space(10f);
+
+				if (usingScriptMode) {
+					EditorGUI.BeginDisabledGroup(true);
+				}
+
+				// show for each platform tab. 
+
+				var currentPlatform = node.currentPlatform;
+				node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+
+				/*
+					if platform tab is changed, renew modifierOperatorInstance for that tab.
+				*/
+				if (currentPlatform != node.currentPlatform) {
+					modifierOperatorInstance = null;
+				}
+
+				/*
+					reload modifierOperator instance from saved modifierOperator data.
+				*/
+				if (modifierOperatorInstance == null) {
+					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
+
+					// choose default modifierOperatorData if platform specified file is not exist.
+					if (!File.Exists(modifierOperatorDataPath)) {
+						modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForDefaultPlatform(node.nodeId);
+					}
+					
+					var loadedModifierOperatorDataStr = string.Empty;
+					using (var sr = new StreamReader(modifierOperatorDataPath)) {
+						loadedModifierOperatorDataStr = sr.ReadToEnd();
+					} 
+
+					var modifierOperatorType = TypeUtility.SupportedModifierOperatorDefinition[currentModifierTargetType];
+
+					/*
+						create instance from saved modifierOperator data.
+					*/
+					modifierOperatorInstance = typeof(NodeGUIEditor)
+						.GetMethod("FromJson")
+						.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
+						.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
+				}
+
+				/*
+					Show ModifierOperator Inspector.
+				*/
+				if (modifierOperatorInstance != null) {
+					Action changed = () => {
+						var data = JsonUtility.ToJson(modifierOperatorInstance);
+						var prettified = AssetBundleGraphEditorWindow.PrettifyJson(data);
+
+						var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
+
+						using (var sw = new StreamWriter(modifierOperatorDataPath)) {
+							sw.Write(prettified);
+						}
+
+						// reflect change of data.
+						AssetDatabase.Refresh();
+						
+						modifierOperatorInstance = null;
+					};
+
+					GUILayout.Space(10f);
+
+					modifierOperatorInstance.DrawInspector(changed);
+				}
+
+				var deleted = UpdateDeleteSetting(node);
+				if (deleted) {
+					// source platform depended data is deleted. reload instance for reloading instance from data.
+					modifierOperatorInstance = null;
+				}
+
+				if (usingScriptMode) {
+					EditorGUI.EndDisabledGroup();
+				}
 			}
 		}
 
@@ -437,8 +509,8 @@ namespace AssetBundleGraph {
 						s.fontSize  = 12;
 					}
 				}
-
-
+				
+				GUILayout.Label("ここをドロップダウンにする。");
 				var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptClassName, s);
 
 				if (newScriptClass != node.scriptClassName) {

@@ -127,13 +127,14 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIModifierNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreateGUIModifierNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y, string scriptClassName) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
-				y: y
+				y: y,
+				scriptClassName: scriptClassName
 			);
 		}
 

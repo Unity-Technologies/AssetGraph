@@ -9,13 +9,14 @@ using System.IO;
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeOperationBase {
 		private readonly string currentPlatformStr;
+		private readonly string specifiedScriptClass;
 
-		public IntegratedGUIModifier (string modifierTargetPlatform) {
+		public IntegratedGUIModifier (string specifiedScriptClass, string modifierTargetPlatform) {
+			this.specifiedScriptClass = specifiedScriptClass;
 			this.currentPlatformStr = modifierTargetPlatform;
 		}
 
-		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) 
-		{
+		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			if (groupedSources.Keys.Count == 0) {
 				return;
 			}
@@ -60,7 +61,14 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			// modifierType is fixed. check support.
+			// modifierType is fixed. 
+			
+			if (!string.IsNullOrEmpty(specifiedScriptClass)) {
+				Debug.LogError("modifierのScript版実装中。");
+				return;
+			}
+
+			// check support.
 			if (!TypeUtility.SupportedModifierOperatorDefinition.ContainsKey(modifierType)) {
 				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", nodeId);
 			}
@@ -155,7 +163,14 @@ namespace AssetBundleGraph {
 			// load type from 1st asset of flow.
 			var modifierType = TypeUtility.FindTypeOfAsset(inputSources[0].importFrom).ToString();
 
-			// modifierType is fixed. check support.
+			// modifierType is fixed. 
+			
+			if (!string.IsNullOrEmpty(specifiedScriptClass)) {
+				Debug.LogError("modifierのScript版実装中。");
+				return;
+			}
+
+			// check support.
 			if (!TypeUtility.SupportedModifierOperatorDefinition.ContainsKey(modifierType)) {
 				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", nodeId);
 			}
@@ -192,7 +207,7 @@ namespace AssetBundleGraph {
 				read saved modifierOperation type for detect data type.
 			*/
 			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(loadedModifierOperatorData);
-			var dataTypeString = deserializedDataObject.dataType;
+			var dataTypeString = deserializedDataObject.operatorType;
 			
 			// sadly, if loaded assetType is no longer supported or not.
 			if (!TypeUtility.SupportedModifierOperatorDefinition.ContainsKey(dataTypeString)) {
@@ -300,7 +315,7 @@ namespace AssetBundleGraph {
 			}
 
 			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(dataStr);
-			return deserializedDataObject.dataType;
+			return deserializedDataObject.operatorType;
 		}
 
 		public static string ModifierDataPathForeachPlatform (string nodeId, string platformStr) {
