@@ -32,7 +32,6 @@ namespace AssetBundleGraph {
 			typeof(RenderTexture).ToString(),
 			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
-			typeof(Sprite).ToString(),
 			typeof(Scene).ToString(),
 		};
 		
