@@ -19,10 +19,11 @@ namespace AssetBundleGraph.ModifierOperators {
 		public MaterialOperator () {}
 
 		private MaterialOperator (
+			string operatorType,
 			Shader shader,
 			BlendMode blendMode
 		) {
-			this.dataType = "UnityEngine.Material";
+			this.operatorType = operatorType;
 			
 			this.shader = shader;
 			this.blendMode = blendMode;
@@ -33,6 +34,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		*/
 		public override OperatorBase DefaultSetting () {
 			return new MaterialOperator(
+				"UnityEngine.Material",
 				Shader.Find("Standard"),
 				BlendMode.Opaque
 			);
@@ -42,10 +44,8 @@ namespace AssetBundleGraph.ModifierOperators {
 			//var mat = asset as Material;
 
 			var changed = true;
-
-			// if (renderTex.wrapMode != this.wrapMode) changed = true; 
-			// if (renderTex.filterMode != this.filterMode) changed = true; 
-			// if (renderTex.anisoLevel != this.anisoLevel) changed = true;
+			
+			if ((int)mat.GetFloat("_Mode") != (int)this.blendMode) changed = true;
 
 			return changed; 
 		}
@@ -62,22 +62,15 @@ namespace AssetBundleGraph.ModifierOperators {
 		public override void Modify<T> (T asset) {
 			var targetMat = asset as Material;
 			var currentMaterial = GenerateSettingMaterial();
-
-			/*
-				ここからのパラメータは、currentMaterial経由での変更とかかな、、
-			*/
-			targetMat.shader = currentMaterial.shader;
 			
 			// set blend mode.
 			targetMat.SetFloat("_Mode", (int)currentMaterial.GetFloat("_Mode"));
-
-			// Debug.LogError("その他、、、Modifyで反映する必要があるもの全部。");
 		}
 
 		public override void DrawInspector (Action changed) {
 			var currentMaterial = GenerateSettingMaterial();
 			
-			GUILayout.Label("Shader これシェーダ一覧をどうやって読み出すんだ、、、");
+			GUILayout.Label("Shader シェーダ一覧を読み出すコードがinternalなので辛い");
 			// var newShader = ShaderPopup();
 			// if (newShader != this.material.shader) {
 			// 	this.material.shader = newShader;
@@ -123,7 +116,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		/**
-			エディタ内部でしか使えないリスト関数とか取得関数使っててつらい。
+			エディタ内部でしか使えないリスト関数とか取得関数使ってて変更できないのが悲しい。
 		*/
 		private void ShaderPopup() {
 			// bool enabled = GUI.enabled;

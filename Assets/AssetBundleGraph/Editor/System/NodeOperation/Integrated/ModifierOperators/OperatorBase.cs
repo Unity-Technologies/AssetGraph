@@ -7,9 +7,9 @@ namespace AssetBundleGraph.ModifierOperators {
 		every operator should extend this class and implement these virtual methods.
 	*/
 	[Serializable] public class OperatorBase {
-		[SerializeField] public string dataType;
+		[SerializeField] public string operatorType;
 
-		public OperatorBase () {}
+		public OperatorBase () {}// this class is required for serialization. and reflextion
 
         public virtual OperatorBase DefaultSetting () {
 			throw new Exception("should override DefaultSetting method.");

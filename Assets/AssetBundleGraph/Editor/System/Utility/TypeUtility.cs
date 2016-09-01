@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,7 +20,7 @@ namespace AssetBundleGraph {
 			// others(Assets)
 			typeof(Animation).ToString(),
 			typeof(Animator).ToString(),
-			typeof(Avatar).ToString(),
+			typeof(AvatarMask).ToString(),
 			typeof(Cubemap).ToString(),
 			typeof(Flare).ToString(),
 			typeof(Font).ToString(),
@@ -31,7 +32,6 @@ namespace AssetBundleGraph {
 			typeof(RenderTexture).ToString(),
 			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
-			typeof(Sprite).ToString(),
 			typeof(Scene).ToString(),
 		};
 		
@@ -39,7 +39,7 @@ namespace AssetBundleGraph {
 			// others(Assets)
 			{".anim", typeof(Animation)},
 			{".controller", typeof(Animator)},
-			{".mask", typeof(Avatar)},
+			{".mask", typeof(AvatarMask)},
 			{".cubemap", typeof(Cubemap)},
 			{".flare", typeof(Flare)},
 			{".fontsettings", typeof(Font)},
@@ -124,21 +124,21 @@ namespace AssetBundleGraph {
 		 * ModifierOperator map vs supported type
 		*/
 		public static Dictionary<string, Type> SupportedModifierOperatorDefinition = new Dictionary<string, Type> {
-			// {".anim", typeof(Animation)},
-			// {".controller", typeof(Animator)},
-			// {".mask", typeof(Avatar)},
-			// {".cubemap", typeof(Cubemap)},
-			// {".flare", typeof(Flare)},
-			// {".fontsettings", typeof(Font)},
-			// {".guiskin", typeof(GUISkin)},
-			// typeof(LightmapParameters).ToString(),
+			{"UnityEngine.Animation", typeof(ModifierOperators.AnimationOperator)},
+			{"UnityEngine.Animator", typeof(ModifierOperators.AnimatorOperator)},
+			{"UnityEditor.Animations.AvatarMask", typeof(ModifierOperators.AvatarMaskOperator)},
+			{"UnityEngine.Cubemap", typeof(ModifierOperators.CubemapOperator)},
+			{"UnityEngine.Flare", typeof(ModifierOperators.FlareOperator)},
+			{"UnityEngine.Font", typeof(ModifierOperators.FontOperator)},
+			{"UnityEngine.GUISkin", typeof(ModifierOperators.GUISkinOperator)},
+			// typeof(LightmapParameters).ToString(),// ファイルにならない
 			{"UnityEngine.Material", typeof(ModifierOperators.MaterialOperator)},
-			// {".physicMaterial", typeof(PhysicMaterial)},
-			// {".physicsMaterial2D", typeof(PhysicsMaterial2D)},
+			{"UnityEngine.PhysicMaterial", typeof(ModifierOperators.PhysicMaterialOperator)},
+			{"UnityEngine.PhysicsMaterial2D", typeof(ModifierOperators.PhysicsMaterial2DOperator)},
 			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)},
-			// // typeof(SceneAsset).ToString(),
-			// {".shader", typeof(Shader)},
-			// {".unity", typeof(Scene)},
+			// // typeof(SceneAsset).ToString(),// ファイルにならない
+			{"UnityEngine.Shader", typeof(ModifierOperators.ShaderOperator)},
+			{"UnityEngine.SceneManagement.Scene", typeof(ModifierOperators.SceneOperator)},
 		};
 	}
 }

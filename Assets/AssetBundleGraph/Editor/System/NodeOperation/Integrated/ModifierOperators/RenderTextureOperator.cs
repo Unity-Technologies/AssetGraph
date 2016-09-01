@@ -99,6 +99,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		public RenderTextureOperator () {}
 
 		private RenderTextureOperator (
+			string operatorType,
 			// Int32 width, Int32 height,
 			// AntiAliasing antiAliasing,
 			// UnityEngine.RenderTextureFormat colorFormat,
@@ -107,7 +108,7 @@ namespace AssetBundleGraph.ModifierOperators {
 			UnityEngine.FilterMode filterMode,
 			Int32 anisoLevel
 		) {
-			this.dataType = "UnityEngine.RenderTexture";
+			this.operatorType = operatorType;
 			
 			this.wrapMode = wrapMode;
 			this.filterMode = filterMode;
@@ -119,6 +120,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		*/
 		public override OperatorBase DefaultSetting () {
 			return new RenderTextureOperator(
+				"UnityEngine.RenderTexture",
 				UnityEngine.TextureWrapMode.Clamp,
 				UnityEngine.FilterMode.Bilinear,
 				0

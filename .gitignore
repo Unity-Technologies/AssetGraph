@@ -104,10 +104,4 @@ Assets/sss.renderTexture.meta
 
 Assets/TestResourceAssets.meta
 
-Assets/scr1.png
-
-Assets/scr1.png.meta
-
-Assets/New Material.mat
-
-Assets/New Material.mat.meta
+Assets/ModifierTestResources/*
