@@ -14,144 +14,68 @@ using System.Security.Cryptography;
 namespace AssetBundleGraph {
 	public class SystemDataValidator {
 
+		/*
+		 * Checks deserialized Json Data, and make some changes if necessary
+		 * Returns original Json Data if there is no change necessary, and returns modified Json Data if there is some changes.
+		 */
 		public static Dictionary<string, object> CreateSafeDecerializedJsonData (Dictionary<string, object> deserializedJsonData) {
 			var changed = false;
 
-			var nodesSource = deserializedJsonData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES] as List<object>;
-			var newNodes = new List<Dictionary<string, object>>();
+			var allNodesJson = deserializedJsonData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES] as List<object>;
+			var sanitizedAllNodesJson = new List<Dictionary<string, object>>();
 
 			/*
 				delete undetectable node.
 			*/
-			foreach (var nodeSource in nodesSource) {
-				var nodeDict = nodeSource as Dictionary<string, object>;
-				
-				var nodeId = nodeDict[AssetBundleGraphSettings.NODE_ID] as string;
-
-				var kindSource = nodeDict[AssetBundleGraphSettings.NODE_KIND] as string;
-
-				var kind = AssetBundleGraphSettings.NodeKindFromString(kindSource);
-				
-				var nodeName = nodeDict[AssetBundleGraphSettings.NODE_NAME] as string;
+			foreach (var n in allNodesJson) {
+				var nodeJson = n as Dictionary<string, object>;				
 
 				// copy all key and value to new Node data dictionary.
-				var newNodeDict = new Dictionary<string, object>();
-				foreach (var key in nodeDict.Keys) {
-					newNodeDict[key] = nodeDict[key];
+				var sanitizedNodeJson = new Dictionary<string, object>();
+				foreach (var key in nodeJson.Keys) {
+					sanitizedNodeJson[key] = nodeJson[key];
 				}
 
-				switch (kind) {
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-				
-						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
-						
-						// warn if no class found.
-						if (nodeScriptInstance == null) {
-							changed = true;
-							Debug.LogError("Node could not be created properly because AssetBundleGraph failed to create script instance for " + scriptClassName + ". No such class found in assembly.");
-							continue;
-						}
+				var kind = AssetBundleGraphSettings.NodeKindFromString(nodeJson[AssetBundleGraphSettings.NODE_KIND] as string);
 
-						/*
-							during validation, filter script receives only one group with key "0".
-						*/
-						if (kind == AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT) {
-							var outputLabelsSource = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-							var outputLabelsSet = new HashSet<string>();
-							foreach (var source in outputLabelsSource) {
-								outputLabelsSet.Add(source.ToString());
-							}
-
-							var latestLabels = new HashSet<string>();
-							Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<Asset>> source, List<string> usedCache) => {
-								latestLabels.Add(connectionLabel);
-							};
-
-							((FilterBase)nodeScriptInstance).Setup(
-								nodeName,
-								nodeId, 
-								string.Empty,
-								new Dictionary<string, List<Asset>>{
-									{"0", new List<Asset>()}
-								},
-								new List<string>(),
-								Output
-							);
-
-							if (!outputLabelsSet.SetEquals(latestLabels)) {
-								changed = true;
-								newNodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] = latestLabels.ToList();
-							}
-						}
-						break;
+				switch (kind) {	
+				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+					if(!ValidateNodeJsonDataForFilterScript(ref nodeJson, ref sanitizedNodeJson, ref changed)) {
+						changed = true;
+						continue;
 					}
-
-					case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-					case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
-					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
-					case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
-					case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-						// nothing to do.
-						break;
+					break;			
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: 
+					if(!ValidateNodeJsonDataForPrefabricator(ref nodeJson, kind == AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT)) 
+					{
+						changed = true;
+						continue;
 					}
-
-					/*
-						prefabricator GUI node with script.
-					*/
-					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-						if (string.IsNullOrEmpty(scriptClassName)) {
-							Debug.LogWarning(nodeName  + ": No script name assigned.");
-							break;
-						}
-
-						var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
-						
-						// warn if no class found.
-						if (nodeScriptInstance == null) {
-							Debug.LogError(nodeName  + " could not be created properly because AssetBundleGraph failed to create script instance for " + scriptClassName + ". No such class found in assembly.");
-						}
-						break;
+					break;
+				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
+					if(!ValidateNodeJsonDataForBundlizer(ref nodeJson)) {
+						changed = true;
+						continue;
 					}
-
-					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-						var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
-						if (bundleNameTemplateSource == null) {
-							Debug.LogWarning(nodeName + " bundleNameTemplateSource is null. This could be caused because of deserialization error.");
-							bundleNameTemplateSource = new Dictionary<string, object>();
-						}
-						var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
-						if (variantsSource == null) {
-							Debug.LogWarning(nodeName + " variantsSource is null. This could be caused because of deserialization error.");
-							variantsSource = new Dictionary<string, object>();
-						}
-						foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
-							var platform_package_bundleNameTemplate = bundleNameTemplateSource[platform_package_key] as string;
-							if (string.IsNullOrEmpty(platform_package_bundleNameTemplate)) {
-								Debug.LogWarning(nodeName + " Bundle Name Template is empty. Configure this from editor.");
-								break;
-							}
-						}						
-
+					break;
+				case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+				case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: 
+				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
 						break;
-					}
-
-					case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-						// nothing to do.
-						break;
-					}
-
-					default: {
+				default:
+					{
+						var nodeName = nodeJson[AssetBundleGraphSettings.NODE_NAME] as string;
 						Debug.LogError(nodeName + " is defined as unknown kind of node. value:" + kind);
 						break;
 					}
 				}
 
-				newNodes.Add(newNodeDict);
+				sanitizedAllNodesJson.Add(sanitizedNodeJson);
 			}
 
 			/*
@@ -161,18 +85,19 @@ namespace AssetBundleGraph {
 					erase connection which label does exists in the start node.
 			*/
 			
-			var connectionsSource = deserializedJsonData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS] as List<object>;
-			var newConnections = new List<Dictionary<string, object>>();
-			foreach (var connectionSource in connectionsSource) {
-				var connectionDict = connectionSource as Dictionary<string, object>;
+			var allConnectionsJson = deserializedJsonData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS] as List<object>;
+			var sanitizedAllConnectionsJson = new List<Dictionary<string, object>>();
+			foreach (var c in allConnectionsJson) {
+				var connectionJson = c as Dictionary<string, object>;
 
-				var connectionLabel = connectionDict[AssetBundleGraphSettings.CONNECTION_LABEL] as string;
-				var fromNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
-				var fromNodePointId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID] as string;
-				var toNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE] as string;
-				
+				var connectionLabel = connectionJson[AssetBundleGraphSettings.CONNECTION_LABEL] as string;
+				var fromNodeId 		= connectionJson[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
+				var fromNodePointId = connectionJson[AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID] as string;
+				var toNodeId 		= connectionJson[AssetBundleGraphSettings.CONNECTION_TONODE] as string;
+//				var toNodePointId 	= connectionJson[AssetBundleGraphSettings.CONNECTION_TONODE_CONPOINT_ID] as string;
+
 				// detect start node.
-				var fromNodeCandidates = newNodes.Where(
+				var fromNodeCandidates = sanitizedAllNodesJson.Where(
 					node => {
 						var nodeId = node[AssetBundleGraphSettings.NODE_ID] as string;
 						return nodeId == fromNodeId;
@@ -188,14 +113,16 @@ namespace AssetBundleGraph {
 				var candidateNode = fromNodeCandidates[0];
 				var candidateOutputPointIdsSources = candidateNode[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
 				var candidateOutputPointIds = new List<string>();
-				foreach (var candidateOutputPointIdsSource in candidateOutputPointIdsSources) candidateOutputPointIds.Add(candidateOutputPointIdsSource as string);
+				foreach (var candidateOutputPointIdsSource in candidateOutputPointIdsSources) {
+					candidateOutputPointIds.Add(candidateOutputPointIdsSource as string);
+				}
 				if (!candidateOutputPointIdsSources.Contains(fromNodePointId)) {
 					changed = true;
 					continue;
 				}
 
 				// detect end node.
-				var toNodeCandidates = newNodes.Where(
+				var toNodeCandidates = sanitizedAllNodesJson.Where(
 					node => {
 						var nodeId = node[AssetBundleGraphSettings.NODE_ID] as string;
 						return nodeId == toNodeId;
@@ -220,15 +147,14 @@ namespace AssetBundleGraph {
 					continue;
 				}
 
-				newConnections.Add(connectionDict);
+				sanitizedAllConnectionsJson.Add(connectionJson);
 			}
-
 
 			if (changed) {
 				var validatedResultDict = new Dictionary<string, object>{
 					{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED, DateTime.Now},
-					{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, newNodes},
-					{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, newConnections}
+					{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, sanitizedAllNodesJson},
+					{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, sanitizedAllConnectionsJson}
 				};
 				return validatedResultDict;
 			}
@@ -238,7 +164,8 @@ namespace AssetBundleGraph {
 
 		public static void ValidateAssertNodeOrder (AssetBundleGraphSettings.NodeKind fromKind, AssetBundleGraphSettings.NodeKind toKind) {
 			switch (toKind) {
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+				{
 					switch (fromKind) {
 						case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
 							// no problem.
@@ -253,7 +180,20 @@ namespace AssetBundleGraph {
 			}
 
 			switch (fromKind) {
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
+				{
+					switch (toKind) {
+					case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+						// no problem.
+						break;
+					default: {
+							throw new AssetBundleGraphException("Bundlizer can only output to BundleBuilder.");
+						}
+					}
+					break;
+				}
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+				{
 					switch (toKind) {
 						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
@@ -264,7 +204,7 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							throw new AssetBundleGraphException("BundleBuilder only accepts output to Filter, Grouping and Exporter.");
+							throw new AssetBundleGraphException("BundleBuilder can only output to Filter, Grouping and Exporter.");
 						}
 					}
 					break;
@@ -272,5 +212,108 @@ namespace AssetBundleGraph {
 			}
 		}
 
+
+		private static bool ValidateNodeJsonDataForPrefabricator(ref Dictionary<string, object> nodeJson, bool pureScriptNode) {
+
+			var nodeName = nodeJson[AssetBundleGraphSettings.NODE_NAME] as string;
+			var scriptClassName = nodeJson[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
+
+			if (string.IsNullOrEmpty(scriptClassName)) {
+				Debug.LogWarning(nodeName  + ": No script name assigned.");
+				// Node should not be removed if not pure script node
+				return !pureScriptNode;
+			}
+
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
+
+			if (nodeScriptInstance == null) {
+				Debug.LogError(nodeName  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for " + 
+					scriptClassName + ". No such class found in assembly.");
+
+				// Node should not be removed if not pure script node
+				return !pureScriptNode;
+			}
+
+			return true;
+		}
+
+		private static bool ValidateNodeJsonDataForFilterScript(
+			ref Dictionary<string, object> nodeJson, 
+			ref Dictionary<string, object> sanitizedNodeJson, 
+			ref bool isChanged) 
+		{
+
+			var nodeId 		= nodeJson[AssetBundleGraphSettings.NODE_ID] as string;
+			var nodeName 	= nodeJson[AssetBundleGraphSettings.NODE_NAME] as string;
+			var scriptClassName = nodeJson[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
+
+			if (string.IsNullOrEmpty(scriptClassName)) {
+				Debug.LogWarning(nodeName  + ": No script name assigned.");
+				return false;
+			}
+
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
+			if (nodeScriptInstance == null) {
+				Debug.LogError(nodeName  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for " + 
+					scriptClassName + ". No such class found in assembly.");
+				return false;
+			}
+
+			var outputLabelsJson = nodeJson[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+			var outputLabelsSet = new HashSet<string>();
+			foreach (var label in outputLabelsJson) {
+				outputLabelsSet.Add(label.ToString());
+			}
+
+			var labelsFromScript = new HashSet<string>();
+			Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output = 
+				(string dataSourceNodeId, string connectionLabel, Dictionary<string, List<Asset>> source, List<string> usedCache) => 
+			{
+				labelsFromScript.Add(connectionLabel);
+			};
+
+			// Setup() executed with dummy data to collect labels from derived script
+			((FilterBase)nodeScriptInstance).Setup(
+				nodeName,
+				nodeId, 
+				string.Empty,
+				new Dictionary<string, List<Asset>>{
+					{"0", new List<Asset>()}
+				},
+				new List<string>(),
+				Output
+			);
+
+			if (!outputLabelsSet.SetEquals(labelsFromScript)) {
+				sanitizedNodeJson[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] = labelsFromScript.ToList();
+				isChanged = true;
+			}
+			return true;
+		}
+
+		private static bool ValidateNodeJsonDataForBundlizer(ref Dictionary<string, object> nodeJson) {
+
+			var nodeName 	= nodeJson[AssetBundleGraphSettings.NODE_NAME] as string;
+
+			var bundleNameTemplateSource = nodeJson[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
+			if (bundleNameTemplateSource == null) {
+				Debug.LogWarning(nodeName + " bundleNameTemplateSource is null. This could be caused because of deserialization error.");
+				bundleNameTemplateSource = new Dictionary<string, object>();
+			}
+			var variantsSource = nodeJson[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
+			if (variantsSource == null) {
+				Debug.LogWarning(nodeName + " variantsSource is null. This could be caused because of deserialization error.");
+				variantsSource = new Dictionary<string, object>();
+			}
+			foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
+				var platform_package_bundleNameTemplate = bundleNameTemplateSource[platform_package_key] as string;
+				if (string.IsNullOrEmpty(platform_package_bundleNameTemplate)) {
+					Debug.LogWarning(nodeName + " Bundle Name Template is empty. Configure this from editor.");
+					break;
+				}
+			}
+
+			return true;
+		}
 	}
 }

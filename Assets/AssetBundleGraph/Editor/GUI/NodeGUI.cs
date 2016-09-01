@@ -350,6 +350,17 @@ namespace AssetBundleGraph {
 		}
 
 		public NodeGUI DuplicatedNode (float newX, float newY) {
+
+			// variants are set of <connectionId : label>
+			// therefore connectionId must be regenerated.
+			Dictionary<string, string> duplicatedVariants = null;
+			if( this.variants != null ) {
+				duplicatedVariants = new Dictionary<string, string>();
+				for(int i=0; i < this.variants.Values.Count; ++i) {
+					duplicatedVariants.Add(Guid.NewGuid().ToString(), this.variants.Values[i]);
+				}
+			}
+
 			var duplicatedNode = new NodeGUI(
 				this.name,
 				Guid.NewGuid().ToString(),
@@ -365,7 +376,7 @@ namespace AssetBundleGraph {
 				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
 				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
 				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
-				(this.variants != null) ? this.variants.ReadonlyDict() : null,
+				(duplicatedVariants != null) ? duplicatedVariants : null,
 				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
 			);
 			return duplicatedNode;
@@ -564,11 +575,6 @@ namespace AssetBundleGraph {
 
 		public ConnectionPoint ConnectionPointFromConPointId (string pointId) {
 			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
-			return targetPoints[0];
-		}
-
-		public ConnectionPoint ConnectionPointFromLabel (string label) {
-			var targetPoints = connectionPoints.Where(con => con.label == label).ToList();
 			return targetPoints[0];
 		}
 

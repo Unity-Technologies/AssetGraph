@@ -40,7 +40,8 @@ namespace AssetBundleGraph {
 				var fromNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
 				var fromNodeOutputPointId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID] as string;
 				var toNodeId = connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE] as string;
-				allConnections.Add(new ConnectionData(connectionId, connectionLabel, fromNodeId, fromNodeOutputPointId, toNodeId));
+				var toNodeInputPointId = connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE_CONPOINT_ID] as string;
+				allConnections.Add(new ConnectionData(connectionId, connectionLabel, fromNodeId, fromNodeOutputPointId, toNodeId, toNodeInputPointId));
 			}
 
 			var allNodes = new List<NodeData>();

@@ -140,7 +140,8 @@ namespace AssetBundleGraph {
 		public const string CONNECTION_FROMNODE = "fromNode";
 		public const string CONNECTION_FROMNODE_CONPOINT_ID = "fromNodeConPointId";
 		public const string CONNECTION_TONODE = "toNode";
-		
+		public const string CONNECTION_TONODE_CONPOINT_ID = "toNodeConPointId";
+
 		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";

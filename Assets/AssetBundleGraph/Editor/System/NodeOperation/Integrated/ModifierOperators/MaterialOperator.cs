@@ -39,7 +39,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var mat = asset as Material;
+			//var mat = asset as Material;
 
 			var changed = true;
 

@@ -15,13 +15,15 @@ namespace AssetBundleGraph {
 		public readonly string fromNodeId;
 		public readonly string fromNodeOutputPointId;
 		public readonly string toNodeId;
+		public readonly string toNodeInputPointId;
 
-		public ConnectionData (string connectionId, string connectionLabel, string fromNodeId, string fromNodeOutputPointId, string toNodeId) {
+		public ConnectionData (string connectionId, string connectionLabel, string fromNodeId, string fromNodeOutputPointId, string toNodeId, string toNodeInputPointId) {
 			this.connectionId = connectionId;
 			this.connectionLabel = connectionLabel;
 			this.fromNodeId = fromNodeId;
 			this.fromNodeOutputPointId = fromNodeOutputPointId;
 			this.toNodeId = toNodeId;
+			this.toNodeInputPointId = toNodeInputPointId;
 		}
 
 		public ConnectionData (ConnectionData connection) {
@@ -30,6 +32,7 @@ namespace AssetBundleGraph {
 			this.fromNodeId = connection.fromNodeId;
 			this.fromNodeOutputPointId = connection.fromNodeOutputPointId;
 			this.toNodeId = connection.toNodeId;
+			this.toNodeInputPointId = connection.toNodeInputPointId;
 		}
 	}
 }
