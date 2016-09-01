@@ -1728,7 +1728,7 @@ namespace AssetBundleGraph {
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					var defaultScriptClassName = string.Empty;
-					newNode = NodeGUI.CreateGUIModifierNode(nodeName, nodeId, kind, x, y);
+					newNode = NodeGUI.CreateGUIModifierNode(nodeName, nodeId, kind, x, y, defaultScriptClassName);
 					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;

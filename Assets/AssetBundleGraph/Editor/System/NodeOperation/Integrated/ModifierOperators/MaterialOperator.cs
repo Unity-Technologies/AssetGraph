@@ -41,11 +41,13 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			//var mat = asset as Material;
+			var mat = asset as Material;
 
-			var changed = true;
+			var changed = false;
 			
-			if ((int)mat.GetFloat("_Mode") != (int)this.blendMode) changed = true;
+			if ((int)mat.GetFloat("_Mode") != (int)this.blendMode) {
+				changed = true;
+			}
 
 			return changed; 
 		}
