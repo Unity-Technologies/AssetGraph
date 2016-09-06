@@ -16,7 +16,7 @@ namespace AssetBundleGraph {
 		public const int SCALE_WIDTH = 30;
 		public const float SCALE_RATIO = 0.3f;
 
-		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
+		[SerializeField] private List<ConnectionPointGUI> connectionPoints = new List<ConnectionPointGUI>();
 
 		[SerializeField] private int nodeWindowId;
 		[SerializeField] private Rect baseRect;
@@ -27,18 +27,17 @@ namespace AssetBundleGraph {
 
 		[SerializeField] public string scriptClassName;
 		[SerializeField] public string scriptPath;
-		[SerializeField] public SerializablePseudoDictionary loadPath;
-		[SerializeField] public SerializablePseudoDictionary exportTo;
+		[SerializeField] public SerializableMultiTargetString loadPath;
+		[SerializeField] public SerializableMultiTargetString exportTo;
 		[SerializeField] public List<string> filterContainsKeywords;
 		[SerializeField] public List<string> filterContainsKeytypes;
-		[SerializeField] public SerializablePseudoDictionary importerPackages;
-		[SerializeField] public SerializablePseudoDictionary groupingKeyword;
-		[SerializeField] public SerializablePseudoDictionary bundleNameTemplate;
+		[SerializeField] public SerializableMultiTargetString groupingKeyword;
+		[SerializeField] public SerializableMultiTargetString bundleNameTemplate;
 		[SerializeField] public SerializablePseudoDictionary variants;
-		[SerializeField] public SerializablePseudoDictionary2 enabledBundleOptions;
+		[SerializeField] public SerializableMultiTargetInt enabledBundleOptions;
 
-		// for platform-package specified parameter.
-		[SerializeField] public string currentPlatform = AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME;
+		//Current BuildTarget setting editing in inspector
+		[SerializeField] public BuildTargetGroup currentEditingGroup = BuildTargetGroup.Unknown;
 
 		public static List<string> NodeSharedPackages = new List<string>();
 
@@ -80,7 +79,7 @@ namespace AssetBundleGraph {
 		private float progress;
 		private bool running;
 
-		public static NodeGUI CreateLoaderNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> loadPath, float x, float y) {
+		public static NodeGUI CreateLoaderNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> loadPath, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -91,7 +90,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateExporterNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> exportTo, float x, float y) {
+		public static NodeGUI CreateExporterNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> exportTo, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -102,7 +101,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateScriptNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
+		public static NodeGUI CreateScriptNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -114,7 +113,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIFilterNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
+		public static NodeGUI CreateGUIFilterNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -126,18 +125,17 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIImportNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> importerPackages, float x, float y) {
+		public static NodeGUI CreateGUIImportNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
-				y: y,
-				importerPackages: importerPackages
+				y: y
 			);
 		}
 
-		public static NodeGUI CreateGUIModifierNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y, string scriptClassName) {
+		public static NodeGUI CreateGUIModifierNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, float x, float y, string scriptClassName) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -148,7 +146,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIGroupingNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> groupingKeyword, float x, float y) {
+		public static NodeGUI CreateGUIGroupingNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> groupingKeyword, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -159,7 +157,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -169,7 +167,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundlizerNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, string> bundleNameTemplate, Dictionary<string, string> variants, float x, float y) {
+		public static NodeGUI CreateBundlizerNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> bundleNameTemplate, Dictionary<string, string> variants, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -181,7 +179,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundleBuilderNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, Dictionary<string, List<string>> enabledBundleOptions, float x, float y) {
+		public static NodeGUI CreateBundleBuilderNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<int> enabledBundleOptions, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -193,7 +191,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddFilterOutputPoint (int addedIndex, string keyword) {
-			connectionPoints.Insert(addedIndex+1, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
+			connectionPoints.Insert(addedIndex+1, ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
@@ -207,7 +205,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddInputPoint (string guid, string label) {
-			connectionPoints.Add(ConnectionPoint.InputPoint(guid, label));
+			connectionPoints.Add(ConnectionPointGUI.InputPoint(guid, label));
 			Save();
 			UpdateNodeRect();
 		}
@@ -262,20 +260,19 @@ namespace AssetBundleGraph {
 		private NodeGUI (
 			string name, 
 			string nodeId, 
-			AssetBundleGraphSettings.NodeKind kind, 
+		AssetBundleGraphSettings.NodeKind kind, 
 			float x, 
 			float y,
 			string scriptClassName = null, 
 			string scriptPath = null, 
-			Dictionary<string, string> loadPath = null, 
-			Dictionary<string, string> exportTo = null, 
+			MultiTargetProperty<string> loadPath = null, 
+			MultiTargetProperty<string> exportTo = null, 
 			List<string> filterContainsKeywords = null, 
 			List<string> filterContainsKeytypes = null, 
-			Dictionary<string, string> importerPackages = null,
-			Dictionary<string, string> groupingKeyword = null,
-			Dictionary<string, string> bundleNameTemplate = null,
+			MultiTargetProperty<string> groupingKeyword = null,
+			MultiTargetProperty<string> bundleNameTemplate = null,
 			Dictionary<string, string> variants = null,
-			Dictionary<string, List<string>> enabledBundleOptions = null
+			MultiTargetProperty<int> enabledBundleOptions = null
 		) {
 			this.nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
 			this.nodeInsp.hideFlags = HideFlags.DontSave;
@@ -286,15 +283,14 @@ namespace AssetBundleGraph {
 			this.kind = kind;
 			this.scriptClassName = scriptClassName;
 			this.scriptPath = scriptPath;
-			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
-			if (exportTo != null) this.exportTo = new SerializablePseudoDictionary(exportTo);
+			if (loadPath != null) this.loadPath = new SerializableMultiTargetString(loadPath);
+			if (exportTo != null) this.exportTo = new SerializableMultiTargetString(exportTo);
 			this.filterContainsKeywords = filterContainsKeywords;
 			this.filterContainsKeytypes = filterContainsKeytypes;
-			if (importerPackages != null) this.importerPackages = new SerializablePseudoDictionary(importerPackages);
-			if (groupingKeyword != null) this.groupingKeyword = new SerializablePseudoDictionary(groupingKeyword);
-			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializablePseudoDictionary(bundleNameTemplate);
+			if (groupingKeyword != null) this.groupingKeyword = new SerializableMultiTargetString(groupingKeyword);
+			if (bundleNameTemplate != null) this.bundleNameTemplate = new SerializableMultiTargetString(bundleNameTemplate);
 			if (variants != null) this.variants = new SerializablePseudoDictionary(variants);
-			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializablePseudoDictionary2(enabledBundleOptions);
+			if (enabledBundleOptions != null) this.enabledBundleOptions = new SerializableMultiTargetInt(enabledBundleOptions);
 
 			this.baseRect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
 
@@ -370,53 +366,51 @@ namespace AssetBundleGraph {
 				newY,
 				this.scriptClassName,
 				this.scriptPath,
-				(this.loadPath != null) ? loadPath.ReadonlyDict() : null,
-				(this.exportTo != null) ? this.exportTo.ReadonlyDict() : null,
+				(this.loadPath != null) ? this.loadPath.ToProperty() : null,
+				(this.exportTo != null) ? this.exportTo.ToProperty() : null,
 				this.filterContainsKeywords,
 				this.filterContainsKeytypes,
-				(this.importerPackages != null) ? this.importerPackages.ReadonlyDict() : null,
-				(this.groupingKeyword != null) ? this.groupingKeyword.ReadonlyDict() : null,
-				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ReadonlyDict() : null,
+				(this.groupingKeyword != null) ? this.groupingKeyword.ToProperty() : null,
+				(this.bundleNameTemplate != null) ? this.bundleNameTemplate.ToProperty() : null,
 				(duplicatedVariants != null) ? duplicatedVariants : null,
-				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ReadonlyDict() : null
+				(this.enabledBundleOptions != null) ? this.enabledBundleOptions.ToProperty() : null
 			);
 			return duplicatedNode;
 		}
 
-		public void DeleteCurrentPackagePlatformKey (string platformPackageKey) {
+		public void DeletePlatformSettingOf (BuildTargetGroup g) {
 			switch (this.kind) {
 			case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					loadPath.Remove(platformPackageKey);
+					loadPath.Remove(g);
 					break;
 				}
 
 			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					importerPackages.Remove(platformPackageKey);
 					break;
 				}
 
 			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					IntegratedGUIModifier.DeletePlatformData(nodeId, platformPackageKey);
+					IntegratedGUIModifier.DeletePlatformData(nodeId, g);
 					break;
 				}
 
 			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					groupingKeyword.Remove(platformPackageKey);
+					groupingKeyword.Remove(g);
 					break;
 				}
 
 			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					bundleNameTemplate.Remove(platformPackageKey);
+					bundleNameTemplate.Remove(g);
 					break;
 				}
 
 			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					enabledBundleOptions.Remove(platformPackageKey);
+					enabledBundleOptions.Remove(g);
 					break;
 				}
 
 			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					exportTo.Remove(platformPackageKey);
+					exportTo.Remove(g);
 					break;
 				}
 
@@ -536,7 +530,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public void AddConnectionPoint (ConnectionPoint adding) {
+		public void AddConnectionPoint (ConnectionPointGUI adding) {
 			if(adding.label == AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL) {
 				connectionPoints.Insert(0, adding);
 			} else {
@@ -574,7 +568,7 @@ namespace AssetBundleGraph {
 				.ToList();
 		}
 
-		public ConnectionPoint ConnectionPointFromConPointId (string pointId) {
+		public ConnectionPointGUI ConnectionPointFromConPointId (string pointId) {
 			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
 			return targetPoints[0];
 		}
@@ -750,7 +744,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private Rect GetOutputRectForPoint (ConnectionPoint outputPoint) {
+		private Rect GetOutputRectForPoint (ConnectionPointGUI outputPoint) {
 			return new Rect(
 				baseRect.x + baseRect.width - 8f, 
 				baseRect.y + outputPoint.buttonRect.y + 1f, 
@@ -759,7 +753,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		private Rect GetInputRectForPoint (ConnectionPoint inputPoint) {
+		private Rect GetInputRectForPoint (ConnectionPointGUI inputPoint) {
 
 			return new Rect(
 				baseRect.x - 2f, 
@@ -863,7 +857,7 @@ namespace AssetBundleGraph {
 			RefreshConnectionPos();
 		}
 
-		private string IsOverConnectionPoint (List<ConnectionPoint> points, Vector2 touchedPoint) {
+		private string IsOverConnectionPoint (List<ConnectionPointGUI> points, Vector2 touchedPoint) {
 			foreach (var p in points) {
 				if (p.buttonRect.x <= touchedPoint.x && 
 					touchedPoint.x <= p.buttonRect.x + p.buttonRect.width && 
@@ -957,8 +951,8 @@ namespace AssetBundleGraph {
 			return new Vector2(x, y);
 		}
 
-		public List<ConnectionPoint> ConnectionPointUnderGlobalPos (Vector2 globalPos) {
-			var containedPoints = new List<ConnectionPoint>();
+		public List<ConnectionPointGUI> ConnectionPointUnderGlobalPos (Vector2 globalPos) {
+			var containedPoints = new List<ConnectionPointGUI>();
 
 			foreach (var connectionPoint in connectionPoints) {
 				var grobalConnectionPointRect = new Rect(

@@ -12,10 +12,10 @@ namespace AssetBundleGraph {
 		[SerializeField] public string connectionId;
 
 		[SerializeField] public string outputNodeId;
-		[SerializeField] public ConnectionPoint outputPoint;
+		[SerializeField] public ConnectionPointGUI outputPoint;
 
 		[SerializeField] public string inputNodeId;
-		[SerializeField] public ConnectionPoint inputPoint;
+		[SerializeField] public ConnectionPointGUI inputPoint;
 
 		[SerializeField] public ConnectionGUIInspectorHelper conInsp;
 
@@ -23,7 +23,7 @@ namespace AssetBundleGraph {
 
 		private Rect buttonRect;
 
-		public static ConnectionGUI LoadConnection (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
+		public static ConnectionGUI LoadConnection (string label, string connectionId, string startNodeId, ConnectionPointGUI output, string endNodeId, ConnectionPointGUI input) {
 			return new ConnectionGUI(
 				label,
 				connectionId,
@@ -34,7 +34,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static ConnectionGUI NewConnection (string label, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
+		public static ConnectionGUI NewConnection (string label, string startNodeId, ConnectionPointGUI output, string endNodeId, ConnectionPointGUI input) {
 			return new ConnectionGUI(
 				label,
 				Guid.NewGuid().ToString(),
@@ -45,7 +45,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		private ConnectionGUI (string label, string connectionId, string startNodeId, ConnectionPoint output, string endNodeId, ConnectionPoint input) {
+		private ConnectionGUI (string label, string connectionId, string startNodeId, ConnectionPointGUI output, string endNodeId, ConnectionPointGUI input) {
 			conInsp = ScriptableObject.CreateInstance<ConnectionGUIInspectorHelper>();
 			conInsp.hideFlags = HideFlags.DontSave;
 
@@ -223,15 +223,15 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public bool IsStartAtConnectionPoint (ConnectionPoint p) {
+		public bool IsStartAtConnectionPoint (ConnectionPointGUI p) {
 			return outputPoint == p;
 		}
 
-		public bool IsEndAtConnectionPoint (ConnectionPoint p) {
+		public bool IsEndAtConnectionPoint (ConnectionPointGUI p) {
 			return inputPoint == p;
 		}
 
-		public bool IsSameDetail (NodeGUI start, ConnectionPoint output, NodeGUI end, ConnectionPoint input) {
+		public bool IsSameDetail (NodeGUI start, ConnectionPointGUI output, NodeGUI end, ConnectionPointGUI input) {
 			if (
 				outputNodeId == start.nodeId &&
 				outputPoint == output && 
@@ -258,7 +258,7 @@ namespace AssetBundleGraph {
 	}
 
 	public static class NodeEditor_ConnectionListExtension {
-		public static bool ContainsConnection(this List<ConnectionGUI> connections, NodeGUI start, ConnectionPoint output, NodeGUI end, ConnectionPoint input) {
+		public static bool ContainsConnection(this List<ConnectionGUI> connections, NodeGUI start, ConnectionPointGUI output, NodeGUI end, ConnectionPointGUI input) {
 			foreach (var con in connections) {
 				if (con.IsSameDetail(start, output, end, input)) return true;
 			}

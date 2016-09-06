@@ -25,7 +25,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var physicsMaterial2D = asset as PhysicsMaterial2D;
+			//var physicsMaterial2D = asset as PhysicsMaterial2D;
 
 			var changed = false;
 			
@@ -40,7 +40,7 @@ friction	Coefficient of friction.
 		}
 
 		public override void Modify<T> (T asset) {
-			var physicsMaterial2D = asset as PhysicsMaterial2D;
+			//var physicsMaterial2D = asset as PhysicsMaterial2D;
 			
 		}
 		

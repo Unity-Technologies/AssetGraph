@@ -25,7 +25,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var guiSkin = asset as GUISkin;
+			//var guiSkin = asset as GUISkin;
 
 			var changed = false;
 			
@@ -33,7 +33,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override void Modify<T> (T asset) {
-			var guiSkin = asset as GUISkin;
+			//var guiSkin = asset as GUISkin;
 			
 		}
 

@@ -26,7 +26,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var avarar = asset as AvatarMask;
+			//var avarar = asset as AvatarMask;
 
 			var changed = false;
 			
@@ -34,7 +34,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override void Modify<T> (T asset) {
-			var avarar = asset as AvatarMask;
+			//var avarar = asset as AvatarMask;
 			
 		}
 		

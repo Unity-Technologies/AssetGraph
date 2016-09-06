@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 	*/
 	public class IntegratedGUIImportSetting : INodeOperationBase {
 		
-		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
 			
@@ -26,7 +26,7 @@ namespace AssetBundleGraph {
 			
 			// ImportSetting merges multiple incoming groups into one, so warn this
 			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(nodeName + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+				Debug.LogWarning(node.Id + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
 			}
 
 			var inputSources = new List<Asset>();
@@ -37,7 +37,7 @@ namespace AssetBundleGraph {
 			var importedAssets = new List<Asset>();
 			
 
-			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
+			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
 			ValidateImportSample(samplingDirectoryPath,
 				(string samplePath) => {
 					// do nothing. keep importing new asset for sampling.
@@ -52,7 +52,7 @@ namespace AssetBundleGraph {
 				(string samplePath) => {
 					throw new NodeException(
 						String.Format("Too many sample file found for this import setting node. Delete files in {0} or use \"Clear Saved ImportSettings\" menu.", samplePath), 
-						nodeId);
+						node.Id);
 				}
 			);
 
@@ -85,7 +85,7 @@ namespace AssetBundleGraph {
 					}
 					
 					default: {
-						throw new NodeException("unhandled importer type:" + importerTypeStr, nodeId);
+						throw new NodeException("unhandled importer type:" + importerTypeStr, node.Id);
 					}
 				}
 				
@@ -107,7 +107,8 @@ namespace AssetBundleGraph {
 					importSettingSampleType = AssetImporter.GetAtPath(targetFilePath).GetType().ToString();
 				} else {
 					if (importerTypeStr != importSettingSampleType) {
-						throw new NodeException("Multiple asset type is given to Importer Settings. ImporterSetting Takes only 1 asset type." + nodeName +  " is configured for " + importSettingSampleType + ", but " + importerTypeStr + " found.", nodeId);
+						throw new NodeException("Multiple asset type is given to Importer Settings. ImporterSetting Takes only 1 asset type." + node.Name +  
+							" is configured for " + importSettingSampleType + ", but " + importerTypeStr + " found.", node.Id);
 					}
 				}
 			
@@ -122,31 +123,31 @@ namespace AssetBundleGraph {
 				outputDict[groupedSources.Keys.ToList()[0]] = importedAssets;
 			}
 
-			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
 		}
 		
-		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<Asset>>();
 
 
 			// caution if import setting file is exists already or not.
-			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
+			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
 			
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException(nodeName + ": No ImportSettings Directory found for this node:" + nodeName + " please supply assets to this node.");
+					throw new AssetBundleGraphBuildException(node.Name + ": No ImportSettings Directory found for this node:" + node.Name + " please supply assets to this node.");
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException(nodeName + ": No saved ImportSettings found for asset:" + samplePath);
+					throw new AssetBundleGraphBuildException(node.Name + ": No saved ImportSettings found for asset:" + samplePath);
 				},
 				(string samplePath) => {
 					sampleAssetPath = samplePath;
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException(nodeName + ": Too many ImportSettings found. please open editor and resolve issue:" + samplePath);
+					throw new AssetBundleGraphBuildException(node.Name + ": Too many ImportSettings found. please open editor and resolve issue:" + samplePath);
 				}
 			);
 			
@@ -157,7 +158,7 @@ namespace AssetBundleGraph {
 			
 			// ImportSetting merges multiple incoming groups into one, so warn this
 			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(nodeName + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+				Debug.LogWarning(node.Name + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
 			}
 
 			var inputSources = new List<Asset>();
@@ -179,7 +180,7 @@ namespace AssetBundleGraph {
 				
 				if (samplingAssetImporter.GetType() != importer.GetType()) {
 					throw new NodeException("for each importerSetting should be only treat 1 import setting. current import setting type of this node is:" + 
-						samplingAssetImporter.GetType().ToString() + " for file:" + asset.importFrom, nodeId);
+						samplingAssetImporter.GetType().ToString() + " for file:" + asset.importFrom, node.Id);
 				}
 				
 				assetImportSettingUpdateMap[asset] = false;
@@ -219,7 +220,7 @@ namespace AssetBundleGraph {
 					}
 					
 					default: {
-						throw new NodeException("unhandled importer type:" + importer.GetType().ToString(), nodeId);
+						throw new NodeException("unhandled importer type:" + importer.GetType().ToString(), node.Id);
 					}
 				}
 			}
@@ -252,7 +253,7 @@ namespace AssetBundleGraph {
 			
 			outputDict[the1stGroupKey] = outputSources;
 
-			Output(nodeId, connectionIdToNextNode, outputDict, usedCache);
+			Output(node.Id, connectionIdToNextNode, outputDict, usedCache);
 		}
 
 		public static void ValidateImportSample (string samplePath, 

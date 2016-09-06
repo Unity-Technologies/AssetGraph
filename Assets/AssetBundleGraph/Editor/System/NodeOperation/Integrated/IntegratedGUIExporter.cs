@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEditor;
 
 using System;
 using System.IO;
@@ -7,23 +8,17 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperationBase {
-		private readonly string exportFilePath;
-
-		public IntegratedGUIExporter (string exportFilePath) {
-			this.exportFilePath = exportFilePath;
-		}
-		
-		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 
 			try {
 				ValidateExportPath(
-					exportFilePath,
-					exportFilePath,
+					node.ExporterExportPath[target],
+					node.ExporterExportPath[target],
 					() => {
-						throw new NodeException(nodeName + ":Export Path is empty.", nodeId);
+						throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
 					},
 					() => {
-						throw new NodeException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath, nodeId);
+						throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target], node.Id);
 					}
 				);
 			} catch(NodeException e) {
@@ -31,25 +26,25 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			Export(nodeName, nodeId, connectionIdToNextNode, groupedSources, Output, false);
+			Export(target, node, connectionIdToNextNode, groupedSources, Output, false);
 		}
 		
-		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			ValidateExportPath(
-				exportFilePath,
-				exportFilePath,
+				node.ExporterExportPath[target],
+				node.ExporterExportPath[target],
 				() => {
-					throw new AssetBundleGraphBuildException(nodeName + ":Export Path is empty.");
+					throw new AssetBundleGraphBuildException(node.Name + ":Export Path is empty.");
 				},
 				() => {
-					throw new AssetBundleGraphBuildException(nodeName + ":Directory set to Export Path does not exist. Path:" + exportFilePath);
+					throw new AssetBundleGraphBuildException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target]);
 				}
 			);
 
-			Export(nodeName, nodeId, connectionIdToNextNode, groupedSources, Output, true);
+			Export(target, node, connectionIdToNextNode, groupedSources, Output, true);
 		}
 
-		private void Export (string nodeName, string nodeId, string labelToNext, Dictionary<string, List<Asset>> groupedSources, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output, bool isRun) {
+		private void Export (BuildTarget target, NodeData node, string labelToNext, Dictionary<string, List<Asset>> groupedSources, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output, bool isRun) {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict["0"] = new List<Asset>();
 
@@ -61,8 +56,8 @@ namespace AssetBundleGraph {
 
 				foreach (var source in inputSources) {
 					if (isRun) {
-						if (!Directory.Exists(exportFilePath)) {
-							Directory.CreateDirectory(exportFilePath);
+						if (!Directory.Exists(node.ExporterExportPath[target])) {
+							Directory.CreateDirectory(node.ExporterExportPath[target]);
 						}
 					}
 					
@@ -81,7 +76,7 @@ namespace AssetBundleGraph {
 						destinationSourcePath = fromDepthToEnd;
 					}
 					
-					var destination = FileUtility.PathCombine(exportFilePath, destinationSourcePath);
+					var destination = FileUtility.PathCombine(node.ExporterExportPath[target], destinationSourcePath);
 					
 					var parentDir = Directory.GetParent(destination).ToString();
 
@@ -100,7 +95,7 @@ namespace AssetBundleGraph {
 							File.Copy(source.importFrom, destination);
 						} catch(Exception e) {
 							failedExports.Add(source.importFrom);
-							Debug.LogError(nodeName + ": Error occured: " + e.Message);
+							Debug.LogError(node.Name + ": Error occured: " + e.Message);
 						}
 					}
 
@@ -111,10 +106,10 @@ namespace AssetBundleGraph {
 			}
 
 			if (failedExports.Any()) {
-				Debug.LogError(nodeName + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
+				Debug.LogError(node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
-			Output(nodeId, labelToNext, outputDict, new List<string>());
+			Output(node.Id, labelToNext, outputDict, new List<string>());
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {

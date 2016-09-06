@@ -90,7 +90,7 @@ namespace AssetBundleGraph {
 
 		private bool showErrors;
 		private OnNodeEvent currentEventSource;
-		public ConnectionPoint modifingConnnectionPoint;
+		public ConnectionPointGUI modifingConnnectionPoint;
 		private Texture2D _selectionTex;
 		private GUIContent _reloadButtonTexture;
 		private ModifyMode modifyMode;
@@ -262,6 +262,12 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
+		public BuildTarget ActiveBuildTarget {
+			get {
+				// TODO: make this selectable from Window
+				return EditorUserBuildSettings.activeBuildTarget;
+			}
+		}
 
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
@@ -345,198 +351,91 @@ namespace AssetBundleGraph {
 			setup nodes, points and connections from saved data.
 		*/
 		public void InitializeGraph () {
-			var basePath = FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
-			
-			// create Temp folder under Assets/AssetBundleGraph
-			if (!Directory.Exists(basePath)) Directory.CreateDirectory(basePath);
 
-			var graphDataPath = FileUtility.PathCombine(basePath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
-
-
-			var deserialized = new Dictionary<string, object>();
-			var lastModified = DateTime.Now;
-
-			if (File.Exists(graphDataPath)) {
-
-				// load
-				var dataStr = string.Empty;
-				
-				using (var sr = new StreamReader(graphDataPath)) {
-					dataStr = sr.ReadToEnd();
-				}
-
-				try {
-					deserialized = AssetBundleGraph.Json.Deserialize(dataStr) as Dictionary<string, object>;
-				} catch (Exception e) {
-					Debug.LogError("Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + graphDataPath);
-					return;
-				}
-
-				var lastModifiedStr = deserialized[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED] as string;
-				lastModified = Convert.ToDateTime(lastModifiedStr);
-
-				var safeData = SystemDataValidator.CreateSafeDecerializedJsonData(deserialized);
-
-				var validatedDate = safeData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED] as string;
-				if (lastModifiedStr != validatedDate) {
-					// save validated graph data.
-					UpdateGraphData(safeData);
-
-					// reload
-					var dataStr2 = string.Empty;
-					using (var sr = new StreamReader(graphDataPath)) {
-						dataStr2 = sr.ReadToEnd();
-					}
-
-					deserialized = AssetBundleGraph.Json.Deserialize(dataStr2) as Dictionary<string, object>;
-
-					var lastModifiedStr2 = deserialized[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED] as string;
-					lastModified = Convert.ToDateTime(lastModifiedStr2);
-				}
-
-			} else {
-				var graphData = RenewData();
-
-				// set new empty graph data.
-				deserialized = graphData;
-			}
+			SaveData saveData = SaveData.LoadFromDisk();
 
 			/*
 				do nothing if json does not modified after first load.
 			*/
-			if (lastModified == lastLoaded) return;
-
-
-			lastLoaded = lastModified;
+			if (saveData.LastModified == lastLoaded) {
+				return;
+			}
+				
+			lastLoaded = saveData.LastModified;
 
 			minSize = new Vector2(600f, 300f);
 			
 			wantsMouseMove = true;
 			modifyMode = ModifyMode.CONNECT_ENDED;
-
-			
+						
 			
 			/*
 				load graph data from deserialized data.
 			*/
-			var nodesAndConnections = ConstructGraphFromDeserializedData(deserialized);
-			nodes = nodesAndConnections.currentNodes;
-			connections = nodesAndConnections.currentConnections;
+			ConstructGraphFromSaveData(saveData, out this.nodes, out this.connections);
 		}
 
-		private static Dictionary<string, object> RenewData () {
-			// renew
-			var graphData = new Dictionary<string, object>{
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, new List<object>()},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, new List<object>()}
-			};
+		/**
+		 * Get WindowId does not collide with other nodeGUIs
+		 */ 
+		private static int GetSafeWindowId(List<NodeGUI> nodeGUIs) {
+			int id = -1;
 
-			// save new empty graph data.
-			UpdateGraphData(graphData);
-
-			return graphData;
-		}
-
-		private struct NodesAndConnections {
-			public List<NodeGUI> currentNodes;
-			public List<ConnectionGUI> currentConnections;
-
-			public NodesAndConnections (List<NodeGUI> currentNodes, List<ConnectionGUI> currentConnections) {
-				this.currentNodes = currentNodes;
-				this.currentConnections = currentConnections;
+			foreach(var nodeGui in nodeGUIs) {
+				if(nodeGui.WindowId > id) {
+					id = nodeGui.WindowId;
+				}
 			}
+			return id + 1;
 		}
 
-		private static NodesAndConnections ConstructGraphFromDeserializedData (Dictionary<string, object> deserializedData) {
+		/**
+		 * Creates Graph structure with NodeGUI and ConnectionGUI from SaveData
+		 */ 
+		private static void ConstructGraphFromSaveData (SaveData saveData, out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
-			var allNodesJson = deserializedData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES] as List<object>;
-			
-			foreach (var nodeJson in allNodesJson) {
-
-				var newNode = CreateNodeGUIFromJson(nodeJson as Dictionary<string, object>);
-
-				int id = -1;
-
-				foreach(var node in currentNodes) {
-					if(node.WindowId > id) {
-						id = node.WindowId;
-					}
-				}
-				newNode.WindowId = id + 1;
-
-				currentNodes.Add(newNode);
+			foreach (var node in saveData.Nodes) {
+				var newNodeGUI = CreateNodeGUI(node);
+				newNodeGUI.WindowId = GetSafeWindowId(currentNodes);
+				currentNodes.Add(newNodeGUI);
 			}
 
-			// add default input if node is not NodeKind.LOADER_GUI.
-			foreach (var node in currentNodes) {
-				if (node.kind == AssetBundleGraphSettings.NodeKind.LOADER_GUI) {
+			// add default input if node is not AssetBundleGraphSettings.NodeKind.LOADER_GUI.
+			foreach (var nodeGUI in currentNodes) {
+				if (nodeGUI.kind == AssetBundleGraphSettings.NodeKind.LOADER_GUI) {
 					continue;// no input point.
 				}
-				node.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				nodeGUI.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 			}
-			
-			// load connections
-			var connectionsSource = deserializedData[AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS] as List<object>;
-			foreach (var connectionSource in connectionsSource) {
-				var connectionDict 	= connectionSource as Dictionary<string, object>;
-				var label 			= connectionDict[AssetBundleGraphSettings.CONNECTION_LABEL] as string;
-				var connectionId 	= connectionDict[AssetBundleGraphSettings.CONNECTION_ID] as string;
-				var fromNodeId 		= connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE] as string;
-				var fromNodeConPointId = connectionDict[AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID] as string;
-				var toNodeId 		= connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE] as string;
-				var toNodeConPointId = connectionDict[AssetBundleGraphSettings.CONNECTION_TONODE_CONPOINT_ID] as string;
 
-				var startNodeCandidates = currentNodes.Where(node => node.nodeId == fromNodeId).ToList();
+			// load connections
+			foreach (var c in saveData.Connections) {
+				var startNodeCandidates = currentNodes.Where(node => node.nodeId == c.FromNodeId).ToList();
 				if (!startNodeCandidates.Any()) {
 					continue;
 				}
 				var startNode = startNodeCandidates[0];
-				var startPoint = startNode.ConnectionPointFromConPointId(fromNodeConPointId);
+				var startPoint = startNode.ConnectionPointFromConPointId(c.FromNodeConnectionPointId);
 
-				var endNodeCandidates = currentNodes.Where(node => node.nodeId == toNodeId).ToList();
+				var endNodeCandidates = currentNodes.Where(node => node.nodeId == c.ToNodeId).ToList();
 				if (!endNodeCandidates.Any()) {
 					continue;
 				}
 				var endNode = endNodeCandidates[0];
-				var endPoint = endNode.ConnectionPointFromConPointId(toNodeConPointId);
+				var endPoint = endNode.ConnectionPointFromConPointId(c.ToNodeConnectionPointId);
 
-				currentConnections.Add(ConnectionGUI.LoadConnection(label, connectionId, startNode.nodeId, startPoint, endNode.nodeId, endPoint));
+				currentConnections.Add(ConnectionGUI.LoadConnection(c.Label, c.Id, startNode.nodeId, startPoint, endNode.nodeId, endPoint));
 			}
 
-			return new NodesAndConnections(currentNodes, currentConnections);
+			nodes = currentNodes;
+			connections = currentConnections;
 		}
 
 		private void SaveGraph () {
-			var nodeList = new List<Dictionary<string, object>>();
-			foreach (var node in nodes) {
-				var jsonRepresentationSourceDict = JsonRepresentationDict(node);
-				nodeList.Add(jsonRepresentationSourceDict);
-			}
-
-			var connectionList = new List<Dictionary<string, string>>();
-			foreach (var connection in connections) {
-				var connectionDict = new Dictionary<string, string>{
-					{AssetBundleGraphSettings.CONNECTION_LABEL, connection.label},
-					{AssetBundleGraphSettings.CONNECTION_ID, connection.connectionId},
-					{AssetBundleGraphSettings.CONNECTION_FROMNODE, connection.outputNodeId},
-					{AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID, connection.outputPoint.pointId},
-					{AssetBundleGraphSettings.CONNECTION_TONODE, connection.inputNodeId},
-					{AssetBundleGraphSettings.CONNECTION_TONODE_CONPOINT_ID, connection.inputPoint.pointId}
-				};
-				
-				connectionList.Add(connectionDict);
-			}
-
-			var graphData = new Dictionary<string, object>{
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, nodeList},
-				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, connectionList}
-			};
-
-			UpdateGraphData(graphData);
+			SaveData newSaveData = new SaveData(nodes, connections);
+			newSaveData.Save();
 		}
 
 		private void SaveGraphWithReloadSilent () {
@@ -563,10 +462,9 @@ namespace AssetBundleGraph {
 
 			EditorUtility.ClearProgressBar();
 
-			var graphDataPath = FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
-			if (!File.Exists(graphDataPath)) {
-				RenewData();
-				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. Creating from scratch...");
+			if (!SaveData.IsSaveDataAvailableAtDisk()) {
+				SaveData.RecreateDataOnDisk();
+				Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
 				return;
 			}
 
@@ -575,18 +473,13 @@ namespace AssetBundleGraph {
 			}
 
 			// reload data from file.
-			var dataStr = string.Empty;
-			using (var sr = new StreamReader(graphDataPath)) {
-				dataStr = sr.ReadToEnd();
-			}
-
-			var reloadedData = AssetBundleGraph.Json.Deserialize(dataStr) as Dictionary<string, object>;
+			SaveData saveData = SaveData.LoadFromDisk();
 
 			// update static all node names.
 			NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.name).ToList());
 
 			// ready throughput datas.
-			s_connectionThroughputs = AssetBundleGraphController.PerformSetup(reloadedData);
+			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, ActiveBuildTarget, false);
 
 			RefreshInspector(s_connectionThroughputs);
 
@@ -601,23 +494,19 @@ namespace AssetBundleGraph {
 		private void Run () {
 			ResetNodeExceptionPool();
 
-			var graphDataPath = FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
-			if (!File.Exists(graphDataPath)) {
-				RenewData();
-				Debug.Log(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME + " not found. Creating from scratch...");
+			if (!SaveData.IsSaveDataAvailableAtDisk()) {
+				SaveData.RecreateDataOnDisk();
+				Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
 				return;
 			}
 
-			// reload data from file.
-			var dataStr = string.Empty;
-			using (var sr = new StreamReader(graphDataPath)) {
-				dataStr = sr.ReadToEnd();
-			}
-			
-			var loadedData = AssetBundleGraph.Json.Deserialize(dataStr) as Dictionary<string, object>;
-			var nodesAndConnections = ConstructGraphFromDeserializedData(loadedData);
-			var currentNodes = nodesAndConnections.currentNodes;
-			var currentConnections = nodesAndConnections.currentConnections;
+			// load data from file.
+			SaveData saveData = SaveData.LoadFromDisk();
+
+			List<NodeGUI> currentNodes = null;
+			List<ConnectionGUI> currentConnections = null;
+
+			ConstructGraphFromSaveData(saveData, out currentNodes, out currentConnections);
 
 			var currentCount = 0.00f;
 			var totalCount = currentNodes.Count * 1f;
@@ -641,22 +530,19 @@ namespace AssetBundleGraph {
 					);
 				}
 			};
-
-
-			// setup datas. fail if exception raise.
-			AssetBundleGraphController.PerformSetup(loadedData);
-
+				
+			// perform setup. Fails if any exception raises.
+			AssetBundleGraphController.Perform(saveData, ActiveBuildTarget, false);
 
 			/*
 				remove bundlize setting names from unused Nodes.
 			*/
-			var graphDescription = GraphDescriptionBuilder.BuildGraphDescriptionFromJson(loadedData);
-			var usedNodeIds = graphDescription.allNodes.Select(usedNode => usedNode.nodeId).ToList();
+//			var graphDescription = GraphDescriptionBuilder.BuildGraphDescriptionFromJson(saveData);
+			var usedNodeIds = saveData.Nodes.Select(usedNode => usedNode.Id).ToList();
 			UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
-
 			
 			// run datas.
-			s_connectionThroughputs = AssetBundleGraphController.PerformRun(loadedData, updateHandler);
+			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, ActiveBuildTarget, true, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
@@ -1146,12 +1032,12 @@ namespace AssetBundleGraph {
 					var rightClickPos = Event.current.mousePosition;
 					var menu = new GenericMenu();
 					foreach (var menuItemStr in AssetBundleGraphSettings.GUI_Menu_Item_TargetGUINodeDict.Keys) {
-						var targetGUINodeNameStr = AssetBundleGraphSettings.GUI_Menu_Item_TargetGUINodeDict[menuItemStr];
+						var kind = AssetBundleGraphSettings.GUI_Menu_Item_TargetGUINodeDict[menuItemStr];
 						menu.AddItem(
 							new GUIContent(menuItemStr),
 							false, 
 							() => {
-								AddNodeFromGUI(string.Empty, targetGUINodeNameStr, Guid.NewGuid().ToString(), rightClickPos.x, rightClickPos.y);
+								AddNodeFromGUI(string.Empty, kind, Guid.NewGuid().ToString(), rightClickPos.x, rightClickPos.y);
 								SaveGraphWithReload();
 								Repaint();
 							}
@@ -1286,7 +1172,7 @@ namespace AssetBundleGraph {
 								var pasteType = copyField.type;
 								foreach (var copyFieldData in copyField.datas) {
 									var nodeJsonDict = AssetBundleGraph.Json.Deserialize(copyFieldData) as Dictionary<string, object>;
-									var pastingNode = CreateNodeGUIFromJson(nodeJsonDict);
+									var pastingNode = CreateNodeGUI(new NodeData(nodeJsonDict));
 									var pastingNodeName = pastingNode.name;
 
 									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
@@ -1354,296 +1240,205 @@ namespace AssetBundleGraph {
 		}
 
 		private List<string> JsonRepresentations (List<string> nodeIds) {
-			var jsonRepresentations = new List<string>();
-			var jsonRepsSourceDictList = nodes.Where(node => nodeIds.Contains(node.nodeId)).Select(node => JsonRepresentationDict(node)).ToList();
-			
-			foreach (var jsonRepsSourceDict in jsonRepsSourceDictList) {
-				var jsonString = AssetBundleGraph.Json.Serialize(jsonRepsSourceDict);
-				jsonRepresentations.Add(jsonString);
-			}
-			
-			return jsonRepresentations;
+			return nodes.Where(nodeGui => nodeIds.Contains(nodeGui.nodeId)).Select(nodeGui => new NodeData(nodeGui).ToJsonString()).ToList();
 		}
 
-		private static Dictionary<string, object> JsonRepresentationDict (NodeGUI node) {
-			var nodeDict = new Dictionary<string, object>();
+		private static NodeGUI CreateNodeGUI (NodeData n) {
 
-			nodeDict[AssetBundleGraphSettings.NODE_NAME] = node.name;
-			nodeDict[AssetBundleGraphSettings.NODE_ID] = node.nodeId;
-			nodeDict[AssetBundleGraphSettings.NODE_KIND] = node.kind.ToString();
+			throw new Exception("Implement this");
 
-			var outputLabels = node.OutputPointLabels();
-			nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] = outputLabels;
+//			var name = nodeDict[AssetBundleGraphSettings.NODE_NAME] as string;
+//			var id = nodeDict[AssetBundleGraphSettings.NODE_ID] as string;
+//			var kindSource = nodeDict[AssetBundleGraphSettings.NODE_KIND] as string;
+//
+//			var kind = AssetBundleGraphSettings.NodeKindFromString(kindSource);
+//			
+//			var posDict = nodeDict[AssetBundleGraphSettings.NODE_POS] as Dictionary<string, object>;
+//			var x = (float)Convert.ToInt32(posDict[AssetBundleGraphSettings.NODE_POS_X]);
+//			var y = (float)Convert.ToInt32(posDict[AssetBundleGraphSettings.NODE_POS_Y]);		
+//
+//			switch (kind) {
+//				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+//					var loadPathSource = nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
+//					var loadPath = new Dictionary<string, string>();
+//					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
+//
+//					var newNode = NodeGUI.CreateLoaderNode(name, id, kind, loadPath, x, y);
+//					
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+//
+//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+//					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
+//					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
+//
+//					var newNode = NodeGUI.CreateScriptNode(name, id, kind, scriptClassName, scriptPath, x, y);
+//
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//
+//				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+//					var filterContainsKeywordsSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
+//					var filterContainsKeywords = new List<string>();
+//					foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
+//						filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
+//					}
+//					
+//					var filterContainsKeytypesSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
+//					var filterContainsKeytypes = new List<string>();
+//					foreach (var filterContainsKeytypeSource in filterContainsKeytypesSource) {
+//						filterContainsKeytypes.Add(filterContainsKeytypeSource.ToString());
+//					}
+//
+//					var newNode = NodeGUI.CreateGUIFilterNode(name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
+//
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//
+//				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+//					var newNode = NodeGUI.CreateGUIImportNode(name, id, kind, x, y);
+//					
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//
+//				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+//					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
+//					var newNode = NodeGUI.CreateGUIModifierNode(name, id, kind, x, y, scriptClassName);
+//
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//
+//				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+//					var groupingKeywordSource = nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
+//					var groupingKeyword = new Dictionary<string, string>();
+//					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
+//
+//					var newNode = NodeGUI.CreateGUIGroupingNode(name, id, kind, groupingKeyword, x, y);
+//					
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//				
+//				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+//					
+//					var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
+//					var bundleNameTemplate = new Dictionary<string, string>();
+//					foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
+//						bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
+//					}
+//
+//					var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
+//					var variants = new Dictionary<string, string>();
+//					foreach (var inputPointId in variantsSource.Keys) {
+//						variants[inputPointId] = variantsSource[inputPointId] as string;
+//					}
+//
+//					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, variants, x, y);
+//					
+//					foreach (var inputPointId in variants.Keys) {
+//						newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(inputPointId, variants[inputPointId]));
+//					}
+//
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//
+//				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+//					var bundleOptions = new Dictionary<string, List<string>>();
+//
+//					var enabledBundleOptionsDict = nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
+//					foreach (var platform_package_key in enabledBundleOptionsDict.Keys) {
+//						var optionListSource = enabledBundleOptionsDict[platform_package_key] as List<object>;
+//						bundleOptions[platform_package_key] = new List<string>();
+//
+//						foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
+//					}
+//
+//					var newNode = NodeGUI.CreateBundleBuilderNode(name, id, kind, bundleOptions, x, y);
+//					
+//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
+//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
+//					
+//					for (var i = 0; i < outputIdsList.Count; i++) {
+//						var pointId = outputIdsList[i] as string;
+//						var label = outputLabelsList[i] as string;
+//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
+//					}
+//					return newNode;
+//				}
+//
+//				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+//					var exportPathSource = nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
+//					var exportTo = new Dictionary<string, string>();
+//					foreach (var platform_package_key in exportPathSource.Keys) exportTo[platform_package_key] = exportPathSource[platform_package_key] as string;
+//
+//					var newNode = NodeGUI.CreateExporterNode(name, id, kind, exportTo, x, y);
+//					return newNode;
+//				}
+//
+//				default: {
+//					Debug.LogError(name + " is defined as unknown kind of node. value:" + kind);
+//					break;
+//				}
+//			}
 
-			var outputPointIds = node.OutputPointIds();
-			nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] = outputPointIds;
-
-			var posDict = new Dictionary<string, object>();
-			posDict[AssetBundleGraphSettings.NODE_POS_X] = node.GetX();
-			posDict[AssetBundleGraphSettings.NODE_POS_Y] = node.GetY();
-
-			nodeDict[AssetBundleGraphSettings.NODE_POS] = posDict;
-
-			switch (node.kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
-					break;
-				}
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportTo.ReadonlyDict();
-					break;
-				}
-				
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
-					break;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
-					nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] = node.filterContainsKeytypes;
-					break;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
-					break;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
-					break;
-				}
-				
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
-					break;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
-					break;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
-					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] = node.variants.ReadonlyDict();
-					break;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
-					break;
-				}
-
-				default: {
-					Debug.LogError(node.name + " is defined as unknown kind of node. value:" + node.kind);
-					break;
-				}
-			}
-			return nodeDict;
-		}
-
-		private static NodeGUI CreateNodeGUIFromJson (Dictionary<string, object> nodeDict) {
-			var name = nodeDict[AssetBundleGraphSettings.NODE_NAME] as string;
-			var id = nodeDict[AssetBundleGraphSettings.NODE_ID] as string;
-			var kindSource = nodeDict[AssetBundleGraphSettings.NODE_KIND] as string;
-
-			var kind = AssetBundleGraphSettings.NodeKindFromString(kindSource);
-			
-			var posDict = nodeDict[AssetBundleGraphSettings.NODE_POS] as Dictionary<string, object>;
-			var x = (float)Convert.ToInt32(posDict[AssetBundleGraphSettings.NODE_POS_X]);
-			var y = (float)Convert.ToInt32(posDict[AssetBundleGraphSettings.NODE_POS_Y]);		
-
-			switch (kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					var loadPathSource = nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
-					var loadPath = new Dictionary<string, string>();
-					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
-
-					var newNode = NodeGUI.CreateLoaderNode(name, id, kind, loadPath, x, y);
-					
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
-
-					var newNode = NodeGUI.CreateScriptNode(name, id, kind, scriptClassName, scriptPath, x, y);
-
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					var filterContainsKeywordsSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
-					var filterContainsKeywords = new List<string>();
-					foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
-						filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
-					}
-					
-					var filterContainsKeytypesSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
-					var filterContainsKeytypes = new List<string>();
-					foreach (var filterContainsKeytypeSource in filterContainsKeytypesSource) {
-						filterContainsKeytypes.Add(filterContainsKeytypeSource.ToString());
-					}
-
-					var newNode = NodeGUI.CreateGUIFilterNode(name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
-
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					var defaultPlatformAndPackagesSource = nodeDict[AssetBundleGraphSettings.NODE_IMPORTER_PACKAGES] as Dictionary<string, object>;
-					var defaultPlatformAndPackages = new Dictionary<string, string>();
-					foreach (var platform_package_key in defaultPlatformAndPackagesSource.Keys) defaultPlatformAndPackages[platform_package_key] = defaultPlatformAndPackagesSource[platform_package_key] as string;
-
-					var newNode = NodeGUI.CreateGUIImportNode(name, id, kind, defaultPlatformAndPackages, x, y);
-					
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-					var newNode = NodeGUI.CreateGUIModifierNode(name, id, kind, x, y, scriptClassName);
-
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					var groupingKeywordSource = nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
-					var groupingKeyword = new Dictionary<string, string>();
-					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
-
-					var newNode = NodeGUI.CreateGUIGroupingNode(name, id, kind, groupingKeyword, x, y);
-					
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-				
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					
-					var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
-					var bundleNameTemplate = new Dictionary<string, string>();
-					foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
-						bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-					}
-
-					var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
-					var variants = new Dictionary<string, string>();
-					foreach (var inputPointId in variantsSource.Keys) {
-						variants[inputPointId] = variantsSource[inputPointId] as string;
-					}
-
-					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, variants, x, y);
-					
-					foreach (var inputPointId in variants.Keys) {
-						newNode.AddConnectionPoint(ConnectionPoint.InputPoint(inputPointId, variants[inputPointId]));
-					}
-
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					var bundleOptions = new Dictionary<string, List<string>>();
-
-					var enabledBundleOptionsDict = nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
-					foreach (var platform_package_key in enabledBundleOptionsDict.Keys) {
-						var optionListSource = enabledBundleOptionsDict[platform_package_key] as List<object>;
-						bundleOptions[platform_package_key] = new List<string>();
-
-						foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
-					}
-
-					var newNode = NodeGUI.CreateBundleBuilderNode(name, id, kind, bundleOptions, x, y);
-					
-					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-					
-					for (var i = 0; i < outputIdsList.Count; i++) {
-						var pointId = outputIdsList[i] as string;
-						var label = outputLabelsList[i] as string;
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(pointId, label));
-					}
-					return newNode;
-				}
-
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					var exportPathSource = nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
-					var exportTo = new Dictionary<string, string>();
-					foreach (var platform_package_key in exportPathSource.Keys) exportTo[platform_package_key] = exportPathSource[platform_package_key] as string;
-
-					var newNode = NodeGUI.CreateExporterNode(name, id, kind, exportTo, x, y);
-					return newNode;
-				}
-
-				default: {
-					Debug.LogError(name + " is defined as unknown kind of node. value:" + kind);
-					break;
-				}
-			}
-
-			throw new AssetBundleGraphException("Could not find way to create node: " + name + " kind:" + kindSource);
+			throw new AssetBundleGraphException("Could not find way to create NodeGUI: " + n.Name + " kind:" + n.Kind);
 		}
 
 		private Type IsDragAndDropAcceptableScriptType (Type type) {
@@ -1668,17 +1463,17 @@ namespace AssetBundleGraph {
 				// setup this filter then add output point by result of setup.
 				var outputPointLabels = SystemDataUtility.CreateCustomFilterInstanceForScript(scriptClassName);
 
-				newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				foreach (var outputPointLabel in outputPointLabels) {
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  outputPointLabel));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  outputPointLabel));
 				}
 			}
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
 				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
-				newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-				newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+				newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
 			
 			
@@ -1694,94 +1489,76 @@ namespace AssetBundleGraph {
 		private void AddNodeFromGUI (string nodeName, AssetBundleGraphSettings.NodeKind kind, string nodeId, float x, float y) {
 			NodeGUI newNode = null;
 
-			if (string.IsNullOrEmpty(nodeName)) nodeName = AssetBundleGraphSettings.DEFAULT_NODE_NAME[kind] + nodes.Where(node => node.kind == kind).ToList().Count;
+			if (string.IsNullOrEmpty(nodeName)) {
+				nodeName = AssetBundleGraphSettings.DEFAULT_NODE_NAME[kind] + nodes.Where(node => node.kind == kind).ToList().Count;
+			}
 			
 			switch (kind) {
 				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					var default_platform_package_loadPath = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
-
-					newNode = NodeGUI.CreateLoaderNode(nodeName, nodeId, kind, default_platform_package_loadPath, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode = NodeGUI.CreateLoaderNode(nodeName, nodeId, kind, new MultiTargetProperty<string>(), x, y);
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					var newFilterKeywords = new List<string>();
-					var newFilterKeytypes = new List<string>();
-					newNode = NodeGUI.CreateGUIFilterNode(nodeName, nodeId, kind, newFilterKeywords, newFilterKeytypes, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode = NodeGUI.CreateGUIFilterNode(nodeName, nodeId, kind, new List<string>(), new List<string>(), x, y);
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					var importerPackages = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
-
-					newNode = NodeGUI.CreateGUIImportNode(nodeName, nodeId, kind, importerPackages, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+					newNode = NodeGUI.CreateGUIImportNode(nodeName, nodeId, kind, x, y);
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
 					var defaultScriptClassName = string.Empty;
 					newNode = NodeGUI.CreateGUIModifierNode(nodeName, nodeId, kind, x, y, defaultScriptClassName);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					var newGroupingKeywords = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT}
-					};
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+					var newGroupingKeywords = new MultiTargetProperty<string>();
+					newGroupingKeywords.DefaultValue = AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT;
 
 					newNode = NodeGUI.CreateGUIGroupingNode(nodeName, nodeId, kind, newGroupingKeywords, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
 					newNode = NodeGUI.CreatePrefabricatorNode(nodeName, nodeId, kind, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					var newBundlizerKeyword = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT}
-					};
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					var newBundlizerKeyword = new MultiTargetProperty<string>();
+					newBundlizerKeyword.DefaultValue = AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT;
 					var variant = new Dictionary<string, string> ();
 
 					newNode = NodeGUI.CreateBundlizerNode(nodeName, nodeId, kind, newBundlizerKeyword, variant, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					var bundleOptions = new Dictionary<string, List<string>>{
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, new List<string>()}
-					};
-
-					newNode = NodeGUI.CreateBundleBuilderNode(nodeName, nodeId, kind, bundleOptions, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					newNode = NodeGUI.CreateBundleBuilderNode(nodeName, nodeId, kind, new MultiTargetProperty<int>(), x, y);
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					var default_platform_package_exportPath = new Dictionary<string, string> {
-						{AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME, string.Empty}
-					};
-
-					newNode = NodeGUI.CreateExporterNode(nodeName, nodeId, kind, default_platform_package_exportPath, x, y);
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+					newNode = NodeGUI.CreateExporterNode(nodeName, nodeId, kind, new MultiTargetProperty<string>(), x, y);
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {
@@ -1802,57 +1579,7 @@ namespace AssetBundleGraph {
 			var p = eventSource.eventSourceNode.GlobalConnectionPointPosition(targetConPoint.pointId);
 			Handles.DrawLine(new Vector3(p.x, p.y, 0f), new Vector3(to.x, to.y, 0f));
 		}
-
-		public static string PrettifyJson (string sourceJson) {
-			var lines = sourceJson
-				.Replace("{", "{\n").Replace("}", "\n}")
-				.Replace("[", "[\n").Replace("]", "\n]")
-				.Replace(",", ",\n")
-				.Split('\n');
-
-			Func<string, int, string> indents = (string baseLine, int indentDepth) => {
-				var indentsStr = string.Empty;
-				for (var i = 0; i < indentDepth; i++) indentsStr += "\t";
-				return indentsStr + baseLine;
-			};
-
-			var indent = 0;
-			for (var i = 0; i < lines.Length; i++) {
-				var line = lines[i];
-
-				// reduce indent for "}"
-				if (line.Contains("}") || line.Contains("]")) {
-					indent--;
-				}
-
-				/*
-					adopt indent.
-				*/
-				lines[i] = indents(lines[i], indent);
-
-				// indent continued all line after "{" 
-				if (line.Contains("{") || line.Contains("[")) {
-					indent++;
-					continue;
-				}
-
-				
-			}
-			return string.Join("\n", lines);
-		}
-
-		private static void UpdateGraphData (Dictionary<string, object> data) {
-			var dataStr = AssetBundleGraph.Json.Serialize(data);
-
-			var prettified = PrettifyJson(dataStr);
 			
-			var basePath = FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
-			var graphDataPath = FileUtility.PathCombine(basePath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
-			using (var sw = new StreamWriter(graphDataPath)) {
-				sw.Write(prettified);
-			}
-		}
-
 		/**
 			emit event from node-GUI.
 		*/
@@ -2200,59 +1927,59 @@ namespace AssetBundleGraph {
 
 			switch (newNode.kind) {
 				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					foreach (var outputPointLabel in newNode.filterContainsKeywords) {
-						newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), outputPointLabel));
+						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), outputPointLabel));
 					}
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					for (int i=0; i<newNode.variants.Keys.Count; ++i) {
-						newNode.AddConnectionPoint(ConnectionPoint.InputPoint(newNode.variants.Keys[i], newNode.variants.Values[i]));
+						newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(newNode.variants.Keys[i], newNode.variants.Values[i]));
 					}
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
-					newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
 				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
+					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				default: {
@@ -2383,7 +2110,7 @@ namespace AssetBundleGraph {
 		/**
 			create new connection if same relationship is not exist yet.
 		*/
-		private void AddConnection (string label, NodeGUI startNode, ConnectionPoint startPoint, NodeGUI endNode, ConnectionPoint endPoint) {
+		private void AddConnection (string label, NodeGUI startNode, ConnectionPointGUI startPoint, NodeGUI endNode, ConnectionPointGUI endPoint) {
 			Undo.RecordObject(this, "Add ConnectionGUI");
 
 			var connectionsFromThisNode = connections
@@ -2404,7 +2131,7 @@ namespace AssetBundleGraph {
 			return nodes.Where(n => n.ConitainsGlobalPos(pos)).ToList();
 		}
 
-		private bool IsConnectablePointFromTo (ConnectionPoint sourcePoint, ConnectionPoint destPoint) {
+		private bool IsConnectablePointFromTo (ConnectionPointGUI sourcePoint, ConnectionPointGUI destPoint) {
 			if (sourcePoint.isOutput != destPoint.isOutput && sourcePoint.isInput != destPoint.isInput) {
 				return true;
 			}

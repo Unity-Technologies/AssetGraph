@@ -25,7 +25,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var animation = asset as Animation;
+			//var animation = asset as Animation;
 
 			var changed = false;
 
@@ -46,7 +46,7 @@ wrapMode	How should time beyond the playback range of the clip be treated?
 		}
 
 		public override void Modify<T> (T asset) {
-			var flare = asset as Shader;
+			//var flare = asset as Shader;
 			
 		}
 		

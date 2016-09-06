@@ -25,7 +25,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var shader = asset as Shader;
+			//var shader = asset as Shader;
 			
 			var changed = false;
 
@@ -39,7 +39,7 @@ maximumLOD	Shader LOD level for this shader.
 		}
 
 		public override void Modify<T> (T asset) {
-			var shader = asset as Shader;
+			//var shader = asset as Shader;
 			
 		}
 		

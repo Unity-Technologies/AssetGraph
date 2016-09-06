@@ -8,22 +8,22 @@ using System.IO;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeOperationBase {
-		private readonly string currentPlatformStr;
+		private readonly BuildTargetGroup currentPlatformStr;
 		private readonly string specifiedScriptClass;
 
-		public IntegratedGUIModifier (string specifiedScriptClass, string modifierTargetPlatform) {
+		public IntegratedGUIModifier (string specifiedScriptClass, BuildTargetGroup modifierTargetPlatform) {
 			this.specifiedScriptClass = specifiedScriptClass;
 			this.currentPlatformStr = modifierTargetPlatform;
 		}
 
-		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			if (groupedSources.Keys.Count == 0) {
 				return;
 			}
 			
 			// Modifier merges multiple incoming groups into one.
 			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(nodeName + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+				Debug.LogWarning(node.Name + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
 			}
 
 			var groupMergeKey = groupedSources.Keys.ToList()[0];
@@ -57,7 +57,7 @@ namespace AssetBundleGraph {
 				}
 
 				if (modifierType != assumedType.ToString()) {
-					throw new NodeException("multiple Asset Type detected. consider reduce Asset Type number to only 1 by Filter. detected Asset Types is:" + modifierType + " , and " + assumedType.ToString(), nodeId);
+					throw new NodeException("multiple Asset Type detected. consider reduce Asset Type number to only 1 by Filter. detected Asset Types is:" + modifierType + " , and " + assumedType.ToString(), node.Id);
 				}
 			}
 
@@ -70,7 +70,7 @@ namespace AssetBundleGraph {
 
 			// check support.
 			if (!TypeUtility.SupportedModifierOperatorDefinition.ContainsKey(modifierType)) {
-				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", nodeId);
+				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", node.Id);
 			}
 
 			// generate modifierOperatorData if data is not exist yet.
@@ -80,13 +80,14 @@ namespace AssetBundleGraph {
 					Directory.CreateDirectory(modifierOperationDataFolderPath);
 				}
 
-				var opDataFolderPath = FileUtility.PathCombine(modifierOperationDataFolderPath, nodeId);
+				var opDataFolderPath = FileUtility.PathCombine(modifierOperationDataFolderPath, node.Id);
 				if (!Directory.Exists(opDataFolderPath)) {
 					Directory.CreateDirectory(opDataFolderPath);
 				} 
 
 				// ready default platform path.
-				var modifierOperatorDataPathForDefaultPlatform = FileUtility.PathCombine(opDataFolderPath, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+				var modifierOperatorName = ModifierOperatiorDataName( AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(target) );
+				var modifierOperatorDataPathForDefaultPlatform = FileUtility.PathCombine(opDataFolderPath, modifierOperatorName);
 
 				/*
 					create default platform ModifierOperatorData if not exist.
@@ -103,7 +104,7 @@ namespace AssetBundleGraph {
 						generated json data is typed as supported ModifierOperation type.
 					*/
 					var jsonData = JsonUtility.ToJson(defaultRenderTextureOp);
-					var prettified = AssetBundleGraphEditorWindow.PrettifyJson(jsonData);
+					var prettified = Json.Prettify(jsonData);
 					using (var sw = new StreamWriter(modifierOperatorDataPathForDefaultPlatform)) {
 						sw.WriteLine(prettified);
 					}
@@ -112,10 +113,10 @@ namespace AssetBundleGraph {
 
 			// validate saved data.
 			ValidateModifiyOperationData(
-				nodeId,
+				node.Id,
 				currentPlatformStr,
 				() => {
-					throw new NodeException("No ModifierOperatorData found. please Setup first.", nodeId);
+					throw new NodeException("No ModifierOperatorData found. please Setup first.", node.Id);
 				},
 				() => {
 					/*do nothing.*/
@@ -134,18 +135,18 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
 		}
 
 		
-		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			if (groupedSources.Keys.Count == 0) {
 				return;
 			}
 			
 			// Modifier merges multiple incoming groups into one.
 			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(nodeName + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+				Debug.LogWarning(node.Name + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
 			}
 
 			var groupMergeKey = groupedSources.Keys.ToList()[0];
@@ -172,16 +173,16 @@ namespace AssetBundleGraph {
 
 			// check support.
 			if (!TypeUtility.SupportedModifierOperatorDefinition.ContainsKey(modifierType)) {
-				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", nodeId);
+				throw new NodeException("current incoming Asset Type:" + modifierType + " is unsupported.", node.Id);
 			}
 
 
 			// validate saved data.
 			ValidateModifiyOperationData(
-				nodeId,
+				node.Id,
 				currentPlatformStr,
 				() => {
-					throw new NodeException("No ModifierOperatorData found. please Setup first.", nodeId);
+					throw new NodeException("No ModifierOperatorData found. please Setup first.", node.Id);
 				},
 				() => {
 					/*do nothing.*/
@@ -190,12 +191,13 @@ namespace AssetBundleGraph {
 			
 			var outputSources = new List<Asset>();
 
-			var modifierOperatorDataPathForTargetPlatform = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(currentPlatformStr));
+			var modifierOperatorName = ModifierOperatiorDataName( AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(target) );
+			var modifierOperatorDataPathForTargetPlatform = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.Id, modifierOperatorName);
 
 			// if runtime platform specified modifierOperatorData is nof found, 
 			// use default platform modifierOperatorData.
 			if (!File.Exists(modifierOperatorDataPathForTargetPlatform)) {
-				modifierOperatorDataPathForTargetPlatform = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+				modifierOperatorDataPathForTargetPlatform = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.Id, modifierOperatorName);
 			} 
 
 			var loadedModifierOperatorData = string.Empty;
@@ -211,7 +213,7 @@ namespace AssetBundleGraph {
 			
 			// sadly, if loaded assetType is no longer supported or not.
 			if (!TypeUtility.SupportedModifierOperatorDefinition.ContainsKey(dataTypeString)) {
-				throw new NodeException("unsupported ModifierOperator Type:" + modifierType, nodeId);
+				throw new NodeException("unsupported ModifierOperator Type:" + modifierType, node.Id);
 			} 
 
 			var modifyOperatorType = TypeUtility.SupportedModifierOperatorDefinition[dataTypeString];
@@ -261,7 +263,7 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
 		}
 
 		/**
@@ -275,7 +277,7 @@ namespace AssetBundleGraph {
 		
 		public static void ValidateModifiyOperationData (
 			string modifierNodeId,
-			string targetPlatform,
+			BuildTargetGroup targetPlatform,
 			Action noAssetOperationDataFound,
 			Action validAssetOperationDataFound
 		) {
@@ -286,7 +288,7 @@ namespace AssetBundleGraph {
 			}
 			
 			// if platform data is not exist, search default one.
-			var defaultPlatformOpDataPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, modifierNodeId, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+			var defaultPlatformOpDataPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, modifierNodeId, ModifierOperatiorDataName(targetPlatform));
 			if (File.Exists(defaultPlatformOpDataPath)) {
 				validAssetOperationDataFound();
 				return;
@@ -318,26 +320,28 @@ namespace AssetBundleGraph {
 			return deserializedDataObject.operatorType;
 		}
 
-		public static string ModifierDataPathForeachPlatform (string nodeId, string platformStr) {
-			return FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(platformStr));
+		public static string ModifierDataPathForeachPlatform (string nodeId, BuildTargetGroup targetPlatform) {
+			return FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(targetPlatform));
 		}
 
 		public static string ModifierDataPathForDefaultPlatform (string nodeId) {
-			return FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME));
+			return FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(AssetBundleGraphPlatformSettings.DefaultTarget));
 		}
 
-        public static void DeletePlatformData(string nodeId, string platformStr) {
-			var platformOpdataPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(platformStr));
+		public static void DeletePlatformData(string nodeId, BuildTargetGroup targetGroup) {
+			var platformOpdataPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, ModifierOperatiorDataName(targetGroup));
 			if (File.Exists(platformOpdataPath)) {
 				File.Delete(platformOpdataPath);
 			} 
         }
 
-		public static string ModifierOperatiorDataName (string platformStr) {
-			if (platformStr == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) {
+		public static string ModifierOperatiorDataName (BuildTargetGroup targetGroup) {
+			if (targetGroup == AssetBundleGraphPlatformSettings.DefaultTarget) {
 				return AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_PREFIX + "." + AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_SUFFIX;
 			}
-			return AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_PREFIX + "." + platformStr + "." + AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_SUFFIX;
+			return AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_PREFIX + "." + 
+				SystemDataUtility.GetPathSafeTargetGroupName(targetGroup) + "." + 
+				AssetBundleGraphSettings.MODIFIER_OPERATOR_DATA_NANE_SUFFIX;
 		}
 	}
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEditor;
 
 using System;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class FilterBase : INodeOperationBase {
-		public void Setup (string nodeName, string connectionIdToNextNode, string _, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, NodeData node, string _, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 
 				var outputDict = new Dictionary<string, List<Asset>>();
@@ -25,17 +26,17 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(connectionIdToNextNode, label, outputDict, new List<string>());
+					Output(node.Id, label, outputDict, new List<string>());
 				};
 				try {
 					In(absoluteSourcePaths, _PreOutput);
 				} catch (Exception e) {
-					Debug.LogError(nodeName + " Error:" + e);
+					Debug.LogError(node.Name + " Error:" + e);
 				}
 			}
 		}
 		
-		public void Run (string nodeName, string connectionIdToNextNode, string _, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, NodeData node, string _, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
 
@@ -54,12 +55,12 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(connectionIdToNextNode, label, outputDict, new List<string>());
+					Output(node.Id, label, outputDict, new List<string>());
 				};
 				try {
 					In(absoluteSourcePaths, _Output);
 				} catch (Exception e) {
-					Debug.LogError(nodeName + " Error:" + e);
+					Debug.LogError(node.Name + " Error:" + e);
 				}
 			}
 		}

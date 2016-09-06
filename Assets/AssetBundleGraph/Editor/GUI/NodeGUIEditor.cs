@@ -22,7 +22,9 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorLoaderGUI (NodeGUI node) {
-			if (node.loadPath == null) return;
+			if (node.loadPath == null) {
+				return;
+			}
 
 			EditorGUILayout.HelpBox("Loader: Load assets in given directory path.", MessageType.Info);
 			UpdateNodeName(node);
@@ -34,17 +36,14 @@ namespace AssetBundleGraph {
 			*/
 			if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
 
-			// update platform & package.
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				EditorGUILayout.LabelField("Load Path:");
 				var newLoadPath = EditorGUILayout.TextField(
-					SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH, 
-					SystemDataUtility.GetPlatformValue(
-						node.loadPath.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
+					SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH,
+					node.loadPath[node.currentEditingGroup]
 				);
 				var loaderNodePath = FileUtility.GetPathWithAssetsPath(newLoadPath);
 				IntegratedGUILoader.ValidateLoadPath(
@@ -58,13 +57,9 @@ namespace AssetBundleGraph {
 					}
 				);
 
-				if (newLoadPath !=	SystemDataUtility.GetPlatformValue(
-					node.loadPath.ReadonlyDict(),
-					node.currentPlatform
-				).ToString()
-				) {
+				if (newLoadPath !=	node.loadPath[node.currentEditingGroup]) {
 					node.BeforeSave();
-					node.loadPath.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), newLoadPath);
+					node.loadPath[node.currentEditingGroup] = newLoadPath;
 					node.Save();
 				}
 			}
@@ -72,7 +67,7 @@ namespace AssetBundleGraph {
 			if (packageEditMode) {
 				EditorGUI.EndDisabledGroup();
 			}
-			UpdateDeleteSetting(node);
+			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorFilterScriptGUI (NodeGUI node) {
@@ -235,7 +230,7 @@ namespace AssetBundleGraph {
 			if (packageEditMode) {
 				EditorGUI.EndDisabledGroup();
 			}
-			UpdateDeleteSetting(node);
+			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorModifierGUI (NodeGUI node) {
@@ -252,7 +247,7 @@ namespace AssetBundleGraph {
 					var isOperationDataExist = false;
 					IntegratedGUIModifier.ValidateModifiyOperationData(
 						node.nodeId,
-						node.currentPlatform,
+						node.currentEditingGroup,
 						() => {
 							GUILayout.Label("No modifier data found, please Reload first.");
 						},
@@ -345,15 +340,10 @@ namespace AssetBundleGraph {
 					EditorGUI.BeginDisabledGroup(true);
 				}
 
-				// show for each platform tab. 
-
-				var currentPlatform = node.currentPlatform;
-				node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
 				/*
 					if platform tab is changed, renew modifierOperatorInstance for that tab.
 				*/
-				if (currentPlatform != node.currentPlatform) {
+				if (DrawPlatformSelector(node)) {
 					modifierOperatorInstance = null;
 				}
 
@@ -361,7 +351,7 @@ namespace AssetBundleGraph {
 					reload modifierOperator instance from saved modifierOperator data.
 				*/
 				if (modifierOperatorInstance == null) {
-					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
+					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentEditingGroup);
 
 					// choose default modifierOperatorData if platform specified file is not exist.
 					if (!File.Exists(modifierOperatorDataPath)) {
@@ -390,9 +380,9 @@ namespace AssetBundleGraph {
 				if (modifierOperatorInstance != null) {
 					Action changed = () => {
 						var data = JsonUtility.ToJson(modifierOperatorInstance);
-						var prettified = AssetBundleGraphEditorWindow.PrettifyJson(data);
+						var prettified = Json.Prettify(data);
 
-						var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
+						var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentEditingGroup);
 
 						using (var sw = new StreamWriter(modifierOperatorDataPath)) {
 							sw.Write(prettified);
@@ -409,8 +399,7 @@ namespace AssetBundleGraph {
 					modifierOperatorInstance.DrawInspector(changed);
 				}
 
-				var deleted = UpdateDeleteSetting(node);
-				if (deleted) {
+				if (DrawUseDefaultSettings(node)) {
 					// source platform depended data is deleted. reload instance for reloading instance from data.
 					modifierOperatorInstance = null;
 				}
@@ -445,18 +434,14 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var newGroupingKeyword = EditorGUILayout.TextField(
-					"Grouping Keyword",
-					SystemDataUtility.GetPlatformValue(
-						node.groupingKeyword.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
-				);
-				EditorGUILayout.HelpBox("Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", MessageType.Info);
-
+				var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",node.groupingKeyword[node.currentEditingGroup]);
+				EditorGUILayout.HelpBox(
+					"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
+					MessageType.Info);
 
 				IntegratedGUIGrouping.ValidateGroupingKeyword(
 					newGroupingKeyword,
@@ -468,18 +453,14 @@ namespace AssetBundleGraph {
 					}
 				);
 
-				if (newGroupingKeyword != SystemDataUtility.GetPlatformValue(
-					node.groupingKeyword.ReadonlyDict(), 
-					node.currentPlatform
-				).ToString()
-				) {
+				if (newGroupingKeyword != node.groupingKeyword[node.currentEditingGroup]) {
 					node.BeforeSave();
-					node.groupingKeyword.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), newGroupingKeyword);
+					node.groupingKeyword[node.currentEditingGroup] = newGroupingKeyword;
 					node.Save();
 				}
 			}
 
-			UpdateDeleteSetting(node);
+			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorPrefabricatorScriptGUI (NodeGUI node) {
@@ -531,16 +512,11 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var bundleNameTemplate = EditorGUILayout.TextField(
-					"Bundle Name Template", 
-					SystemDataUtility.GetPlatformValue(
-						node.bundleNameTemplate.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
-				).ToLower();
+				var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate[node.currentEditingGroup]).ToLower();
 
 				IntegratedGUIBundlizer.ValidateBundleNameTemplate(
 					bundleNameTemplate,
@@ -549,13 +525,9 @@ namespace AssetBundleGraph {
 					}
 				);
 
-				if (bundleNameTemplate != SystemDataUtility.GetPlatformValue(
-					node.bundleNameTemplate.ReadonlyDict(), 
-					node.currentPlatform
-				).ToString()
-				) {
+				if (bundleNameTemplate != node.bundleNameTemplate[node.currentEditingGroup]) {
 					node.BeforeSave();
-					node.bundleNameTemplate.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), bundleNameTemplate);
+					node.bundleNameTemplate[node.currentEditingGroup] = bundleNameTemplate;
 					node.Save();
 				}
 
@@ -604,7 +576,7 @@ namespace AssetBundleGraph {
 
 			}
 
-			UpdateDeleteSetting(node);
+			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorBundleBuilderGUI (NodeGUI node) {
@@ -615,81 +587,42 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var bundleOptions = SystemDataUtility.GetPlatformValue(
-					node.enabledBundleOptions.ReadonlyDict(),
-					node.currentPlatform
-				);
+				int bundleOptions = node.enabledBundleOptions[node.currentEditingGroup];
 
-				var plartform_pakcage_key = SystemDataUtility.CreateKeyNameFromString(node.currentPlatform);
-
-				for (var i = 0; i < AssetBundleGraphSettings.DefaultBundleOptionSettings.Count; i++) {
-					var enablablekey = AssetBundleGraphSettings.DefaultBundleOptionSettings[i];
+				foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
 
 					// contains keyword == enabled. if not, disabled.
-					var isEnabled = bundleOptions.Contains(enablablekey);
+					bool isEnabled = (bundleOptions & (int)option.option) != 0;
 
-					var result = EditorGUILayout.ToggleLeft(enablablekey, isEnabled);
+					var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
 					if (result != isEnabled) {
 						node.BeforeSave();
 
-						var resultsDict = node.enabledBundleOptions.ReadonlyDict();
-						var resultList = new List<string>();
-						if (resultsDict.ContainsKey(plartform_pakcage_key)) resultList = resultsDict[plartform_pakcage_key];
+						bundleOptions = (result) ? ((int)option.option | bundleOptions) : (((~(int)option.option)) & bundleOptions);
 
-						if (result) {
-							if (!resultList.Contains(enablablekey)) {
-								var currentEnableds = new List<string>();
-								if (resultsDict.ContainsKey(plartform_pakcage_key)) currentEnableds = resultsDict[plartform_pakcage_key];
-								currentEnableds.Add(enablablekey);
-
-								node.enabledBundleOptions.Add(
-									SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-									currentEnableds
-								);
-							}
-						}
-
-						if (!result) {
-							if (resultList.Contains(enablablekey)) {
-								var currentEnableds = new List<string>();
-								if (resultsDict.ContainsKey(plartform_pakcage_key)) currentEnableds = resultsDict[plartform_pakcage_key];
-								currentEnableds.Remove(enablablekey);
-
-								node.enabledBundleOptions.Add(
-									SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-									currentEnableds
-								);
-							}
-						}
+						node.enabledBundleOptions[node.currentEditingGroup] = bundleOptions;
 
 						/*
-										Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
-									*/
-						if (enablablekey == "Disable Write TypeTree" && result &&
-							node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)].Contains("Ignore TypeTree Changes")) {
-
-							var newEnableds = node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)];
-							newEnableds.Remove("Ignore TypeTree Changes");
-
-							node.enabledBundleOptions.Add(
-								SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-								newEnableds
-							);
+							Cannot use DisableWriteTypeTree and IgnoreTypeTreeChanges options together.
+						*/
+						if (result &&
+							option.option == BuildAssetBundleOptions.DisableWriteTypeTree &&
+							0 != (node.enabledBundleOptions[node.currentEditingGroup] & (int)BuildAssetBundleOptions.DisableWriteTypeTree))
+						{
+							var currentValue = node.enabledBundleOptions[node.currentEditingGroup];
+							node.enabledBundleOptions[node.currentEditingGroup] = (((~(int)BuildAssetBundleOptions.DisableWriteTypeTree)) & currentValue);
 						}
 
-						if (enablablekey == "Ignore TypeTree Changes" && result &&
-							node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)].Contains("Disable Write TypeTree")) {
-
-							var newEnableds = node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)];
-							newEnableds.Remove("Disable Write TypeTree");
-
-							node.enabledBundleOptions.Add(
-								SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-								newEnableds
-							);
+						if (result &&
+							option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges &&
+							0 != (node.enabledBundleOptions[node.currentEditingGroup] & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges))
+						{
+							var currentValue = node.enabledBundleOptions[node.currentEditingGroup];
+							node.enabledBundleOptions[node.currentEditingGroup] = (((~(int)BuildAssetBundleOptions.IgnoreTypeTreeChanges)) & currentValue);
 						}
 
 						node.Save();
@@ -698,7 +631,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			UpdateDeleteSetting(node);
+			DrawUseDefaultSettings(node);
 
 		}
 
@@ -711,16 +644,14 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				EditorGUILayout.LabelField("Export Path:");
 				var newExportPath = EditorGUILayout.TextField(
 					SystemDataUtility.GetProjectName(), 
-					SystemDataUtility.GetPlatformValue(
-						node.exportTo.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
+					node.exportTo[node.currentEditingGroup]
 				);
 
 				var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
@@ -761,18 +692,14 @@ namespace AssetBundleGraph {
 				}
 
 
-				if (newExportPath != SystemDataUtility.GetPlatformValue(
-					node.exportTo.ReadonlyDict(),
-					node.currentPlatform
-				).ToString()
-				) {
+				if (newExportPath != node.exportTo[node.currentEditingGroup]) {
 					node.BeforeSave();
-					node.exportTo.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), newExportPath);
+					node.exportTo[node.currentEditingGroup] = newExportPath;
 					node.Save();
 				}
 			}
 
-			UpdateDeleteSetting(node);
+			DrawUseDefaultSettings(node);
 		}
 
 
@@ -882,29 +809,20 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private string UpdateCurrentPlatform (string basePlatfrom) {
-			var newPlatform = basePlatfrom;
-
+		/*
+		 *  Return true if Platform is changed
+		 */ 
+		private bool DrawPlatformSelector (NodeGUI node) {
+			BuildTargetGroup g = node.currentEditingGroup;
 			EditorGUI.BeginChangeCheck();
 			using (new EditorGUILayout.HorizontalScope()) {
 				var choosenIndex = -1;
-				for (var i = 0; i < NodeGUIUtility.platformButtonTextures.Length; i++) {
-					var onOffBefore = NodeGUIUtility.platformStrings[i] == basePlatfrom;
+				for (var i = 0; i < NodeGUIUtility.platformButtons.Length; i++) {
+					var onOffBefore = NodeGUIUtility.platformButtons[i].targetGroup == node.currentEditingGroup;
 					var onOffAfter = onOffBefore;
 
-					// index 0 is Default.
-					switch (i) {
-					case 0: {
-							onOffAfter = GUILayout.Toggle(onOffBefore, "Default", "toolbarbutton");
-							break;
-						}
-					default: {
-							// for each platform texture.
-							var platformButtonTexture = NodeGUIUtility.platformButtonTextures[i];
-							onOffAfter = GUILayout.Toggle(onOffBefore, platformButtonTexture, "toolbarbutton");
-							break;
-						}
-					}
+					// for each platform texture.
+					onOffAfter = GUILayout.Toggle(onOffBefore, NodeGUIUtility.platformButtons[i].ui, "toolbarbutton");
 
 					if (onOffBefore != onOffAfter) {
 						choosenIndex = i;
@@ -913,28 +831,28 @@ namespace AssetBundleGraph {
 				}
 
 				if (EditorGUI.EndChangeCheck()) {
-					newPlatform = NodeGUIUtility.platformStrings[choosenIndex];
+					g = NodeGUIUtility.platformButtons[choosenIndex].targetGroup;
 				}
 			}
 
-			if (newPlatform != basePlatfrom) GUI.FocusControl(string.Empty);
-			return newPlatform;
+			if (g != node.currentEditingGroup) {
+				node.currentEditingGroup = g;
+				GUI.FocusControl(string.Empty);
+			}
+
+			return g != node.currentEditingGroup;
 		}
 
 
-		private bool UpdateDeleteSetting (NodeGUI currentNode) {
-			var currentNodePlatformPackageKey = SystemDataUtility.CreateKeyNameFromString(currentNode.currentPlatform);
-
-			if (currentNodePlatformPackageKey == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) return false;
-
+		private bool DrawUseDefaultSettings(NodeGUI node) {
 			var deleted = false;
 			using (new EditorGUILayout.HorizontalScope()) {
 				GUILayout.FlexibleSpace();
 				if (GUILayout.Button("Use Default Setting", GUILayout.Width(150))) {
-					currentNode.BeforeSave();
-					currentNode.DeleteCurrentPackagePlatformKey(currentNodePlatformPackageKey);
+					node.BeforeSave();
+					node.DeletePlatformSettingOf(node.currentEditingGroup);
 					GUI.FocusControl(string.Empty);
-					currentNode.Save();
+					node.Save();
 					deleted = true;
 				}
 			}

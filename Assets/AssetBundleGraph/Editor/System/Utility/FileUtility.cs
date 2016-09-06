@@ -166,5 +166,27 @@ namespace AssetBundleGraph {
 			}
 			return false;
 		}
+
+		public static string EnsurePrefabricatorCacheDirExists(BuildTarget t, NodeData node) {
+			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+
+			if (!Directory.Exists(cacheDir)) {
+				Directory.CreateDirectory(cacheDir);
+			}
+			if (!cacheDir.EndsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) {
+				cacheDir = cacheDir + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
+			}
+			return cacheDir;
+		}
+
+
+		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, NodeData node) {
+			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+
+			if (!Directory.Exists(cacheDir)) {
+				Directory.CreateDirectory(cacheDir);
+			}
+			return cacheDir;
+		}
 	}
 }

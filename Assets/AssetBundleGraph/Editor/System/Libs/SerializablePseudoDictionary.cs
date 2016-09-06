@@ -16,7 +16,6 @@ namespace AssetBundleGraph {
 		[SerializeField] private List<string> keys = new List<string>();
 		[SerializeField] private List<string> values = new List<string>();
 
-
 		public List<string> Keys {
 			get {
 				return keys;

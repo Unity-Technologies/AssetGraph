@@ -7,36 +7,33 @@ using System.Text.RegularExpressions;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeOperationBase {
-		private readonly string bundleNameTemplate;
-		private readonly string assetsOutputConnectionId;
-		private readonly Dictionary<string, string> variants;
 
-		public IntegratedGUIBundlizer (string bundleNameTemplate, string assetsConnectionId, Dictionary<string, string> variants) {
-			this.bundleNameTemplate = bundleNameTemplate;
-			this.assetsOutputConnectionId = assetsConnectionId;
-			this.variants = variants;
+		private readonly string assetsOutputConnectionId;
+
+		public IntegratedGUIBundlizer(string assetsOutputConnectionId) {
+			this.assetsOutputConnectionId = assetsOutputConnectionId;
 		}
 
-		public void Setup (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
+		public void Setup (BuildTarget target, NodeData node, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
 
 			try {
 				ValidateBundleNameTemplate(
-					bundleNameTemplate,
+					node.BundleNameTemplate[target],
 					() => {
-						throw new NodeException(nodeName + ":Bundle Name Template is empty.", nodeId);
+						throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
 					}
 				);
 
-				foreach(var name in variants.Values) {
-					ValidateVariantName(name, variants.Values.ToList(), 
+				foreach(var name in node.Variants.Values) {
+					ValidateVariantName(name, node.Variants.Values.ToList(), 
 						() => {
-							throw new NodeException(nodeName + ":Variant is empty.", nodeId);
+							throw new NodeException(node.Name + ":Variant is empty.", node.Id);
 						},
 						() => {
-							throw new NodeException(nodeName + ":Variant name cannot contain whitespace \"" + name + "\".", nodeId);
+							throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + name + "\".", node.Id);
 						},
 						() => {
-							throw new NodeException(nodeName + ":Variant name already exists \"" + name + "\".", nodeId);
+							throw new NodeException(node.Name + ":Variant name already exists \"" + name + "\".", node.Id);
 						});
 				}
 
@@ -45,67 +42,49 @@ namespace AssetBundleGraph {
 				return;
 			}
 			
-			var recommendedBundleOutputDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, SystemDataUtility.GetCurrentPlatformKey());
-			
+
 			var outputDict = new Dictionary<string, List<Asset>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(nodeName, groupKey, inputSources, recommendedBundleOutputDir, false);
-				if (string.IsNullOrEmpty(reservedBundlePath)) {
-					continue;
-				}
-
-				var outputSources = new List<Asset>();
-
-				var newAssetData = Asset.CreateAssetWithImportPath(reservedBundlePath);
-
-				outputSources.Add(newAssetData);
-			
-				outputDict[groupKey] = outputSources;
+				var bundleName = BundlizeAssets(target, node, groupKey, inputSources, false);
+				var newAssetData = Asset.CreateAssetWithImportPath(bundleName);
+				outputDict[groupKey] = new List<Asset>(){ newAssetData };
 			}
 			
 			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
-				Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
+				Output(node.Id, assetsOutputConnectionId, outputDict, new List<string>());
 			}
 			
 		}
 		
-		public void Run (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, NodeData node, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			ValidateBundleNameTemplate(
-				bundleNameTemplate,
+				node.BundleNameTemplate[target],
 				() => {
-					throw new AssetBundleGraphBuildException(nodeName + ": Bundle Name Template is empty.");
+					throw new AssetBundleGraphBuildException(node.Name + ": Bundle Name Template is empty.");
 				}
 			);
-			
-			var recommendedBundleOutputDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLIZER_CACHE_PLACE, nodeId, SystemDataUtility.GetCurrentPlatformKey());
-			
+
 			var outputDict = new Dictionary<string, List<Asset>>();
 
 			foreach (var groupKey in groupedSources.Keys) {
 				var inputSources = groupedSources[groupKey];
 				
-				var reservedBundlePath = BundlizeAssets(nodeName, groupKey, inputSources, recommendedBundleOutputDir, true);
-				if (string.IsNullOrEmpty(reservedBundlePath)) continue;
+				var bundleName = BundlizeAssets(target, node, groupKey, inputSources, true);
+				var newAssetData = Asset.CreateAssetWithImportPath(bundleName);
 
-				var outputSources = new List<Asset>();
-
-				var newAssetData = Asset.CreateAssetWithImportPath(reservedBundlePath);
-
-				outputSources.Add(newAssetData);
-
-				outputDict[groupKey] = outputSources;
+				outputDict[groupKey] = new List<Asset>(){ newAssetData };
 			}
 			
 			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
-				Output(nodeId, assetsOutputConnectionId, outputDict, new List<string>());
+				Output(node.Id, assetsOutputConnectionId, outputDict, new List<string>());
 			}
 			
 		}
 
-		public string BundlizeAssets (string nodeName, string groupkey, List<Asset> sources, string recommendedBundleOutputDir, bool isRun) {			
+		public string BundlizeAssets (BuildTarget target, NodeData node, string groupkey, List<Asset> sources, bool isRun) {		
 			var invalids = new List<string>();
 			foreach (var source in sources) {
 				if (string.IsNullOrEmpty(source.importFrom)) {
@@ -113,22 +92,20 @@ namespace AssetBundleGraph {
 				}
 			}
 			if (invalids.Any()) {
-				throw new AssetBundleGraphBuildException(nodeName + ": Invalid files to bundle. Following files need to be imported before bundlize: " + string.Join(", ", invalids.ToArray()) );
+				throw new AssetBundleGraphBuildException(node.Name + ": Invalid files to bundle. Following files need to be imported before bundlize: " + string.Join(", ", invalids.ToArray()) );
 			}
 
-			var bundleName = bundleNameTemplate;
+			var bundleName = node.BundleNameTemplate[target];
 
 			/*
 				if contains KEYWORD_WILDCARD, use group identifier to bundlize name.
 			*/
-			if (bundleNameTemplate.Contains(AssetBundleGraphSettings.KEYWORD_WILDCARD)) {
-				var templateHead = bundleNameTemplate.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[0];
-				var templateTail = bundleNameTemplate.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[1];
+			if (bundleName.Contains(AssetBundleGraphSettings.KEYWORD_WILDCARD)) {
+				var templateHead = bundleName.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[0];
+				var templateTail = bundleName.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[1];
 
-				bundleName = (templateHead + groupkey + templateTail + "." + SystemDataUtility.GetCurrentPlatformShortName()).ToLower();
+				bundleName = (templateHead + groupkey + templateTail + "." + SystemDataUtility.GetPathSafeTargetName(target)).ToLower();
 			}
-			
-			var bundlePath = FileUtility.PathCombine(recommendedBundleOutputDir, bundleName);
 			
 			for (var i = 0; i < sources.Count; i++) {
 				var source = sources[i];
@@ -149,11 +126,13 @@ namespace AssetBundleGraph {
 				sources[i] = Asset.DuplicateAssetWithNewStatus(sources[i], sources[i].isNew, true);
 			}
 
-			return bundlePath;
+			return bundleName;
 		}
 
 		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty) {
-			if (string.IsNullOrEmpty(bundleNameTemplate)) NullOrEmpty();
+			if (string.IsNullOrEmpty(bundleNameTemplate)){
+				NullOrEmpty();
+			}
 		}
 
 		public static void ValidateVariantName (string variantName, List<string> names, Action NullOrEmpty, Action ContainsSpace, Action NameAlreadyExists) {

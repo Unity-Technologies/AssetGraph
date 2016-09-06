@@ -25,7 +25,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var font = asset as Font;
+			//var font = asset as Font;
 
 			var changed = false;
 
@@ -44,7 +44,7 @@ material	The material used for the font display.
 		}
 
 		public override void Modify<T> (T asset) {
-			var font = asset as Font;
+			//var font = asset as Font;
 			
 		}
 

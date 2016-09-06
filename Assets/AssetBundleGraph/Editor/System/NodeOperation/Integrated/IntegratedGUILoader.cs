@@ -7,23 +7,17 @@ using UnityEditor;
 
 namespace AssetBundleGraph {
 	public class IntegratedGUILoader : INodeOperationBase {
-		private readonly string loadFilePath;
-		
-		public IntegratedGUILoader (string loadFilePath) {
-			this.loadFilePath = loadFilePath;
-		}
-
-		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 
 			try {
 				ValidateLoadPath(
-					loadFilePath,
-					loadFilePath,
+					node.LoaderLoadPath[target],
+					node.LoaderLoadPath[target],
 					() => {
-						//throw new NodeException(nodeName + ": Load Path is empty.", nodeId);
+						//throw new NodeException(node.Name + ": Load Path is empty.", node.Id);
 					}, 
 					() => {
-						throw new NodeException(nodeName + ": Directory not found: " + loadFilePath, nodeId);
+						throw new NodeException(node.Name + ": Directory not found: " + node.LoaderLoadPath[target], node.Id);
 					}
 				);
 			} catch(NodeException e) {
@@ -35,7 +29,7 @@ namespace AssetBundleGraph {
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
 			
 			var outputSource = new List<Asset>();
-			var targetFilePaths = FileUtility.FilePathsInFolder(loadFilePath);
+			var targetFilePaths = FileUtility.FilePathsInFolder(node.LoaderLoadPath[target]);
 
 			try {	
 				foreach (var targetFilePath in targetFilePaths) {
@@ -58,32 +52,32 @@ namespace AssetBundleGraph {
 						continue;
 					}
 
-					throw new NodeException(nodeName + ": Invalid Load Path. Path must start with Assets/", nodeId);
+					throw new NodeException(node.Name + ": Invalid Load Path. Path must start with Assets/", node.Name);
 				}
 			} catch(NodeException e) {
 				AssetBundleGraphEditorWindow.AddNodeException(e);
 				return;
 			}
 			catch (Exception e) {
-				Debug.LogError(nodeName + " Error:" + e);
+				Debug.LogError(node.Name + " Error:" + e);
 			}
 
 			var outputDir = new Dictionary<string, List<Asset>> {
 				{"0", outputSource}
 			};
 
-			Output(nodeId, connectionIdToNextNode, outputDir, new List<string>());
+			Output(node.Id, connectionIdToNextNode, outputDir, new List<string>());
 		}
 		
-		public void Run (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			ValidateLoadPath(
-				loadFilePath,
-				loadFilePath,
+				node.LoaderLoadPath[target],
+				node.LoaderLoadPath[target],
 				() => {
-					//throw new AssetBundleGraphBuildException(nodeName + ": Load Path is empty.");
+					//throw new AssetBundleGraphBuildException(node.Name + ": Load Path is empty.");
 				}, 
 				() => {
-					throw new AssetBundleGraphBuildException(nodeName + ": Directory not found: " + loadFilePath);
+					throw new AssetBundleGraphBuildException(node.Name + ": Directory not found: " + node.LoaderLoadPath[target]);
 				}
 			);
 			
@@ -92,7 +86,7 @@ namespace AssetBundleGraph {
 			
 			var outputSource = new List<Asset>();
 			try {
-				var targetFilePaths = FileUtility.FilePathsInFolder(loadFilePath);
+				var targetFilePaths = FileUtility.FilePathsInFolder(node.LoaderLoadPath[target]);
 				
 				foreach (var targetFilePath in targetFilePaths) {
 
@@ -109,16 +103,16 @@ namespace AssetBundleGraph {
 						continue;
 					}
 					
-					throw new AssetBundleGraphSetupException(nodeName + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath);
+					throw new AssetBundleGraphSetupException(node.Name + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath);
 				}
 				
 				var outputDir = new Dictionary<string, List<Asset>> {
 					{"0", outputSource}
 				};
 
-				Output(nodeId, connectionIdToNextNode, outputDir, new List<string>());
+				Output(node.Id, connectionIdToNextNode, outputDir, new List<string>());
 			} catch (Exception e) {
-				throw new NodeException(e.Message, nodeId);
+				throw new NodeException(e.Message, node.Id);
 			}
 		}
 

@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 namespace AssetBundleGraph {
-	[Serializable] public class ConnectionPoint {
+	[Serializable] public class ConnectionPointGUI {
 		[SerializeField] public string pointId;
 		[SerializeField] public string label;
 		[SerializeField] public bool isInput;
@@ -12,7 +12,7 @@ namespace AssetBundleGraph {
 		[SerializeField] public Rect buttonRect;
 		[SerializeField] public string buttonStyle;
 
-		public ConnectionPoint (string pointId, string label, bool input, bool output) {
+		public ConnectionPointGUI (string pointId, string label, bool input, bool output) {
 			this.pointId = pointId;
 			this.label = label;
 			this.isInput = input;
@@ -31,16 +31,16 @@ namespace AssetBundleGraph {
 			} 
 		}
 
-        public static ConnectionPoint InputPoint (string label) {
-			return new ConnectionPoint(AssetBundleGraphSettings.NODE_INPUTPOINT_FIXED_LABEL, label, true, false);
+        public static ConnectionPointGUI InputPoint (string label) {
+			return new ConnectionPointGUI(AssetBundleGraphSettings.NODE_INPUTPOINT_FIXED_LABEL, label, true, false);
         }
 
-		public static ConnectionPoint InputPoint (string pointId, string label) {
-			return new ConnectionPoint(pointId, label, true, false);
+		public static ConnectionPointGUI InputPoint (string pointId, string label) {
+			return new ConnectionPointGUI(pointId, label, true, false);
 		}
 
-		public static ConnectionPoint OutputPoint (string pointId, string label) {
-			return new ConnectionPoint(pointId, label, false, true);
+		public static ConnectionPointGUI OutputPoint (string pointId, string label) {
+			return new ConnectionPointGUI(pointId, label, false, true);
         }
     }
 }
