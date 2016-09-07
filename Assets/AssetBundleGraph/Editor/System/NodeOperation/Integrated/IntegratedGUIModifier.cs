@@ -237,16 +237,21 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
-		private static string GetModifierDataPath (string nodeId, BuildTargetGroup targetPlatform) {
-			return FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, GetModifierOperatiorDataFileName(targetPlatform));
+		private static string GetModifierDataPath (string nodeId, BuildTargetGroup targetGroup) {
+			return FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, GetModifierOperatiorDataFileName(targetGroup));
 		}
 
 		private static string GetDefaultModifierDataPath (string nodeId) {
 			return GetModifierDataPath(nodeId, BuildTargetUtility.DefaultTarget);
 		}
 			
+		public static bool HasModifierDataFor (string nodeId, BuildTargetGroup targetGroup) {
+			var platformOpdataPath = GetModifierDataPath(nodeId, targetGroup);
+			return File.Exists(platformOpdataPath);
+		}
+
 		public static void DeletePlatformData(string nodeId, BuildTargetGroup targetGroup) {
-			var platformOpdataPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, nodeId, GetModifierOperatiorDataFileName(targetGroup));
+			var platformOpdataPath = GetModifierDataPath(nodeId, targetGroup);
 			if (File.Exists(platformOpdataPath)) {
 				File.Delete(platformOpdataPath);
 			}

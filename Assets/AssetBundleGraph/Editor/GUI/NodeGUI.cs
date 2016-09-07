@@ -438,49 +438,6 @@ namespace AssetBundleGraph {
 			return duplicatedNode;
 		}
 
-		public void DeletePlatformSettingOf (BuildTargetGroup g) {
-			switch (this.kind) {
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					loadPath.Remove(g);
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					IntegratedGUIModifier.DeletePlatformData(nodeId, g);
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					groupingKeyword.Remove(g);
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					bundleNameTemplate.Remove(g);
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					enabledBundleOptions.Remove(g);
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					exportTo.Remove(g);
-					break;
-				}
-
-			default: {
-					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
-					break;
-				}
-			}
-		}
-
 		public void SetActive () {
 			nodeInsp.UpdateNode(this);
 			Selection.activeObject = nodeInsp;

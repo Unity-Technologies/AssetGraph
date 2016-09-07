@@ -330,38 +330,52 @@ namespace AssetBundleGraph {
 				if (usingScriptMode) {
 					EditorGUI.BeginDisabledGroup(true);
 				}
-
+					
 				/*
 					if platform tab is changed, renew modifierOperatorInstance for that tab.
 				*/
 				if(DrawPlatformSelector(node)) {
 					modifierOperatorInstance = null;
 				};
+				using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+					var disabledScope = DrawOverrideTargetToggle(node, IntegratedGUIModifier.HasModifierDataFor(node.nodeId, currentEditingGroup), (bool enabled) => {
+						if(enabled) {
+							// do nothing
+						} else {
+							IntegratedGUIModifier.DeletePlatformData(node.nodeId, currentEditingGroup);
+						}
+						// reset modifier operator when state change
+						modifierOperatorInstance = null;						
+					});
 
-				/*
-					reload modifierOperator instance from saved modifierOperator data.
-				*/
-				if (modifierOperatorInstance == null) {
-					modifierOperatorInstance = IntegratedGUIModifier.CreateModifierOperator(node.nodeId, currentEditingGroup);
-				}
+					using (disabledScope) {
+						/*
+						reload modifierOperator instance from saved modifierOperator data.
+						*/
+						if (modifierOperatorInstance == null) {
+							// CreateModifierOperator will create default modifier operator if no target specific settings are present
+							modifierOperatorInstance = IntegratedGUIModifier.CreateModifierOperator(node.nodeId, currentEditingGroup);
+						}
 
-				/*
-					Show ModifierOperator Inspector.
-				*/
-				if (modifierOperatorInstance != null) {
-					Action onChangedAction = () => {
-						IntegratedGUIModifier.SaveModifierOperatorToDisk(
-							node.nodeId, currentEditingGroup, modifierOperatorInstance);
+						/*
+						Show ModifierOperator Inspector.
+						*/
+						if (modifierOperatorInstance != null) {
+							Action onChangedAction = () => {
+								IntegratedGUIModifier.SaveModifierOperatorToDisk(
+									node.nodeId, currentEditingGroup, modifierOperatorInstance);
 
-						// reflect change of data.
-						AssetDatabase.Refresh();
-						
-						modifierOperatorInstance = null;
-					};
+								// reflect change of data.
+								AssetDatabase.Refresh();
 
-					GUILayout.Space(10f);
+								modifierOperatorInstance = null;
+							};
 
-					modifierOperatorInstance.DrawInspector(onChangedAction);
+							GUILayout.Space(10f);
+
+							modifierOperatorInstance.DrawInspector(onChangedAction);
+						}
+					}
 				}
 
 				if (usingScriptMode) {
@@ -394,27 +408,26 @@ namespace AssetBundleGraph {
 
 			//Show target configuration tab
 			DrawPlatformSelector(node);
-
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",node.groupingKeyword[currentEditingGroup]);
-				EditorGUILayout.HelpBox(
-					"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
-					MessageType.Info);
-
-				IntegratedGUIGrouping.ValidateGroupingKeyword(
-					newGroupingKeyword,
-					() => {
-//						EditorGUILayout.HelpBox("groupingKeyword is empty.", MessageType.Error);
-					},
-					() => {
-//						EditorGUILayout.HelpBox("grouping keyword does not contain " + AssetBundleGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + newGroupingKeyword, MessageType.Error);
+				var disabledScope = DrawOverrideTargetToggle(node, node.groupingKeyword.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					if(enabled) {
+						node.groupingKeyword[currentEditingGroup] = node.groupingKeyword.DefaultValue;
+					} else {
+						node.groupingKeyword.Remove(currentEditingGroup);
 					}
-				);
+				});
 
-				if (newGroupingKeyword != node.groupingKeyword[currentEditingGroup]) {
-					node.BeforeSave();
-					node.groupingKeyword[currentEditingGroup] = newGroupingKeyword;
-					node.Save();
+				using (disabledScope) {
+					var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",node.groupingKeyword[currentEditingGroup]);
+					EditorGUILayout.HelpBox(
+						"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
+						MessageType.Info);
+
+					if (newGroupingKeyword != node.groupingKeyword[currentEditingGroup]) {
+						node.BeforeSave();
+						node.groupingKeyword[currentEditingGroup] = newGroupingKeyword;
+						node.Save();
+					}
 				}
 			}
 		}
@@ -470,23 +483,27 @@ namespace AssetBundleGraph {
 
 			//Show target configuration tab
 			DrawPlatformSelector(node);
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				var disabledScope = DrawOverrideTargetToggle(node, node.bundleNameTemplate.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					if(enabled) {
+						node.bundleNameTemplate[currentEditingGroup] = node.bundleNameTemplate.DefaultValue;
+					} else {
+						node.bundleNameTemplate.Remove(currentEditingGroup);
+					}
+				});
+
+				using (disabledScope) {
+					var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate[currentEditingGroup]).ToLower();
+
+					if (bundleNameTemplate != node.bundleNameTemplate[currentEditingGroup]) {
+						node.BeforeSave();
+						node.bundleNameTemplate[currentEditingGroup] = bundleNameTemplate;
+						node.Save();
+					}
+				}
+			}
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate[currentEditingGroup]).ToLower();
-
-				IntegratedGUIBundlizer.ValidateBundleNameTemplate(
-					bundleNameTemplate,
-					() => {
-//						EditorGUILayout.HelpBox("No Bundle Name Template set.", MessageType.Error);
-					}
-				);
-
-				if (bundleNameTemplate != node.bundleNameTemplate[currentEditingGroup]) {
-					node.BeforeSave();
-					node.bundleNameTemplate[currentEditingGroup] = bundleNameTemplate;
-					node.Save();
-				}
-
 				GUILayout.Label("Variants:");
 				for (int i = 0; i < node.variants.Keys.Count; ++i) {
 
@@ -521,15 +538,14 @@ namespace AssetBundleGraph {
 							}
 						}
 					}
-				}
 
-				if (GUILayout.Button("+")) {
-					node.BeforeSave();
-					var newid = Guid.NewGuid().ToString();
-					node.variants.Add(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
-					node.AddInputPoint(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+					if (GUILayout.Button("+")) {
+						node.BeforeSave();
+						var newid = Guid.NewGuid().ToString();
+						node.variants.Add(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+						node.AddInputPoint(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+					}
 				}
-
 			}
 		}
 
@@ -543,44 +559,53 @@ namespace AssetBundleGraph {
 
 			//Show target configuration tab
 			DrawPlatformSelector(node);
-
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				int bundleOptions = node.enabledBundleOptions[currentEditingGroup];
+				var disabledScope = DrawOverrideTargetToggle(node, node.enabledBundleOptions.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					if(enabled) {
+						node.enabledBundleOptions[currentEditingGroup] = node.enabledBundleOptions.DefaultValue;
+					}  else {
+						node.enabledBundleOptions.Remove(currentEditingGroup);
+					}
+				} );
 
-				foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
+				using (disabledScope) {
+					int bundleOptions = node.enabledBundleOptions[currentEditingGroup];
 
-					// contains keyword == enabled. if not, disabled.
-					bool isEnabled = (bundleOptions & (int)option.option) != 0;
+					foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
 
-					var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
-					if (result != isEnabled) {
-						node.BeforeSave();
+						// contains keyword == enabled. if not, disabled.
+						bool isEnabled = (bundleOptions & (int)option.option) != 0;
 
-						bundleOptions = (result) ? ((int)option.option | bundleOptions) : (((~(int)option.option)) & bundleOptions);
+						var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
+						if (result != isEnabled) {
+							node.BeforeSave();
 
-						node.enabledBundleOptions[currentEditingGroup] = bundleOptions;
+							bundleOptions = (result) ? ((int)option.option | bundleOptions) : (((~(int)option.option)) & bundleOptions);
 
-						/*
+							node.enabledBundleOptions[currentEditingGroup] = bundleOptions;
+
+							/*
 							Cannot use DisableWriteTypeTree and IgnoreTypeTreeChanges options together.
 						*/
-						if (result &&
-							option.option == BuildAssetBundleOptions.DisableWriteTypeTree &&
-							0 != (node.enabledBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.DisableWriteTypeTree))
-						{
-							var currentValue = node.enabledBundleOptions[currentEditingGroup];
-							node.enabledBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.DisableWriteTypeTree)) & currentValue);
-						}
+							if (result &&
+								option.option == BuildAssetBundleOptions.DisableWriteTypeTree &&
+								0 != (node.enabledBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.DisableWriteTypeTree))
+							{
+								var currentValue = node.enabledBundleOptions[currentEditingGroup];
+								node.enabledBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.DisableWriteTypeTree)) & currentValue);
+							}
 
-						if (result &&
-							option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges &&
-							0 != (node.enabledBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges))
-						{
-							var currentValue = node.enabledBundleOptions[currentEditingGroup];
-							node.enabledBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.IgnoreTypeTreeChanges)) & currentValue);
-						}
+							if (result &&
+								option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges &&
+								0 != (node.enabledBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges))
+							{
+								var currentValue = node.enabledBundleOptions[currentEditingGroup];
+								node.enabledBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.IgnoreTypeTreeChanges)) & currentValue);
+							}
 
-						node.Save();
-						return;
+							node.Save();
+							return;
+						}
 					}
 				}
 			}
@@ -597,56 +622,65 @@ namespace AssetBundleGraph {
 
 			//Show target configuration tab
 			DrawPlatformSelector(node);
-
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				EditorGUILayout.LabelField("Export Path:");
-				var newExportPath = EditorGUILayout.TextField(
-					SystemDataUtility.GetProjectName(), 
-					node.exportTo[currentEditingGroup]
-				);
+				var disabledScope = DrawOverrideTargetToggle(node, node.exportTo.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					if(enabled) {
+						node.exportTo[currentEditingGroup] = node.exportTo.DefaultValue;
+					}  else {
+						node.exportTo.Remove(currentEditingGroup);
+					}
+				} );
 
-				var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
-				if(IntegratedGUIExporter.ValidateExportPath(
-					newExportPath,
-					exporterrNodePath,
-					() => {
-						// TODO Make text field bold
-					},
-					() => {
-						using (new EditorGUILayout.HorizontalScope()) {
-							EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
-							if(GUILayout.Button("Create directory")) {
-								Directory.CreateDirectory(exporterrNodePath);
-								node.Save();
+				using (disabledScope) {
+					EditorGUILayout.LabelField("Export Path:");
+					var newExportPath = EditorGUILayout.TextField(
+						SystemDataUtility.GetProjectName(), 
+						node.exportTo[currentEditingGroup]
+					);
+
+					var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
+					if(IntegratedGUIExporter.ValidateExportPath(
+						newExportPath,
+						exporterrNodePath,
+						() => {
+							// TODO Make text field bold
+						},
+						() => {
+							using (new EditorGUILayout.HorizontalScope()) {
+								EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
+								if(GUILayout.Button("Create directory")) {
+									Directory.CreateDirectory(exporterrNodePath);
+									node.Save();
+								}
+							}
+							EditorGUILayout.Space();
+
+							EditorGUILayout.LabelField("Available Directories:");
+							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
+							foreach(string s in dirs) {
+								EditorGUILayout.LabelField(s);
 							}
 						}
-						EditorGUILayout.Space();
-
-						EditorGUILayout.LabelField("Available Directories:");
-						string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
-						foreach(string s in dirs) {
-							EditorGUILayout.LabelField(s);
+					)) {
+						using (new EditorGUILayout.HorizontalScope()) {
+							GUILayout.FlexibleSpace();
+							#if UNITY_EDITOR_OSX
+							string buttonName = "Reveal in Finder";
+							#else
+							string buttonName = "Show in Explorer";
+							#endif 
+							if(GUILayout.Button(buttonName)) {
+								EditorUtility.RevealInFinder(exporterrNodePath);
+							}
 						}
 					}
-				)) {
-					using (new EditorGUILayout.HorizontalScope()) {
-						GUILayout.FlexibleSpace();
-						#if UNITY_EDITOR_OSX
-						string buttonName = "Reveal in Finder";
-						#else
-						string buttonName = "Show in Explorer";
-						#endif 
-						if(GUILayout.Button(buttonName)) {
-							EditorUtility.RevealInFinder(exporterrNodePath);
-						}
+
+
+					if (newExportPath != node.exportTo[currentEditingGroup]) {
+						node.BeforeSave();
+						node.exportTo[currentEditingGroup] = newExportPath;
+						node.Save();
 					}
-				}
-
-
-				if (newExportPath != node.exportTo[currentEditingGroup]) {
-					node.BeforeSave();
-					node.exportTo[currentEditingGroup] = newExportPath;
-					node.Save();
 				}
 			}
 		}
