@@ -176,7 +176,7 @@ namespace AssetBundleGraph {
 				buttons.Add(new PlatformButton(new GUIContent("Default", "Default settings"), BuildTargetGroup.Unknown));
 
 				foreach(var g in supportedBuildTargets) {
-					buttons.Add(new PlatformButton(new GUIContent(GetPlatformIcon(icons[g]), BuildTargetUtility.BuildTargetGroupToHumaneString(g)), g));
+					buttons.Add(new PlatformButton(new GUIContent(GetPlatformIcon(icons[g]), BuildTargetUtility.GroupToHumaneString(g)), g));
 				}
 
 				this.platformButtons = buttons.ToArray();
@@ -190,7 +190,7 @@ namespace AssetBundleGraph {
 					try {
 						foreach(BuildTarget target in Enum.GetValues(typeof(BuildTarget))) {
 							if(BuildTargetUtility.IsBuildTargetSupported(target)) {
-								BuildTargetGroup g = BuildTargetUtility.BuildTargetToBuildTargetGroup(target);
+								BuildTargetGroup g = BuildTargetUtility.TargetToGroup(target);
 								if(g == BuildTargetGroup.Unknown) {
 									// skip unknown platform
 									continue;

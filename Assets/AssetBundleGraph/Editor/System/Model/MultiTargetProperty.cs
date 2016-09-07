@@ -20,8 +20,12 @@ namespace AssetBundleGraph {
 			foreach (var buildTargetName in json.Keys) {
 				try {
 					BuildTargetGroup g =  (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), buildTargetName, true);
-					T val = (T)json[buildTargetName];
-					m_property.Add(g, val);
+					object val = json[buildTargetName];
+					if(val is T) {
+						m_property.Add(g, (T)val);
+					} else {
+						m_property.Add(g, (T)Convert.ChangeType(val, typeof(T)));
+					}
 				} catch(Exception e) {
 					Debug.LogWarning("Failed to retrieve MultiTagetProperty. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
 				}
@@ -54,10 +58,10 @@ namespace AssetBundleGraph {
 
 		public T this[BuildTarget index] {
 			get {
-				return this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)];
+				return this[BuildTargetUtility.TargetToGroup(index)];
 			}
 			set {
-				this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)] = value;
+				this[BuildTargetUtility.TargetToGroup(index)] = value;
 			}
 		}
 

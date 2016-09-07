@@ -92,9 +92,17 @@ namespace AssetBundleGraph {
 		}
 
 		public Dictionary<string, object> ToJsonDictionary() {
-			throw new Exception("Implement This");
-		}
+			Dictionary<string, object> json = new Dictionary<string, object>();
 
+			json[CONNECTION_ID] = m_id;
+			json[CONNECTION_LABEL] = m_label;
+			json[CONNECTION_FROMNODE] = m_fromNodeId;
+			json[CONNECTION_FROMNODE_CONPOINT_ID] = m_fromNodeConnectionPointId;
+			json[CONNECTION_TONODE] = m_toNodeId;
+			json[CONNECTION_TONODE_CONPOINT_ID] = m_toNodeConnectionPoiontId;
+
+			return json;
+		}
 
 		public static void ValidateConnection (NodeData from, NodeData to) {
 			if(!CanConnect(from, to)) {

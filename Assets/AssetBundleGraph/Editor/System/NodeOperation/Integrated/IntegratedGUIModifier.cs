@@ -8,12 +8,11 @@ using System.IO;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeOperationBase {
-		private readonly BuildTargetGroup currentPlatformStr;
+
 		private readonly string specifiedScriptClass;
 
-		public IntegratedGUIModifier (string specifiedScriptClass, BuildTargetGroup modifierTargetPlatform) {
+		public IntegratedGUIModifier (string specifiedScriptClass) {
 			this.specifiedScriptClass = specifiedScriptClass;
-			this.currentPlatformStr = modifierTargetPlatform;
 		}
 
 		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
@@ -76,7 +75,7 @@ namespace AssetBundleGraph {
 			// validate saved data.
 			ValidateModifiyOperationData(
 				node.Id,
-				currentPlatformStr,
+				target,
 				() => {
 					throw new NodeException("No ModifierOperatorData found. please Setup first.", node.Id);
 				},
@@ -140,7 +139,7 @@ namespace AssetBundleGraph {
 			// validate saved data.
 			ValidateModifiyOperationData(
 				node.Id,
-				currentPlatformStr,
+				target,
 				() => {
 					throw new NodeException("No ModifierOperatorData found. please Setup first.", node.Id);
 				},
@@ -151,7 +150,7 @@ namespace AssetBundleGraph {
 			
 			var outputSources = new List<Asset>();
 
-			var g = BuildTargetUtility.BuildTargetToBuildTargetGroup(target);
+			var g = BuildTargetUtility.TargetToGroup(target);
 			var modifyOperatorInstance = CreateModifierOperator(node.Id, g);
 
 			var isChanged = false;
@@ -205,23 +204,14 @@ namespace AssetBundleGraph {
 //		
 		public static void ValidateModifiyOperationData (
 			string nodeId,
-			BuildTargetGroup targetPlatform,
+			BuildTarget target,
 			Action noAssetOperationDataFound,
 			Action validAssetOperationDataFound
 		) {
-			var dataPath = GetModifierDataPath(nodeId, targetPlatform);
-			if (File.Exists(dataPath)) {
+			if( HasModifierDataFor(nodeId, BuildTargetUtility.TargetToGroup(target), true) ) {
 				validAssetOperationDataFound();
 				return;
 			}
-			
-			// if platform data is not exist, search default one.
-			var defaultDataPath = GetDefaultModifierDataPath(nodeId);
-			if (File.Exists(defaultDataPath)) {
-				validAssetOperationDataFound();
-				return;
-			}
-
 			noAssetOperationDataFound();
 		}
 			
@@ -245,9 +235,18 @@ namespace AssetBundleGraph {
 			return GetModifierDataPath(nodeId, BuildTargetUtility.DefaultTarget);
 		}
 			
-		public static bool HasModifierDataFor (string nodeId, BuildTargetGroup targetGroup) {
-			var platformOpdataPath = GetModifierDataPath(nodeId, targetGroup);
-			return File.Exists(platformOpdataPath);
+		public static bool HasModifierDataFor (string nodeId, BuildTargetGroup targetGroup, bool checkDefault=false) {
+			var dataPath = GetModifierDataPath(nodeId, targetGroup);
+			if(File.Exists(dataPath)) {
+				return true;
+			}
+			if(checkDefault) {
+				dataPath = GetDefaultModifierDataPath(nodeId);
+				if(File.Exists(dataPath)) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public static void DeletePlatformData(string nodeId, BuildTargetGroup targetGroup) {

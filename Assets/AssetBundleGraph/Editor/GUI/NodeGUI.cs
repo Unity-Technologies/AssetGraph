@@ -26,7 +26,6 @@ namespace AssetBundleGraph {
 		[SerializeField] public AssetBundleGraphSettings.NodeKind kind;
 
 		[SerializeField] public string scriptClassName;
-		[SerializeField] public string scriptPath;
 		[SerializeField] public SerializableMultiTargetString loadPath;
 		[SerializeField] public SerializableMultiTargetString exportTo;
 		[SerializeField] public List<string> filterContainsKeywords;
@@ -98,15 +97,14 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateScriptNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
+		public static NodeGUI CreateScriptNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, string scriptClassName, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
-				scriptClassName: scriptClassName,
-				scriptPath: scriptPath
+				scriptClassName: scriptClassName
 			);
 		}
 
@@ -202,48 +200,50 @@ namespace AssetBundleGraph {
 			}
 
 			switch (data.Kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-					newGUI.loadPath = new SerializableMultiTargetString(data.LoaderLoadPath);
-				}
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+				//nothing to do
 				break;
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
-				{
-					newGUI.scriptPath = data.ScriptPath;
-					newGUI.scriptClassName = data.ScriptClassName;
-				}
-				break;
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					newGUI.filterContainsKeytypes = data.FilterConditions.Select(c => c.FilterKeytype).ToList();
-					newGUI.filterContainsKeywords = data.FilterConditions.Select(c => c.FilterKeyword).ToList();
-				}
-				break;
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					newGUI.groupingKeyword = new SerializableMultiTargetString(data.GroupingKeywords);
-				}
-				break;
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					newGUI.bundleNameTemplate = new SerializableMultiTargetString(data.BundleNameTemplate);
-					newGUI.variants = new SerializablePseudoDictionary(data.Variants);
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+				newGUI.loadPath = new SerializableMultiTargetString(data.LoaderLoadPath);
+			}
+			break;
+			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+			{
+				newGUI.scriptClassName = data.ScriptClassName;
+			}
+			break;
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+				newGUI.filterContainsKeytypes = data.FilterConditions.Select(c => c.FilterKeytype).ToList();
+				newGUI.filterContainsKeywords = data.FilterConditions.Select(c => c.FilterKeyword).ToList();
+			}
+			break;
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+				newGUI.groupingKeyword = new SerializableMultiTargetString(data.GroupingKeywords);
+			}
+			break;
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				newGUI.bundleNameTemplate = new SerializableMultiTargetString(data.BundleNameTemplate);
+				newGUI.variants = new SerializablePseudoDictionary(data.Variants);
 
-					foreach (var v in data.Variants) {
-						newGUI.AddConnectionPoint(ConnectionPointGUI.InputPoint(v.Key, v.Value));
-					}
+				foreach (var v in data.Variants) {
+					newGUI.AddConnectionPoint(ConnectionPointGUI.InputPoint(v.Key, v.Value));
 				}
-				break;
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					newGUI.enabledBundleOptions = new SerializableMultiTargetInt(data.BundleBuilderBundleOptions);
-				}
-				break;
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					newGUI.exportTo = new SerializableMultiTargetString(data.ExporterExportPath);
-				}
-				break;
-				default: {
-					throw new NodeException(data.Name + " is defined as unknown kind of node. value:" + data.Kind, data.Id);
-				}
+			}
+			break;
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+				newGUI.enabledBundleOptions = new SerializableMultiTargetInt(data.BundleBuilderBundleOptions);
+			}
+			break;
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+				newGUI.exportTo = new SerializableMultiTargetString(data.ExporterExportPath);
+			}
+			break;
+			default: {
+				throw new NodeException(data.Name + " is defined as unknown kind of node. value:" + data.Kind, data.Id);
+			}
 			}			
 
 			return newGUI;
@@ -324,7 +324,6 @@ namespace AssetBundleGraph {
 			float x, 
 			float y,
 			string scriptClassName = null, 
-			string scriptPath = null, 
 			MultiTargetProperty<string> loadPath = null, 
 			MultiTargetProperty<string> exportTo = null, 
 			List<string> filterContainsKeywords = null, 
@@ -342,7 +341,6 @@ namespace AssetBundleGraph {
 			this.nodeId = nodeId;
 			this.kind = kind;
 			this.scriptClassName = scriptClassName;
-			this.scriptPath = scriptPath;
 			if (loadPath != null) this.loadPath = new SerializableMultiTargetString(loadPath);
 			if (exportTo != null) this.exportTo = new SerializableMultiTargetString(exportTo);
 			this.filterContainsKeywords = filterContainsKeywords;
@@ -425,7 +423,6 @@ namespace AssetBundleGraph {
 				newX,
 				newY,
 				this.scriptClassName,
-				this.scriptPath,
 				(this.loadPath != null) ? this.loadPath.ToProperty() : null,
 				(this.exportTo != null) ? this.exportTo.ToProperty() : null,
 				this.filterContainsKeywords,

@@ -19,7 +19,6 @@ namespace AssetBundleGraph {
 		private const string NODE_ID = "id";
 		private const string NODE_KIND = "kind";
 		private const string NODE_SCRIPT_CLASSNAME = "scriptClassName";
-		private const string NODE_SCRIPT_PATH = "scriptPath";
 		private const string NODE_POS = "pos";
 		private const string NODE_POS_X = "x";
 		private const string NODE_POS_Y = "y";
@@ -76,15 +75,12 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private Dictionary<string, object> m_jsonData;
-
 		private string m_name;
 		private string m_id;
 		private AssetBundleGraphSettings.NodeKind m_kind;
 		private int m_x;
 		private int m_y;
 		private string m_scriptClassName;
-		private string m_scriptPath;
 		private List<FilterEntry> m_filter;
 		private List<ConnectionPointData> 	m_outputPoints; 
 		private MultiTargetProperty<string> m_loaderLoadPath;
@@ -103,16 +99,88 @@ namespace AssetBundleGraph {
 		}
 
 		public NodeData(Dictionary<string, object> jsonData) {
-			m_jsonData = jsonData;
-			m_x = int.MaxValue;
-			m_y = int.MaxValue;
-			m_kind = AssetBundleGraphSettings.NodeKindFromString(m_jsonData[NODE_KIND] as string);
+
+			m_name = jsonData[NODE_NAME] as string;
+			m_id = jsonData[NODE_ID]as string;
+			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
 			m_connections = new List<ConnectionData>();
+
+			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
+			m_x = Convert.ToInt32(pos[NODE_POS_X]);
+			m_y = Convert.ToInt32(pos[NODE_POS_Y]);
+			var ids    = jsonData[NODE_OUTPUTPOINT_IDS] as List<object>;
+			var labels = jsonData[NODE_OUTPUTPOINT_LABELS] as List<object>;
+			m_outputPoints = new List<ConnectionPointData>();
+			for(int i=0; i< ids.Count; ++i) {
+				m_outputPoints.Add(new ConnectionPointData(ids[i] as string, labels[i] as string));
+			}
+
+			switch (m_kind) {
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+				// nothing to do
+				break;
+			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+				{
+					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
+						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
+					}
+				}
+				break;
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+				{
+					m_loaderLoadPath = new MultiTargetProperty<string>(jsonData[NODE_LOADER_LOAD_PATH] as Dictionary<string, object>);
+				}
+				break;
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+				{
+					var keywords = jsonData[NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
+					var keytypes = jsonData[NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
+
+					m_filter = new List<FilterEntry>();
+
+					for(int i=0; i<keywords.Count; ++i) {
+						m_filter.Add(new FilterEntry(keywords[i] as string, keytypes[i] as string));
+					}
+				}
+				break;
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+				{
+					m_groupingKeyword = new MultiTargetProperty<string>(jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
+				}
+				break;
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
+				{
+					m_bundlizerBundleNameTemplate = new MultiTargetProperty<string>(jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
+					m_variants = new Dictionary<string, string>();
+					if(jsonData.ContainsKey(NODE_BUNDLIZER_VARIANTS)){
+						var src = jsonData[NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
+						foreach(var v in src) {
+							m_variants.Add(v.Key, v.Value as string);
+						}
+					}
+				}
+				break;
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
+				{
+					m_bundleBuilderEnabledBundleOptions = new MultiTargetProperty<int>(jsonData[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>);
+				}
+				break;
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
+				{
+					m_exporterExportPath = new MultiTargetProperty<string>(jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
+				}
+				break;
+			default:
+				throw new ArgumentOutOfRangeException ();
+			}
+
 		}
 
 		public NodeData(NodeGUI nodeGui) {
 
-			m_jsonData = null;
 			m_id = nodeGui.nodeId;
 			m_name = nodeGui.name;
 			m_x = nodeGui.GetX();
@@ -132,7 +200,6 @@ namespace AssetBundleGraph {
 			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
 			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
-				m_scriptPath 		= nodeGui.scriptPath;
 				m_scriptClassName 	= nodeGui.scriptClassName;
 				break;
 
@@ -144,7 +211,7 @@ namespace AssetBundleGraph {
 				break;
 
 			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-				m_loaderLoadPath = nodeGui.loadPath.ToProperty();				
+				m_loaderLoadPath = nodeGui.loadPath.ToProperty();
 				break;
 			
 			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
@@ -153,11 +220,11 @@ namespace AssetBundleGraph {
 
 			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
 				m_bundlizerBundleNameTemplate = nodeGui.bundleNameTemplate.ToProperty();
+				m_variants = nodeGui.variants.ReadonlyDict();
 				break;
 
 			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
 				m_bundleBuilderEnabledBundleOptions = nodeGui.enabledBundleOptions.ToProperty();
-				m_variants = nodeGui.variants.ReadonlyDict();
 				break;
 
 			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
@@ -172,17 +239,11 @@ namespace AssetBundleGraph {
 
 		public string Name {
 			get {
-				if(m_name == null) {
-					m_name = m_jsonData[NODE_NAME] as string;
-				}
 				return m_name;
 			}
 		}
 		public string Id {
 			get {
-				if(m_id == null) {
-					m_id = m_jsonData[NODE_ID]as string;
-				}
 				return m_id;
 			}
 		}
@@ -199,56 +260,22 @@ namespace AssetBundleGraph {
 					AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI,
 					AssetBundleGraphSettings.NodeKind.MODIFIER_GUI
 				);
-				if( m_scriptClassName == null ) {
-					m_scriptClassName = m_jsonData[NODE_SCRIPT_CLASSNAME] as string;
-				}
 				return m_scriptClassName;
-			}
-		}
-
-		public string ScriptPath {
-			get {
-				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT, 
-					AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT,
-					AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI,
-					AssetBundleGraphSettings.NodeKind.MODIFIER_GUI
-				);
-				if( m_scriptPath == null ) {
-					m_scriptPath = m_jsonData[NODE_SCRIPT_PATH] as string;
-				}
-				return m_scriptPath;
 			}
 		}
 
 		public int X {
 			get {
-				if(m_x == int.MaxValue) {
-					var pos = m_jsonData[NODE_POS] as Dictionary<string, object>;
-					m_x = Convert.ToInt32(pos[NODE_POS_X]);
-				}
 				return m_x;
 			}
 		}
 		public int Y {
 			get {
-				if(m_y == int.MaxValue) {
-					var pos = m_jsonData[NODE_POS] as Dictionary<string, object>;
-					m_y = Convert.ToInt32(pos[NODE_POS_Y]);
-				}
 				return m_y;
 			}
 		}
 		public List<ConnectionPointData> OutputPoints {
 			get {
-				if(m_outputPoints == null) {
-					var ids    = m_jsonData[NODE_OUTPUTPOINT_IDS] as List<object>;
-					var labels = m_jsonData[NODE_OUTPUTPOINT_LABELS] as List<object>;
-					m_outputPoints = new List<ConnectionPointData>();
-					for(int i=0; i< ids.Count; ++i) {
-						m_outputPoints.Add(new ConnectionPointData(ids[i] as string, labels[i] as string));
-					}
-				}
 				return m_outputPoints;
 			}
 		}
@@ -258,9 +285,6 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.LOADER_GUI 
 				);
-				if(m_loaderLoadPath == null) {
-					m_loaderLoadPath = new MultiTargetProperty<string>(m_jsonData[NODE_LOADER_LOAD_PATH] as Dictionary<string, object>);
-				}
 				return m_loaderLoadPath;
 			}
 		}
@@ -270,10 +294,7 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.EXPORTER_GUI 
 				);
-				if(m_exporterExportPath == null) {
-					m_exporterExportPath = new MultiTargetProperty<string>(m_jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
-				}
-				return m_loaderLoadPath;
+				return m_exporterExportPath;
 			}
 		}
 
@@ -282,9 +303,6 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.GROUPING_GUI 
 				);
-				if(m_groupingKeyword == null) {
-					m_groupingKeyword = new MultiTargetProperty<string>(m_jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
-				}
 				return m_groupingKeyword;
 			}
 		}
@@ -294,9 +312,6 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI 
 				);
-				if(m_bundlizerBundleNameTemplate == null) {
-					m_bundlizerBundleNameTemplate = new MultiTargetProperty<string>(m_jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
-				}
 				return m_bundlizerBundleNameTemplate;
 			}
 		}
@@ -306,13 +321,6 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI 
 				);
-				if(m_variants == null) {
-					m_variants = new Dictionary<string, string>();
-					var src = m_jsonData[NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
-					foreach(var v in src) {
-						m_variants.Add(v.Key, v.Value as string);
-					}
-				}
 				return m_variants;
 			}
 		}
@@ -322,9 +330,6 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI 
 				);
-				if(m_bundleBuilderEnabledBundleOptions == null) {
-					m_bundleBuilderEnabledBundleOptions = new MultiTargetProperty<int>(m_jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
-				}
 				return m_bundleBuilderEnabledBundleOptions;
 			}
 		}
@@ -334,16 +339,6 @@ namespace AssetBundleGraph {
 				ValidateAccess(
 					AssetBundleGraphSettings.NodeKind.FILTER_GUI
 				);
-				if(m_filter == null) {
-					var keywords = m_jsonData[NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
-					var keytypes = m_jsonData[NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
-
-					m_filter = new List<FilterEntry>();
-
-					for(int i=0; i<keywords.Count; ++i) {
-						m_filter.Add(new FilterEntry(keywords[i] as string, keytypes[i] as string));
-					}
-				}
 				return m_filter;
 			}
 		}
@@ -363,15 +358,19 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public string GetLoaderFullLoadPath(BuildTarget g) {
+			return FileUtility.PathCombine(Application.dataPath, LoaderLoadPath[g]);
+		}
+
 		public bool ValidateOverlappingFilterCondition(bool throwException) {
 			ValidateAccess(AssetBundleGraphSettings.NodeKind.FILTER_GUI);
 
 			var conditionGroup = FilterConditions.GroupBy(v => v.Hash).ToList();
 
-			bool hasOverlap = conditionGroup.Where(g => g.Key > 1).Any();
+			bool hasOverlap = conditionGroup.Where(g => g.Count() > 1).Any();
 
 			if( hasOverlap && throwException ) {
-				var badCond = conditionGroup.Where(g => g.Key > 1).First().First();
+				var badCond = conditionGroup.Where(g => g.Count() > 1).First().First();
 				throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", badCond.FilterKeyword, badCond.FilterKeytype), Id);
 			}
 			return hasOverlap;
@@ -401,33 +400,39 @@ namespace AssetBundleGraph {
 				{NODE_POS_Y, m_y}
 			};
 
-			if(m_loaderLoadPath != null) {
-				nodeDict[NODE_LOADER_LOAD_PATH] = m_loaderLoadPath.ToJsonDictionary();
-			}
-			if(m_exporterExportPath != null) {
-				nodeDict[NODE_EXPORTER_EXPORT_PATH] = m_exporterExportPath.ToJsonDictionary();
-			}
-			if(m_scriptPath != null) {
-				nodeDict[NODE_SCRIPT_PATH] = m_scriptPath;
-			}
-			if(m_scriptClassName != null) {
+			switch (m_kind) {
+			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
-			}
-			if(m_filter != null) {
+				break;
+			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+				nodeDict[NODE_LOADER_LOAD_PATH] = m_loaderLoadPath.ToJsonDictionary();
+				break;
+			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 				nodeDict[NODE_FILTER_CONTAINS_KEYWORDS] = m_filter.Select(f => f.FilterKeyword).ToList();
 				nodeDict[NODE_FILTER_CONTAINS_KEYTYPES] = m_filter.Select(f => f.FilterKeytype).ToList();
-			}
-			if(m_groupingKeyword != null) {
+				break;
+			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
 				nodeDict[NODE_GROUPING_KEYWORD] = m_groupingKeyword.ToJsonDictionary();
-			}
-			if(m_bundlizerBundleNameTemplate != null) {
+				break;
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+				break;
+			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
 				nodeDict[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = m_bundlizerBundleNameTemplate.ToJsonDictionary();
-			}
-			if(m_variants != null) {
 				nodeDict[NODE_BUNDLIZER_VARIANTS] = m_variants;
-			}
-			if(m_bundleBuilderEnabledBundleOptions != null) {
+				break;
+			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
 				nodeDict[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = m_bundleBuilderEnabledBundleOptions.ToJsonDictionary();
+				break;
+			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
+				nodeDict[NODE_EXPORTER_EXPORT_PATH] = m_exporterExportPath.ToJsonDictionary();
+				break;
+			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+				// nothing to do
+				break;
+			default:
+				throw new ArgumentOutOfRangeException ();
 			}
 
 			return nodeDict;

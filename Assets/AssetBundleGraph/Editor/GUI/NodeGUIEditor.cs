@@ -36,11 +36,13 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var disabledScope = DrawOverrideTargetToggle(node, node.loadPath.ContainsValueOf(currentEditingGroup), (bool b) => {
+					node.BeforeSave();
 					if(b) {
 						node.loadPath[currentEditingGroup] = node.loadPath.DefaultValue;
 					} else {
 						node.loadPath.Remove(currentEditingGroup);
 					}
+					node.Save();
 				});
 
 				using (disabledScope) {
@@ -74,7 +76,7 @@ namespace AssetBundleGraph {
 			EditorGUILayout.HelpBox("Filter(Script): Filter given assets by script.", MessageType.Info);
 			UpdateNodeName(node);
 
-			EditorGUILayout.LabelField("Script Path", node.scriptPath);
+			EditorGUILayout.LabelField("Script:", node.scriptClassName);
 
 			var outputPointLabels = node.OutputPointLabels();
 			EditorGUILayout.LabelField("connectionPoints Count", outputPointLabels.Count.ToString());
@@ -234,38 +236,29 @@ namespace AssetBundleGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				// show incoming type of Assets and reset interface.
-				{
-					var isOperationDataExist = false;
-					IntegratedGUIModifier.ValidateModifiyOperationData(
-						node.nodeId,
-						currentEditingGroup,
-						() => {
-							GUILayout.Label("No modifier data found, please Reload first.");
-						},
-						() => {
-							isOperationDataExist = true;
-						}
-					);
-					
-					if (!isOperationDataExist) {
-						return;
+				IntegratedGUIModifier.ValidateModifiyOperationData(
+					node.nodeId,
+					BuildTargetUtility.GroupToTarget(currentEditingGroup),
+					() => {
+						GUILayout.Label("No modifier data found, please Reload first.");
+					},
+					() => {
 					}
+				);
+				
+				if (!IntegratedGUIModifier.HasModifierDataFor(node.nodeId, currentEditingGroup, true)) {
+					return;
+				}
 
-//					using (new EditorGUILayout.HorizontalScope()) {
-//						GUILayout.Label("Target Type:");
-//						GUILayout.Label(currentModifierTargetType);
-//					}
-
-					/*
-						reset whole platform's data for this modifier.
-					*/
-					if (GUILayout.Button("Reset Modifier")) {
-						var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
-						FileUtility.RemakeDirectory(modifierFolderPath);
-						node.Save();
-						modifierOperatorInstance = null;
-						return;
-					}
+				/*
+					reset whole platform's data for this modifier.
+				*/
+				if (GUILayout.Button("Reset Modifier")) {
+					var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
+					FileUtility.RemakeDirectory(modifierFolderPath);
+					node.Save();
+					modifierOperatorInstance = null;
+					return;
 				}
 
 				GUILayout.Space(10f);
@@ -410,11 +403,13 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var disabledScope = DrawOverrideTargetToggle(node, node.groupingKeyword.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					node.BeforeSave();
 					if(enabled) {
 						node.groupingKeyword[currentEditingGroup] = node.groupingKeyword.DefaultValue;
 					} else {
 						node.groupingKeyword.Remove(currentEditingGroup);
 					}
+					node.Save();
 				});
 
 				using (disabledScope) {
@@ -436,7 +431,7 @@ namespace AssetBundleGraph {
 			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
-			EditorGUILayout.LabelField("Script Path", node.scriptPath);
+			EditorGUILayout.LabelField("Script:", node.scriptClassName);
 		}
 
 		private void DoInspectorPrefabricatorGUI (NodeGUI node) {
@@ -485,11 +480,13 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var disabledScope = DrawOverrideTargetToggle(node, node.bundleNameTemplate.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					node.BeforeSave();
 					if(enabled) {
 						node.bundleNameTemplate[currentEditingGroup] = node.bundleNameTemplate.DefaultValue;
 					} else {
 						node.bundleNameTemplate.Remove(currentEditingGroup);
 					}
+					node.Save();
 				});
 
 				using (disabledScope) {
@@ -544,6 +541,7 @@ namespace AssetBundleGraph {
 						var newid = Guid.NewGuid().ToString();
 						node.variants.Add(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
 						node.AddInputPoint(newid, AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+						node.Save();
 					}
 				}
 			}
@@ -561,11 +559,13 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var disabledScope = DrawOverrideTargetToggle(node, node.enabledBundleOptions.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					node.BeforeSave();
 					if(enabled) {
 						node.enabledBundleOptions[currentEditingGroup] = node.enabledBundleOptions.DefaultValue;
 					}  else {
 						node.enabledBundleOptions.Remove(currentEditingGroup);
 					}
+					node.Save();
 				} );
 
 				using (disabledScope) {
@@ -613,7 +613,9 @@ namespace AssetBundleGraph {
 
 
 		private void DoInspectorExporterGUI (NodeGUI node) {
-			if (node.exportTo == null) return;
+			if (node.exportTo == null) {
+				return;
+			}
 
 			EditorGUILayout.HelpBox("Exporter: Export given files to output directory.", MessageType.Info);
 			UpdateNodeName(node);
@@ -624,11 +626,13 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var disabledScope = DrawOverrideTargetToggle(node, node.exportTo.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					node.BeforeSave();
 					if(enabled) {
 						node.exportTo[currentEditingGroup] = node.exportTo.DefaultValue;
 					}  else {
 						node.exportTo.Remove(currentEditingGroup);
 					}
+					node.Save();
 				} );
 
 				using (disabledScope) {

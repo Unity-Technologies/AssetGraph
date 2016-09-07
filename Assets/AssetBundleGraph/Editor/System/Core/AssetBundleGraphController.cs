@@ -324,12 +324,13 @@ namespace AssetBundleGraph {
 
 			try {
 				INodeOperationBase executor = CreateOperation(saveData, currentNodeData);
-
-				if(isActualRun) {
-					executor.Run(target, currentNodeData, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
-				}
-				else {
-					executor.Setup(target, currentNodeData, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+				if(executor != null) {
+					if(isActualRun) {
+						executor.Run(target, currentNodeData, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+					}
+					else {
+						executor.Setup(target, currentNodeData, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+					}
 				}
 
 			} catch (NodeException e) {
@@ -398,11 +399,8 @@ namespace AssetBundleGraph {
 						break;
 					}
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-						var specificScriptClass = currentNodeData.ScriptClassName;
-						//TODO:
-						executor = new IntegratedGUIModifier(specificScriptClass, BuildTargetGroup.PS3);
-						throw new Exception("Implement This");
-//						break;
+						executor = new IntegratedGUIModifier(currentNodeData.ScriptClassName);
+						break;
 					}
 				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
 						executor = new IntegratedGUIGrouping();
@@ -411,8 +409,7 @@ namespace AssetBundleGraph {
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptClassName = currentNodeData.ScriptClassName;
 						if (string.IsNullOrEmpty(scriptClassName)) {
-							Debug.LogError(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.");
-							break;
+							throw new NodeException(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.", currentNodeData.Id);
 						}
 						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, currentNodeData);
 						break;

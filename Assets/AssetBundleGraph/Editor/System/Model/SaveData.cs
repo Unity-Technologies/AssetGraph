@@ -77,6 +77,7 @@ namespace AssetBundleGraph {
 		public SaveData(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
 			m_jsonData = null;
 
+			m_lastModified = DateTime.UtcNow;
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
 
@@ -129,29 +130,6 @@ namespace AssetBundleGraph {
 
 		public List<NodeData> CollectAllLeafNodes() {
 
-			//			/*
-			//				collect node's child. for detecting endpoint of relationship.
-			//			*/
-			//			var nodeIdListWhichHasChild = new List<string>();
-			//
-			//			foreach (var connection in allConnections) {
-			//				nodeIdListWhichHasChild.Add(connection.fromNodeId);
-			//			}
-			//			var noChildNodeIds = nodeIds.Except(nodeIdListWhichHasChild).ToList();
-			//
-			//			/*
-			//				adding parentNode id x n into childNode for run up relationship from childNode.
-			//			*/
-			//			foreach (var connection in allConnections) {
-			//				var targetNodes = allNodes.Where(nodeData => nodeData.nodeId == connection.toNodeId).ToList();
-			//				foreach (var targetNode in targetNodes) {
-			//					targetNode.AddConnectionToParent(connection);
-			//				}
-			//			}
-
-			/*
-				collect node's child. for detecting endpoint of relationship.
-			*/
 			var nodesWithChild = new List<NodeData>();
 			foreach (var c in m_allConnections) {
 				NodeData n = m_allNodes.Find(v => v.Id == c.FromNodeId);
@@ -184,12 +162,16 @@ namespace AssetBundleGraph {
 				Directory.CreateDirectory(dir);
 			}
 
+			m_lastModified = DateTime.UtcNow;
+
 			var dataStr = Json.Serialize(ToJsonDictionary());
 			var prettified = Json.Prettify(dataStr);
 
 			using (var sw = new StreamWriter(SaveDataPath)) {
 				sw.Write(prettified);
 			}
+			// reflect change of data.
+			AssetDatabase.Refresh();
 		}
 
 		public static bool IsSaveDataAvailableAtDisk() {

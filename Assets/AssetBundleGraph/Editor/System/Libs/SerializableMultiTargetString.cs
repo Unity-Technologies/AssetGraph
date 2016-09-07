@@ -66,10 +66,10 @@ namespace AssetBundleGraph {
 
 		public string this[BuildTarget index] {
 			get {
-				return this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)];
+				return this[BuildTargetUtility.TargetToGroup(index)];
 			}
 			set {
-				this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)] = value;
+				this[BuildTargetUtility.TargetToGroup(index)] = value;
 			}
 		}
 

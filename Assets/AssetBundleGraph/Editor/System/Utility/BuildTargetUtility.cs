@@ -14,7 +14,7 @@ namespace AssetBundleGraph {
 		/**
 		 *  from build target to human friendly string for display purpose.
 		 */ 
-		public static string BuildTargetToHumaneString(UnityEditor.BuildTarget t) {
+		public static string TargetToHumaneString(UnityEditor.BuildTarget t) {
 
 			switch(t) {
 			case BuildTarget.Android:
@@ -71,7 +71,7 @@ namespace AssetBundleGraph {
 		/**
 		 *  from build target group to human friendly string for display purpose.
 		 */ 
-		public static string BuildTargetGroupToHumaneString(UnityEditor.BuildTargetGroup g) {
+		public static string GroupToHumaneString(UnityEditor.BuildTargetGroup g) {
 
 			switch(g) {
 			case BuildTargetGroup.Android:
@@ -114,7 +114,7 @@ namespace AssetBundleGraph {
 		}
 
 
-		public static BuildTargetGroup BuildTargetToBuildTargetGroup(UnityEditor.BuildTarget t) {
+		public static BuildTargetGroup TargetToGroup(UnityEditor.BuildTarget t) {
 
 			if((int)t == int.MaxValue) {
 				return BuildTargetGroup.Unknown;
@@ -165,7 +165,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static BuildTarget BuildTargetGroupToBuildTarget(UnityEditor.BuildTargetGroup g) {
+		public static BuildTarget GroupToTarget(UnityEditor.BuildTargetGroup g) {
 
 			switch(g) {
 			case BuildTargetGroup.Android:

@@ -12,19 +12,19 @@ namespace AssetBundleGraph.ModifierOperators {
 		public OperatorBase () {}// this class is required for serialization. and reflextion
 
         public virtual OperatorBase DefaultSetting () {
-			throw new Exception("should override DefaultSetting method.");
+			throw new Exception("DefaultSetting not implemented by subclass.");
 		}
 
 		public virtual bool IsChanged<T> (T asset) {
-			throw new Exception("should override IsChanged method.");
+			throw new Exception("IsChanged not implemented by subclass.");
 		}
 
 		public virtual void Modify<T> (T asset) {
-			throw new Exception("should override Modify method.");
+			throw new Exception("Modify not implemented by subclass.");
 		}
 
         public virtual void DrawInspector (Action changed) {
-            throw new Exception("should override DrawInspector method.");
+			throw new Exception("DrawInspector not implemented by subclass.");
         }
     }
 }

@@ -418,7 +418,7 @@ namespace AssetBundleGraph {
 			SaveGraph();
 			try {
 				var target = BuildTargetUtility.
-					BuildTargetGroupToBuildTarget(NodeGUIEditor.currentEditingGroup);
+					GroupToTarget(NodeGUIEditor.currentEditingGroup);
 				Setup(target);
 			} catch {
 				// display nothing.
@@ -429,7 +429,7 @@ namespace AssetBundleGraph {
 			SaveGraph();
 			try {
 				var target = BuildTargetUtility.
-					BuildTargetGroupToBuildTarget(NodeGUIEditor.currentEditingGroup);
+					GroupToTarget(NodeGUIEditor.currentEditingGroup);
 				Setup(target);
 			} catch (Exception e) {
 				Debug.LogError("Error occured during reload:" + e);
@@ -679,7 +679,7 @@ namespace AssetBundleGraph {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
 
 					var target = BuildTargetUtility.
-						BuildTargetGroupToBuildTarget(NodeGUIEditor.currentEditingGroup);
+						GroupToTarget(NodeGUIEditor.currentEditingGroup);
 					
 					Setup(target);
 				}
@@ -702,7 +702,7 @@ namespace AssetBundleGraph {
 				tbLabelTarget.fontStyle = FontStyle.Bold;
 
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
-				GUILayout.Label(BuildTargetUtility.BuildTargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+				GUILayout.Label(BuildTargetUtility.TargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
 				GUI.enabled = !isAnyIssueFound;
 				if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
@@ -988,7 +988,6 @@ namespace AssetBundleGraph {
 					}
 					var shouldSave = false;
 					foreach (var item in pathAndRefs) {
-						var path = item.Key;
 						var refe = (MonoScript)item.Value;
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
 							Type scriptTypeInfo = refe.GetClass();
@@ -998,8 +997,7 @@ namespace AssetBundleGraph {
 								var dropPos = Event.current.mousePosition;
 								var scriptName = refe.name;
 								var scriptClassName = scriptName;
-								var scriptPath = path;
-								AddNodeFromCode(scriptName, scriptClassName, scriptPath, inheritedTypeInfo, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
+								AddNodeFromCode(scriptName, scriptClassName, inheritedTypeInfo, Guid.NewGuid().ToString(), dropPos.x, dropPos.y);
 								shouldSave = true;
 							}
 						}
@@ -1238,12 +1236,12 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
-		private void AddNodeFromCode (string scriptName, string scriptClassName, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
+		private void AddNodeFromCode (string scriptName, string scriptClassName, Type scriptBaseType, string nodeId, float x, float y) {
 			NodeGUI newNode = null;
 
 			if (scriptBaseType == typeof(FilterBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT;
-				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
+				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, x, y);
 				
 				// add output point to this node.
 				// setup this filter then add output point by result of setup.
@@ -1257,7 +1255,7 @@ namespace AssetBundleGraph {
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
+				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, x, y);
 				newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}
