@@ -97,7 +97,7 @@ namespace AssetBundleGraph {
 		}
 
 		public static string GetPathSafeDefaultTargetName () {
-			return GetPathSafeTargetGroupName(AssetBundleGraphPlatformSettings.DefaultTarget);
+			return GetPathSafeTargetGroupName(BuildTargetUtility.DefaultTarget);
 		}
 
 		public static string GetPathSafeTargetName (BuildTarget t) {

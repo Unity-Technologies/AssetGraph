@@ -118,27 +118,6 @@ namespace AssetBundleGraph {
 			// unhandled.
 			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'object'.");
 			return typeof(object);
-		}
-			
-		/**
-		 * ModifierOperator map vs supported type
-		*/
-		public static Dictionary<string, Type> SupportedModifierOperatorDefinition = new Dictionary<string, Type> {
-			{"UnityEngine.Animation", typeof(ModifierOperators.AnimationOperator)},
-			{"UnityEngine.Animator", typeof(ModifierOperators.AnimatorOperator)},
-			{"UnityEditor.Animations.AvatarMask", typeof(ModifierOperators.AvatarMaskOperator)},
-			{"UnityEngine.Cubemap", typeof(ModifierOperators.CubemapOperator)},
-			{"UnityEngine.Flare", typeof(ModifierOperators.FlareOperator)},
-			{"UnityEngine.Font", typeof(ModifierOperators.FontOperator)},
-			{"UnityEngine.GUISkin", typeof(ModifierOperators.GUISkinOperator)},
-			// typeof(LightmapParameters).ToString(),// ファイルにならない
-			{"UnityEngine.Material", typeof(ModifierOperators.MaterialOperator)},
-			{"UnityEngine.PhysicMaterial", typeof(ModifierOperators.PhysicMaterialOperator)},
-			{"UnityEngine.PhysicsMaterial2D", typeof(ModifierOperators.PhysicsMaterial2DOperator)},
-			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)},
-			// // typeof(SceneAsset).ToString(),// ファイルにならない
-			{"UnityEngine.Shader", typeof(ModifierOperators.ShaderOperator)},
-			{"UnityEngine.SceneManagement.Scene", typeof(ModifierOperators.SceneOperator)},
-		};
+		}			
 	}
 }

@@ -1,8 +1,13 @@
+using UnityEngine;
 using UnityEditor;
+
+using System;
+using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
-	public class AssetBundleGraphPlatformSettings {
+	public class BuildTargetUtility {
 
 		public const BuildTargetGroup DefaultTarget = BuildTargetGroup.Unknown;
 
@@ -111,6 +116,10 @@ namespace AssetBundleGraph {
 
 		public static BuildTargetGroup BuildTargetToBuildTargetGroup(UnityEditor.BuildTarget t) {
 
+			if((int)t == int.MaxValue) {
+				return BuildTargetGroup.Unknown;
+			}
+
 			switch(t) {
 			case BuildTarget.Android:
 				return BuildTargetGroup.Android;
@@ -155,6 +164,64 @@ namespace AssetBundleGraph {
 				return BuildTargetGroup.Unknown;
 			}
 		}
-	
+
+		public static BuildTarget BuildTargetGroupToBuildTarget(UnityEditor.BuildTargetGroup g) {
+
+			switch(g) {
+			case BuildTargetGroup.Android:
+				return BuildTarget.Android;
+			case BuildTargetGroup.iOS:
+				return BuildTarget.iOS;
+			case BuildTargetGroup.Nintendo3DS:
+				return BuildTarget.Nintendo3DS;
+			case BuildTargetGroup.PS3:
+				return BuildTarget.PS3;
+			case BuildTargetGroup.PS4:
+				return BuildTarget.PS4;
+			case BuildTargetGroup.PSM:
+				return BuildTarget.PSM;
+			case BuildTargetGroup.PSP2:
+				return BuildTarget.PSP2;
+			case BuildTargetGroup.SamsungTV:
+				return BuildTarget.SamsungTV;
+			case BuildTargetGroup.Standalone:
+				return BuildTarget.StandaloneWindows;
+			case BuildTargetGroup.Tizen:
+				return BuildTarget.Tizen;
+			case BuildTargetGroup.tvOS:
+				return BuildTarget.tvOS;
+			case BuildTargetGroup.WebGL:
+				return BuildTarget.WebGL;
+			case BuildTargetGroup.WiiU:
+				return BuildTarget.WiiU;
+			case BuildTargetGroup.WSA:
+				return BuildTarget.WSAPlayer;
+			case BuildTargetGroup.XBOX360:
+				return BuildTarget.XBOX360;
+			case BuildTargetGroup.XboxOne:
+				return BuildTarget.XboxOne;
+			default:
+				// temporarily assigned for default value (BuildTargetGroup.Unknown)
+				return (BuildTarget)int.MaxValue;
+			}
+		}
+
+		public static BuildTarget BuildTargetFromString (string val) {
+			return (BuildTarget)Enum.Parse(typeof(BuildTarget), val);
+		}
+
+		public static bool IsBuildTargetSupported(BuildTarget t) {
+
+			//[WrapperlessIcall]
+			//[MethodImpl (MethodImplOptions.InternalCall)]
+			//internal static extern bool IsBuildTargetSupported (BuildTarget target);
+
+			var objType = Types.GetType ("UnityEditor.BuildPipeline", "UnityEditor.dll");
+			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+			var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), t)});
+
+			return Convert.ToBoolean(retval);
+		}
 	}
 }

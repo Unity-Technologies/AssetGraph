@@ -134,42 +134,18 @@ namespace AssetBundleGraph {
 			var currentParams = argumentSources.GetRange(argumentStartIndex, argumentSources.Count - argumentStartIndex).ToList();
 
 			if (0 < currentParams.Count) {
-				/*
-					change platform for execute.
-				*/
-				switch (currentParams[0]) {
-				case "Web": 
-				case "Standalone": 
-				case "iOS": 
-				case "Android": 
-				case "BlackBerry": 
-				case "Tizen": 
-				case "XBox360": 
-				case "XboxOne": 
-				case "PS3": 
-				case "PSP2": 
-				case "PS4": 
-				case "StandaloneGLESEmu": 
-				case "Metro": 
-				case "WP8": 
-				case "WebGL": 
-				case "SamsungTV": {
-						// valid platform.
-						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetFromString(currentParams[0]));
-						break;
-					}
-				default: {
-						throw new AssetBundleGraphException(currentParams[0] + " is not supported.");
-					}
+				BuildTarget target = BuildTargetUtility.BuildTargetFromString(currentParams[0]);
+
+				if(!BuildTargetUtility.IsBuildTargetSupported(target)) {
+					throw new AssetBundleGraphBuildException(target + " is not supported to build with this Unity. Please install platform support with installer(s).");
 				}
+
+				EditorUserBuildSettings.SwitchActiveBuildTarget(target);
 			}
 
+			//TODO: Commandline Run should not go through Editor
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run();
-		}
-
-		public static BuildTarget BuildTargetFromString (string val) {
-			return (BuildTarget)Enum.Parse(typeof(BuildTarget), val);
+			window.Run(EditorUserBuildSettings.activeBuildTarget);
 		}
 
 		public static void GenerateScript (ScriptType scriptType) {
@@ -234,14 +210,14 @@ namespace AssetBundleGraph {
 		public static bool BuildFromMenuValidator () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
 
-			window.Setup();
+			window.Setup(window.ActiveBuildTarget);
 			return !window.isAnyIssueFound;
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run();
+			window.Run(window.ActiveBuildTarget);
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
@@ -298,7 +274,7 @@ namespace AssetBundleGraph {
 			ConnectionGUIUtility.FireNodeEvent = EmitConnectionEvent;
 
 			InitializeGraph();
-			Setup();
+			Setup(ActiveBuildTarget);
 
 			if (nodes.Any()) {
 				UpdateSpacerRect();
@@ -397,7 +373,7 @@ namespace AssetBundleGraph {
 			var currentConnections = new List<ConnectionGUI>();
 
 			foreach (var node in saveData.Nodes) {
-				var newNodeGUI = CreateNodeGUI(node);
+				var newNodeGUI = NodeGUI.CreateFromData(node);
 				newNodeGUI.WindowId = GetSafeWindowId(currentNodes);
 				currentNodes.Add(newNodeGUI);
 			}
@@ -441,7 +417,9 @@ namespace AssetBundleGraph {
 		private void SaveGraphWithReloadSilent () {
 			SaveGraph();
 			try {
-				Setup();
+				var target = BuildTargetUtility.
+					BuildTargetGroupToBuildTarget(NodeGUIEditor.currentEditingGroup);
+				Setup(target);
 			} catch {
 				// display nothing.
 			}
@@ -450,14 +428,16 @@ namespace AssetBundleGraph {
 		private void SaveGraphWithReload () {
 			SaveGraph();
 			try {
-				Setup();
+				var target = BuildTargetUtility.
+					BuildTargetGroupToBuildTarget(NodeGUIEditor.currentEditingGroup);
+				Setup(target);
 			} catch (Exception e) {
 				Debug.LogError("Error occured during reload:" + e);
 			}
 		}
 
-		
-		private void Setup () {
+
+		private void Setup (BuildTarget target) {
 			ResetNodeExceptionPool();
 
 			EditorUtility.ClearProgressBar();
@@ -479,7 +459,7 @@ namespace AssetBundleGraph {
 			NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.name).ToList());
 
 			// ready throughput datas.
-			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, ActiveBuildTarget, false);
+			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, false);
 
 			RefreshInspector(s_connectionThroughputs);
 
@@ -491,7 +471,7 @@ namespace AssetBundleGraph {
 		/**
 		 * Execute the build.
 		 */
-		private void Run () {
+		private void Run (BuildTarget target) {
 			ResetNodeExceptionPool();
 
 			if (!SaveData.IsSaveDataAvailableAtDisk()) {
@@ -532,7 +512,7 @@ namespace AssetBundleGraph {
 			};
 				
 			// perform setup. Fails if any exception raises.
-			AssetBundleGraphController.Perform(saveData, ActiveBuildTarget, false);
+			AssetBundleGraphController.Perform(saveData, target, false);
 
 			/*
 				remove bundlize setting names from unused Nodes.
@@ -542,7 +522,7 @@ namespace AssetBundleGraph {
 			UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
 			
 			// run datas.
-			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, ActiveBuildTarget, true, updateHandler);
+			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
 
 			EditorUtility.ClearProgressBar();
 			AssetDatabase.Refresh();
@@ -697,7 +677,11 @@ namespace AssetBundleGraph {
 		private void DrawGUIToolBar() {
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
-					Setup();
+
+					var target = BuildTargetUtility.
+						BuildTargetGroupToBuildTarget(NodeGUIEditor.currentEditingGroup);
+					
+					Setup(target);
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
@@ -718,11 +702,11 @@ namespace AssetBundleGraph {
 				tbLabelTarget.fontStyle = FontStyle.Bold;
 
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
-				GUILayout.Label(AssetBundleGraphPlatformSettings.BuildTargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+				GUILayout.Label(BuildTargetUtility.BuildTargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
 				GUI.enabled = !isAnyIssueFound;
 				if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
-					Run();
+					Run(ActiveBuildTarget);
 				}
 				GUI.enabled = true;
 			}		
@@ -1172,7 +1156,7 @@ namespace AssetBundleGraph {
 								var pasteType = copyField.type;
 								foreach (var copyFieldData in copyField.datas) {
 									var nodeJsonDict = AssetBundleGraph.Json.Deserialize(copyFieldData) as Dictionary<string, object>;
-									var pastingNode = CreateNodeGUI(new NodeData(nodeJsonDict));
+									var pastingNode = NodeGUI.CreateFromData(new NodeData(nodeJsonDict));
 									var pastingNodeName = pastingNode.name;
 
 									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
@@ -1241,204 +1225,6 @@ namespace AssetBundleGraph {
 
 		private List<string> JsonRepresentations (List<string> nodeIds) {
 			return nodes.Where(nodeGui => nodeIds.Contains(nodeGui.nodeId)).Select(nodeGui => new NodeData(nodeGui).ToJsonString()).ToList();
-		}
-
-		private static NodeGUI CreateNodeGUI (NodeData n) {
-
-			throw new Exception("Implement this");
-
-//			var name = nodeDict[AssetBundleGraphSettings.NODE_NAME] as string;
-//			var id = nodeDict[AssetBundleGraphSettings.NODE_ID] as string;
-//			var kindSource = nodeDict[AssetBundleGraphSettings.NODE_KIND] as string;
-//
-//			var kind = AssetBundleGraphSettings.NodeKindFromString(kindSource);
-//			
-//			var posDict = nodeDict[AssetBundleGraphSettings.NODE_POS] as Dictionary<string, object>;
-//			var x = (float)Convert.ToInt32(posDict[AssetBundleGraphSettings.NODE_POS_X]);
-//			var y = (float)Convert.ToInt32(posDict[AssetBundleGraphSettings.NODE_POS_Y]);		
-//
-//			switch (kind) {
-//				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
-//					var loadPathSource = nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
-//					var loadPath = new Dictionary<string, string>();
-//					foreach (var platform_package_key in loadPathSource.Keys) loadPath[platform_package_key] = loadPathSource[platform_package_key] as string;
-//
-//					var newNode = NodeGUI.CreateLoaderNode(name, id, kind, loadPath, x, y);
-//					
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-//
-//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-//					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-//					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
-//
-//					var newNode = NodeGUI.CreateScriptNode(name, id, kind, scriptClassName, scriptPath, x, y);
-//
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//
-//				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-//					var filterContainsKeywordsSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
-//					var filterContainsKeywords = new List<string>();
-//					foreach (var filterContainsKeywordSource in filterContainsKeywordsSource) {
-//						filterContainsKeywords.Add(filterContainsKeywordSource.ToString());
-//					}
-//					
-//					var filterContainsKeytypesSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
-//					var filterContainsKeytypes = new List<string>();
-//					foreach (var filterContainsKeytypeSource in filterContainsKeytypesSource) {
-//						filterContainsKeytypes.Add(filterContainsKeytypeSource.ToString());
-//					}
-//
-//					var newNode = NodeGUI.CreateGUIFilterNode(name, id, kind, filterContainsKeywords, filterContainsKeytypes, x, y);
-//
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//
-//				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-//					var newNode = NodeGUI.CreateGUIImportNode(name, id, kind, x, y);
-//					
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//
-//				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-//					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-//					var newNode = NodeGUI.CreateGUIModifierNode(name, id, kind, x, y, scriptClassName);
-//
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//
-//				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-//					var groupingKeywordSource = nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
-//					var groupingKeyword = new Dictionary<string, string>();
-//					foreach (var platform_package_key in groupingKeywordSource.Keys) groupingKeyword[platform_package_key] = groupingKeywordSource[platform_package_key] as string;
-//
-//					var newNode = NodeGUI.CreateGUIGroupingNode(name, id, kind, groupingKeyword, x, y);
-//					
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//				
-//				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-//					
-//					var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
-//					var bundleNameTemplate = new Dictionary<string, string>();
-//					foreach (var platform_package_key in bundleNameTemplateSource.Keys) {
-//						bundleNameTemplate[platform_package_key] = bundleNameTemplateSource[platform_package_key] as string;
-//					}
-//
-//					var variantsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
-//					var variants = new Dictionary<string, string>();
-//					foreach (var inputPointId in variantsSource.Keys) {
-//						variants[inputPointId] = variantsSource[inputPointId] as string;
-//					}
-//
-//					var newNode = NodeGUI.CreateBundlizerNode(name, id, kind, bundleNameTemplate, variants, x, y);
-//					
-//					foreach (var inputPointId in variants.Keys) {
-//						newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(inputPointId, variants[inputPointId]));
-//					}
-//
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//
-//				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-//					var bundleOptions = new Dictionary<string, List<string>>();
-//
-//					var enabledBundleOptionsDict = nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
-//					foreach (var platform_package_key in enabledBundleOptionsDict.Keys) {
-//						var optionListSource = enabledBundleOptionsDict[platform_package_key] as List<object>;
-//						bundleOptions[platform_package_key] = new List<string>();
-//
-//						foreach (var optionSource in optionListSource) bundleOptions[platform_package_key].Add(optionSource as string);
-//					}
-//
-//					var newNode = NodeGUI.CreateBundleBuilderNode(name, id, kind, bundleOptions, x, y);
-//					
-//					var outputIdsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] as List<object>;
-//					var outputLabelsList = nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-//					
-//					for (var i = 0; i < outputIdsList.Count; i++) {
-//						var pointId = outputIdsList[i] as string;
-//						var label = outputLabelsList[i] as string;
-//						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(pointId, label));
-//					}
-//					return newNode;
-//				}
-//
-//				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-//					var exportPathSource = nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
-//					var exportTo = new Dictionary<string, string>();
-//					foreach (var platform_package_key in exportPathSource.Keys) exportTo[platform_package_key] = exportPathSource[platform_package_key] as string;
-//
-//					var newNode = NodeGUI.CreateExporterNode(name, id, kind, exportTo, x, y);
-//					return newNode;
-//				}
-//
-//				default: {
-//					Debug.LogError(name + " is defined as unknown kind of node. value:" + kind);
-//					break;
-//				}
-//			}
-
-			throw new AssetBundleGraphException("Could not find way to create NodeGUI: " + n.Name + " kind:" + n.Kind);
 		}
 
 		private Type IsDragAndDropAcceptableScriptType (Type type) {

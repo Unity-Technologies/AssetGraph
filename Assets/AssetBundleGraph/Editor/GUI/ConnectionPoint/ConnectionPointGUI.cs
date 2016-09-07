@@ -7,16 +7,20 @@ namespace AssetBundleGraph {
 		[SerializeField] public string pointId;
 		[SerializeField] public string label;
 		[SerializeField] public bool isInput;
-		[SerializeField] public bool isOutput;
+
+		public bool isOutput {
+			get {
+				return !isInput;
+			}
+		}
 		
 		[SerializeField] public Rect buttonRect;
 		[SerializeField] public string buttonStyle;
 
-		public ConnectionPointGUI (string pointId, string label, bool input, bool output) {
+		public ConnectionPointGUI (string pointId, string label, bool input) {
 			this.pointId = pointId;
 			this.label = label;
 			this.isInput = input;
-			this.isOutput = output;
 		}
 
 		public void UpdatePos (int index, int max, float width, float height) {
@@ -32,15 +36,23 @@ namespace AssetBundleGraph {
 		}
 
         public static ConnectionPointGUI InputPoint (string label) {
-			return new ConnectionPointGUI(AssetBundleGraphSettings.NODE_INPUTPOINT_FIXED_LABEL, label, true, false);
+			return new ConnectionPointGUI(AssetBundleGraphSettings.NODE_INPUTPOINT_FIXED_LABEL, label, true);
         }
 
 		public static ConnectionPointGUI InputPoint (string pointId, string label) {
-			return new ConnectionPointGUI(pointId, label, true, false);
+			return new ConnectionPointGUI(pointId, label, true);
 		}
 
 		public static ConnectionPointGUI OutputPoint (string pointId, string label) {
-			return new ConnectionPointGUI(pointId, label, false, true);
-        }
+			return new ConnectionPointGUI(pointId, label, false);
+		}
+
+		public static ConnectionPointGUI InputPoint (ConnectionPointData data) {
+			return new ConnectionPointGUI(data.Id, data.Label, true);
+		}
+
+		public static ConnectionPointGUI OutputPoint (ConnectionPointData data) {
+			return new ConnectionPointGUI(data.Id, data.Label, false);
+		}
     }
 }

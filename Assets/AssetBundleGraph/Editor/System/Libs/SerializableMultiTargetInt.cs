@@ -25,7 +25,7 @@ namespace AssetBundleGraph {
 
 		public SerializableMultiTargetInt(int value) {
 			m_values = new List<Entry>();
-			this[AssetBundleGraphPlatformSettings.DefaultTarget] = value;
+			this[BuildTargetUtility.DefaultTarget] = value;
 		}
 
 		public SerializableMultiTargetInt() {
@@ -45,7 +45,7 @@ namespace AssetBundleGraph {
 				if(i >= 0) {
 					return m_values[i].value;
 				} else {
-					return 0;
+					return DefaultValue;
 				}
 			}
 			set {
@@ -60,19 +60,26 @@ namespace AssetBundleGraph {
 
 		public int this[BuildTarget index] {
 			get {
-				return this[AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(index)];
+				return this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)];
 			}
 			set {
-				this[AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(index)] = value;
+				this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)] = value;
 			}
 		}
 
 		public int DefaultValue {
 			get {
-				return this[AssetBundleGraphPlatformSettings.DefaultTarget];
+				int i = m_values.FindIndex(v => v.targetGroup == BuildTargetUtility.DefaultTarget);
+				if(i >= 0) {
+					return m_values[i].value;
+				} else {
+					var defaultValue = 0;
+					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue));
+					return defaultValue;
+				}
 			}
 			set {
-				this[AssetBundleGraphPlatformSettings.DefaultTarget] = value;
+				this[BuildTargetUtility.DefaultTarget] = value;
 			}
 		}
 

@@ -36,9 +36,6 @@ namespace AssetBundleGraph {
 		[SerializeField] public SerializablePseudoDictionary variants;
 		[SerializeField] public SerializableMultiTargetInt enabledBundleOptions;
 
-		//Current BuildTarget setting editing in inspector
-		[SerializeField] public BuildTargetGroup currentEditingGroup = BuildTargetGroup.Unknown;
-
 		public static List<string> NodeSharedPackages = new List<string>();
 
 		[SerializeField] private string nodeInterfaceTypeStr;
@@ -190,6 +187,69 @@ namespace AssetBundleGraph {
 			);
 		}
 
+		public static NodeGUI CreateFromData(NodeData data) {
+
+			NodeGUI newGUI = new NodeGUI(
+				name: data.Name, 
+				nodeId: data.Id, 
+				kind: data.Kind, 
+				x: (float)data.X, 
+				y: (float)data.Y
+			);
+
+			foreach (var p in data.OutputPoints) {
+				newGUI.AddConnectionPoint(ConnectionPointGUI.OutputPoint(p));
+			}
+
+			switch (data.Kind) {
+				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+					newGUI.loadPath = new SerializableMultiTargetString(data.LoaderLoadPath);
+				}
+				break;
+				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
+				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+				{
+					newGUI.scriptPath = data.ScriptPath;
+					newGUI.scriptClassName = data.ScriptClassName;
+				}
+				break;
+				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+					newGUI.filterContainsKeytypes = data.FilterConditions.Select(c => c.FilterKeytype).ToList();
+					newGUI.filterContainsKeywords = data.FilterConditions.Select(c => c.FilterKeyword).ToList();
+				}
+				break;
+				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+					newGUI.groupingKeyword = new SerializableMultiTargetString(data.GroupingKeywords);
+				}
+				break;
+				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+					newGUI.bundleNameTemplate = new SerializableMultiTargetString(data.BundleNameTemplate);
+					newGUI.variants = new SerializablePseudoDictionary(data.Variants);
+
+					foreach (var v in data.Variants) {
+						newGUI.AddConnectionPoint(ConnectionPointGUI.InputPoint(v.Key, v.Value));
+					}
+				}
+				break;
+				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+					newGUI.enabledBundleOptions = new SerializableMultiTargetInt(data.BundleBuilderBundleOptions);
+				}
+				break;
+				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+					newGUI.exportTo = new SerializableMultiTargetString(data.ExporterExportPath);
+				}
+				break;
+				default: {
+					throw new NodeException(data.Name + " is defined as unknown kind of node. value:" + data.Kind, data.Id);
+				}
+			}			
+
+			return newGUI;
+		}
+
+
 		public void AddFilterOutputPoint (int addedIndex, string keyword) {
 			connectionPoints.Insert(addedIndex+1, ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
@@ -260,7 +320,7 @@ namespace AssetBundleGraph {
 		private NodeGUI (
 			string name, 
 			string nodeId, 
-		AssetBundleGraphSettings.NodeKind kind, 
+			AssetBundleGraphSettings.NodeKind kind, 
 			float x, 
 			float y,
 			string scriptClassName = null, 

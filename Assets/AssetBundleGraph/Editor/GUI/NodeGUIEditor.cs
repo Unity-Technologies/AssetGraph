@@ -13,9 +13,10 @@ namespace AssetBundleGraph {
 	[CustomEditor(typeof(NodeGUIInspectorHelper))]
 	public class NodeGUIEditor : Editor {
 
-		private List<Action> messageActions;
+		public static BuildTargetGroup currentEditingGroup = 
+			BuildTargetUtility.DefaultTarget;
 
-		private bool packageEditMode = false;
+		private List<Action> messageActions;
 
 		public override bool RequiresConstantRepaint() {
 			return true;
@@ -31,43 +32,42 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			/*
-				platform & package
-			*/
-			if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
-
 			//Show target configuration tab
 			DrawPlatformSelector(node);
-
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				EditorGUILayout.LabelField("Load Path:");
-				var newLoadPath = EditorGUILayout.TextField(
-					SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH,
-					node.loadPath[node.currentEditingGroup]
-				);
-				var loaderNodePath = FileUtility.GetPathWithAssetsPath(newLoadPath);
-				IntegratedGUILoader.ValidateLoadPath(
-					newLoadPath,
-					loaderNodePath,
-					() => {
-						//EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
-					},
-					() => {
-						//EditorGUILayout.HelpBox("Directory not found:" + loaderNodePath, MessageType.Error);
+				var disabledScope = DrawOverrideTargetToggle(node, node.loadPath.ContainsValueOf(currentEditingGroup), (bool b) => {
+					if(b) {
+						node.loadPath[currentEditingGroup] = node.loadPath.DefaultValue;
+					} else {
+						node.loadPath.Remove(currentEditingGroup);
 					}
-				);
+				});
 
-				if (newLoadPath !=	node.loadPath[node.currentEditingGroup]) {
-					node.BeforeSave();
-					node.loadPath[node.currentEditingGroup] = newLoadPath;
-					node.Save();
+				using (disabledScope) {
+					EditorGUILayout.LabelField("Load Path:");
+					var newLoadPath = EditorGUILayout.TextField(
+						SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH,
+						node.loadPath[currentEditingGroup]
+					);
+					var loaderNodePath = FileUtility.GetPathWithAssetsPath(newLoadPath);
+					IntegratedGUILoader.ValidateLoadPath(
+						newLoadPath,
+						loaderNodePath,
+						() => {
+							//EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
+						},
+						() => {
+							//EditorGUILayout.HelpBox("Directory not found:" + loaderNodePath, MessageType.Error);
+						}
+					);
+
+					if (newLoadPath !=	node.loadPath[currentEditingGroup]) {
+						node.BeforeSave();
+						node.loadPath[currentEditingGroup] = newLoadPath;
+						node.Save();
+					}
 				}
 			}
-
-			if (packageEditMode) {
-				EditorGUI.EndDisabledGroup();
-			}
-			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorFilterScriptGUI (NodeGUI node) {
@@ -185,10 +185,6 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			if (packageEditMode) {
-				EditorGUI.BeginDisabledGroup(true);
-			}
-			
 			/*
 				importer node has no platform key. 
 				platform key is contained by Unity's importer inspector itself.
@@ -226,11 +222,6 @@ namespace AssetBundleGraph {
 					}
 				);
 			}
-
-			if (packageEditMode) {
-				EditorGUI.EndDisabledGroup();
-			}
-			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorModifierGUI (NodeGUI node) {
@@ -239,7 +230,7 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			var currentModifierTargetType = IntegratedGUIModifier.ModifierOperationTargetTypeName(node.nodeId);
+//			var currentModifierTargetType = IntegratedGUIModifier.ModifierOperationTargetTypeName(node.nodeId);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				// show incoming type of Assets and reset interface.
@@ -247,7 +238,7 @@ namespace AssetBundleGraph {
 					var isOperationDataExist = false;
 					IntegratedGUIModifier.ValidateModifiyOperationData(
 						node.nodeId,
-						node.currentEditingGroup,
+						currentEditingGroup,
 						() => {
 							GUILayout.Label("No modifier data found, please Reload first.");
 						},
@@ -260,10 +251,10 @@ namespace AssetBundleGraph {
 						return;
 					}
 
-					using (new EditorGUILayout.HorizontalScope()) {
-						GUILayout.Label("Target Type:");
-						GUILayout.Label(currentModifierTargetType);
-					}
+//					using (new EditorGUILayout.HorizontalScope()) {
+//						GUILayout.Label("Target Type:");
+//						GUILayout.Label(currentModifierTargetType);
+//					}
 
 					/*
 						reset whole platform's data for this modifier.
@@ -343,50 +334,24 @@ namespace AssetBundleGraph {
 				/*
 					if platform tab is changed, renew modifierOperatorInstance for that tab.
 				*/
-				if (DrawPlatformSelector(node)) {
+				if(DrawPlatformSelector(node)) {
 					modifierOperatorInstance = null;
-				}
+				};
 
 				/*
 					reload modifierOperator instance from saved modifierOperator data.
 				*/
 				if (modifierOperatorInstance == null) {
-					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentEditingGroup);
-
-					// choose default modifierOperatorData if platform specified file is not exist.
-					if (!File.Exists(modifierOperatorDataPath)) {
-						modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForDefaultPlatform(node.nodeId);
-					}
-					
-					var loadedModifierOperatorDataStr = string.Empty;
-					using (var sr = new StreamReader(modifierOperatorDataPath)) {
-						loadedModifierOperatorDataStr = sr.ReadToEnd();
-					} 
-
-					var modifierOperatorType = TypeUtility.SupportedModifierOperatorDefinition[currentModifierTargetType];
-
-					/*
-						create instance from saved modifierOperator data.
-					*/
-					modifierOperatorInstance = typeof(NodeGUIEditor)
-						.GetMethod("FromJson")
-						.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
-						.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
+					modifierOperatorInstance = IntegratedGUIModifier.CreateModifierOperator(node.nodeId, currentEditingGroup);
 				}
 
 				/*
 					Show ModifierOperator Inspector.
 				*/
 				if (modifierOperatorInstance != null) {
-					Action changed = () => {
-						var data = JsonUtility.ToJson(modifierOperatorInstance);
-						var prettified = Json.Prettify(data);
-
-						var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentEditingGroup);
-
-						using (var sw = new StreamWriter(modifierOperatorDataPath)) {
-							sw.Write(prettified);
-						}
+					Action onChangedAction = () => {
+						IntegratedGUIModifier.SaveModifierOperatorToDisk(
+							node.nodeId, currentEditingGroup, modifierOperatorInstance);
 
 						// reflect change of data.
 						AssetDatabase.Refresh();
@@ -396,12 +361,7 @@ namespace AssetBundleGraph {
 
 					GUILayout.Space(10f);
 
-					modifierOperatorInstance.DrawInspector(changed);
-				}
-
-				if (DrawUseDefaultSettings(node)) {
-					// source platform depended data is deleted. reload instance for reloading instance from data.
-					modifierOperatorInstance = null;
+					modifierOperatorInstance.DrawInspector(onChangedAction);
 				}
 
 				if (usingScriptMode) {
@@ -409,10 +369,6 @@ namespace AssetBundleGraph {
 				}
 			}
 		}
-
-		public T FromJson<T> (string source) {
-			return JsonUtility.FromJson<T>(source);
-		}  
 
 		/*
 			・NonSerializedをセットしないと、ModifierOperators.OperatorBase型に戻ってしまう。
@@ -423,6 +379,8 @@ namespace AssetBundleGraph {
 			という無茶苦茶な難題があります。
 			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
 			っていうのが相反するようです。うーんどうしよう。
+
+			TODO:
 		*/
 		[NonSerialized] private ModifierOperators.OperatorBase modifierOperatorInstance;
 
@@ -438,7 +396,7 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",node.groupingKeyword[node.currentEditingGroup]);
+				var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",node.groupingKeyword[currentEditingGroup]);
 				EditorGUILayout.HelpBox(
 					"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
 					MessageType.Info);
@@ -453,14 +411,12 @@ namespace AssetBundleGraph {
 					}
 				);
 
-				if (newGroupingKeyword != node.groupingKeyword[node.currentEditingGroup]) {
+				if (newGroupingKeyword != node.groupingKeyword[currentEditingGroup]) {
 					node.BeforeSave();
-					node.groupingKeyword[node.currentEditingGroup] = newGroupingKeyword;
+					node.groupingKeyword[currentEditingGroup] = newGroupingKeyword;
 					node.Save();
 				}
 			}
-
-			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorPrefabricatorScriptGUI (NodeGUI node) {
@@ -516,7 +472,7 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate[node.currentEditingGroup]).ToLower();
+				var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.bundleNameTemplate[currentEditingGroup]).ToLower();
 
 				IntegratedGUIBundlizer.ValidateBundleNameTemplate(
 					bundleNameTemplate,
@@ -525,9 +481,9 @@ namespace AssetBundleGraph {
 					}
 				);
 
-				if (bundleNameTemplate != node.bundleNameTemplate[node.currentEditingGroup]) {
+				if (bundleNameTemplate != node.bundleNameTemplate[currentEditingGroup]) {
 					node.BeforeSave();
-					node.bundleNameTemplate[node.currentEditingGroup] = bundleNameTemplate;
+					node.bundleNameTemplate[currentEditingGroup] = bundleNameTemplate;
 					node.Save();
 				}
 
@@ -575,8 +531,6 @@ namespace AssetBundleGraph {
 				}
 
 			}
-
-			DrawUseDefaultSettings(node);
 		}
 
 		private void DoInspectorBundleBuilderGUI (NodeGUI node) {
@@ -591,7 +545,7 @@ namespace AssetBundleGraph {
 			DrawPlatformSelector(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				int bundleOptions = node.enabledBundleOptions[node.currentEditingGroup];
+				int bundleOptions = node.enabledBundleOptions[currentEditingGroup];
 
 				foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
 
@@ -604,25 +558,25 @@ namespace AssetBundleGraph {
 
 						bundleOptions = (result) ? ((int)option.option | bundleOptions) : (((~(int)option.option)) & bundleOptions);
 
-						node.enabledBundleOptions[node.currentEditingGroup] = bundleOptions;
+						node.enabledBundleOptions[currentEditingGroup] = bundleOptions;
 
 						/*
 							Cannot use DisableWriteTypeTree and IgnoreTypeTreeChanges options together.
 						*/
 						if (result &&
 							option.option == BuildAssetBundleOptions.DisableWriteTypeTree &&
-							0 != (node.enabledBundleOptions[node.currentEditingGroup] & (int)BuildAssetBundleOptions.DisableWriteTypeTree))
+							0 != (node.enabledBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.DisableWriteTypeTree))
 						{
-							var currentValue = node.enabledBundleOptions[node.currentEditingGroup];
-							node.enabledBundleOptions[node.currentEditingGroup] = (((~(int)BuildAssetBundleOptions.DisableWriteTypeTree)) & currentValue);
+							var currentValue = node.enabledBundleOptions[currentEditingGroup];
+							node.enabledBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.DisableWriteTypeTree)) & currentValue);
 						}
 
 						if (result &&
 							option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges &&
-							0 != (node.enabledBundleOptions[node.currentEditingGroup] & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges))
+							0 != (node.enabledBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges))
 						{
-							var currentValue = node.enabledBundleOptions[node.currentEditingGroup];
-							node.enabledBundleOptions[node.currentEditingGroup] = (((~(int)BuildAssetBundleOptions.IgnoreTypeTreeChanges)) & currentValue);
+							var currentValue = node.enabledBundleOptions[currentEditingGroup];
+							node.enabledBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.IgnoreTypeTreeChanges)) & currentValue);
 						}
 
 						node.Save();
@@ -630,9 +584,6 @@ namespace AssetBundleGraph {
 					}
 				}
 			}
-
-			DrawUseDefaultSettings(node);
-
 		}
 
 
@@ -651,7 +602,7 @@ namespace AssetBundleGraph {
 				EditorGUILayout.LabelField("Export Path:");
 				var newExportPath = EditorGUILayout.TextField(
 					SystemDataUtility.GetProjectName(), 
-					node.exportTo[node.currentEditingGroup]
+					node.exportTo[currentEditingGroup]
 				);
 
 				var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
@@ -692,14 +643,12 @@ namespace AssetBundleGraph {
 				}
 
 
-				if (newExportPath != node.exportTo[node.currentEditingGroup]) {
+				if (newExportPath != node.exportTo[currentEditingGroup]) {
 					node.BeforeSave();
-					node.exportTo[node.currentEditingGroup] = newExportPath;
+					node.exportTo[currentEditingGroup] = newExportPath;
 					node.Save();
 				}
 			}
-
-			DrawUseDefaultSettings(node);
 		}
 
 
@@ -813,16 +762,24 @@ namespace AssetBundleGraph {
 		 *  Return true if Platform is changed
 		 */ 
 		private bool DrawPlatformSelector (NodeGUI node) {
-			BuildTargetGroup g = node.currentEditingGroup;
+			BuildTargetGroup g = currentEditingGroup;
+
+
 			EditorGUI.BeginChangeCheck();
 			using (new EditorGUILayout.HorizontalScope()) {
 				var choosenIndex = -1;
 				for (var i = 0; i < NodeGUIUtility.platformButtons.Length; i++) {
-					var onOffBefore = NodeGUIUtility.platformButtons[i].targetGroup == node.currentEditingGroup;
+					var onOffBefore = NodeGUIUtility.platformButtons[i].targetGroup == currentEditingGroup;
 					var onOffAfter = onOffBefore;
 
-					// for each platform texture.
-					onOffAfter = GUILayout.Toggle(onOffBefore, NodeGUIUtility.platformButtons[i].ui, "toolbarbutton");
+					GUIStyle toolbarbutton = new GUIStyle("toolbarbutton");
+
+					if(NodeGUIUtility.platformButtons[i].targetGroup == BuildTargetUtility.DefaultTarget) {
+						onOffAfter = GUILayout.Toggle(onOffBefore, NodeGUIUtility.platformButtons[i].ui, toolbarbutton);
+					} else {
+						var width = Mathf.Max(32f, toolbarbutton.CalcSize(NodeGUIUtility.platformButtons[i].ui).x);
+						onOffAfter = GUILayout.Toggle(onOffBefore, NodeGUIUtility.platformButtons[i].ui, toolbarbutton, GUILayout.Width( width ));
+					}
 
 					if (onOffBefore != onOffAfter) {
 						choosenIndex = i;
@@ -835,28 +792,27 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (g != node.currentEditingGroup) {
-				node.currentEditingGroup = g;
+			if (g != currentEditingGroup) {
+				currentEditingGroup = g;
 				GUI.FocusControl(string.Empty);
 			}
 
-			return g != node.currentEditingGroup;
+			return g != currentEditingGroup;
 		}
 
+		private EditorGUI.DisabledScope DrawOverrideTargetToggle(NodeGUI node, bool status, Action<bool> onStatusChange) {
 
-		private bool DrawUseDefaultSettings(NodeGUI node) {
-			var deleted = false;
-			using (new EditorGUILayout.HorizontalScope()) {
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("Use Default Setting", GUILayout.Width(150))) {
-					node.BeforeSave();
-					node.DeletePlatformSettingOf(node.currentEditingGroup);
-					GUI.FocusControl(string.Empty);
-					node.Save();
-					deleted = true;
-				}
+			if( currentEditingGroup == BuildTargetUtility.DefaultTarget ) {
+				return new EditorGUI.DisabledScope(false);
 			}
-			return deleted;
+
+			bool newStatus = GUILayout.Toggle(status, 
+				"Override for " + NodeGUIUtility.GetPlatformButtonFor(currentEditingGroup).ui.tooltip);
+			
+			if(newStatus != status && onStatusChange != null) {
+				onStatusChange(newStatus);
+			}
+			return new EditorGUI.DisabledScope(!newStatus);
 		}
 	}
 }

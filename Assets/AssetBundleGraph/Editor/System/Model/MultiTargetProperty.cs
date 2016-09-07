@@ -54,22 +54,22 @@ namespace AssetBundleGraph {
 
 		public T this[BuildTarget index] {
 			get {
-				return this[AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(index)];
+				return this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)];
 			}
 			set {
-				this[AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(index)] = value;
+				this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)] = value;
 			}
 		}
 
 		public T DefaultValue {
 			get {
-				if( !m_property.ContainsKey(AssetBundleGraphPlatformSettings.DefaultTarget) ) {
-					m_property.Add(AssetBundleGraphPlatformSettings.DefaultTarget, default (T));
+				if( !m_property.ContainsKey(BuildTargetUtility.DefaultTarget) ) {
+					m_property.Add(BuildTargetUtility.DefaultTarget, default (T));
 				}
-				return m_property[AssetBundleGraphPlatformSettings.DefaultTarget];
+				return m_property[BuildTargetUtility.DefaultTarget];
 			}
 			set {
-				m_property[AssetBundleGraphPlatformSettings.DefaultTarget] = value;
+				m_property[BuildTargetUtility.DefaultTarget] = value;
 			}
 		}
 

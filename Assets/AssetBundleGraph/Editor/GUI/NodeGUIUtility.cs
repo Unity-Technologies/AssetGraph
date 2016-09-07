@@ -92,6 +92,16 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public static PlatformButton GetPlatformButtonFor(BuildTargetGroup g) {
+			foreach(var button in platformButtons) {
+				if(button.targetGroup == g) {
+					return button;
+				}
+			}
+
+			throw new AssetBundleGraphException("Fatal: unknown target group requsted(can't happen)" + g);
+		}
+
 		public static List<string> allNodeNames {
 			get {
 				return NodeSingleton.s.allNodeNames;
@@ -122,7 +132,6 @@ namespace AssetBundleGraph {
 			public Texture2D outputPointMarkTex;
 			public Texture2D outputPointMarkConnectedTex;
 			public PlatformButton[] platformButtons;
-//			public string[] platformStrings;
 
 			public List<BuildTargetGroup> supportedBuildTargets;
 
@@ -145,57 +154,60 @@ namespace AssetBundleGraph {
 				var buttons = new List<PlatformButton>();
 
 				Dictionary<BuildTargetGroup, string> icons = new Dictionary<BuildTargetGroup, string> {
-					{BuildTargetGroup.Android, 		"BuildSettings.Android"},
-					{BuildTargetGroup.iOS, 			"BuildSettings.iPhone"},
-					{BuildTargetGroup.Nintendo3DS, 	"BuildSettings.Nintendo3DS"},
-					{BuildTargetGroup.PS3,			"BuildSettings.PS3"},
-					{BuildTargetGroup.PS4, 			"BuildSettings.PS4"},
-					{BuildTargetGroup.PSM, 			"BuildSettings.PSM"},
-					{BuildTargetGroup.PSP2, 		"BuildSettings.PSP2"},
-					{BuildTargetGroup.SamsungTV, 	"BuildSettings.Android"},
-					{BuildTargetGroup.Standalone, 	"BuildSettings.StandaloneGLESEmu"},
-					{BuildTargetGroup.Tizen, 		"BuildSettings.Tizen"},
-					{BuildTargetGroup.tvOS, 		"BuildSettings.tvOS"},
-					{BuildTargetGroup.Unknown, 		"BuildSettings.StandaloneGLESEmu"},
-					{BuildTargetGroup.WebGL, 		"BuildSettings.WebGL"},
-					{BuildTargetGroup.WiiU, 		"BuildSettings.WiiU"},
-					{BuildTargetGroup.WSA, 			"BuildSettings.WP8"},
-					{BuildTargetGroup.XBOX360, 		"BuildSettings.Xbox360"},
-					{BuildTargetGroup.XboxOne, 		"BuildSettings.XboxOne"}
+					{BuildTargetGroup.Android, 		"BuildSettings.Android.Small"},
+					{BuildTargetGroup.iOS, 			"BuildSettings.iPhone.Small"},
+					{BuildTargetGroup.Nintendo3DS, 	"BuildSettings.N3DS.Small"},
+					{BuildTargetGroup.PS3,			"BuildSettings.PS3.Small"},
+					{BuildTargetGroup.PS4, 			"BuildSettings.PS4.Small"},
+					{BuildTargetGroup.PSM, 			"BuildSettings.PSM.Small"},
+					{BuildTargetGroup.PSP2, 		"BuildSettings.PSP2.Small"},
+					{BuildTargetGroup.SamsungTV, 	"BuildSettings.Android.Small"},
+					{BuildTargetGroup.Standalone, 	"BuildSettings.Standalone.Small"},
+					{BuildTargetGroup.Tizen, 		"BuildSettings.Tizen.Small"},
+					{BuildTargetGroup.tvOS, 		"BuildSettings.tvOS.Small"},
+					{BuildTargetGroup.Unknown, 		"BuildSettings.Standalone.Small"},
+					{BuildTargetGroup.WebGL, 		"BuildSettings.WebGL.Small"},
+					{BuildTargetGroup.WiiU, 		"BuildSettings.WiiU.Small"},
+					{BuildTargetGroup.WSA, 			"BuildSettings.WP8.Small"},
+					{BuildTargetGroup.XBOX360, 		"BuildSettings.Xbox360.Small"},
+					{BuildTargetGroup.XboxOne, 		"BuildSettings.XboxOne.Small"}
 				};
 
 				buttons.Add(new PlatformButton(new GUIContent("Default", "Default settings"), BuildTargetGroup.Unknown));
 
 				foreach(var g in supportedBuildTargets) {
-					buttons.Add(new PlatformButton(new GUIContent(GetPlatformIcon(icons[g]), AssetBundleGraphPlatformSettings.BuildTargetGroupToHumaneString(g)), g));
+					buttons.Add(new PlatformButton(new GUIContent(GetPlatformIcon(icons[g]), BuildTargetUtility.BuildTargetGroupToHumaneString(g)), g));
 				}
 
 				this.platformButtons = buttons.ToArray();
 			}
 
 			public void SetupSupportedBuildTargets() {
+				
 				if( supportedBuildTargets == null ) {
 					supportedBuildTargets = new List<BuildTargetGroup>();
 
-					foreach(BuildTarget target in Enum.GetValues(typeof(BuildTarget))) {
-						var objType = typeof(BuildPipeline);
-						var method =  objType.GetMethod("IsBuildTargetSupported");
-						
-						var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), target)});
-
-						bool supported = Convert.ToBoolean(retval);
-						if(supported) {
-							BuildTargetGroup g = AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(target);
-							if(!supportedBuildTargets.Contains(g)) {
-								supportedBuildTargets.Add(g);
+					try {
+						foreach(BuildTarget target in Enum.GetValues(typeof(BuildTarget))) {
+							if(BuildTargetUtility.IsBuildTargetSupported(target)) {
+								BuildTargetGroup g = BuildTargetUtility.BuildTargetToBuildTargetGroup(target);
+								if(g == BuildTargetGroup.Unknown) {
+									// skip unknown platform
+									continue;
+								}
+								if(!supportedBuildTargets.Contains(g)) {
+									supportedBuildTargets.Add(g);
+								}
 							}
 						}
+					} catch(Exception e) {
+						Debug.LogError(e.ToString());
 					}
 				}
 			}
 
-			private Texture2D GetPlatformIcon(string locTitle) {
-				return EditorGUIUtility.IconContent(locTitle + ".Small").image as Texture2D;
+			private Texture2D GetPlatformIcon(string name) {
+				return EditorGUIUtility.IconContent(name).image as Texture2D;
 			}
 		}
 	}

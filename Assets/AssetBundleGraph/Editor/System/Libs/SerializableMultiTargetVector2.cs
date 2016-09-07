@@ -25,7 +25,7 @@ namespace AssetBundleGraph {
 
 		public SerializableMultiTargetVector2(Vector2 value) {
 			m_values = new List<Entry>();
-			this[AssetBundleGraphPlatformSettings.DefaultTarget] = value;
+			this[BuildTargetUtility.DefaultTarget] = value;
 		}
 
 		public SerializableMultiTargetVector2() {
@@ -51,7 +51,7 @@ namespace AssetBundleGraph {
 				if(i >= 0) {
 					return m_values[i].value;
 				} else {
-					return Vector2.zero;
+					return DefaultValue;
 				}
 			}
 			set {
@@ -66,19 +66,26 @@ namespace AssetBundleGraph {
 
 		public Vector2 this[BuildTarget index] {
 			get {
-				return this[AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(index)];
+				return this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)];
 			}
 			set {
-				this[AssetBundleGraphPlatformSettings.BuildTargetToBuildTargetGroup(index)] = value;
+				this[BuildTargetUtility.BuildTargetToBuildTargetGroup(index)] = value;
 			}
 		}
 
 		public Vector2 DefaultValue {
 			get {
-				return this[AssetBundleGraphPlatformSettings.DefaultTarget];
+				int i = m_values.FindIndex(v => v.targetGroup == BuildTargetUtility.DefaultTarget);
+				if(i >= 0) {
+					return m_values[i].value;
+				} else {
+					var defaultValue = Vector2.zero;
+					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue));
+					return defaultValue;
+				}
 			}
 			set {
-				this[AssetBundleGraphPlatformSettings.DefaultTarget] = value;
+				this[BuildTargetUtility.DefaultTarget] = value;
 			}
 		}
 
