@@ -9,12 +9,6 @@ using System.IO;
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeOperationBase {
 
-		private readonly string specifiedScriptClass;
-
-		public IntegratedGUIModifier (string specifiedScriptClass) {
-			this.specifiedScriptClass = specifiedScriptClass;
-		}
-
 		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			if (groupedSources.Keys.Count == 0) {
 				return;
@@ -59,7 +53,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (!string.IsNullOrEmpty(specifiedScriptClass)) {
+			if (!string.IsNullOrEmpty(node.ScriptClassName)) {
 				Debug.LogError("modifierのScript版実装中。");
 				return;
 			}
@@ -123,7 +117,7 @@ namespace AssetBundleGraph {
 			}
 
 			// modifierType is fixed. 			
-			if (!string.IsNullOrEmpty(specifiedScriptClass)) {
+			if (!string.IsNullOrEmpty(node.ScriptClassName)) {
 				Debug.LogError("modifierのScript版実装中。");
 				return;
 			}

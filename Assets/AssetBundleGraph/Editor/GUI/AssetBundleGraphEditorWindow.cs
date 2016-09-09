@@ -66,10 +66,10 @@ namespace AssetBundleGraph {
 		}
 
 		public enum ModifyMode : int {
-			CONNECT_STARTED,
-			CONNECT_ENDED,
-			SELECTION_STARTED,
-			SCALING_STARTED,
+			NONE,
+			CONNECTING,
+			SELECTING,
+			SCALING,
 		}
 
 		public enum CopyType : int {
@@ -247,8 +247,13 @@ namespace AssetBundleGraph {
 
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
-			NodeGUIUtility.FireNodeEvent = EmitNodeEvent;
-			ConnectionGUIUtility.FireNodeEvent = EmitConnectionEvent;
+			modifyMode = ModifyMode.NONE;
+			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
+			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
+		}
+
+		public void OnLostFocus() {
+			modifyMode = ModifyMode.NONE;
 		}
 
 		public void SelectNode(string nodeId) {
@@ -270,8 +275,9 @@ namespace AssetBundleGraph {
 				Repaint();
 			};
 
-			NodeGUIUtility.FireNodeEvent = EmitNodeEvent;
-			ConnectionGUIUtility.FireNodeEvent = EmitConnectionEvent;
+			modifyMode = ModifyMode.NONE;
+			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
+			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
 
 			InitializeGraph();
 			Setup(ActiveBuildTarget);
@@ -342,7 +348,7 @@ namespace AssetBundleGraph {
 			minSize = new Vector2(600f, 300f);
 			
 			wantsMouseMove = true;
-			modifyMode = ModifyMode.CONNECT_ENDED;
+			modifyMode = ModifyMode.NONE;
 						
 			
 			/*
@@ -378,9 +384,9 @@ namespace AssetBundleGraph {
 				currentNodes.Add(newNodeGUI);
 			}
 
-			// add default input if node is not AssetBundleGraphSettings.NodeKind.LOADER_GUI.
+			// add default input if node is not NodeKind.LOADER_GUI.
 			foreach (var nodeGUI in currentNodes) {
-				if (nodeGUI.kind == AssetBundleGraphSettings.NodeKind.LOADER_GUI) {
+				if (nodeGUI.kind == NodeKind.LOADER_GUI) {
 					continue;// no input point.
 				}
 				nodeGUI.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
@@ -742,7 +748,7 @@ namespace AssetBundleGraph {
 
 				// draw connection input point marks.
 				foreach (var node in nodes) {
-					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECT_STARTED);
+					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING);
 				}
 
 
@@ -760,24 +766,24 @@ namespace AssetBundleGraph {
 
 				// draw connection output point marks.
 				foreach (var node in nodes) {
-					node.DrawConnectionOutputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECT_STARTED, Event.current);
+					node.DrawConnectionOutputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING, Event.current);
 				}
 
 				/*
 					draw connecting line if modifing connection.
 				*/
 				switch (modifyMode) {
-				case ModifyMode.CONNECT_STARTED: {
+				case ModifyMode.CONNECTING: {
 						// from start node to mouse.
 						DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition, currentEventSource);
 
 						break;
 					}
-				case ModifyMode.CONNECT_ENDED: {
+				case ModifyMode.NONE: {
 						// do nothing
 						break;
 					}
-				case ModifyMode.SELECTION_STARTED: {
+				case ModifyMode.SELECTING: {
 						GUI.DrawTexture(new Rect(selection.x, selection.y, Event.current.mousePosition.x - selection.x, Event.current.mousePosition.y - selection.y), selectionTex);
 						break;
 					}
@@ -787,36 +793,35 @@ namespace AssetBundleGraph {
 					mouse drag event handling.
 				*/
 				switch (Event.current.type) {
-
 				// draw line while dragging.
 				case EventType.MouseDrag: {
 						switch (modifyMode) {
-						case ModifyMode.CONNECT_ENDED: {
+						case ModifyMode.NONE: {
 								switch (Event.current.button) {
 								case 0:{// left click
 										if (Event.current.command) {
 											scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
-											modifyMode = ModifyMode.SCALING_STARTED;
+											modifyMode = ModifyMode.SCALING;
 											break;
 										}
 
 										selection = new AssetBundleGraphSelection(Event.current.mousePosition);
-										modifyMode = ModifyMode.SELECTION_STARTED;
+										modifyMode = ModifyMode.SELECTING;
 										break;
 									}
 								case 2:{// middle click.
 										scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
-										modifyMode = ModifyMode.SCALING_STARTED;
+										modifyMode = ModifyMode.SCALING;
 										break;
 									}
 								}
 								break;
 							}
-						case ModifyMode.SELECTION_STARTED: {
+						case ModifyMode.SELECTING: {
 								// do nothing.
 								break;
 							}
-						case ModifyMode.SCALING_STARTED: {
+						case ModifyMode.SCALING: {
 								var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
 								var distance = baseDistance / NodeGUI.SCALE_WIDTH;
 								var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
@@ -848,7 +853,7 @@ namespace AssetBundleGraph {
 						/*
 								select contained nodes & connections.
 							*/
-						case ModifyMode.SELECTION_STARTED: {
+						case ModifyMode.SELECTING: {
 								var x = 0f;
 								var y = 0f;
 								var width = 0f;
@@ -913,15 +918,15 @@ namespace AssetBundleGraph {
 								UpdateActivationOfObjects(activeObject);
 
 								selection = new AssetBundleGraphSelection(Vector2.zero);
-								modifyMode = ModifyMode.CONNECT_ENDED;
+								modifyMode = ModifyMode.NONE;
 
 								HandleUtility.Repaint();
 								Event.current.Use();
 								break;
 							}
 
-						case ModifyMode.SCALING_STARTED: {
-								modifyMode = ModifyMode.CONNECT_ENDED;
+						case ModifyMode.SCALING: {
+								modifyMode = ModifyMode.NONE;
 								break;
 							}
 						}
@@ -1033,7 +1038,7 @@ namespace AssetBundleGraph {
 					Handling mouseUp at empty space. 
 				*/
 				case EventType.MouseUp: {
-					modifyMode = ModifyMode.CONNECT_ENDED;
+					modifyMode = ModifyMode.NONE;
 					HandleUtility.Repaint();
 					
 					if (activeObject.idPosDict.ReadonlyDict().Any()) {
@@ -1042,14 +1047,24 @@ namespace AssetBundleGraph {
 						foreach (var activeObjectId in activeObject.idPosDict.ReadonlyDict().Keys) {
 							// unselect all.
 							foreach (var node in nodes) {
-								if (activeObjectId == node.nodeId) node.SetInactive();
+								if (activeObjectId == node.nodeId) {
+									node.SetInactive();
+								}
 							}
 							foreach (var connection in connections) {
-								if (activeObjectId == connection.connectionId) connection.SetInactive();
+								if (activeObjectId == connection.connectionId) {
+									connection.SetInactive();
+								}
 							}
 						}
 
 						activeObject = RenewActiveObject(new List<string>());
+
+					}
+
+					// clear inspector
+					if( Selection.activeObject is NodeGUIInspectorHelper || Selection.activeObject is ConnectionGUIInspectorHelper) {
+						Selection.activeObject = null;
 					}
 
 					break;
@@ -1240,7 +1255,7 @@ namespace AssetBundleGraph {
 			NodeGUI newNode = null;
 
 			if (scriptBaseType == typeof(FilterBase)) {
-				var kind = AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT;
+				var kind = NodeKind.FILTER_SCRIPT;
 				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, x, y);
 				
 				// add output point to this node.
@@ -1254,7 +1269,7 @@ namespace AssetBundleGraph {
 			}
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
-				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
+				var kind = NodeKind.PREFABRICATOR_SCRIPT;
 				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, x, y);
 				newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
@@ -1270,7 +1285,7 @@ namespace AssetBundleGraph {
 			AddNodeGUI(newNode);
 		}
 
-		private void AddNodeFromGUI (string nodeName, AssetBundleGraphSettings.NodeKind kind, string nodeId, float x, float y) {
+		private void AddNodeFromGUI (string nodeName, NodeKind kind, string nodeId, float x, float y) {
 			NodeGUI newNode = null;
 
 			if (string.IsNullOrEmpty(nodeName)) {
@@ -1278,26 +1293,26 @@ namespace AssetBundleGraph {
 			}
 			
 			switch (kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+				case NodeKind.LOADER_GUI: {
 					newNode = NodeGUI.CreateLoaderNode(nodeName, nodeId, kind, new MultiTargetProperty<string>(), x, y);
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+				case NodeKind.FILTER_GUI: {
 					newNode = NodeGUI.CreateGUIFilterNode(nodeName, nodeId, kind, new List<string>(), new List<string>(), x, y);
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
 				
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+			case NodeKind.IMPORTSETTING_GUI: {
 					newNode = NodeGUI.CreateGUIImportNode(nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+			case NodeKind.MODIFIER_GUI: {
 					var defaultScriptClassName = string.Empty;
 					newNode = NodeGUI.CreateGUIModifierNode(nodeName, nodeId, kind, x, y, defaultScriptClassName);
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
@@ -1305,7 +1320,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+			case NodeKind.GROUPING_GUI: {
 					var newGroupingKeywords = new MultiTargetProperty<string>();
 					newGroupingKeywords.DefaultValue = AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT;
 
@@ -1315,14 +1330,14 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
+			case NodeKind.PREFABRICATOR_GUI:{
 					newNode = NodeGUI.CreatePrefabricatorNode(nodeName, nodeId, kind, x, y);
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+			case NodeKind.BUNDLIZER_GUI: {
 					var newBundlizerKeyword = new MultiTargetProperty<string>();
 					newBundlizerKeyword.DefaultValue = AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT;
 					var variant = new Dictionary<string, string> ();
@@ -1333,14 +1348,14 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case NodeKind.BUNDLEBUILDER_GUI: {
 					newNode = NodeGUI.CreateBundleBuilderNode(nodeName, nodeId, kind, new MultiTargetProperty<int>(), x, y);
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+			case NodeKind.EXPORTER_GUI: {
 					newNode = NodeGUI.CreateExporterNode(nodeName, nodeId, kind, new MultiTargetProperty<string>(), x, y);
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
@@ -1365,11 +1380,11 @@ namespace AssetBundleGraph {
 		}
 			
 		/**
-			emit event from node-GUI.
+		 * Handle Node Event
 		*/
-		private void EmitNodeEvent (OnNodeEvent e) {
+		private void HandleNodeEvent (OnNodeEvent e) {
 			switch (modifyMode) {
-				case ModifyMode.CONNECT_STARTED: {
+				case ModifyMode.CONNECTING: {
 					switch (e.eventType) {
 						/*
 							handling
@@ -1384,9 +1399,11 @@ namespace AssetBundleGraph {
 						*/
 						case OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED: {
 							// finish connecting mode.
-							modifyMode = ModifyMode.CONNECT_ENDED;
+							modifyMode = ModifyMode.NONE;
 							
-							if (currentEventSource == null) break;
+							if (currentEventSource == null) {
+								break;
+							}
 
 							var sourceNode = currentEventSource.eventSourceNode;
 							var sourceConnectionPoint = sourceNode.ConnectionPointFromConPointId(currentEventSource.conPointId);
@@ -1430,7 +1447,7 @@ namespace AssetBundleGraph {
 						*/
 						case OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
 							// finish connecting mode.
-							modifyMode = ModifyMode.CONNECT_ENDED;
+							modifyMode = ModifyMode.NONE;
 							
 							/*
 								connect when dropped target is connectable from start connectionPoint.
@@ -1481,13 +1498,13 @@ namespace AssetBundleGraph {
 						}
 
 						default: {
-							modifyMode = ModifyMode.CONNECT_ENDED;
+							modifyMode = ModifyMode.NONE;
 							break;
 						}
 					}
 					break;
 				}
-				case ModifyMode.CONNECT_ENDED: {
+				case ModifyMode.NONE: {
 					switch (e.eventType) {
 						/*
 							node move detected.
@@ -1533,7 +1550,7 @@ namespace AssetBundleGraph {
 							start connection handling.
 						*/
 						case OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
-							modifyMode = ModifyMode.CONNECT_STARTED;
+							modifyMode = ModifyMode.CONNECTING;
 							currentEventSource = e;
 							break;
 						}
@@ -1710,12 +1727,12 @@ namespace AssetBundleGraph {
 			);
 
 			switch (newNode.kind) {
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+				case NodeKind.LOADER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+				case NodeKind.FILTER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					foreach (var outputPointLabel in newNode.filterContainsKeywords) {
 						newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), outputPointLabel));
@@ -1723,31 +1740,31 @@ namespace AssetBundleGraph {
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+				case NodeKind.IMPORTSETTING_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+				case NodeKind.MODIFIER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+				case NodeKind.GROUPING_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
+				case NodeKind.PREFABRICATOR_GUI:{
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				case NodeKind.BUNDLIZER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL));
 					for (int i=0; i<newNode.variants.Keys.Count; ++i) {
@@ -1756,13 +1773,13 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+				case NodeKind.BUNDLEBUILDER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					newNode.AddConnectionPoint(ConnectionPointGUI.OutputPoint(Guid.NewGuid().ToString(), AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+				case NodeKind.EXPORTER_GUI: {
 					newNode.AddConnectionPoint(ConnectionPointGUI.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 					break;
 				}
@@ -1798,9 +1815,9 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public void EmitConnectionEvent (OnConnectionEvent e) {
+		public void HandleConnectionEvent (OnConnectionEvent e) {
 			switch (modifyMode) {
-				case ModifyMode.CONNECT_ENDED: {
+				case ModifyMode.NONE: {
 					switch (e.eventType) {
 						
 						case OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED: {

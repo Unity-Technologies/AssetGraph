@@ -134,22 +134,6 @@ namespace AssetBundleGraph {
 		public const string FILTER_KEYWORD_WILDCARD = "*";
 		public const string FILTER_FAKE_CONNECTION_ID = "f_______-____-____-____-____________";
 		
-		public enum NodeKind : int {
-			FILTER_SCRIPT,
-			PREFABRICATOR_SCRIPT,
-
-			LOADER_GUI,
-			FILTER_GUI,
-			IMPORTSETTING_GUI,
-			MODIFIER_GUI,
-
-			GROUPING_GUI,
-			PREFABRICATOR_GUI,
-			BUNDLIZER_GUI,
-			BUNDLEBUILDER_GUI,
-
-			EXPORTER_GUI
-		}
 
 		public const string NODE_INPUTPOINT_FIXED_LABEL = "FIXED_INPUTPOINT_ID";
 

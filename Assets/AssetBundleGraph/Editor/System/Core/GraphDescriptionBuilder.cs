@@ -66,7 +66,7 @@ namespace AssetBundleGraph {
 //				}
 //
 //				switch (nodeKind) {
-//				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+//				case NodeKind.LOADER_GUI: {
 //						var loadPathSource = nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] as Dictionary<string, object>;
 //						var loadPath = new Dictionary<string, string>();
 //						if (loadPathSource == null) {
@@ -88,7 +88,7 @@ namespace AssetBundleGraph {
 //						);
 //						break;
 //					}
-//				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+//				case NodeKind.EXPORTER_GUI: {
 //						var exportPathSource = nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>;
 //						var exportTo = new Dictionary<string, string>();
 //
@@ -112,13 +112,13 @@ namespace AssetBundleGraph {
 //						break;
 //					}
 //
-//				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+//				case NodeKind.FILTER_SCRIPT:
 //					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
 //
-//				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+//				case NodeKind.MODIFIER_GUI:
 //				
-//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+//				case NodeKind.PREFABRICATOR_SCRIPT:
+//				case NodeKind.PREFABRICATOR_GUI: {
 //						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 //						allNodes.Add(
 //							new NodeData(
@@ -132,7 +132,7 @@ namespace AssetBundleGraph {
 //						break;
 //					}
 //
-//				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+//				case NodeKind.FILTER_GUI: {
 //						var containsKeywordsSource = nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
 //						var filterContainsKeywords = new List<string>();
 //						foreach (var containsKeywordSource in containsKeywordsSource) {
@@ -158,7 +158,7 @@ namespace AssetBundleGraph {
 //						break;
 //					}
 //
-//				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+//				case NodeKind.IMPORTSETTING_GUI: {
 //						allNodes.Add(
 //							new NodeData(
 //								nodeId:nodeId, 
@@ -182,7 +182,7 @@ namespace AssetBundleGraph {
 //						break;
 //					}
 //
-//				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+//				case NodeKind.GROUPING_GUI: {
 //						var groupingKeywordSource = nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] as Dictionary<string, object>;
 //						var groupingKeyword = new Dictionary<string, string>();
 //
@@ -206,7 +206,7 @@ namespace AssetBundleGraph {
 //						break;
 //					}
 //
-//				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+//				case NodeKind.BUNDLIZER_GUI: {
 //						var bundleNameTemplateSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>;
 //						var bundleNameTemplate = new Dictionary<string, string>();
 //						if (bundleNameTemplateSource == null) {
@@ -238,7 +238,7 @@ namespace AssetBundleGraph {
 //						break;
 //					}
 //
-//				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+//				case NodeKind.BUNDLEBUILDER_GUI: {
 //						var enabledBundleOptionsSource = nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>;
 //
 //						// default is empty. all settings are disabled.

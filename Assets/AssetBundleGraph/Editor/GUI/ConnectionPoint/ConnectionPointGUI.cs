@@ -4,9 +4,12 @@ using UnityEngine;
 
 namespace AssetBundleGraph {
 	[Serializable] public class ConnectionPointGUI {
+
 		[SerializeField] public string pointId;
 		[SerializeField] public string label;
 		[SerializeField] public bool isInput;
+		[SerializeField] public int orderPriority;
+		[SerializeField] public bool showLabel;
 
 		public bool isOutput {
 			get {

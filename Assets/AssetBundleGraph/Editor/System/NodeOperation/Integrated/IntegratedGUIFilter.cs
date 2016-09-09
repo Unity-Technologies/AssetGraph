@@ -141,12 +141,5 @@ namespace AssetBundleGraph {
 				}
 			}
 		}
-		
-		
-
-		public static void ValidateFilter (string currentFilterKeyword, List<string> keywords, Action NullOrEmpty, Action AlreadyContained) {
-			if (string.IsNullOrEmpty(currentFilterKeyword)) NullOrEmpty();
-			if (keywords.Contains(currentFilterKeyword)) AlreadyContained();
-		}
 	}
 }

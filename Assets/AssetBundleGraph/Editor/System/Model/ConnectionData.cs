@@ -112,10 +112,10 @@ namespace AssetBundleGraph {
 
 		public static bool CanConnect (NodeData from, NodeData to) {
 			switch (from.Kind) {
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+			case NodeKind.BUNDLEBUILDER_GUI: 
 				{
 					switch (from.Kind) {
-					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
+					case NodeKind.BUNDLIZER_GUI:
 						return true;
 					}
 					return false;
@@ -123,21 +123,21 @@ namespace AssetBundleGraph {
 			}
 
 			switch (from.Kind) {
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
+			case NodeKind.BUNDLIZER_GUI: 
 				{
 					switch (to.Kind) {
-					case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+					case NodeKind.BUNDLEBUILDER_GUI: 
 						return true;
 					}
 					return false;
 				}
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+			case NodeKind.BUNDLEBUILDER_GUI: 
 				{
 					switch (to.Kind) {
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-					case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
-					case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
+					case NodeKind.FILTER_SCRIPT:
+					case NodeKind.FILTER_GUI:
+					case NodeKind.GROUPING_GUI:
+					case NodeKind.EXPORTER_GUI:
 						return true;
 					}
 					return false;

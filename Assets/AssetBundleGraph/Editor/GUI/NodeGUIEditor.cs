@@ -112,30 +112,14 @@ namespace AssetBundleGraph {
 							var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
 							var currentKeytypesSource = new List<string>(node.filterContainsKeytypes);
 
-							var currentKeytype = currentKeytypesSource[i];
-
 							for (var j = 0; j < currentKeywordsSource.Count; j++) {
 								currentKeywordsSource[j] = currentKeywordsSource[j] + currentKeytypesSource[j];
 							}
 
 							// remove current choosing one from compare target.
 							currentKeywordsSource.RemoveAt(i);
-							var currentKeywords = new List<string>(currentKeywordsSource);
 
 							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
-
-							IntegratedGUIFilter.ValidateFilter(
-								newContainsKeyword + currentKeytype,
-								currentKeywords,
-								() => {
-									s.fontStyle = FontStyle.Bold;
-									s.fontSize = 12;
-								},
-								() => {
-									s.fontStyle = FontStyle.Bold;
-									s.fontSize = 12;
-								}
-							);
 
 							using (new EditorGUILayout.HorizontalScope()) {
 								newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], s, GUILayout.Width(120));
@@ -702,37 +686,37 @@ namespace AssetBundleGraph {
 			messageActions.Clear();
 
 			switch (node.kind) {
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case NodeKind.LOADER_GUI:
 				DoInspectorLoaderGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+			case NodeKind.FILTER_SCRIPT:
 				DoInspectorFilterScriptGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+			case NodeKind.FILTER_GUI:
 				DoInspectorFilterGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI :
+			case NodeKind.IMPORTSETTING_GUI :
 				DoInspectorImportSettingGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI :
+			case NodeKind.MODIFIER_GUI :
 				DoInspectorModifierGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+			case NodeKind.GROUPING_GUI:
 				DoInspectorGroupingGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
 				DoInspectorPrefabricatorScriptGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABRICATOR_GUI:
 				DoInspectorPrefabricatorGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
+			case NodeKind.BUNDLIZER_GUI:
 				DoInspectorBundlizerGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
+			case NodeKind.BUNDLEBUILDER_GUI:
 				DoInspectorBundleBuilderGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: 
+			case NodeKind.EXPORTER_GUI: 
 				DoInspectorExporterGUI(node);
 				break;
 			default: 

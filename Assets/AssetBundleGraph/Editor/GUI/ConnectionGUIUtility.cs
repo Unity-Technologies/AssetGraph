@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	public class ConnectionGUIUtility {
 
-		public static Action<OnConnectionEvent> FireNodeEvent {
+		public static Action<OnConnectionEvent> ConnectionEventHandler {
 			get {
 				return ConnectionGUISingleton.s.emitAction;
 			}

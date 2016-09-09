@@ -72,6 +72,8 @@ namespace AssetBundleGraph {
 			foreach(var c in connList) {
 				m_allConnections.Add(new ConnectionData(c as Dictionary<string, object>));
 			}
+
+			AddConnectionsToNodes();
 		}
 
 		public SaveData(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
@@ -88,6 +90,21 @@ namespace AssetBundleGraph {
 			foreach(var cgui in connections) {
 				m_allConnections.Add(new ConnectionData(cgui));
 			}
+
+			AddConnectionsToNodes();
+		}
+
+		private void AddConnectionsToNodes() {
+			/*
+				adding parentNode to childNode for run up relationship from childNode.
+			*/
+			foreach (var connection in m_allConnections) {
+				var targetNodes = m_allNodes.Where(node => node.Id == connection.ToNodeId).ToList();
+				foreach (var targetNode in targetNodes) {
+					targetNode.AddConnectionToParent(connection);
+				}
+			}
+
 		}
 
 		public DateTime LastModified {
@@ -303,56 +320,56 @@ namespace AssetBundleGraph {
 //			nodeDict[AssetBundleGraphSettings.NODE_POS] = posDict;
 //
 //			switch (node.kind) {
-//			case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+//			case NodeKind.LOADER_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
 //					break;
 //				}
-//			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+//			case NodeKind.EXPORTER_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportTo.ReadonlyDict();
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-//			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+//			case NodeKind.FILTER_SCRIPT:
+//			case NodeKind.PREFABRICATOR_SCRIPT: {
 //					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 //					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+//			case NodeKind.FILTER_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
 //					nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] = node.filterContainsKeytypes;
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+//			case NodeKind.IMPORTSETTING_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+//			case NodeKind.MODIFIER_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+//			case NodeKind.GROUPING_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+//			case NodeKind.PREFABRICATOR_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
 //					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+//			case NodeKind.BUNDLIZER_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
 //					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] = node.variants.ReadonlyDict();
 //					break;
 //				}
 //
-//			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+//			case NodeKind.BUNDLEBUILDER_GUI: {
 //					nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
 //					break;
 //				}

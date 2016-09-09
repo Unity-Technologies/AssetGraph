@@ -10,6 +10,60 @@ using System.Security.Cryptography;
 
 namespace AssetBundleGraph {
 
+	public enum NodeKind : int {
+		FILTER_SCRIPT,
+		PREFABRICATOR_SCRIPT,
+
+		LOADER_GUI,
+		FILTER_GUI,
+		IMPORTSETTING_GUI,
+		MODIFIER_GUI,
+
+		GROUPING_GUI,
+		PREFABRICATOR_GUI,
+		BUNDLIZER_GUI,
+		BUNDLEBUILDER_GUI,
+
+		EXPORTER_GUI
+	}
+
+	[Serializable]
+	public struct FilterEntry {
+		[SerializeField] private readonly string m_filterKeyword;
+		[SerializeField] private readonly string m_filterKeytype;
+		//[SerializeField] private string m_connectionPointId;
+
+		public FilterEntry(string keyword, string keytype) {
+			m_filterKeyword = keyword;
+			m_filterKeytype = keytype;
+		}
+
+//		public string ConnectionPointId {
+//			get {
+//				return m_connectionPointId;
+//			}
+//			set {
+//				m_connectionPointId = value;
+//			}
+//		}
+
+		public string FilterKeyword {
+			get {
+				return m_filterKeyword;
+			}
+		}
+		public string FilterKeytype {
+			get {
+				return m_filterKeytype; 
+			}
+		}
+		public string Hash {
+			get {
+				return m_filterKeyword+m_filterKeytype;
+			}
+		}
+	}
+		
 	/*
 	 * node data saved in/to Json
 	 */ 
@@ -45,43 +99,14 @@ namespace AssetBundleGraph {
 		//bundlebuilder settings
 		private const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
-		public struct FilterEntry {
-			private readonly string m_filterKeyword;
-			private readonly string m_filterKeytype;
-
-			public FilterEntry(string keyword, string keytype) {
-				m_filterKeyword = keyword;
-				m_filterKeytype = keytype;
-			}
-
-			public string FilterKeyword {
-				get {
-					return m_filterKeyword;
-				}
-			}
-			public string FilterKeytype {
-				get {
-					return m_filterKeytype; 
-				}
-			}
-			public int Hash {
-				get {
-					var md5 = MD5.Create();
-					md5.Initialize();
-					md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(m_filterKeyword));
-					md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(m_filterKeytype));
-					return md5.GetHashCode();
-				}
-			}
-		}
-
 		private string m_name;
 		private string m_id;
-		private AssetBundleGraphSettings.NodeKind m_kind;
+		private NodeKind m_kind;
 		private int m_x;
 		private int m_y;
 		private string m_scriptClassName;
 		private List<FilterEntry> m_filter;
+		private List<ConnectionPointData> 	m_inputPoints; 
 		private List<ConnectionPointData> 	m_outputPoints; 
 		private MultiTargetProperty<string> m_loaderLoadPath;
 		private MultiTargetProperty<string> m_exporterExportPath;
@@ -96,6 +121,7 @@ namespace AssetBundleGraph {
 		public NodeData() {
 			m_name = string.Empty;
 			m_id = Guid.NewGuid().ToString();
+			m_connections = new List<ConnectionData>();
 		}
 
 		public NodeData(Dictionary<string, object> jsonData) {
@@ -116,25 +142,25 @@ namespace AssetBundleGraph {
 			}
 
 			switch (m_kind) {
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+			case NodeKind.IMPORTSETTING_GUI:
 				// nothing to do
 				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.MODIFIER_GUI:
 				{
 					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
 						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
 					}
 				}
 				break;
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case NodeKind.LOADER_GUI:
 				{
 					m_loaderLoadPath = new MultiTargetProperty<string>(jsonData[NODE_LOADER_LOAD_PATH] as Dictionary<string, object>);
 				}
 				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+			case NodeKind.FILTER_GUI:
 				{
 					var keywords = jsonData[NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
 					var keytypes = jsonData[NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
@@ -146,12 +172,12 @@ namespace AssetBundleGraph {
 					}
 				}
 				break;
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+			case NodeKind.GROUPING_GUI:
 				{
 					m_groupingKeyword = new MultiTargetProperty<string>(jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
 				}
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
+			case NodeKind.BUNDLIZER_GUI:
 				{
 					m_bundlizerBundleNameTemplate = new MultiTargetProperty<string>(jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
 					m_variants = new Dictionary<string, string>();
@@ -163,12 +189,12 @@ namespace AssetBundleGraph {
 					}
 				}
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
+			case NodeKind.BUNDLEBUILDER_GUI:
 				{
 					m_bundleBuilderEnabledBundleOptions = new MultiTargetProperty<int>(jsonData[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>);
 				}
 				break;
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
+			case NodeKind.EXPORTER_GUI:
 				{
 					m_exporterExportPath = new MultiTargetProperty<string>(jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
 				}
@@ -186,6 +212,7 @@ namespace AssetBundleGraph {
 			m_x = nodeGui.GetX();
 			m_y = nodeGui.GetY();
 			m_kind = nodeGui.kind;
+			m_connections = new List<ConnectionData>();
 
 			m_outputPoints = new List<ConnectionPointData>();
 			List<string> ids = nodeGui.OutputPointIds();
@@ -196,38 +223,38 @@ namespace AssetBundleGraph {
 			}
 
 			switch(m_kind) {
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.MODIFIER_GUI:
 				m_scriptClassName 	= nodeGui.scriptClassName;
 				break;
 
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+			case NodeKind.FILTER_GUI:
 				m_filter = new List<FilterEntry>();
 				for(int i=0; i<nodeGui.filterContainsKeytypes.Count; ++i) {
 					m_filter.Add(new FilterEntry(nodeGui.filterContainsKeywords[i], nodeGui.filterContainsKeytypes[i]));
 				}
 				break;
 
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case NodeKind.LOADER_GUI:
 				m_loaderLoadPath = nodeGui.loadPath.ToProperty();
 				break;
 			
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+			case NodeKind.GROUPING_GUI:
 				m_groupingKeyword = nodeGui.groupingKeyword.ToProperty();
 				break;
 
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
+			case NodeKind.BUNDLIZER_GUI:
 				m_bundlizerBundleNameTemplate = nodeGui.bundleNameTemplate.ToProperty();
 				m_variants = nodeGui.variants.ReadonlyDict();
 				break;
 
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
+			case NodeKind.BUNDLEBUILDER_GUI:
 				m_bundleBuilderEnabledBundleOptions = nodeGui.enabledBundleOptions.ToProperty();
 				break;
 
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
+			case NodeKind.EXPORTER_GUI:
 				m_exporterExportPath = nodeGui.exportTo.ToProperty();
 				break;
 			}
@@ -247,7 +274,7 @@ namespace AssetBundleGraph {
 				return m_id;
 			}
 		}
-		public AssetBundleGraphSettings.NodeKind Kind {
+		public NodeKind Kind {
 			get {
 				return m_kind;
 			}
@@ -255,10 +282,10 @@ namespace AssetBundleGraph {
 		public string ScriptClassName {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT, 
-					AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT,
-					AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI,
-					AssetBundleGraphSettings.NodeKind.MODIFIER_GUI
+					NodeKind.FILTER_SCRIPT, 
+					NodeKind.PREFABRICATOR_SCRIPT,
+					NodeKind.PREFABRICATOR_GUI,
+					NodeKind.MODIFIER_GUI
 				);
 				return m_scriptClassName;
 			}
@@ -283,7 +310,7 @@ namespace AssetBundleGraph {
 		public MultiTargetProperty<string> LoaderLoadPath {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.LOADER_GUI 
+					NodeKind.LOADER_GUI 
 				);
 				return m_loaderLoadPath;
 			}
@@ -292,7 +319,7 @@ namespace AssetBundleGraph {
 		public MultiTargetProperty<string> ExporterExportPath {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.EXPORTER_GUI 
+					NodeKind.EXPORTER_GUI 
 				);
 				return m_exporterExportPath;
 			}
@@ -301,7 +328,7 @@ namespace AssetBundleGraph {
 		public MultiTargetProperty<string> GroupingKeywords {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.GROUPING_GUI 
+					NodeKind.GROUPING_GUI 
 				);
 				return m_groupingKeyword;
 			}
@@ -310,7 +337,7 @@ namespace AssetBundleGraph {
 		public MultiTargetProperty<string> BundleNameTemplate {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI 
+					NodeKind.BUNDLIZER_GUI 
 				);
 				return m_bundlizerBundleNameTemplate;
 			}
@@ -319,7 +346,7 @@ namespace AssetBundleGraph {
 		public Dictionary<string, string> Variants {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI 
+					NodeKind.BUNDLIZER_GUI 
 				);
 				return m_variants;
 			}
@@ -328,7 +355,7 @@ namespace AssetBundleGraph {
 		public MultiTargetProperty<int> BundleBuilderBundleOptions {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI 
+					NodeKind.BUNDLEBUILDER_GUI 
 				);
 				return m_bundleBuilderEnabledBundleOptions;
 			}
@@ -337,7 +364,7 @@ namespace AssetBundleGraph {
 		public List<FilterEntry> FilterConditions {
 			get {
 				ValidateAccess(
-					AssetBundleGraphSettings.NodeKind.FILTER_GUI
+					NodeKind.FILTER_GUI
 				);
 				return m_filter;
 			}
@@ -363,20 +390,19 @@ namespace AssetBundleGraph {
 		}
 
 		public bool ValidateOverlappingFilterCondition(bool throwException) {
-			ValidateAccess(AssetBundleGraphSettings.NodeKind.FILTER_GUI);
+			ValidateAccess(NodeKind.FILTER_GUI);
 
-			var conditionGroup = FilterConditions.GroupBy(v => v.Hash).ToList();
+			var conditionGroup = FilterConditions.Select(v => v).GroupBy(v => v.Hash).ToList();
+			var overlap = conditionGroup.Find(v => v.Count() > 1);
 
-			bool hasOverlap = conditionGroup.Where(g => g.Count() > 1).Any();
-
-			if( hasOverlap && throwException ) {
-				var badCond = conditionGroup.Where(g => g.Count() > 1).First().First();
-				throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", badCond.FilterKeyword, badCond.FilterKeytype), Id);
+			if( overlap != null && throwException ) {
+				var element = overlap.First();
+				throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", element.FilterKeyword, element.FilterKeytype), Id);
 			}
-			return hasOverlap;
+			return overlap != null;
 		}
 
-		private void ValidateAccess(params AssetBundleGraphSettings.NodeKind[] allowedKind) {
+		private void ValidateAccess(params NodeKind[] allowedKind) {
 			foreach(var k in allowedKind) {
 				if (k == m_kind) {
 					return;
@@ -401,34 +427,34 @@ namespace AssetBundleGraph {
 			};
 
 			switch (m_kind) {
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
 				break;
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			case NodeKind.LOADER_GUI:
 				nodeDict[NODE_LOADER_LOAD_PATH] = m_loaderLoadPath.ToJsonDictionary();
 				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+			case NodeKind.FILTER_GUI:
 				nodeDict[NODE_FILTER_CONTAINS_KEYWORDS] = m_filter.Select(f => f.FilterKeyword).ToList();
 				nodeDict[NODE_FILTER_CONTAINS_KEYTYPES] = m_filter.Select(f => f.FilterKeytype).ToList();
 				break;
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+			case NodeKind.GROUPING_GUI:
 				nodeDict[NODE_GROUPING_KEYWORD] = m_groupingKeyword.ToJsonDictionary();
 				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABRICATOR_GUI:
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
+			case NodeKind.BUNDLIZER_GUI:
 				nodeDict[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = m_bundlizerBundleNameTemplate.ToJsonDictionary();
 				nodeDict[NODE_BUNDLIZER_VARIANTS] = m_variants;
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
+			case NodeKind.BUNDLEBUILDER_GUI:
 				nodeDict[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = m_bundleBuilderEnabledBundleOptions.ToJsonDictionary();
 				break;
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI:
+			case NodeKind.EXPORTER_GUI:
 				nodeDict[NODE_EXPORTER_EXPORT_PATH] = m_exporterExportPath.ToJsonDictionary();
 				break;
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+			case NodeKind.IMPORTSETTING_GUI:
 				// nothing to do
 				break;
 			default:
@@ -446,7 +472,7 @@ namespace AssetBundleGraph {
 //	public class NodeData {
 //		public readonly string nodeName;
 //		public readonly string nodeId;
-//		public readonly AssetBundleGraphSettings.NodeKind nodeKind;
+//		public readonly NodeKind nodeKind;
 //		public readonly List<string> outputPointIds;
 //
 //		// for All script nodes & prefabricator, bundlizer GUI.
@@ -482,7 +508,7 @@ namespace AssetBundleGraph {
 //
 //		public NodeData (
 //			string nodeId, 
-//		AssetBundleGraphSettings.NodeKind nodeKind,
+//		NodeKind nodeKind,
 //			string nodeName,
 //			List<string> outputPointIds,
 //			string scriptClassName = null,
@@ -512,49 +538,49 @@ namespace AssetBundleGraph {
 //			this.enabledBundleOptions = null;
 //
 //			switch (nodeKind) {
-//				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+//				case NodeKind.LOADER_GUI: {
 //					this.loadFilePath = loadPath;
 //					break;
 //				}
-//				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+//				case NodeKind.EXPORTER_GUI: {
 //					this.exportFilePath = exportTo;
 //					break;
 //				}
 //
-//				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-//				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+//				case NodeKind.FILTER_SCRIPT:
+//				case NodeKind.PREFABRICATOR_SCRIPT:
+//				case NodeKind.PREFABRICATOR_GUI: {
 //					this.scriptClassName = scriptClassName;
 //					break;
 //				}
 //
-//				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+//				case NodeKind.FILTER_GUI: {
 //					this.containsKeywords = filterContainsKeywords;
 //					this.containsKeytypes = filterContainsKeytypes;
 //					break;
 //				}
 //
-//				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+//				case NodeKind.IMPORTSETTING_GUI: {
 //					break;
 //				}
 //
-//				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+//				case NodeKind.MODIFIER_GUI: {
 //					this.modifierPackages = modifierPackages;
 //					break;
 //				}
 //				
-//				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+//				case NodeKind.GROUPING_GUI: {
 //					this.groupingKeyword = groupingKeyword;
 //					break;
 //				}
 //
-//				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+//				case NodeKind.BUNDLIZER_GUI: {
 //					this.bundleNameTemplate = bundleNameTemplate;
 //					this.variants = variants;
 //					break;
 //				}
 //
-//				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+//				case NodeKind.BUNDLEBUILDER_GUI: {
 //					this.enabledBundleOptions = enabledBundleOptions;
 //					break;
 //				}

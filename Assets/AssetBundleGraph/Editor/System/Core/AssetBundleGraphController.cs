@@ -351,21 +351,21 @@ namespace AssetBundleGraph {
 
 			try {
 				switch (currentNodeData.Kind) {
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
+				case NodeKind.FILTER_SCRIPT: {
 						var scriptClassName = currentNodeData.ScriptClassName;
 						executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, currentNodeData);
 						break;
 					}
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+				case NodeKind.PREFABRICATOR_SCRIPT: {
 						var scriptClassName = currentNodeData.ScriptClassName;
 						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, currentNodeData);
 						break;
 					}
-				case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+				case NodeKind.LOADER_GUI: {
 						executor = new IntegratedGUILoader();
 						break;
 					}
-				case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+				case NodeKind.FILTER_GUI: {
 						/**
 								Filter requires "outputPoint ordered exist connection Id and Fake connection Id" for
 								exhausting assets by keyword and type correctly.
@@ -394,19 +394,19 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+				case NodeKind.IMPORTSETTING_GUI: {
 						executor = new IntegratedGUIImportSetting();
 						break;
 					}
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-						executor = new IntegratedGUIModifier(currentNodeData.ScriptClassName);
+				case NodeKind.MODIFIER_GUI: {
+						executor = new IntegratedGUIModifier();
 						break;
 					}
-				case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+				case NodeKind.GROUPING_GUI: {
 						executor = new IntegratedGUIGrouping();
 						break;
 					}
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+				case NodeKind.PREFABRICATOR_GUI: {
 						var scriptClassName = currentNodeData.ScriptClassName;
 						if (string.IsNullOrEmpty(scriptClassName)) {
 							throw new NodeException(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.", currentNodeData.Id);
@@ -415,7 +415,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				case NodeKind.BUNDLIZER_GUI: {
 						/*
 								Bundlizer requires assetOutputConnectionId and additional resourceOutputConnectionId.
 								both-connected, or both-not-connected, or one of them is connected. 4 patterns exists.
@@ -451,12 +451,12 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+				case NodeKind.BUNDLEBUILDER_GUI: {
 						executor = new IntegratedGUIBundleBuilder();
 						break;
 					}
 
-				case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+				case NodeKind.EXPORTER_GUI: {
 						executor = new IntegratedGUIExporter();
 						break;
 					}
@@ -475,19 +475,19 @@ namespace AssetBundleGraph {
 			return executor;
 		}
 
-		public static List<string> GetCachedDataByNodeKind (BuildTarget t, AssetBundleGraphSettings.NodeKind nodeKind, string nodeId) {
+		public static List<string> GetCachedDataByNodeKind (BuildTarget t, NodeKind nodeKind, string nodeId) {
 			switch (nodeKind) {
-				case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
+				case NodeKind.IMPORTSETTING_GUI: {
 					// no cache file exists for importSetting.
 					return new List<string>();
 				}
-				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
+				case NodeKind.MODIFIER_GUI: {
 					// no cache file exists for modifier.
 					return new List<string>();
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
+				case NodeKind.PREFABRICATOR_SCRIPT:
+				case NodeKind.PREFABRICATOR_GUI: {
 					var cachedPathBase = FileUtility.PathCombine(
 						AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, 
 						nodeId,
@@ -511,12 +511,12 @@ namespace AssetBundleGraph {
 					return FileUtility.FilePathsInFolder(cachedPathBase);
 				}
 				 
-				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+				case NodeKind.BUNDLIZER_GUI: {
 					// do nothing.
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+				case NodeKind.BUNDLEBUILDER_GUI: {
 					var cachedPathBase = FileUtility.PathCombine(
 						AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, 
 						nodeId,

@@ -20,7 +20,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static Action<OnNodeEvent> FireNodeEvent {
+		public static Action<OnNodeEvent> NodeEventHandler {
 			get {
 				return NodeSingleton.s.emitAction;
 			}
@@ -120,6 +120,48 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public static Dictionary<NodeKind, GUIStyle> SelectedStyle {
+			get {
+				if(NodeSingleton.s.selectedStyle == null) {
+					NodeSingleton.s.selectedStyle = new Dictionary<NodeKind, GUIStyle>() {
+						{NodeKind.LOADER_GUI, 			new GUIStyle("flow node 0 on")},
+						{NodeKind.EXPORTER_GUI, 		new GUIStyle("flow node 0 on")},
+						{NodeKind.FILTER_SCRIPT, 		new GUIStyle("flow node 1 on")},
+						{NodeKind.FILTER_GUI, 			new GUIStyle("flow node 1 on")},
+						{NodeKind.IMPORTSETTING_GUI,	new GUIStyle("flow node 2 on")},
+						{NodeKind.GROUPING_GUI, 		new GUIStyle("flow node 3 on")},
+						{NodeKind.PREFABRICATOR_SCRIPT, new GUIStyle("flow node 4 on")},
+						{NodeKind.PREFABRICATOR_GUI, 	new GUIStyle("flow node 4 on")},
+						{NodeKind.BUNDLIZER_GUI, 		new GUIStyle("flow node 5 on")},
+						{NodeKind.BUNDLEBUILDER_GUI, 	new GUIStyle("flow node 6 on")},
+						{NodeKind.MODIFIER_GUI, 		new GUIStyle("flow node 6 on")}
+					};
+				}
+				return NodeSingleton.s.selectedStyle;
+			}
+		}
+
+		public static Dictionary<NodeKind, GUIStyle> UnselectedStyle {
+			get {
+				if(NodeSingleton.s.unselectedStyle == null) {
+					NodeSingleton.s.unselectedStyle = new Dictionary<NodeKind, GUIStyle>() {
+						{NodeKind.LOADER_GUI, 			new GUIStyle("flow node 0")},
+						{NodeKind.EXPORTER_GUI, 		new GUIStyle("flow node 0")},
+						{NodeKind.FILTER_SCRIPT, 		new GUIStyle("flow node 1")},
+						{NodeKind.FILTER_GUI, 			new GUIStyle("flow node 1")},
+						{NodeKind.IMPORTSETTING_GUI,	new GUIStyle("flow node 2")},
+						{NodeKind.GROUPING_GUI, 		new GUIStyle("flow node 3")},
+						{NodeKind.PREFABRICATOR_SCRIPT, new GUIStyle("flow node 4")},
+						{NodeKind.PREFABRICATOR_GUI, 	new GUIStyle("flow node 4")},
+						{NodeKind.BUNDLIZER_GUI, 		new GUIStyle("flow node 5")},
+						{NodeKind.BUNDLEBUILDER_GUI, 	new GUIStyle("flow node 6")},
+						{NodeKind.MODIFIER_GUI, 		new GUIStyle("flow node 6")}
+					};
+				}
+				return NodeSingleton.s.unselectedStyle;
+			}
+		}
+
 		private class NodeSingleton {
 			public Action<OnNodeEvent> emitAction;
 
@@ -136,6 +178,9 @@ namespace AssetBundleGraph {
 			public List<BuildTargetGroup> supportedBuildTargets;
 
 			public List<string> allNodeNames;
+
+			public Dictionary<NodeKind, GUIStyle> selectedStyle;
+			public Dictionary<NodeKind, GUIStyle> unselectedStyle;
 
 			private static NodeSingleton s_singleton;
 

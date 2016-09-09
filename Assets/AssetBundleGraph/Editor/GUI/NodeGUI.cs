@@ -23,8 +23,7 @@ namespace AssetBundleGraph {
 
 		[SerializeField] public string name;
 		[SerializeField] public string nodeId;
-		[SerializeField] public AssetBundleGraphSettings.NodeKind kind;
-
+		[SerializeField] public NodeKind kind;
 		[SerializeField] public string scriptClassName;
 		[SerializeField] public SerializableMultiTargetString loadPath;
 		[SerializeField] public SerializableMultiTargetString exportTo;
@@ -35,11 +34,7 @@ namespace AssetBundleGraph {
 		[SerializeField] public SerializablePseudoDictionary variants;
 		[SerializeField] public SerializableMultiTargetInt enabledBundleOptions;
 
-		public static List<string> NodeSharedPackages = new List<string>();
-
-		[SerializeField] private string nodeInterfaceTypeStr;
-		[SerializeField] private BuildTarget currentBuildTarget;
-
+		[SerializeField] private GUIStyle nodeSyle;
 		[SerializeField] private NodeGUIInspectorHelper nodeInsp;
 
 		/*
@@ -75,7 +70,7 @@ namespace AssetBundleGraph {
 		private float progress;
 		private bool running;
 
-		public static NodeGUI CreateLoaderNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> loadPath, float x, float y) {
+		public static NodeGUI CreateLoaderNode (string name, string nodeId,NodeKind kind, MultiTargetProperty<string> loadPath, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -86,7 +81,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateExporterNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> exportTo, float x, float y) {
+		public static NodeGUI CreateExporterNode (string name, string nodeId,NodeKind kind, MultiTargetProperty<string> exportTo, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -97,7 +92,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateScriptNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, string scriptClassName, float x, float y) {
+		public static NodeGUI CreateScriptNode (string name, string nodeId,NodeKind kind, string scriptClassName, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -108,7 +103,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIFilterNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
+		public static NodeGUI CreateGUIFilterNode (string name, string nodeId,NodeKind kind, List<string> filterContainsKeywords, List<string> filterContainsKeytypes, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -120,7 +115,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIImportNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreateGUIImportNode (string name, string nodeId,NodeKind kind, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -130,7 +125,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIModifierNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, float x, float y, string scriptClassName) {
+		public static NodeGUI CreateGUIModifierNode (string name, string nodeId,NodeKind kind, float x, float y, string scriptClassName) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -141,7 +136,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateGUIGroupingNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> groupingKeyword, float x, float y) {
+		public static NodeGUI CreateGUIGroupingNode (string name, string nodeId,NodeKind kind, MultiTargetProperty<string> groupingKeyword, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -152,7 +147,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId,NodeKind kind, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -162,7 +157,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundlizerNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<string> bundleNameTemplate, Dictionary<string, string> variants, float x, float y) {
+		public static NodeGUI CreateBundlizerNode (string name, string nodeId,NodeKind kind, MultiTargetProperty<string> bundleNameTemplate, Dictionary<string, string> variants, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -174,7 +169,7 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateBundleBuilderNode (string name, string nodeId,AssetBundleGraphSettings.NodeKind kind, MultiTargetProperty<int> enabledBundleOptions, float x, float y) {
+		public static NodeGUI CreateBundleBuilderNode (string name, string nodeId,NodeKind kind, MultiTargetProperty<int> enabledBundleOptions, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
@@ -200,31 +195,31 @@ namespace AssetBundleGraph {
 			}
 
 			switch (data.Kind) {
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
+			case NodeKind.IMPORTSETTING_GUI:
 				//nothing to do
 				break;
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI: {
+			case NodeKind.LOADER_GUI: {
 				newGUI.loadPath = new SerializableMultiTargetString(data.LoaderLoadPath);
 			}
 			break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABRICATOR_GUI: 
+			case NodeKind.MODIFIER_GUI:
 			{
 				newGUI.scriptClassName = data.ScriptClassName;
 			}
 			break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
+			case NodeKind.FILTER_GUI: {
 				newGUI.filterContainsKeytypes = data.FilterConditions.Select(c => c.FilterKeytype).ToList();
 				newGUI.filterContainsKeywords = data.FilterConditions.Select(c => c.FilterKeyword).ToList();
 			}
 			break;
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
+			case NodeKind.GROUPING_GUI: {
 				newGUI.groupingKeyword = new SerializableMultiTargetString(data.GroupingKeywords);
 			}
 			break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+			case NodeKind.BUNDLIZER_GUI: {
 				newGUI.bundleNameTemplate = new SerializableMultiTargetString(data.BundleNameTemplate);
 				newGUI.variants = new SerializablePseudoDictionary(data.Variants);
 
@@ -233,11 +228,11 @@ namespace AssetBundleGraph {
 				}
 			}
 			break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
+			case NodeKind.BUNDLEBUILDER_GUI: {
 				newGUI.enabledBundleOptions = new SerializableMultiTargetInt(data.BundleBuilderBundleOptions);
 			}
 			break;
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
+			case NodeKind.EXPORTER_GUI: {
 				newGUI.exportTo = new SerializableMultiTargetString(data.ExporterExportPath);
 			}
 			break;
@@ -258,7 +253,7 @@ namespace AssetBundleGraph {
 
 		public void DeleteFilterOutputPoint (int deletedIndex) {
 			var deletedConnectionPoint = connectionPoints[deletedIndex+1];
-			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
+			NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(deletedIndex);
 			Save();
 			UpdateNodeRect();
@@ -275,7 +270,7 @@ namespace AssetBundleGraph {
 			int deletedIndex = connectionPoints.FindIndex( c => c.pointId == guid );
 
 			if(deletedIndex >= 0) {
-				NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, guid));
+				NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, guid));
 				connectionPoints.RemoveAt(deletedIndex);
 				Save();
 				UpdateNodeRect();
@@ -285,7 +280,7 @@ namespace AssetBundleGraph {
 		public void RenameInputPoint (string guid, string label) {
 			connectionPoints.ForEach( c => { if( c.pointId == guid ) {
 					c.label = label; 
-					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, c.pointId));
+					NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, c.pointId));
 				}
 			});
 			Save();
@@ -294,13 +289,13 @@ namespace AssetBundleGraph {
 
 		public void RenameFilterOutputPointLabel (int changedIndex, string latestLabel) {
 			connectionPoints[changedIndex+1].label = latestLabel;
-			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex].pointId));
+			NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex].pointId));
 			Save();
 			UpdateNodeRect();
 		}
 
 		public void BeforeSave () {
-			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
+			NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_BEFORESAVE, this, Vector2.zero, null));
 		}
 
 		/**
@@ -312,7 +307,7 @@ namespace AssetBundleGraph {
 			*/
 			RenewErrorSource();
 
-			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
+			NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_SAVE, this, Vector2.zero, null));
 		}
 
 		public NodeGUI () {}
@@ -320,7 +315,7 @@ namespace AssetBundleGraph {
 		private NodeGUI (
 			string name, 
 			string nodeId, 
-			AssetBundleGraphSettings.NodeKind kind, 
+			NodeKind kind, 
 			float x, 
 			float y,
 			string scriptClassName = null, 
@@ -352,56 +347,7 @@ namespace AssetBundleGraph {
 
 			this.baseRect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
 
-			switch (this.kind) {
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 1";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 2";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 6";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 3";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				{
-					this.nodeInterfaceTypeStr = "flow node 4";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 5";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 6";
-					break;
-				}
-
-			default: {
-					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
-					break;
-				}
-			}
+			this.nodeSyle = NodeGUIUtility.UnselectedStyle[kind];
 		}
 
 		public NodeGUI DuplicatedNode (float newX, float newY) {
@@ -438,110 +384,11 @@ namespace AssetBundleGraph {
 		public void SetActive () {
 			nodeInsp.UpdateNode(this);
 			Selection.activeObject = nodeInsp;
-
-			switch (this.kind) {
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 1 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 2 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 6 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 3 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				{
-					this.nodeInterfaceTypeStr = "flow node 4 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 5 on";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 6 on";
-					break;
-				}
-
-			default: {
-					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
-					break;
-				}
-			}
+			this.nodeSyle = NodeGUIUtility.SelectedStyle[kind];
 		}
 
 		public void SetInactive () {
-			switch (this.kind) {
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 0";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 1";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 2";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 6";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 3";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				{
-					this.nodeInterfaceTypeStr = "flow node 4";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 5";
-					break;
-				}
-
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: {
-					this.nodeInterfaceTypeStr = "flow node 6";
-					break;
-				}
-
-			default: {
-					Debug.LogError(this.name + " is defined as unknown kind of node. value:" + this.kind);
-					break;
-				}
-			}
+			this.nodeSyle = NodeGUIUtility.UnselectedStyle[kind];
 		}
 
 		public void AddConnectionPoint (ConnectionPointGUI adding) {
@@ -590,7 +437,7 @@ namespace AssetBundleGraph {
 		public void DrawNode () {
 			var scaledBaseRect = ScaleEffect(baseRect);
 
-			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, nodeInterfaceTypeStr);
+			var movedRect = GUI.Window(nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, nodeSyle);
 
 			baseRect.position = baseRect.position + (movedRect.position - scaledBaseRect.position);
 		}
@@ -629,7 +476,7 @@ namespace AssetBundleGraph {
 					only emit event.
 				*/
 			case EventType.Ignore: {
-					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED, this, Event.current.mousePosition, null));
+					NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -637,7 +484,7 @@ namespace AssetBundleGraph {
 					handling drag.
 				*/
 			case EventType.MouseDrag: {
-					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_MOVING, this, Event.current.mousePosition, null));
+					NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_MOVING, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -650,7 +497,7 @@ namespace AssetBundleGraph {
 
 					if (!string.IsNullOrEmpty(result)) {
 						if (scaleFactor == SCALE_MAX) {
-							NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
+							NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
 						}
 						break;
 					}
@@ -667,12 +514,12 @@ namespace AssetBundleGraph {
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
 						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
-							NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, this, Event.current.mousePosition, connectionPoint.pointId));
+							NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, this, Event.current.mousePosition, connectionPoint.pointId));
 							return;
 						}
 					}
 
-					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHED, this, Event.current.mousePosition, null));
+					NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_TOUCHED, this, Event.current.mousePosition, null));
 					break;
 				}
 			}
@@ -688,7 +535,7 @@ namespace AssetBundleGraph {
 						new GUIContent("Delete"),
 						false, 
 						() => {
-							NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Vector2.zero, null));
+							NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Vector2.zero, null));
 						}
 					);
 					menu.ShowAsContext();
@@ -751,7 +598,7 @@ namespace AssetBundleGraph {
 					// eventPosition is contained by outputPointRect.
 					if (outputPointRect.Contains(globalMousePosition)) {
 						if (current.type == EventType.MouseDown) {
-							NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, current.mousePosition, point.pointId));
+							NodeGUIUtility.NodeEventHandler(new OnNodeEvent(OnNodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, current.mousePosition, point.pointId));
 						}
 					}
 				}
@@ -804,9 +651,9 @@ namespace AssetBundleGraph {
 			if (scaleFactor == SCALE_MAX) {
 				foreach (var point in connectionPoints) {
 					switch (this.kind) {
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
+					case NodeKind.FILTER_SCRIPT:
+					case NodeKind.FILTER_GUI:
+					case NodeKind.BUNDLIZER_GUI: 
 						{
 							var label = point.label;
 							if( label != AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL ) {
@@ -839,8 +686,8 @@ namespace AssetBundleGraph {
 			// instead of CalcSize()
 			var contentLabelWordsLength = this.name.Length;
 			switch (this.kind) {
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
+			case NodeKind.FILTER_GUI:
+			case NodeKind.BUNDLIZER_GUI: {
 					
 					var inputLabels = connectionPoints.FindAll(con => con.isInput).OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
 					if (inputLabels.Any()) {

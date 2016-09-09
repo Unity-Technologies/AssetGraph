@@ -33,33 +33,33 @@ namespace AssetBundleGraph {
 //			var kind = AssetBundleGraphSettings.NodeKindFromString(nodeJson[AssetBundleGraphSettings.NODE_KIND] as string);
 //
 //			switch (kind) {	
-//			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
+//			case NodeKind.FILTER_SCRIPT:
 //				if(!ValidateNodeJsonDataForFilterScript(ref nodeJson, ref sanitizedNodeJson, ref changed)) {
 //					changed = true;
 //					continue;
 //				}
 //				break;			
-//			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
-//			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: 
+//			case NodeKind.PREFABRICATOR_GUI: 
+//			case NodeKind.PREFABRICATOR_SCRIPT: 
 //				if(!ValidateNodeJsonDataForPrefabricator(ref nodeJson, kind == NodeKind.PREFABRICATOR_SCRIPT)) 
 //				{
 //					changed = true;
 //					continue;
 //				}
 //				break;
-//			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
+//			case NodeKind.BUNDLIZER_GUI: 
 //				if(!ValidateNodeJsonDataForBundlizer(ref nodeJson)) {
 //					changed = true;
 //					continue;
 //				}
 //				break;
-//			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
-//			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
-//			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI:
-//			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
-//			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
-//			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: 
-//			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
+//			case NodeKind.LOADER_GUI:
+//			case NodeKind.FILTER_GUI:
+//			case NodeKind.IMPORTSETTING_GUI:
+//			case NodeKind.MODIFIER_GUI:
+//			case NodeKind.GROUPING_GUI:
+//			case NodeKind.EXPORTER_GUI: 
+//			case NodeKind.BUNDLEBUILDER_GUI: 
 //				break;
 //			default:
 //				{
