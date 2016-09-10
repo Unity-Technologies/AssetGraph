@@ -193,13 +193,13 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddFilterOutputPoint (int addedIndex, string keyword) {
-			connectionPoints.Insert(addedIndex+1, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
+			connectionPoints.Insert(addedIndex, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
 
 		public void DeleteFilterOutputPoint (int deletedIndex) {
-			var deletedConnectionPoint = connectionPoints[deletedIndex+1];
+			var deletedConnectionPoint = connectionPoints[deletedIndex];
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
 			connectionPoints.RemoveAt(deletedIndex);
 			Save();
@@ -576,6 +576,7 @@ namespace AssetBundleGraph {
 
 		public ConnectionPoint ConnectionPointFromConPointId (string pointId) {
 			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
+			if (targetPoints.Count == 0) throw new Exception("no connection point found. which should be contained pointId:" + pointId);
 			return targetPoints[0];
 		}
 

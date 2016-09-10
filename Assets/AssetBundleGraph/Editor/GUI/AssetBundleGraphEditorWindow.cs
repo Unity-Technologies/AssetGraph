@@ -878,7 +878,7 @@ namespace AssetBundleGraph {
 
 				// draw connections.
 				foreach (var con in connections) {
-					if (s_connectionThroughputs.ContainsKey(con.connectionId)) { 
+					if (s_connectionThroughputs.ContainsKey(con.connectionId)) {
 						var throughputListDict = s_connectionThroughputs[con.connectionId];
 						con.DrawConnection(nodes, throughputListDict);
 					} else {
@@ -2146,12 +2146,9 @@ namespace AssetBundleGraph {
 					var deletedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == deletedConnectionPoint.pointId).ToList();
 					
 					if (!deletedOutputPointConnections.Any()) {
-						break;
+						throw new Exception("AssetBundleGraph deliting connection not found.");
 					}
 					
-					// あ、線がdeleteされてない？
-
-
 					connections.Remove(deletedOutputPointConnections[0]);
 					break;
 				}
