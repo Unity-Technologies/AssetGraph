@@ -104,14 +104,15 @@ namespace AssetBundleGraph {
 							node.BeforeSave();
 							node.filterContainsKeywords.RemoveAt(i);
 							node.filterContainsKeytypes.RemoveAt(i);
+
 							node.DeleteFilterOutputPoint(i);
 						}
 						else {
 							var newContainsKeyword = node.filterContainsKeywords[i];
 
 							/*
-												generate keyword + keytype string for compare exists setting vs new modifying setting at once.
-											*/
+								generate keyword + keytype string for compare exists setting vs new modifying setting at once.
+							*/
 							var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
 							var currentKeytypesSource = new List<string>(node.filterContainsKeytypes);
 
