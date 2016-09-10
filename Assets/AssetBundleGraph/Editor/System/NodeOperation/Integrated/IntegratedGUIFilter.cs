@@ -18,20 +18,15 @@ namespace AssetBundleGraph {
 
 		public void Setup (string nodeName, string nodeId, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			// overlapping test.
-			try {
-				var overlappingCheckList = new List<string>();
-				for (var i = 0; i < containsKeywords.Count; i++) {
-					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
-					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
-						throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
-					}
-					overlappingCheckList.Add(keywordAndKeytypeCombind);
+			var overlappingCheckList = new List<string>();
+			for (var i = 0; i < containsKeywords.Count; i++) {
+				var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
+				if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
+					throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
 				}
-			} catch(NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
+				overlappingCheckList.Add(keywordAndKeytypeCombind);
 			}
-
+			
 			foreach (var groupKey in groupedSources.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
 
@@ -62,15 +57,13 @@ namespace AssetBundleGraph {
 		
 		public void Run (string nodeName, string nodeId, string nused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
 			// overlapping test.
-			{
-				var overlappingCheckList = new List<string>();
-				for (var i = 0; i < containsKeywords.Count; i++) {
-					var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
-					if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
-						throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
-					}
-					overlappingCheckList.Add(keywordAndKeytypeCombind);
+			var overlappingCheckList = new List<string>();
+			for (var i = 0; i < containsKeywords.Count; i++) {
+				var keywordAndKeytypeCombind = containsKeywords[i] + containsKeytypes[i];
+				if (overlappingCheckList.Contains(keywordAndKeytypeCombind)) {
+					throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", containsKeywords[i], containsKeytypes[i]), nodeId);
 				}
+				overlappingCheckList.Add(keywordAndKeytypeCombind);
 			}
 			
 			foreach (var groupKey in groupedSources.Keys) {
