@@ -16,7 +16,8 @@ namespace AssetBundleGraph {
 		public const int SCALE_WIDTH = 30;
 		public const float SCALE_RATIO = 0.3f;
 
-		[SerializeField] private List<ConnectionPoint> connectionPoints = new List<ConnectionPoint>();
+		[SerializeField] private List<ConnectionPoint> inputConnectionPoints = new List<ConnectionPoint>();
+		[SerializeField] private List<ConnectionPoint> outputConnectionPoints = new List<ConnectionPoint>();
 
 		[SerializeField] private int nodeWindowId;
 		[SerializeField] private Rect baseRect;
@@ -193,39 +194,39 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddFilterOutputPoint (int addedIndex, string keyword) {
-			connectionPoints.Insert(addedIndex, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
+			outputConnectionPoints.Insert(addedIndex, ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(), keyword));
 			Save();
 			UpdateNodeRect();
 		}
 
 		public void DeleteFilterOutputPoint (int deletedIndex) {
-			var deletedConnectionPoint = connectionPoints[deletedIndex];
+			var deletedConnectionPoint = outputConnectionPoints[deletedIndex];
 			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, deletedConnectionPoint.pointId));
-			connectionPoints.RemoveAt(deletedIndex);
+			outputConnectionPoints.Remove(deletedConnectionPoint);
 			Save();
 			UpdateNodeRect();
 		}
 
 		public void AddInputPoint (string guid, string label) {
-			connectionPoints.Add(ConnectionPoint.InputPoint(guid, label));
+			inputConnectionPoints.Add(ConnectionPoint.InputPoint(guid, label));
 			Save();
 			UpdateNodeRect();
 		}
 
 		public void DeleteInputPoint (string guid) {
 
-			int deletedIndex = connectionPoints.FindIndex( c => c.pointId == guid );
+			int deletedIndex = inputConnectionPoints.FindIndex( c => c.pointId == guid );
 
 			if(deletedIndex >= 0) {
 				NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, this, Vector2.zero, guid));
-				connectionPoints.RemoveAt(deletedIndex);
+				inputConnectionPoints.RemoveAt(deletedIndex);
 				Save();
 				UpdateNodeRect();
 			}
 		}
 
 		public void RenameInputPoint (string guid, string label) {
-			connectionPoints.ForEach( c => { if( c.pointId == guid ) {
+			inputConnectionPoints.ForEach( c => { if( c.pointId == guid ) {
 					c.label = label; 
 					NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, c.pointId));
 				}
@@ -235,8 +236,8 @@ namespace AssetBundleGraph {
 		}
 
 		public void RenameFilterOutputPointLabel (int changedIndex, string latestLabel) {
-			connectionPoints[changedIndex+1].label = latestLabel;
-			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, connectionPoints[changedIndex].pointId));
+			outputConnectionPoints[changedIndex].label = latestLabel;
+			NodeGUIUtility.FireNodeEvent(new OnNodeEvent(OnNodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, this, Vector2.zero, outputConnectionPoints[changedIndex].pointId));
 			Save();
 			UpdateNodeRect();
 		}
@@ -537,17 +538,17 @@ namespace AssetBundleGraph {
 		}
 
 		public void AddConnectionPoint (ConnectionPoint adding) {
-			if(adding.label == AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL) {
-				connectionPoints.Insert(0, adding);
+			if(adding.isInput) {
+				inputConnectionPoints.Insert(0, adding);
 			} else {
-				connectionPoints.Add(adding);
+				outputConnectionPoints.Add(adding);
 			}
 			UpdateNodeRect();
 		}
 
 		private void RefreshConnectionPos () {
-			var inputPoints = connectionPoints.Where(p => p.isInput).ToList();
-			var outputPoints = connectionPoints.Where(p => p.isOutput).ToList();
+			var inputPoints = inputConnectionPoints;
+			var outputPoints = outputConnectionPoints;
 
 			for (int i = 0; i < inputPoints.Count; i++) {
 				var point = inputPoints[i];
@@ -561,23 +562,34 @@ namespace AssetBundleGraph {
 		}
 
 		public List<string> OutputPointLabels () {
-			return connectionPoints
-				.Where(p => p.isOutput)
+			return outputConnectionPoints
 				.Select(p => p.label)
 				.ToList();
 		}
 
 		public List<string> OutputPointIds () {
-			return connectionPoints
-				.Where(p => p.isOutput)
+			return outputConnectionPoints
 				.Select(p => p.pointId)
 				.ToList();
 		}
 
 		public ConnectionPoint ConnectionPointFromConPointId (string pointId) {
-			var targetPoints = connectionPoints.Where(con => con.pointId == pointId).ToList();
+			var wholeConnectionPoints = WholeConnectionPoints();
+
+			var targetPoints = wholeConnectionPoints.Where(con => con.pointId == pointId).ToList();
 			if (targetPoints.Count == 0) throw new Exception("no connection point found. which should be contained pointId:" + pointId);
 			return targetPoints[0];
+		}
+
+		private List<ConnectionPoint> WholeConnectionPoints () {
+			var wholeConnectionPoints = new List<ConnectionPoint>();
+			foreach (var input in inputConnectionPoints) {
+				wholeConnectionPoints.Add(input);
+			}
+			foreach (var output in outputConnectionPoints) {
+				wholeConnectionPoints.Add(output);
+			}
+			return wholeConnectionPoints;
 		}
 
 		public void DrawNode () {
@@ -615,8 +627,7 @@ namespace AssetBundleGraph {
 		*/
 		private void HandleNodeEvent () {
 			switch (Event.current.type) {
-
-			/*
+				/*
 					handling release of mouse drag from this node to another node.
 					this node doesn't know about where the other node is. the master only knows.
 					only emit event.
@@ -639,6 +650,7 @@ namespace AssetBundleGraph {
 					then emit event.
 				*/
 			case EventType.MouseDown: {
+					var connectionPoints = WholeConnectionPoints();
 					var result = IsOverConnectionPoint(connectionPoints, Event.current.mousePosition);
 
 					if (!string.IsNullOrEmpty(result)) {
@@ -656,6 +668,7 @@ namespace AssetBundleGraph {
 			*/
 			switch (Event.current.rawType) {
 			case EventType.MouseUp: {
+					var connectionPoints = WholeConnectionPoints();
 					// if mouse position is on the connection point, emit mouse raised event.
 					foreach (var connectionPoint in connectionPoints) {
 						var globalConnectonPointRect = new Rect(connectionPoint.buttonRect.x, connectionPoint.buttonRect.y, connectionPoint.buttonRect.width, connectionPoint.buttonRect.height);
@@ -703,6 +716,7 @@ namespace AssetBundleGraph {
 					}
 				}
 			}
+			var connectionPoints = WholeConnectionPoints();
 
 			foreach (var point in connectionPoints) {
 				if (point.isInput) {
@@ -732,6 +746,8 @@ namespace AssetBundleGraph {
 
 			var globalMousePosition = current.mousePosition;
 
+			var connectionPoints = WholeConnectionPoints();
+			
 			foreach (var point in connectionPoints) {
 				if (point.isOutput) {
 					var outputPointRect = GetOutputRectForPoint(point);
@@ -795,6 +811,8 @@ namespace AssetBundleGraph {
 
 			// draw & update connectionPoint button interface.
 			if (scaleFactor == SCALE_MAX) {
+				var connectionPoints = WholeConnectionPoints();
+				
 				foreach (var point in connectionPoints) {
 					switch (this.kind) {
 					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
@@ -834,7 +852,7 @@ namespace AssetBundleGraph {
 			switch (this.kind) {
 			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: {
-					
+					var connectionPoints = WholeConnectionPoints();
 					var inputLabels = connectionPoints.FindAll(con => con.isInput).OrderByDescending(con => con.label.Length).Select(con => con.label.Length).ToList();
 					if (inputLabels.Any()) {
 						contentLabelWordsLength = contentLabelWordsLength + 1 + inputLabels[0];
@@ -926,7 +944,8 @@ namespace AssetBundleGraph {
 			if (baseRect.Contains(globalPos)) {
 				return true;
 			}
-
+			var connectionPoints = WholeConnectionPoints();
+			
 			foreach (var connectionPoint in connectionPoints) {
 				if (connectionPoint.isOutput) {
 					var outputRect = GetOutputRectForPoint(connectionPoint);
@@ -960,7 +979,8 @@ namespace AssetBundleGraph {
 
 		public List<ConnectionPoint> ConnectionPointUnderGlobalPos (Vector2 globalPos) {
 			var containedPoints = new List<ConnectionPoint>();
-
+			var connectionPoints = WholeConnectionPoints();
+			
 			foreach (var connectionPoint in connectionPoints) {
 				var grobalConnectionPointRect = new Rect(
 					baseRect.x + connectionPoint.buttonRect.x,

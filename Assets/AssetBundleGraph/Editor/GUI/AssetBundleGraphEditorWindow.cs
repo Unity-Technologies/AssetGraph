@@ -2146,7 +2146,8 @@ namespace AssetBundleGraph {
 					var deletedOutputPointConnections = connections.Where(con => con.outputPoint.pointId == deletedConnectionPoint.pointId).ToList();
 					
 					if (!deletedOutputPointConnections.Any()) {
-						throw new Exception("AssetBundleGraph deliting connection not found.");
+						// no connection found.
+						break;
 					}
 					
 					connections.Remove(deletedOutputPointConnections[0]);
