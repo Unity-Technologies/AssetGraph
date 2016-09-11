@@ -583,12 +583,9 @@ namespace AssetBundleGraph {
 
 		private List<ConnectionPoint> WholeConnectionPoints () {
 			var wholeConnectionPoints = new List<ConnectionPoint>();
-			foreach (var input in inputConnectionPoints) {
-				wholeConnectionPoints.Add(input);
-			}
-			foreach (var output in outputConnectionPoints) {
-				wholeConnectionPoints.Add(output);
-			}
+			wholeConnectionPoints.AddRange(inputConnectionPoints);
+			wholeConnectionPoints.AddRange(outputConnectionPoints);
+			
 			return wholeConnectionPoints;
 		}
 
