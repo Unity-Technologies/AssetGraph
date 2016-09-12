@@ -62,32 +62,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static List<string> CreateCustomFilterInstanceForScript (string scriptClassName) {
-			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptClassName);
-			if (nodeScriptInstance == null) {
-				Debug.LogError("Failed to create instance for " + scriptClassName + ". No such class found in assembly.");
-				return new List<string>();
-			}
-
-			var labels = new List<string>();
-			Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<Asset>> source, List<string> usedCache) => {
-				labels.Add(connectionLabel);
-			};
-
-			((FilterBase)nodeScriptInstance).Setup(
-				"GetLabelsFromSetupFilter_dummy_nodeName",
-				"GetLabelsFromSetupFilter_dummy_nodeId", 
-				string.Empty,
-				new Dictionary<string, List<Asset>>{
-					{"0", new List<Asset>()}
-				},
-				new List<string>(),
-				Output
-			);
-			return labels;
-
-		}
-
 		public static string GetPlatformValue (Dictionary<string, string> packageDict, string platform) {
 			var key = CreateKeyNameFromString(platform);
 			if (packageDict.ContainsKey(key)) {

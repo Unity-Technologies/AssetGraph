@@ -28,7 +28,6 @@ namespace AssetBundleGraph {
 
 		[SerializeField] public string scriptAttrNameOrClassName;
 		
-		[SerializeField] public string scriptPath;// 消せるはず
 		[SerializeField] public SerializablePseudoDictionary loadPath;
 		[SerializeField] public SerializablePseudoDictionary exportTo;
 		[SerializeField] public List<string> filterContainsKeywords;
@@ -104,15 +103,14 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreateScriptNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, string scriptPath, float x, float y) {
+		public static NodeGUI CreateScriptNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptClassName, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
 				y: y,
-				scriptAttrNameOrClassName: scriptClassName,
-				scriptPath: scriptPath
+				scriptAttrNameOrClassName: scriptClassName
 			);
 		}
 
@@ -161,13 +159,14 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, float x, float y) {
+		public static NodeGUI CreatePrefabricatorNode (string name, string nodeId, AssetBundleGraphSettings.NodeKind kind, string scriptAttrNameOrClassName, float x, float y) {
 			return new NodeGUI(
 				name: name,
 				nodeId: nodeId,
 				kind: kind,
 				x: x,
-				y: y
+				y: y,
+				scriptAttrNameOrClassName: scriptAttrNameOrClassName
 			);
 		}
 
@@ -268,7 +267,6 @@ namespace AssetBundleGraph {
 			float x, 
 			float y,
 			string scriptAttrNameOrClassName = null, 
-			string scriptPath = null, 
 			Dictionary<string, string> loadPath = null, 
 			Dictionary<string, string> exportTo = null, 
 			List<string> filterContainsKeywords = null, 
@@ -287,8 +285,7 @@ namespace AssetBundleGraph {
 			this.nodeId = nodeId;
 			this.kind = kind;
 			this.scriptAttrNameOrClassName = scriptAttrNameOrClassName;
-			Debug.LogError("下記のscriptPath消したい");
-			this.scriptPath = scriptPath;
+			
 			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
 			if (exportTo != null) this.exportTo = new SerializablePseudoDictionary(exportTo);
 			this.filterContainsKeywords = filterContainsKeywords;
@@ -308,7 +305,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1";
 					break;
@@ -370,7 +366,6 @@ namespace AssetBundleGraph {
 				newX,
 				newY,
 				this.scriptAttrNameOrClassName,
-				this.scriptPath,
 				(this.loadPath != null) ? loadPath.ReadonlyDict() : null,
 				(this.exportTo != null) ? this.exportTo.ReadonlyDict() : null,
 				this.filterContainsKeywords,
@@ -439,7 +434,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1 on";
 					break;
@@ -491,7 +485,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.FILTER_GUI: {
 					this.nodeInterfaceTypeStr = "flow node 1";
 					break;
@@ -810,7 +803,6 @@ namespace AssetBundleGraph {
 				
 				foreach (var point in connectionPoints) {
 					switch (this.kind) {
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 					case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 					case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
 						{

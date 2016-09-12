@@ -76,20 +76,6 @@ namespace AssetBundleGraph {
 			UpdateDeleteSetting(node);
 		}
 
-		private void DoInspectorFilterScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Filter(Script): Filter given assets by script.", MessageType.Info);
-			UpdateNodeName(node);
-
-			EditorGUILayout.LabelField("Script Path", node.scriptPath);
-
-			var outputPointLabels = node.OutputPointLabels();
-			EditorGUILayout.LabelField("connectionPoints Count", outputPointLabels.Count.ToString());
-
-			foreach (var label in outputPointLabels) {
-				EditorGUILayout.LabelField("label", label);
-			}
-		}
-
 		private void DoInspectorFilterGUI (NodeGUI node) {
 			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
 			UpdateNodeName(node);
@@ -488,16 +474,31 @@ namespace AssetBundleGraph {
 			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-
-				GUIStyle s = new GUIStyle("TextFieldDropDownText");
-
+			using (new EditorGUILayout.HorizontalScope(GUI.skin.box)) {
+				GUILayout.Label("Prefabricator Class");
 				if (GUILayout.Button(node.scriptAttrNameOrClassName, "Popup")) {
 					/*
 						collect type name or "Name" attribute parameter from extended-PrefabricatorBase class.
 					*/
 					var prefabricatorCandidateTypeNameOrAttrName = PrefabricatorBase.GetPrefabricatorAttrName_ClassNameDict();
 					
+					// prepare for no class found.
+					if (!prefabricatorCandidateTypeNameOrAttrName.Any()) {
+						var menu = new GenericMenu();
+
+						menu.AddItem(
+							new GUIContent("Generate Example Prefabricator Script"),
+							false,
+							() => {
+								// generate sample.
+								AssetBundleGraphEditorWindow.GenerateScript(AssetBundleGraphEditorWindow.ScriptType.SCRIPT_PREFABRICATOR);
+							}
+						);
+
+						menu.ShowAsContext();
+						return;
+					}
+
 					/*
 						displays type name or attribute if exist.
 					*/
@@ -508,7 +509,7 @@ namespace AssetBundleGraph {
 							node.BeforeSave();
 							node.scriptAttrNameOrClassName = selectedClassNameOrAttrName;
 							node.Save();
-						} 
+						}
 					);
 				}
 			}
@@ -781,9 +782,6 @@ namespace AssetBundleGraph {
 			switch (node.kind) {
 			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
 				DoInspectorLoaderGUI(node);
-				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				DoInspectorFilterScriptGUI(node);
 				break;
 			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 				DoInspectorFilterGUI(node);

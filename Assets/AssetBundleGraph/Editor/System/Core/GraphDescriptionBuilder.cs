@@ -109,11 +109,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-					// case AssetGraphSettings.NodeKind.IMPORTER_SCRIPT:
-
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI:
-				
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 						allNodes.Add(

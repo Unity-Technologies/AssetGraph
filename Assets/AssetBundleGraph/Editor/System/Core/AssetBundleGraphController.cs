@@ -380,7 +380,7 @@ namespace AssetBundleGraph {
 						}
 
 					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-							var specificScriptClass = currentNodeData.scriptClassName;
+							var specificScriptClass = currentNodeData.scriptAttrNameOrClassName;
 							var executor = new IntegratedGUIModifier(specificScriptClass, SystemDataUtility.GetCurrentPlatformShortName());
 							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
@@ -393,9 +393,9 @@ namespace AssetBundleGraph {
 						}
 
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-							var scriptClassName = currentNodeData.scriptClassName;
+							var scriptClassName = currentNodeData.scriptAttrNameOrClassName;
 							if (string.IsNullOrEmpty(scriptClassName)) {
-								Debug.LogError(nodeName + ": Classname is empty. Set valid classname. Configure valid script name from editor.");
+								Debug.LogError(nodeName + ": Prefabricator class is empty. Set valid class.");
 								break;
 							}
 							var executor = PrefabricatorBase.CreatePrefabricatorNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
@@ -527,7 +527,7 @@ namespace AssetBundleGraph {
 						}
 
 					case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-							var specificScriptClass = currentNodeData.scriptClassName;
+							var specificScriptClass = currentNodeData.scriptAttrNameOrClassName;
 							var executor = new IntegratedGUIModifier(specificScriptClass, SystemDataUtility.GetCurrentPlatformShortName());
 							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
@@ -540,9 +540,9 @@ namespace AssetBundleGraph {
 						}
 
 					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-							var scriptClassName = currentNodeData.scriptClassName;
+							var scriptClassName = currentNodeData.scriptAttrNameOrClassName;
 							if (string.IsNullOrEmpty(scriptClassName)) {
-								AssetBundleGraphEditorWindow.AddNodeException(new NodeException(nodeName + ": Classname is empty. Set valid classname.", nodeId));
+								AssetBundleGraphEditorWindow.AddNodeException(new NodeException(nodeName + ": Prefabricator class is empty. Set valid class.", nodeId));
 								break;
 							}
 							try {

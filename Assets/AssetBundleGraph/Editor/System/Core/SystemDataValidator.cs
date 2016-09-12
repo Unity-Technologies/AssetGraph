@@ -39,12 +39,7 @@ namespace AssetBundleGraph {
 				var kind = AssetBundleGraphSettings.NodeKindFromString(nodeJson[AssetBundleGraphSettings.NODE_KIND] as string);
 
 				switch (kind) {	
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-					if(!ValidateNodeJsonDataForFilterScript(ref nodeJson, ref sanitizedNodeJson, ref changed)) {
-						changed = true;
-						continue;
-					}
-					break;			
+						
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
 					break;
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
@@ -189,7 +184,6 @@ namespace AssetBundleGraph {
 			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI: 
 				{
 					switch (toKind) {
-						case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 						case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
 						case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
 						case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: {
@@ -231,60 +225,7 @@ namespace AssetBundleGraph {
 			return true;
 		}
 
-		private static bool ValidateNodeJsonDataForFilterScript(
-			ref Dictionary<string, object> nodeJson, 
-			ref Dictionary<string, object> sanitizedNodeJson, 
-			ref bool isChanged) 
-		{
-
-			var nodeId 		= nodeJson[AssetBundleGraphSettings.NODE_ID] as string;
-			var nodeName 	= nodeJson[AssetBundleGraphSettings.NODE_NAME] as string;
-			var scriptClassName = nodeJson[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
-
-			if (string.IsNullOrEmpty(scriptClassName)) {
-				Debug.LogWarning(nodeName  + ": No script name assigned.");
-				return false;
-			}
-
-			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(scriptClassName);
-			if (nodeScriptInstance == null) {
-				Debug.LogError(nodeName  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for " + 
-					scriptClassName + ". No such class found in assembly.");
-				return false;
-			}
-
-			var outputLabelsJson = nodeJson[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] as List<object>;
-			var outputLabelsSet = new HashSet<string>();
-			foreach (var label in outputLabelsJson) {
-				outputLabelsSet.Add(label.ToString());
-			}
-
-			var labelsFromScript = new HashSet<string>();
-			Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output = 
-				(string dataSourceNodeId, string connectionLabel, Dictionary<string, List<Asset>> source, List<string> usedCache) => 
-			{
-				labelsFromScript.Add(connectionLabel);
-			};
-
-			// Setup() executed with dummy data to collect labels from derived script
-			((FilterBase)nodeScriptInstance).Setup(
-				nodeName,
-				nodeId, 
-				string.Empty,
-				new Dictionary<string, List<Asset>>{
-					{"0", new List<Asset>()}
-				},
-				new List<string>(),
-				Output
-			);
-
-			if (!outputLabelsSet.SetEquals(labelsFromScript)) {
-				sanitizedNodeJson[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] = labelsFromScript.ToList();
-				isChanged = true;
-			}
-			return true;
-		}
-
+		
 		private static bool ValidateNodeJsonDataForBundlizer(ref Dictionary<string, object> nodeJson) {
 
 			var nodeName 	= nodeJson[AssetBundleGraphSettings.NODE_NAME] as string;

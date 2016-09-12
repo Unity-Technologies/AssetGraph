@@ -163,8 +163,6 @@ namespace AssetBundleGraph {
 
 
 		public enum NodeKind : int {
-			FILTER_SCRIPT,
-
 			LOADER_GUI,
 			FILTER_GUI,
 			IMPORTSETTING_GUI,

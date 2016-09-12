@@ -16,7 +16,7 @@ namespace AssetBundleGraph {
 		public readonly List<string> outputPointIds;
 
 		// for All script nodes & prefabricator, bundlizer GUI.
-		public readonly string scriptClassName;
+		public readonly string scriptAttrNameOrClassName;
 
 		// for Loader Script
 		public readonly Dictionary<string, string> loadFilePath;
@@ -71,7 +71,7 @@ namespace AssetBundleGraph {
 			this.nodeName = nodeName;
 			this.outputPointIds = outputPointIds;
 
-			this.scriptClassName = null;
+			this.scriptAttrNameOrClassName = null;
 			this.loadFilePath = null;
 			this.exportFilePath = null;
 			this.containsKeywords = null;
@@ -92,9 +92,8 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					this.scriptClassName = scriptClassName;
+					this.scriptAttrNameOrClassName = scriptClassName;
 					break;
 				}
 
