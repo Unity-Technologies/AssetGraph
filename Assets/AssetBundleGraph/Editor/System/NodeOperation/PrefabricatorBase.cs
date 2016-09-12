@@ -5,9 +5,60 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AssetBundleGraph {
+	
 	public class PrefabricatorBase : INodeOperationBase {
+		[AttributeUsage(AttributeTargets.Class)] public class DropdownMenuName : Attribute {
+			public string Name;
+
+			public DropdownMenuName () {}
+		}
+		
+		public static Dictionary<string, string> GetPrefabricatorAttrName_ClassNameDict () {
+			var prefabricatorCandidateTypes = Assembly
+				.GetExecutingAssembly()
+				.GetTypes()
+				.Where(t => t != typeof(PrefabricatorBase))
+				.Where(t => typeof(PrefabricatorBase).IsAssignableFrom(t));
+			
+			var prefabricatorCandidateAttrName_ClassNameDict = new Dictionary<string, string>();
+
+			foreach (var type in prefabricatorCandidateTypes) {
+				var typeNameStr = type.ToString();
+
+				// set attribute-name as key of dict if atribute is exist.
+				PrefabricatorBase.DropdownMenuName nameFromAttributeSource = type.GetCustomAttributes(typeof(PrefabricatorBase.DropdownMenuName), true).FirstOrDefault() as PrefabricatorBase.DropdownMenuName;
+				if (nameFromAttributeSource != null) {
+					var candidateName = nameFromAttributeSource.Name;
+					if (!prefabricatorCandidateAttrName_ClassNameDict.ContainsKey(candidateName)) {
+						prefabricatorCandidateAttrName_ClassNameDict[candidateName] = typeNameStr;
+						continue;
+					}
+				}
+
+				// if no attribute exist or same attr name is already exist, use type name for key.(they are automatically unique.)
+				prefabricatorCandidateAttrName_ClassNameDict[typeNameStr] = typeNameStr;
+			}
+			return prefabricatorCandidateAttrName_ClassNameDict;
+		}
+
+		public static T CreatePrefabricatorNodeOperationInstance<T> (string attrNameOrClassName, string nodeId) where T : INodeOperationBase {
+			var attrNameOrClassName_classNameDict = GetPrefabricatorAttrName_ClassNameDict();
+
+			// if user changed their own Prefabricator className or attrName, attrNameOrClassName is already changed and that shoud be change from Inspector of Prefabricator.
+			if (!attrNameOrClassName_classNameDict.ContainsKey(attrNameOrClassName)) {
+				throw new NodeException("no match className or attribute name found. failed to generate class information of class:" + attrNameOrClassName + " which is based on Type:" + typeof(T), nodeId);
+			}
+
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(attrNameOrClassName_classNameDict[attrNameOrClassName]);
+			if (nodeScriptInstance == null) {
+				throw new NodeException("failed to generate class information of class:" + attrNameOrClassName + " which is based on Type:" + typeof(T), nodeId);
+			}
+			return ((T)nodeScriptInstance);
+		}
+
 		public void Setup (string nodeName, string nodeId, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
 			var invalids = new List<string>();
 			foreach (var sources in groupedSources.Values) {
@@ -73,8 +124,12 @@ namespace AssetBundleGraph {
 					if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<Asset>();
 					outputDict[groupKey].Add(newAsset);
 				}
+
+				/*
+					add input sources for next node.
+				*/
+				if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<Asset>();
 				outputDict[groupKey].AddRange(inputSources);
-			
 			} 				
 
 			Output(nodeId, connectionIdToNextNode, outputDict, new List<string>());

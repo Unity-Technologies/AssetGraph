@@ -1395,8 +1395,8 @@ namespace AssetBundleGraph {
 				}
 				
 				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
+				 {
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptAttrNameOrClassName;
 					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 					break;
 				}
@@ -1413,7 +1413,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptAttrNameOrClassName;
 					break;
 				}
 				
@@ -1423,7 +1423,7 @@ namespace AssetBundleGraph {
 				}
 
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
-					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
+					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptAttrNameOrClassName;
 					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
 					break;
 				}
@@ -1476,9 +1476,8 @@ namespace AssetBundleGraph {
 					}
 					return newNode;
 				}
-				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
+				case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 					var scriptPath = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] as string;
@@ -1659,8 +1658,9 @@ namespace AssetBundleGraph {
 
 		private void AddNodeFromCode (string scriptName, string scriptClassName, string scriptPath, Type scriptBaseType, string nodeId, float x, float y) {
 			NodeGUI newNode = null;
-
+			Debug.LogError("コードからノード生成、PrefabricatorとModifierの変更を行う。");
 			if (scriptBaseType == typeof(FilterBase)) {
+				Debug.LogError("封印して良さそう");
 				var kind = AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT;
 				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
 				
@@ -1675,8 +1675,9 @@ namespace AssetBundleGraph {
 			}
 			
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
-				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT;
-				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, scriptClassName, scriptPath, x, y);
+				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI;
+				var attrNameOrClassName = PrefabricatorBase.GetPrefabricatorAttrName_ClassNameDict().FirstOrDefault(k => k.Value == scriptClassName).Key;
+				newNode = NodeGUI.CreateScriptNode(scriptName, nodeId, kind, attrNameOrClassName, scriptPath, x, y);
 				newNode.AddConnectionPoint(ConnectionPoint.InputPoint(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL));
 				newNode.AddConnectionPoint(ConnectionPoint.OutputPoint(Guid.NewGuid().ToString(),  AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL));
 			}

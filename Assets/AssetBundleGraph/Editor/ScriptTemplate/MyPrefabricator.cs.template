@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
+[AssetBundleGraph.PrefabricatorBase.DropdownMenuName(Name="MyPrefabricator")]
 public class MyPrefabricator : AssetBundleGraph.PrefabricatorBase {
 	public override void ValidateCanCreatePrefab (string nodeName, string nodeId, string groupKey, List<AssetBundleGraph.DepreacatedAssetInfo> sources, string recommendedPrefabOutputDir, Func<string, string> Prefabricate) {
 		// Test and see if Prefab can be created

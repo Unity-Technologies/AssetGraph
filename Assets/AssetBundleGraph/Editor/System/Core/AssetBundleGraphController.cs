@@ -319,21 +319,21 @@ namespace AssetBundleGraph {
 			try {
 				if (isActualRun) {
 					switch (nodeKind) {
-					/*
-						Scripts
-					*/
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
-							var scriptClassName = currentNodeData.scriptClassName;
-							var executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, nodeId);
-							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
-							break;
-						}
-					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-							var scriptClassName = currentNodeData.scriptClassName;
-							var executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
-							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
-							break;
-						}
+						/*
+							Scripts
+						*/
+					// case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
+					// 		var scriptClassName = currentNodeData.scriptClassName;
+					// 		var executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, nodeId);
+					// 		executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+					// 		break;
+					// 	}
+					// case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+					// 		var scriptClassName = currentNodeData.scriptClassName;
+					// 		var executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
+					// 		executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+					// 		break;
+					// 	}
 
 
 						/*
@@ -398,7 +398,7 @@ namespace AssetBundleGraph {
 								Debug.LogError(nodeName + ": Classname is empty. Set valid classname. Configure valid script name from editor.");
 								break;
 							}
-							var executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
+							var executor = PrefabricatorBase.CreatePrefabricatorNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
 							executor.Run(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							break;
 						}
@@ -465,21 +465,21 @@ namespace AssetBundleGraph {
 					}
 				} else {
 					switch (nodeKind) {
-					/*
-							Scripts
-						*/
-					case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
-							var scriptClassName = currentNodeData.scriptClassName;
-							var executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, nodeId);
-							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
-							break;
-						}
-					case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
-							var scriptClassName = currentNodeData.scriptClassName;
-							var executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
-							executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
-							break;
-						}
+					// 	/*
+					// 		Scripts
+					// 	*/
+					// case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT: {
+					// 		var scriptClassName = currentNodeData.scriptClassName;
+					// 		var executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, nodeId);
+					// 		executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+					// 		break;
+					// 	}
+					// case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: {
+					// 		var scriptClassName = currentNodeData.scriptClassName;
+					// 		var executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
+					// 		executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
+					// 		break;
+					// 	}
 
 
 						/*
@@ -546,7 +546,7 @@ namespace AssetBundleGraph {
 								break;
 							}
 							try {
-								var executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
+								var executor = PrefabricatorBase.CreatePrefabricatorNodeOperationInstance<PrefabricatorBase>(scriptClassName, nodeId);
 								executor.Setup(nodeName, nodeId, firstConnectionIdFromThisNodeToChildNode, inputParentResults, alreadyCachedPaths, Output);
 							} catch (NodeException e) {
 								AssetBundleGraphEditorWindow.AddNodeException(e);
@@ -640,7 +640,6 @@ namespace AssetBundleGraph {
 					return new List<string>();
 				}
 				
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: {
 					var cachedPathBase = FileUtility.PathCombine(
 						AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, 

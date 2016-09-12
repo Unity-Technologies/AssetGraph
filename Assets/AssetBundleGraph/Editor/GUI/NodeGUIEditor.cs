@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AssetBundleGraph {
 	/**
@@ -285,7 +286,7 @@ namespace AssetBundleGraph {
 
 				GUILayout.Space(10f);
 
-				var usingScriptMode = !string.IsNullOrEmpty(node.scriptClassName);
+				var usingScriptMode = !string.IsNullOrEmpty(node.scriptAttrNameOrClassName);
 
 				// use modifier script manually.
 				{
@@ -293,11 +294,11 @@ namespace AssetBundleGraph {
 					/*
 						check prefabricator script-type string.
 					*/
-					if (string.IsNullOrEmpty(node.scriptClassName)) {
+					if (string.IsNullOrEmpty(node.scriptAttrNameOrClassName)) {
 						s.fontStyle = FontStyle.Bold;
 						s.fontSize  = 12;
 					} else {
-						var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptClassName);
+						var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptAttrNameOrClassName);
 
 						if (loadedType == null) {
 							s.fontStyle = FontStyle.Bold;
@@ -305,22 +306,22 @@ namespace AssetBundleGraph {
 						}
 					}
 					
-					var before = !string.IsNullOrEmpty(node.scriptClassName);
-					usingScriptMode = EditorGUILayout.ToggleLeft("Use ModifierOperator Script", !string.IsNullOrEmpty(node.scriptClassName));
+					var before = !string.IsNullOrEmpty(node.scriptAttrNameOrClassName);
+					usingScriptMode = EditorGUILayout.ToggleLeft("Use ModifierOperator Script", !string.IsNullOrEmpty(node.scriptAttrNameOrClassName));
 					
 					// detect mode changed.
 					if (before != usingScriptMode) {
 						// checked. initialize value of scriptClassName.
 						if (usingScriptMode) {
 							node.BeforeSave();
-							node.scriptClassName = "MyModifier";
+							node.scriptAttrNameOrClassName = "MyModifier";
 							node.Save();
 						}
 
 						// unchecked.
 						if (!usingScriptMode) {
 							node.BeforeSave();
-							node.scriptClassName = string.Empty;
+							node.scriptAttrNameOrClassName = string.Empty;
 							node.Save();
 						}
 					}
@@ -329,10 +330,10 @@ namespace AssetBundleGraph {
 						EditorGUI.BeginDisabledGroup(true);	
 					}
 					GUILayout.Label("ここをドロップダウンにする。2");
-					var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptClassName, s);
-					if (newScriptClass != node.scriptClassName) {
+					var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptAttrNameOrClassName, s);
+					if (newScriptClass != node.scriptAttrNameOrClassName) {
 						node.BeforeSave();
-						node.scriptClassName = newScriptClass;
+						node.scriptAttrNameOrClassName = newScriptClass;
 						node.Save();
 					}
 					if (!usingScriptMode) {
@@ -483,13 +484,6 @@ namespace AssetBundleGraph {
 			UpdateDeleteSetting(node);
 		}
 
-		private void DoInspectorPrefabricatorScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
-			UpdateNodeName(node);
-
-			EditorGUILayout.LabelField("Script Path", node.scriptPath);
-		}
-
 		private void DoInspectorPrefabricatorGUI (NodeGUI node) {
 			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
@@ -498,28 +492,24 @@ namespace AssetBundleGraph {
 
 				GUIStyle s = new GUIStyle("TextFieldDropDownText");
 
-				/*
-					check prefabricator script-type string.
-				*/
-				if (string.IsNullOrEmpty(node.scriptClassName)) {
-					s.fontStyle = FontStyle.Bold;
-					s.fontSize  = 12;
-				} else {
-					var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptClassName);
-
-					if (loadedType == null) {
-						s.fontStyle = FontStyle.Bold;
-						s.fontSize  = 12;
-					}
-				}
-				
-				GUILayout.Label("ここをドロップダウンにする。");
-				var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptClassName, s);
-
-				if (newScriptClass != node.scriptClassName) {
-					node.BeforeSave();
-					node.scriptClassName = newScriptClass;
-					node.Save();
+				if (GUILayout.Button(node.scriptAttrNameOrClassName, "Popup")) {
+					/*
+						collect type name or "Name" attribute parameter from extended-PrefabricatorBase class.
+					*/
+					var prefabricatorCandidateTypeNameOrAttrName = PrefabricatorBase.GetPrefabricatorAttrName_ClassNameDict();
+					
+					/*
+						displays type name or attribute if exist.
+					*/
+					NodeGUI.ShowTypeNamesMenu(
+						node.scriptAttrNameOrClassName,
+						prefabricatorCandidateTypeNameOrAttrName.Keys.ToList(),
+						(string selectedClassNameOrAttrName) => {
+							node.BeforeSave();
+							node.scriptAttrNameOrClassName = selectedClassNameOrAttrName;
+							node.Save();
+						} 
+					);
 				}
 			}
 		}
@@ -807,12 +797,11 @@ namespace AssetBundleGraph {
 			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
 				DoInspectorGroupingGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				DoInspectorPrefabricatorScriptGUI(node);
-				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
+			
+			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:{
 				DoInspectorPrefabricatorGUI(node);
 				break;
+			}
 			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
 				DoInspectorBundlizerGUI(node);
 				break;

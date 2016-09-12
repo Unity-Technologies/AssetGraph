@@ -26,8 +26,9 @@ namespace AssetBundleGraph {
 		[SerializeField] public string nodeId;
 		[SerializeField] public AssetBundleGraphSettings.NodeKind kind;
 
-		[SerializeField] public string scriptClassName;
-		[SerializeField] public string scriptPath;
+		[SerializeField] public string scriptAttrNameOrClassName;
+		
+		[SerializeField] public string scriptPath;// 消せるはず
 		[SerializeField] public SerializablePseudoDictionary loadPath;
 		[SerializeField] public SerializablePseudoDictionary exportTo;
 		[SerializeField] public List<string> filterContainsKeywords;
@@ -110,7 +111,7 @@ namespace AssetBundleGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				scriptClassName: scriptClassName,
+				scriptAttrNameOrClassName: scriptClassName,
 				scriptPath: scriptPath
 			);
 		}
@@ -145,7 +146,7 @@ namespace AssetBundleGraph {
 				kind: kind,
 				x: x,
 				y: y,
-				scriptClassName: scriptClassName
+				scriptAttrNameOrClassName: scriptClassName
 			);
 		}
 
@@ -266,7 +267,7 @@ namespace AssetBundleGraph {
 			AssetBundleGraphSettings.NodeKind kind, 
 			float x, 
 			float y,
-			string scriptClassName = null, 
+			string scriptAttrNameOrClassName = null, 
 			string scriptPath = null, 
 			Dictionary<string, string> loadPath = null, 
 			Dictionary<string, string> exportTo = null, 
@@ -285,7 +286,8 @@ namespace AssetBundleGraph {
 			this.name = name;
 			this.nodeId = nodeId;
 			this.kind = kind;
-			this.scriptClassName = scriptClassName;
+			this.scriptAttrNameOrClassName = scriptAttrNameOrClassName;
+			Debug.LogError("下記のscriptPath消したい");
 			this.scriptPath = scriptPath;
 			if (loadPath != null) this.loadPath = new SerializablePseudoDictionary(loadPath);
 			if (exportTo != null) this.exportTo = new SerializablePseudoDictionary(exportTo);
@@ -326,8 +328,6 @@ namespace AssetBundleGraph {
 					this.nodeInterfaceTypeStr = "flow node 3";
 					break;
 				}
-
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				{
 					this.nodeInterfaceTypeStr = "flow node 4";
@@ -369,7 +369,7 @@ namespace AssetBundleGraph {
 				this.kind, 
 				newX,
 				newY,
-				this.scriptClassName,
+				this.scriptAttrNameOrClassName,
 				this.scriptPath,
 				(this.loadPath != null) ? loadPath.ReadonlyDict() : null,
 				(this.exportTo != null) ? this.exportTo.ReadonlyDict() : null,
@@ -460,7 +460,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				{
 					this.nodeInterfaceTypeStr = "flow node 4 on";
@@ -513,7 +512,6 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
 			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
 				{
 					this.nodeInterfaceTypeStr = "flow node 4";
@@ -996,21 +994,36 @@ namespace AssetBundleGraph {
 			return containedPoints;
 		}
 
+		public static void ShowTypeNamesMenu (string current, List<string> contents, Action<string> ExistSelected) {
+			var menu = new GenericMenu();
+
+			for (var i = 0; i < contents.Count; i++) {
+				var type = contents[i];
+				var selected = false;
+				if (type == current) selected = true;
+
+				menu.AddItem(
+					new GUIContent(type),
+					selected,
+					() => {
+						ExistSelected(type);
+					}
+				);
+			}
+			menu.ShowAsContext();
+		}
 
 		public static void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
 			var menu = new GenericMenu();
 
-			menu.AddDisabledItem(new GUIContent(current));
-
-			menu.AddSeparator(string.Empty);
-
 			for (var i = 0; i < TypeUtility.KeyTypes.Count; i++) {
 				var type = TypeUtility.KeyTypes[i];
-				if (type == current) continue;
+				var selected = false;
+				if (type == current) selected = true;
 
 				menu.AddItem(
 					new GUIContent(type),
-					false,
+					selected,
 					() => {
 						ExistSelected(type);
 					}

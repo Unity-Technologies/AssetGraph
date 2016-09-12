@@ -46,12 +46,6 @@ namespace AssetBundleGraph {
 					}
 					break;			
 				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI: 
-				case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT: 
-					if(!ValidateNodeJsonDataForPrefabricator(ref nodeJson, kind == AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT)) 
-					{
-						changed = true;
-						continue;
-					}
 					break;
 				case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI: 
 					if(!ValidateNodeJsonDataForBundlizer(ref nodeJson)) {

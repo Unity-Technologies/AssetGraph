@@ -88,14 +88,6 @@ namespace AssetBundleGraph {
 
 		}
 
-		public static T CreateNodeOperationInstance<T> (string typeStr, string nodeId) where T : INodeOperationBase {
-			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
-			if (nodeScriptInstance == null) {
-				throw new NodeException("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T), nodeId);
-			}
-			return ((T)nodeScriptInstance);
-		}
-
 		public static string GetPlatformValue (Dictionary<string, string> packageDict, string platform) {
 			var key = CreateKeyNameFromString(platform);
 			if (packageDict.ContainsKey(key)) {
