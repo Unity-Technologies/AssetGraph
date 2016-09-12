@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class FontOperator : OperatorBase {
+	[Serializable] public class FontOperator : ModifierBase {
 		
 		public FontOperator () {}
 
@@ -18,7 +18,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new FontOperator(
 				"UnityEngine.Font"
 			);

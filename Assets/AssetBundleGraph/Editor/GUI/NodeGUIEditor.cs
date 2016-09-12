@@ -369,7 +369,7 @@ namespace AssetBundleGraph {
 					modifierOperatorInstance = typeof(NodeGUIEditor)
 						.GetMethod("FromJson")
 						.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
-						.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
+						.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierBase;
 				}
 
 				/*
@@ -423,7 +423,7 @@ namespace AssetBundleGraph {
 			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
 			っていうのが相反するようです。うーんどうしよう。
 		*/
-		[NonSerialized] private ModifierOperators.OperatorBase modifierOperatorInstance;
+		[NonSerialized] private ModifierBase modifierOperatorInstance;
 
 		private void DoInspectorGroupingGUI (NodeGUI node) {
 			if (node.groupingKeyword == null) return;

@@ -95,7 +95,7 @@ namespace AssetBundleGraph {
 				if (!File.Exists(modifierOperatorDataPathForDefaultPlatform)) {
 					var operatorType = TypeUtility.SupportedModifierOperatorDefinition[modifierType];
 
-					var operatorInstance = Activator.CreateInstance(operatorType) as ModifierOperators.OperatorBase;
+					var operatorInstance = Activator.CreateInstance(operatorType) as ModifierBase;
 
 					var defaultRenderTextureOp = operatorInstance.DefaultSetting();
 
@@ -206,7 +206,7 @@ namespace AssetBundleGraph {
 			/*
 				read saved modifierOperation type for detect data type.
 			*/
-			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(loadedModifierOperatorData);
+			var deserializedDataObject = JsonUtility.FromJson<ModifierBase>(loadedModifierOperatorData);
 			var dataTypeString = deserializedDataObject.operatorType;
 			
 			// sadly, if loaded assetType is no longer supported or not.
@@ -222,7 +222,7 @@ namespace AssetBundleGraph {
 			var modifyOperatorInstance = typeof(IntegratedGUIModifier)
 				.GetMethod("FromJson")
 				.MakeGenericMethod(modifyOperatorType)// set desired generic type here.
-				.Invoke(this, new object[] { loadedModifierOperatorData }) as ModifierOperators.OperatorBase;
+				.Invoke(this, new object[] { loadedModifierOperatorData }) as ModifierBase;
 			
 			var isChanged = false;
 			foreach (var inputSource in inputSources) {
@@ -314,7 +314,7 @@ namespace AssetBundleGraph {
 				return string.Empty;
 			}
 
-			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(dataStr);
+			var deserializedDataObject = JsonUtility.FromJson<ModifierBase>(dataStr);
 			return deserializedDataObject.operatorType;
 		}
 

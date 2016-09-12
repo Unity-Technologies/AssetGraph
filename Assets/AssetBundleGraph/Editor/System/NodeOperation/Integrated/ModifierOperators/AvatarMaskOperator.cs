@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class AvatarMaskOperator : OperatorBase {
+	[Serializable] public class AvatarMaskOperator : ModifierBase {
 		
 		public AvatarMaskOperator () {}
 
@@ -19,7 +19,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new AvatarMaskOperator(
 				"UnityEditor.Animations.AvatarMask"
 			);

@@ -41,11 +41,8 @@ namespace AssetBundleGraph {
 		// for platform-package specified parameter.
 		[SerializeField] public string currentPlatform = AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME;
 
-		public static List<string> NodeSharedPackages = new List<string>();
-
 		[SerializeField] private string nodeInterfaceTypeStr;
-		[SerializeField] private BuildTarget currentBuildTarget;
-
+		
 		[SerializeField] private NodeGUIInspectorHelper nodeInsp;
 
 		/*

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class GUISkinOperator : OperatorBase {
+	[Serializable] public class GUISkinOperator : ModifierBase {
 		
 		public GUISkinOperator () {}
 
@@ -18,7 +18,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new GUISkinOperator(
 				"UnityEngine.GUISkin"
 			);

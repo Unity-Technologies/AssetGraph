@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class PhysicsMaterial2DOperator : OperatorBase {
+	[Serializable] public class PhysicsMaterial2DOperator : ModifierBase {
 		
 		public PhysicsMaterial2DOperator () {}
 
@@ -18,7 +18,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new PhysicsMaterial2DOperator(
 				"UnityEngine.PhysicsMaterial2D"
 			);

@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class CubemapOperator : OperatorBase {
+	[Serializable] public class CubemapOperator : ModifierBase {
 		
 		public CubemapOperator () {}
 
@@ -18,7 +18,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new CubemapOperator(
 				"UnityEngine.Cubemap"
 			);

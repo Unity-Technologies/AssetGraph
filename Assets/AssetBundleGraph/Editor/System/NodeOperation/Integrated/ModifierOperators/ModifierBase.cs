@@ -1,17 +1,28 @@
 using System;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph {
 	/*
 		this class is base class of ModifierOperator.
 		every operator should extend this class and implement these virtual methods.
+
+		2つの課題を解決したい。
+		・内部向け実装、Extendを使ってデシリアライズ実装してるので、undoが効かない。
+		・外部向け実装、まだハンドラとかが整ってない。Inspectorはだいたい何とかなってる感じ。
+
 	*/
-	[Serializable] public class OperatorBase {
+	[Serializable] public class ModifierBase {
+		[AttributeUsage(AttributeTargets.Class)] public class DropdownMenuName : Attribute {
+			public string Name;
+
+			public DropdownMenuName () {}
+		}
+		
 		[SerializeField] public string operatorType;
 
-		public OperatorBase () {}// this class is required for serialization. and reflextion
+		public ModifierBase () {}// this class is required for serialization. and reflection
 
-        public virtual OperatorBase DefaultSetting () {
+        public virtual ModifierBase DefaultSetting () {
 			throw new Exception("should override DefaultSetting method.");
 		}
 

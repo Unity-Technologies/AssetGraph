@@ -1639,13 +1639,19 @@ namespace AssetBundleGraph {
 			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) {
 				return typeof(PrefabricatorBase);
 			}
+			if (typeof(ModifierBase).IsAssignableFrom(type)) {
+				return typeof(ModifierBase);
+			}
 
 			return null;
 		}
 
 		private void AddNodeFromCode (string scriptName, string scriptClassName, Type scriptBaseType, string nodeId, float x, float y) {
 			NodeGUI newNode = null;
-			
+
+			if (scriptBaseType == typeof(ModifierBase)) {
+				Debug.LogError("Modifierに対してown class定義でModifierノードを追加。");
+			}
 			if (scriptBaseType == typeof(PrefabricatorBase)) {
 				var kind = AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI;
 				var attrNameOrClassName = PrefabricatorBase.GetPrefabricatorAttrName_ClassNameDict().FirstOrDefault(k => k.Value == scriptClassName).Key;

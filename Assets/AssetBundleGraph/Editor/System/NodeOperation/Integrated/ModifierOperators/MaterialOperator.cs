@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
-    [Serializable] public class MaterialOperator : OperatorBase {
+    [Serializable] public class MaterialOperator : ModifierBase {
 		[SerializeField] public Shader shader;
 		
 		public enum BlendMode {
@@ -31,7 +31,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new MaterialOperator(
 				"UnityEngine.Material",
 				Shader.Find("Standard"),

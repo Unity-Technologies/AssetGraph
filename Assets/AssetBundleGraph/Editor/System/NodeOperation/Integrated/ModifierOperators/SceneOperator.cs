@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class SceneOperator : OperatorBase {
+	[Serializable] public class SceneOperator : ModifierBase {
 		
 		public SceneOperator () {}
 		
@@ -18,7 +18,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new SceneOperator(
 				"UnityEngine.SceneManagement.Scene"
 			);
