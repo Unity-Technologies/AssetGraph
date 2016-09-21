@@ -39,6 +39,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		
 		public override void DrawInspector (Action changed) {
 			GUILayout.Label("SceneOperator inspector.");
+			GUILayout.Label("公開されているAPIから変更できる要素が無い。");
 		}
 	}
 	

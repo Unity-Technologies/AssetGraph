@@ -6,13 +6,16 @@ using UnityEngine;
 namespace AssetBundleGraph.ModifierOperators {
 	
 	[Serializable] public class ShaderOperator : ModifierBase {
-		
+		[SerializeField] int maximumLOD;
+
 		public ShaderOperator () {}
 		
 		private ShaderOperator (
-			string operatorType
+			string operatorType,
+			int maximumLOD
 		) {
 			this.operatorType = operatorType;
+			this.maximumLOD = maximumLOD;
 		}
 
 		/*
@@ -20,7 +23,8 @@ namespace AssetBundleGraph.ModifierOperators {
 		*/
 		public override ModifierBase DefaultSetting () {
 			return new ShaderOperator(
-				"UnityEngine.Shader"
+				"UnityEngine.Shader",
+				200// based on default shader LOD from shader's inspector.
 			);
 		}
 
@@ -29,22 +33,31 @@ namespace AssetBundleGraph.ModifierOperators {
 			
 			var changed = false;
 
-			/*
-Variables
-
-maximumLOD	Shader LOD level for this shader.
-			*/
+			if (shader.maximumLOD != this.maximumLOD) changed = true; 
+			// shader.isSupported // <- readonly
+			// shader.renderQueue // <- readonly
 
 			return changed; 
 		}
 
 		public override void Modify<T> (T asset) {
 			var shader = asset as Shader;
-			
+
+			shader.maximumLOD = this.maximumLOD;
+			// shader.isSupported // <- readonly
+			// shader.renderQueue // <- readonly
 		}
 		
 		public override void DrawInspector (Action changed) {
-			GUILayout.Label("ShaderOperator inspector.");
+			using (new GUILayout.HorizontalScope()) {
+				GUILayout.Label("Maximum LOD");
+				
+				var changedVal = (int)EditorGUILayout.Slider(this.maximumLOD, 0, 1000);
+				if (changedVal != this.maximumLOD) {
+					this.maximumLOD = changedVal;
+					changed();
+				}
+			}
 		}
 	}
 	
