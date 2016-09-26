@@ -126,9 +126,9 @@ namespace AssetBundleGraph {
 		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
 		public const string BUNDLIZER_VARIANTNAME_DEFAULT = "";
 
-		public const string BUNDLIZER_FAKE_CONNECTION_ID = "b_______-____-____-____-____________";
+		//public const string BUNDLIZER_FAKE_CONNECTION_ID = "b_______-____-____-____-____________";
 
-		public const string DEFAULT_FILTER_KEYWORD = "keyword";
+		public const string DEFAULT_FILTER_KEYWORD = "";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";
 		
 		public const string FILTER_KEYWORD_WILDCARD = "*";

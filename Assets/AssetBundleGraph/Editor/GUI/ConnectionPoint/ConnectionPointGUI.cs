@@ -3,59 +3,96 @@ using System;
 using UnityEngine;
 
 namespace AssetBundleGraph {
-	[Serializable] public class ConnectionPointGUI {
 
-		[SerializeField] public string pointId;
-		[SerializeField] public string label;
-		[SerializeField] public bool isInput;
-		[SerializeField] public int orderPriority;
-		[SerializeField] public bool showLabel;
+	/**
+	 * ConnectionPointData GUI related field & operations
+	 */
+	public partial class ConnectionPointData {
 
-		public bool isOutput {
+		[SerializeField] private Rect buttonRect;
+		[SerializeField] private string buttonStyle;
+
+		public Rect Region {
 			get {
-				return !isInput;
+				return buttonRect;
 			}
 		}
-		
-		[SerializeField] public Rect buttonRect;
-		[SerializeField] public string buttonStyle;
 
-		public ConnectionPointGUI (string pointId, string label, bool input) {
-			this.pointId = pointId;
-			this.label = label;
-			this.isInput = input;
+		// returns rect for outside marker
+		public Rect GetGlobalRegion(NodeGUI node) {
+			var baseRect = node.Region;
+			return new Rect(
+				baseRect.x + buttonRect.x,
+				baseRect.y + buttonRect.y,
+				buttonRect.width,
+				buttonRect.height
+			);
 		}
 
-		public void UpdatePos (int index, int max, float width, float height) {
-			if (isInput) {
-				var y = ((height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT/2f;
-				buttonRect = new Rect(0,y, AssetBundleGraphGUISettings.INPUT_POINT_WIDTH, AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT);
+		// returns rect for connection dot
+		public Rect GetGlobalPointRegion(NodeGUI node) {
+			if(IsInput) {
+				return GetInputPointRect(node);
+			} else {
+				return GetOutputPointRect(node);
+			}
+		}
+
+		public Vector2 GetGlobalPosition(NodeGUI node) {
+			var x = 0f;
+			var y = 0f;
+
+			var baseRect = node.Region;
+
+			if (IsInput) {
+				x = baseRect.x;
+				y = baseRect.y + buttonRect.y + (buttonRect.height / 2f) - 1f;
 			}
 
-			if (isOutput) {
-				var y = ((height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT/2f;
-				buttonRect = new Rect(width - AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH + 1f, y + 1f, AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH, AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT);
-			} 
+			if (IsOutput) {
+				x = baseRect.x + baseRect.width;
+				y = baseRect.y + buttonRect.y + (buttonRect.height / 2f) - 1f;
+			}
+
+			return new Vector2(x, y);
 		}
 
-        public static ConnectionPointGUI InputPoint (string label) {
-			return new ConnectionPointGUI(AssetBundleGraphSettings.NODE_INPUTPOINT_FIXED_LABEL, label, true);
-        }
-
-		public static ConnectionPointGUI InputPoint (string pointId, string label) {
-			return new ConnectionPointGUI(pointId, label, true);
+		public void UpdateRegion (NodeGUI node, int index, int max) {
+			var parentRegion = node.Region;
+			if(IsInput){
+				buttonRect = new Rect(
+					0,
+					((parentRegion.height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT/2f, 
+					AssetBundleGraphGUISettings.INPUT_POINT_WIDTH, 
+					AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT);
+			} else {
+				var y = ((parentRegion.height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT/2f;
+				buttonRect = new Rect(
+					parentRegion.width - AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH + 1f, 
+					y + 1f, 
+					AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH, 
+					AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT);
+			}
 		}
 
-		public static ConnectionPointGUI OutputPoint (string pointId, string label) {
-			return new ConnectionPointGUI(pointId, label, false);
+		private Rect GetOutputPointRect (NodeGUI node) {
+			var baseRect = node.Region;
+			return new Rect(
+				baseRect.x + baseRect.width - 8f, 
+				baseRect.y + buttonRect.y + 1f, 
+				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
+				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
+			);
 		}
 
-		public static ConnectionPointGUI InputPoint (ConnectionPointData data) {
-			return new ConnectionPointGUI(data.Id, data.Label, true);
+		private Rect GetInputPointRect (NodeGUI node) {
+			var baseRect = node.Region;
+			return new Rect(
+				baseRect.x - 2f, 
+				baseRect.y + buttonRect.y + 3f, 
+				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
+				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
+			);
 		}
-
-		public static ConnectionPointGUI OutputPoint (ConnectionPointData data) {
-			return new ConnectionPointGUI(data.Id, data.Label, false);
-		}
-    }
+	}
 }

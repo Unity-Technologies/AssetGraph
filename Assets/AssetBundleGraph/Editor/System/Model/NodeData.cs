@@ -28,33 +28,37 @@ namespace AssetBundleGraph {
 	}
 
 	[Serializable]
-	public struct FilterEntry {
-		[SerializeField] private readonly string m_filterKeyword;
-		[SerializeField] private readonly string m_filterKeytype;
-		//[SerializeField] private string m_connectionPointId;
+	public class FilterEntry {
+		[SerializeField] private string m_filterKeyword;
+		[SerializeField] private string m_filterKeytype;
+		[SerializeField] private ConnectionPointData m_point;
 
-		public FilterEntry(string keyword, string keytype) {
+		public FilterEntry(string keyword, string keytype, ConnectionPointData point) {
 			m_filterKeyword = keyword;
 			m_filterKeytype = keytype;
+			m_point = point;
 		}
-
-//		public string ConnectionPointId {
-//			get {
-//				return m_connectionPointId;
-//			}
-//			set {
-//				m_connectionPointId = value;
-//			}
-//		}
 
 		public string FilterKeyword {
 			get {
 				return m_filterKeyword;
 			}
+			set {
+				m_filterKeyword = value;
+				m_point.Label = value;
+			}
 		}
 		public string FilterKeytype {
 			get {
 				return m_filterKeytype; 
+			}
+			set {
+				m_filterKeytype = value;
+			}
+		}
+		public ConnectionPointData ConnectionPoint {
+			get {
+				return m_point; 
 			}
 		}
 		public string Hash {
@@ -63,10 +67,37 @@ namespace AssetBundleGraph {
 			}
 		}
 	}
-		
+
+	[Serializable]
+	public class Variant {
+		[SerializeField] private string m_name;
+		[SerializeField] private ConnectionPointData m_point;
+
+		public Variant(string name, ConnectionPointData point) {
+			m_name = name;
+			m_point = point;
+		}
+
+		public string Name {
+			get {
+				return m_name;
+			}
+			set {
+				m_name = value;
+				m_point.Label = value;
+			}
+		}
+		public ConnectionPointData ConnectionPoint {
+			get {
+				return m_point; 
+			}
+		}
+	}
+
 	/*
 	 * node data saved in/to Json
-	 */ 
+	 */
+	[Serializable]
 	public partial class NodeData {
 
 		private const string NODE_NAME = "name";
@@ -76,8 +107,9 @@ namespace AssetBundleGraph {
 		private const string NODE_POS = "pos";
 		private const string NODE_POS_X = "x";
 		private const string NODE_POS_Y = "y";
-		private const string NODE_OUTPUTPOINT_LABELS = "outputPointLabels";
-		private const string NODE_OUTPUTPOINT_IDS = "outputPointIds";
+
+		private const string NODE_INPUTPOINTS = "inputPoints";
+		private const string NODE_OUTPUTPOINTS = "outputPoints";
 
 		//loader settings
 		private const string NODE_LOADER_LOAD_PATH = "loadPath";
@@ -86,187 +118,53 @@ namespace AssetBundleGraph {
 		private const string NODE_EXPORTER_EXPORT_PATH = "exportTo";
 
 		//filter settings
-		private const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
-		private const string NODE_FILTER_CONTAINS_KEYTYPES = "filterContainsKeytypes";
+		private const string NODE_FILTER = "filter";
+		private const string NODE_FILTER_KEYWORD = "keyword";
+		private const string NODE_FILTER_KEYTYPE = "keytype";
+		private const string NODE_FILTER_POINTID = "pointId";
 
 		//group settings
 		private const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 
 		//bundlizer settings
 		private const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
-		private const string NODE_BUNDLIZER_VARIANTS = "variants";
+		private const string NODE_BUNDLIZER_VARIANTS 		 = "variants";
+		private const string NODE_BUNDLIZER_VARIANTS_NAME 	 = "name";
+		private const string NODE_BUNDLIZER_VARIANTS_POINTID = "pointId";
 
 		//bundlebuilder settings
 		private const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
-		private string m_name;
-		private string m_id;
-		private NodeKind m_kind;
-		private int m_x;
-		private int m_y;
-		private string m_scriptClassName;
-		private List<FilterEntry> m_filter;
-		private List<ConnectionPointData> 	m_inputPoints; 
-		private List<ConnectionPointData> 	m_outputPoints; 
-		private MultiTargetProperty<string> m_loaderLoadPath;
-		private MultiTargetProperty<string> m_exporterExportPath;
-		private MultiTargetProperty<string> m_groupingKeyword;
-		private MultiTargetProperty<string> m_bundlizerBundleNameTemplate;
-		private Dictionary<string, string> 	m_variants;
-		private MultiTargetProperty<int> 	m_bundleBuilderEnabledBundleOptions;
+		[SerializeField] private string m_name;
+		[SerializeField] private string m_id;
+		[SerializeField] private NodeKind m_kind;
+		[SerializeField] private float m_x;
+		[SerializeField] private float m_y;
+		[SerializeField] private string m_scriptClassName;
+		[SerializeField] private List<FilterEntry> m_filter;
+		[SerializeField] private List<ConnectionPointData> 	m_inputPoints; 
+		[SerializeField] private List<ConnectionPointData> 	m_outputPoints; 
+		[SerializeField] private SerializableMultiTargetString m_loaderLoadPath;
+		[SerializeField] private SerializableMultiTargetString m_exporterExportPath;
+		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
+		[SerializeField] private SerializableMultiTargetString m_bundlizerBundleNameTemplate;
+		[SerializeField] private List<Variant> m_variants;
+		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 
-		private List<ConnectionData> m_connections;
-		private bool m_isNodeOperationPerformed;
+		[SerializeField] private List<ConnectionData> m_connections;
+		[SerializeField] private bool m_isNodeOperationPerformed;
 
-		public NodeData() {
-			m_name = string.Empty;
-			m_id = Guid.NewGuid().ToString();
-			m_connections = new List<ConnectionData>();
-		}
 
-		public NodeData(Dictionary<string, object> jsonData) {
-
-			m_name = jsonData[NODE_NAME] as string;
-			m_id = jsonData[NODE_ID]as string;
-			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
-			m_connections = new List<ConnectionData>();
-
-			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
-			m_x = Convert.ToInt32(pos[NODE_POS_X]);
-			m_y = Convert.ToInt32(pos[NODE_POS_Y]);
-			var ids    = jsonData[NODE_OUTPUTPOINT_IDS] as List<object>;
-			var labels = jsonData[NODE_OUTPUTPOINT_LABELS] as List<object>;
-			m_outputPoints = new List<ConnectionPointData>();
-			for(int i=0; i< ids.Count; ++i) {
-				m_outputPoints.Add(new ConnectionPointData(ids[i] as string, labels[i] as string));
-			}
-
-			switch (m_kind) {
-			case NodeKind.IMPORTSETTING_GUI:
-				// nothing to do
-				break;
-			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
-			case NodeKind.PREFABRICATOR_GUI:
-			case NodeKind.MODIFIER_GUI:
-				{
-					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
-						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
-					}
-				}
-				break;
-			case NodeKind.LOADER_GUI:
-				{
-					m_loaderLoadPath = new MultiTargetProperty<string>(jsonData[NODE_LOADER_LOAD_PATH] as Dictionary<string, object>);
-				}
-				break;
-			case NodeKind.FILTER_GUI:
-				{
-					var keywords = jsonData[NODE_FILTER_CONTAINS_KEYWORDS] as List<object>;
-					var keytypes = jsonData[NODE_FILTER_CONTAINS_KEYTYPES] as List<object>;
-
-					m_filter = new List<FilterEntry>();
-
-					for(int i=0; i<keywords.Count; ++i) {
-						m_filter.Add(new FilterEntry(keywords[i] as string, keytypes[i] as string));
-					}
-				}
-				break;
-			case NodeKind.GROUPING_GUI:
-				{
-					m_groupingKeyword = new MultiTargetProperty<string>(jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
-				}
-				break;
-			case NodeKind.BUNDLIZER_GUI:
-				{
-					m_bundlizerBundleNameTemplate = new MultiTargetProperty<string>(jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
-					m_variants = new Dictionary<string, string>();
-					if(jsonData.ContainsKey(NODE_BUNDLIZER_VARIANTS)){
-						var src = jsonData[NODE_BUNDLIZER_VARIANTS] as Dictionary<string, object>;
-						foreach(var v in src) {
-							m_variants.Add(v.Key, v.Value as string);
-						}
-					}
-				}
-				break;
-			case NodeKind.BUNDLEBUILDER_GUI:
-				{
-					m_bundleBuilderEnabledBundleOptions = new MultiTargetProperty<int>(jsonData[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>);
-				}
-				break;
-			case NodeKind.EXPORTER_GUI:
-				{
-					m_exporterExportPath = new MultiTargetProperty<string>(jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
-				}
-				break;
-			default:
-				throw new ArgumentOutOfRangeException ();
-			}
-
-		}
-
-		public NodeData(NodeGUI nodeGui) {
-
-			m_id = nodeGui.nodeId;
-			m_name = nodeGui.name;
-			m_x = nodeGui.GetX();
-			m_y = nodeGui.GetY();
-			m_kind = nodeGui.kind;
-			m_connections = new List<ConnectionData>();
-
-			m_outputPoints = new List<ConnectionPointData>();
-			List<string> ids = nodeGui.OutputPointIds();
-			List<string> labels = nodeGui.OutputPointLabels();
-
-			for(int i=0; i<ids.Count;++i) {
-				m_outputPoints.Add(new ConnectionPointData(ids[i], labels[i]));
-			}
-
-			switch(m_kind) {
-			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
-			case NodeKind.PREFABRICATOR_GUI:
-			case NodeKind.MODIFIER_GUI:
-				m_scriptClassName 	= nodeGui.scriptClassName;
-				break;
-
-			case NodeKind.FILTER_GUI:
-				m_filter = new List<FilterEntry>();
-				for(int i=0; i<nodeGui.filterContainsKeytypes.Count; ++i) {
-					m_filter.Add(new FilterEntry(nodeGui.filterContainsKeywords[i], nodeGui.filterContainsKeytypes[i]));
-				}
-				break;
-
-			case NodeKind.LOADER_GUI:
-				m_loaderLoadPath = nodeGui.loadPath.ToProperty();
-				break;
-			
-			case NodeKind.GROUPING_GUI:
-				m_groupingKeyword = nodeGui.groupingKeyword.ToProperty();
-				break;
-
-			case NodeKind.BUNDLIZER_GUI:
-				m_bundlizerBundleNameTemplate = nodeGui.bundleNameTemplate.ToProperty();
-				m_variants = nodeGui.variants.ReadonlyDict();
-				break;
-
-			case NodeKind.BUNDLEBUILDER_GUI:
-				m_bundleBuilderEnabledBundleOptions = nodeGui.enabledBundleOptions.ToProperty();
-				break;
-
-			case NodeKind.EXPORTER_GUI:
-				m_exporterExportPath = nodeGui.exportTo.ToProperty();
-				break;
-			}
-		}
-
-		public void AddConnectionToParent (ConnectionData connection) {
-			m_connections.Add(connection);
-		}
+		/*
+		 * Properties
+		 */ 
 
 		public string Name {
 			get {
 				return m_name;
+			}
+			set {
+				m_name = value;
 			}
 		}
 		public string Id {
@@ -289,25 +187,57 @@ namespace AssetBundleGraph {
 				);
 				return m_scriptClassName;
 			}
+			set {
+				ValidateAccess(
+					NodeKind.FILTER_SCRIPT, 
+					NodeKind.PREFABRICATOR_SCRIPT,
+					NodeKind.PREFABRICATOR_GUI,
+					NodeKind.MODIFIER_GUI
+				);
+				m_scriptClassName = value;
+			}
 		}
 
-		public int X {
+		public float X {
 			get {
 				return m_x;
 			}
+			set {
+				m_x = value;
+			}
 		}
-		public int Y {
+
+		public float Y {
 			get {
 				return m_y;
 			}
+			set {
+				m_y = value;
+			}
 		}
+
+//		public Rect Region {
+//			get {
+//				return m_rect;
+//			}
+//			set {
+//				m_rect = value;
+//			}
+//		}
+
+		public List<ConnectionPointData> InputPoints {
+			get {
+				return m_inputPoints;
+			}
+		}
+
 		public List<ConnectionPointData> OutputPoints {
 			get {
 				return m_outputPoints;
 			}
 		}
 
-		public MultiTargetProperty<string> LoaderLoadPath {
+		public SerializableMultiTargetString LoaderLoadPath {
 			get {
 				ValidateAccess(
 					NodeKind.LOADER_GUI 
@@ -316,7 +246,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public MultiTargetProperty<string> ExporterExportPath {
+		public SerializableMultiTargetString ExporterExportPath {
 			get {
 				ValidateAccess(
 					NodeKind.EXPORTER_GUI 
@@ -325,7 +255,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public MultiTargetProperty<string> GroupingKeywords {
+		public SerializableMultiTargetString GroupingKeywords {
 			get {
 				ValidateAccess(
 					NodeKind.GROUPING_GUI 
@@ -334,7 +264,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public MultiTargetProperty<string> BundleNameTemplate {
+		public SerializableMultiTargetString BundleNameTemplate {
 			get {
 				ValidateAccess(
 					NodeKind.BUNDLIZER_GUI 
@@ -343,7 +273,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public Dictionary<string, string> Variants {
+		public List<Variant> Variants {
 			get {
 				ValidateAccess(
 					NodeKind.BUNDLIZER_GUI 
@@ -352,7 +282,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public MultiTargetProperty<int> BundleBuilderBundleOptions {
+		public SerializableMultiTargetInt BundleBuilderBundleOptions {
 			get {
 				ValidateAccess(
 					NodeKind.BUNDLEBUILDER_GUI 
@@ -385,6 +315,273 @@ namespace AssetBundleGraph {
 			}
 		}
 
+
+		/*
+		 *  Create NodeData from JSON
+		 */ 
+		public NodeData(Dictionary<string, object> jsonData) {
+
+			m_name = jsonData[NODE_NAME] as string;
+			m_id = jsonData[NODE_ID]as string;
+			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
+			m_connections = new List<ConnectionData>();
+
+			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
+			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
+			m_y = (float)Convert.ToDouble(pos[NODE_POS_Y]);
+
+//			m_rect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
+
+			var inputs  = jsonData[NODE_INPUTPOINTS] as List<object>;
+			var outputs = jsonData[NODE_OUTPUTPOINTS] as List<object>;
+			m_inputPoints  = new List<ConnectionPointData>();
+			m_outputPoints = new List<ConnectionPointData>();
+
+			foreach(var obj in inputs) {
+				var pDic = obj as Dictionary<string, object>;
+				m_inputPoints.Add(new ConnectionPointData(pDic, this, true));
+			}
+
+			foreach(var obj in outputs) {
+				var pDic = obj as Dictionary<string, object>;
+				m_outputPoints.Add(new ConnectionPointData(pDic, this, false));
+			}
+
+			switch (m_kind) {
+			case NodeKind.IMPORTSETTING_GUI:
+				// nothing to do
+				break;
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.MODIFIER_GUI:
+				{
+					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
+						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
+					}
+				}
+				break;
+			case NodeKind.LOADER_GUI:
+				{
+					m_loaderLoadPath = new SerializableMultiTargetString(jsonData[NODE_LOADER_LOAD_PATH] as Dictionary<string, object>);
+				}
+				break;
+			case NodeKind.FILTER_GUI:
+				{
+					var filters = jsonData[NODE_FILTER] as List<object>;
+
+					m_filter = new List<FilterEntry>();
+
+					for(int i=0; i<filters.Count; ++i) {
+						var f = filters[i] as Dictionary<string, object>;
+
+						var keyword = f[NODE_FILTER_KEYWORD] as string;
+						var keytype = f[NODE_FILTER_KEYTYPE] as string;
+						var pointId = f[NODE_FILTER_POINTID] as string;
+
+						var point = m_outputPoints.Find(p => p.Id == pointId);
+						UnityEngine.Assertions.Assert.IsNotNull(point, "Output point not found for " + keyword);
+						m_filter.Add(new FilterEntry(keyword, keytype, point));
+					}
+				}
+				break;
+			case NodeKind.GROUPING_GUI:
+				{
+					m_groupingKeyword = new SerializableMultiTargetString(jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
+				}
+				break;
+			case NodeKind.BUNDLIZER_GUI:
+				{
+					m_bundlizerBundleNameTemplate = new SerializableMultiTargetString(jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
+					m_variants = new List<Variant>();
+					if(jsonData.ContainsKey(NODE_BUNDLIZER_VARIANTS)){
+						var variants = jsonData[NODE_BUNDLIZER_VARIANTS] as List<object>;
+
+						for(int i=0; i<variants.Count; ++i) {
+							var v = variants[i] as Dictionary<string, object>;
+
+							var name    = v[NODE_BUNDLIZER_VARIANTS_NAME] as string;
+							var pointId = v[NODE_BUNDLIZER_VARIANTS_POINTID] as string;
+
+							var point = m_inputPoints.Find(p => p.Id == pointId);
+							UnityEngine.Assertions.Assert.IsNotNull(point, "Input point not found for " + name);
+							m_variants.Add(new Variant(name, point));
+						}
+					}
+				}
+				break;
+			case NodeKind.BUNDLEBUILDER_GUI:
+				{
+					m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt(jsonData[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>);
+				}
+				break;
+			case NodeKind.EXPORTER_GUI:
+				{
+					m_exporterExportPath = new SerializableMultiTargetString(jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
+				}
+				break;
+			default:
+				throw new ArgumentOutOfRangeException ();
+			}
+		}
+
+		/*
+		 * Constructor used to create new node from GUI
+		 */ 
+		public NodeData(string name, NodeKind kind, float x, float y) {
+
+			m_id = Guid.NewGuid().ToString();
+			m_name = name;
+			m_x = x;
+			m_y = y;
+			m_kind = kind;
+			m_connections = new List<ConnectionData>();
+
+			m_inputPoints  = new List<ConnectionPointData>();
+			m_outputPoints = new List<ConnectionPointData>();
+
+
+			// adding defalut input point.
+			// Loader does not take input
+			if(kind != NodeKind.LOADER_GUI) {
+				m_inputPoints.Add(new ConnectionPointData(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL, this, true));
+			}
+
+			// adding default output point.
+			// Filter and Exporter does not have output.
+			if(kind != NodeKind.FILTER_GUI && kind != NodeKind.EXPORTER_GUI) {
+				m_outputPoints.Add(new ConnectionPointData(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL, this, false));
+			}
+
+			switch(m_kind) {
+			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.IMPORTSETTING_GUI:
+				break;
+			case NodeKind.MODIFIER_GUI:
+				m_scriptClassName 	= String.Empty;
+				break;
+
+			case NodeKind.FILTER_GUI:
+				m_filter = new List<FilterEntry>();
+				break;
+
+			case NodeKind.LOADER_GUI:
+				m_loaderLoadPath = new SerializableMultiTargetString();
+				break;
+
+			case NodeKind.GROUPING_GUI:
+				m_groupingKeyword = new SerializableMultiTargetString(AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT);
+				break;
+
+			case NodeKind.BUNDLIZER_GUI:
+				m_bundlizerBundleNameTemplate = new SerializableMultiTargetString(AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT);
+				m_variants = new List<Variant>();
+				break;
+
+			case NodeKind.BUNDLEBUILDER_GUI:
+				m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt();
+				break;
+
+			case NodeKind.EXPORTER_GUI:
+				m_exporterExportPath = new SerializableMultiTargetString();
+				break;
+
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+				m_scriptClassName = string.Empty;
+				break;
+
+			default:
+				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
+			}
+		}
+
+		/**
+		 * Duplicate this node with new guid.
+		 */ 
+		public NodeData Duplicate () {
+
+			var newData = new NodeData(m_name, m_kind, m_x, m_y);
+
+			switch(m_kind) {
+			case NodeKind.PREFABRICATOR_GUI:
+				break;
+			case NodeKind.MODIFIER_GUI:
+				newData.m_scriptClassName 	= m_scriptClassName;
+				break;
+
+			case NodeKind.FILTER_GUI:
+				foreach(var f in m_filter) {
+					newData.AddFilterCondition(f.FilterKeyword, f.FilterKeytype);
+				}
+				break;
+
+			case NodeKind.LOADER_GUI:
+				newData.m_loaderLoadPath = new SerializableMultiTargetString(m_loaderLoadPath);
+				break;
+
+			case NodeKind.GROUPING_GUI:
+				newData.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
+				break;
+
+			case NodeKind.BUNDLIZER_GUI:
+				foreach(var v in m_variants) {
+					newData.AddVariant(v.Name);
+				}
+				break;
+
+			case NodeKind.BUNDLEBUILDER_GUI:
+				newData.m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt(m_bundleBuilderEnabledBundleOptions);
+				break;
+
+			case NodeKind.EXPORTER_GUI:
+				newData.m_exporterExportPath = new SerializableMultiTargetString(m_exporterExportPath);
+				break;
+
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+				newData.m_scriptClassName = m_scriptClassName;
+				break;
+
+			default:
+				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
+			}
+
+			return newData;
+		}
+
+		public ConnectionPointData AddInputPoint(string label) {
+			var p = new ConnectionPointData(label, this, true);
+			m_inputPoints.Add(p);
+			return p;
+		}
+
+		public ConnectionPointData AddOutputPoint(string label) {
+			var p = new ConnectionPointData(label, this, false);
+			m_outputPoints.Add(p);
+			return p;
+		}
+
+		public ConnectionPointData FindInputPoint(string id) {
+			return m_inputPoints.Find(p => p.Id == id);
+		}
+
+		public ConnectionPointData FindOutputPoint(string id) {
+			return m_outputPoints.Find(p => p.Id == id);
+		}
+
+		public ConnectionPointData FindConnectionPoint(string id) {
+			var v = FindInputPoint(id);
+			if(v != null) {
+				return v;
+			}
+			return FindOutputPoint(id);
+		}
+
+		public void AddConnectionToParent (ConnectionData connection) {
+			m_connections.Add(connection);
+		}
+
 		public string GetLoaderFullLoadPath(BuildTarget g) {
 			return FileUtility.PathCombine(Application.dataPath, LoaderLoadPath[g]);
 		}
@@ -402,6 +599,46 @@ namespace AssetBundleGraph {
 			return overlap != null;
 		}
 
+		public void AddFilterCondition(string keyword, string keytype) {
+			ValidateAccess(
+				NodeKind.FILTER_GUI
+			);
+
+			var point = new ConnectionPointData(keyword, this, false);
+			m_outputPoints.Add(point);
+			var newEntry = new FilterEntry(keyword, keytype, point);
+			m_filter.Add(newEntry);
+		}
+
+		public void RemoveFilterCondition(FilterEntry f) {
+			ValidateAccess(
+				NodeKind.FILTER_GUI
+			);
+
+			m_filter.Remove(f);
+			m_outputPoints.Remove(f.ConnectionPoint);
+		}
+
+		public void AddVariant(string name) {
+			ValidateAccess(
+				NodeKind.BUNDLIZER_GUI
+			);
+
+			var point = new ConnectionPointData(name, this, true);
+			m_inputPoints.Add(point);
+			var newEntry = new Variant(name, point);
+			m_variants.Add(newEntry);
+		}
+
+		public void RemoveVariant(Variant v) {
+			ValidateAccess(
+				NodeKind.BUNDLIZER_GUI
+			);
+
+			m_variants.Remove(v);
+			m_inputPoints.Remove(v.ConnectionPoint);
+		}
+
 		private void ValidateAccess(params NodeKind[] allowedKind) {
 			foreach(var k in allowedKind) {
 				if (k == m_kind) {
@@ -411,6 +648,9 @@ namespace AssetBundleGraph {
 			throw new AssetBundleGraphException(m_name + ": Tried to access invalid method or property.");
 		}
 
+		/**
+		 * Serialize to JSON dictionary
+		 */ 
 		public Dictionary<string, object> ToJsonDictionary() {
 			var nodeDict = new Dictionary<string, object>();
 
@@ -418,14 +658,25 @@ namespace AssetBundleGraph {
 			nodeDict[NODE_ID] 	= m_id;
 			nodeDict[NODE_KIND] = m_kind.ToString();
 
-			nodeDict[NODE_OUTPUTPOINT_LABELS] = m_outputPoints.Select(p => p.Label).ToList();
-			nodeDict[NODE_OUTPUTPOINT_IDS] 	  = m_outputPoints.Select(p => p.Id).ToList();
+			var inputs  = new List<object>();
+			var outputs = new List<object>();
+
+			foreach(var p in m_inputPoints) {
+				inputs.Add( p.ToJsonDictionary() );
+			}
+
+			foreach(var p in m_outputPoints) {
+				outputs.Add( p.ToJsonDictionary() );
+			}
+
+			nodeDict[NODE_INPUTPOINTS]  = inputs;
+			nodeDict[NODE_OUTPUTPOINTS] = outputs;
 
 			nodeDict[NODE_POS] = new Dictionary<string, object>() {
 				{NODE_POS_X, m_x},
 				{NODE_POS_Y, m_y}
 			};
-
+				
 			switch (m_kind) {
 			case NodeKind.FILTER_SCRIPT:
 			case NodeKind.PREFABRICATOR_SCRIPT:
@@ -436,8 +687,15 @@ namespace AssetBundleGraph {
 				nodeDict[NODE_LOADER_LOAD_PATH] = m_loaderLoadPath.ToJsonDictionary();
 				break;
 			case NodeKind.FILTER_GUI:
-				nodeDict[NODE_FILTER_CONTAINS_KEYWORDS] = m_filter.Select(f => f.FilterKeyword).ToList();
-				nodeDict[NODE_FILTER_CONTAINS_KEYTYPES] = m_filter.Select(f => f.FilterKeytype).ToList();
+				var filterDict = new List<Dictionary<string, object>>();
+				foreach(var f in m_filter) {
+					var df = new Dictionary<string, object>();
+					df[NODE_FILTER_KEYWORD] = f.FilterKeyword;
+					df[NODE_FILTER_KEYTYPE] = f.FilterKeytype;
+					df[NODE_FILTER_POINTID] = f.ConnectionPoint.Id;
+					filterDict.Add(df);
+				}
+				nodeDict[NODE_FILTER] = filterDict;
 				break;
 			case NodeKind.GROUPING_GUI:
 				nodeDict[NODE_GROUPING_KEYWORD] = m_groupingKeyword.ToJsonDictionary();
@@ -446,7 +704,14 @@ namespace AssetBundleGraph {
 				break;
 			case NodeKind.BUNDLIZER_GUI:
 				nodeDict[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = m_bundlizerBundleNameTemplate.ToJsonDictionary();
-				nodeDict[NODE_BUNDLIZER_VARIANTS] = m_variants;
+				var variantsDict = new List<Dictionary<string, object>>();
+				foreach(var v in m_variants) {
+					var dv = new Dictionary<string, object>();
+					dv[NODE_BUNDLIZER_VARIANTS_NAME] 	= v.Name;
+					dv[NODE_BUNDLIZER_VARIANTS_POINTID] = v.ConnectionPoint.Id;
+					variantsDict.Add(dv);
+				}
+				nodeDict[NODE_BUNDLIZER_VARIANTS] = variantsDict;
 				break;
 			case NodeKind.BUNDLEBUILDER_GUI:
 				nodeDict[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = m_bundleBuilderEnabledBundleOptions.ToJsonDictionary();
@@ -464,144 +729,11 @@ namespace AssetBundleGraph {
 			return nodeDict;
 		}
 
+		/**
+		 * Serialize to JSON string
+		 */ 
 		public string ToJsonString() {
 			return AssetBundleGraph.Json.Serialize(ToJsonDictionary());
 		}
 	}
-
-//	public class NodeData {
-//		public readonly string nodeName;
-//		public readonly string nodeId;
-//		public readonly NodeKind nodeKind;
-//		public readonly List<string> outputPointIds;
-//
-//		// for All script nodes & prefabricator, bundlizer GUI.
-//		public readonly string scriptClassName;
-//
-//		// for Loader Script
-//		public readonly Dictionary<string, string> loadFilePath;
-//
-//		// for Exporter Script
-//		public readonly Dictionary<string, string> exportFilePath;
-//
-//		// for Filter GUI data
-//		public readonly List<string> containsKeywords;
-//		public readonly List<string> containsKeytypes;
-//
-//		// for Modifier GUI data
-//		public readonly Dictionary<string, string> modifierPackages;
-//
-//		// for Grouping GUI data
-//		public readonly Dictionary<string, string> groupingKeyword;
-//
-//		// for Bundlizer GUI data
-//		public readonly Dictionary<string, string> bundleNameTemplate;
-//		public readonly Dictionary<string, string> variants;
-//
-//		// for BundleBuilder GUI data
-//		public readonly Dictionary<string, List<string>> enabledBundleOptions;
-//
-//		
-//		public List<ConnectionData> connectionToParents = new List<ConnectionData>();
-//
-//		private bool done;
-//
-//		public NodeData (
-//			string nodeId, 
-//		NodeKind nodeKind,
-//			string nodeName,
-//			List<string> outputPointIds,
-//			string scriptClassName = null,
-//			Dictionary<string, string> loadPath = null,
-//			Dictionary<string, string> exportTo = null,
-//			List<string> filterContainsKeywords = null,
-//			List<string> filterContainsKeytypes = null,
-//			Dictionary<string, string> modifierPackages = null,
-//			Dictionary<string, string> groupingKeyword = null,
-//			Dictionary<string, string> bundleNameTemplate = null,
-//			Dictionary<string, string> variants = null,
-//			Dictionary<string, List<string>> enabledBundleOptions = null
-//		) {
-//			this.nodeId = nodeId;
-//			this.nodeKind = nodeKind;
-//			this.nodeName = nodeName;
-//			this.outputPointIds = outputPointIds;
-//
-//			this.scriptClassName = null;
-//			this.loadFilePath = null;
-//			this.exportFilePath = null;
-//			this.containsKeywords = null;
-//			this.modifierPackages = null;
-//			this.groupingKeyword = null;
-//			this.variants = null;
-//			this.bundleNameTemplate = null;
-//			this.enabledBundleOptions = null;
-//
-//			switch (nodeKind) {
-//				case NodeKind.LOADER_GUI: {
-//					this.loadFilePath = loadPath;
-//					break;
-//				}
-//				case NodeKind.EXPORTER_GUI: {
-//					this.exportFilePath = exportTo;
-//					break;
-//				}
-//
-//				case NodeKind.FILTER_SCRIPT:
-//				case NodeKind.PREFABRICATOR_SCRIPT:
-//				case NodeKind.PREFABRICATOR_GUI: {
-//					this.scriptClassName = scriptClassName;
-//					break;
-//				}
-//
-//				case NodeKind.FILTER_GUI: {
-//					this.containsKeywords = filterContainsKeywords;
-//					this.containsKeytypes = filterContainsKeytypes;
-//					break;
-//				}
-//
-//				case NodeKind.IMPORTSETTING_GUI: {
-//					break;
-//				}
-//
-//				case NodeKind.MODIFIER_GUI: {
-//					this.modifierPackages = modifierPackages;
-//					break;
-//				}
-//				
-//				case NodeKind.GROUPING_GUI: {
-//					this.groupingKeyword = groupingKeyword;
-//					break;
-//				}
-//
-//				case NodeKind.BUNDLIZER_GUI: {
-//					this.bundleNameTemplate = bundleNameTemplate;
-//					this.variants = variants;
-//					break;
-//				}
-//
-//				case NodeKind.BUNDLEBUILDER_GUI: {
-//					this.enabledBundleOptions = enabledBundleOptions;
-//					break;
-//				}
-//
-//				default: {
-//					Debug.LogError(node.Name + " is defined as unknown kind of node. value:" + nodeKind);
-//					break;
-//				}
-//			}
-//		}
-//
-//		public void AddConnectionToParent (ConnectionData connection) {
-//			connectionToParents.Add(new ConnectionData(connection));
-//		}
-//
-//		public void Done () {
-//			done = true;
-//		}
-//
-//		public bool IsAlreadyDone () {
-//			return done;
-//		}
-//	}
 }

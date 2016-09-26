@@ -27,7 +27,7 @@ namespace AssetBundleGraph {
 
 				var inputSources = groupedSources[groupKey];
 				
-				Action<string, List<string>> _PreOutput = (string connectionId, List<string> outputSources) => {
+				Action<string, List<string>> _PreOutput = (string Id, List<string> outputSources) => {
 					var outputs = new List<Asset>();
 					
 					foreach (var outputSource in outputSources) {
@@ -39,7 +39,7 @@ namespace AssetBundleGraph {
 					}
 					
 					outputDict[groupKey] = outputs;
-					Output(node.Id, connectionId, outputDict, new List<string>());
+					Output(node.Id, Id, outputDict, new List<string>());
 				};
 				
 				try {
@@ -60,7 +60,7 @@ namespace AssetBundleGraph {
 
 				var inputSources = groupedSources[groupKey];
 				
-				Action<string, List<string>> _Output = (string connectionId, List<string> outputSources) => {
+				Action<string, List<string>> _Output = (string Id, List<string> outputSources) => {
 					var outputs = new List<Asset>();
 					
 					foreach (var outputSource in outputSources) {
@@ -72,7 +72,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(node.Id, connectionId, outputDict, new List<string>());
+					Output(node.Id, Id, outputDict, new List<string>());
 				};
 				
 				try {
@@ -105,7 +105,7 @@ namespace AssetBundleGraph {
 				// these 3 parameters depends on their contents order.
 				// TODO: separate connection id order and keyword/keytype.
 
-				var connectionId = connectionIdsFromThisNodeToChildNodesOrFakeIds[i];
+				var Id = connectionIdsFromThisNodeToChildNodesOrFakeIds[i];
 				var keyword = node.FilterConditions[i].FilterKeyword;
 				var keytype = node.FilterConditions[i].FilterKeytype;
 
@@ -136,8 +136,8 @@ namespace AssetBundleGraph {
 					}
 				}
 
-				if (connectionId != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) {
-					FilterResultReceiver(connectionId, typeMatchedAssetsAbsolutePaths);
+				if (Id != AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID) {
+					FilterResultReceiver(Id, typeMatchedAssetsAbsolutePaths);
 				}
 			}
 		}

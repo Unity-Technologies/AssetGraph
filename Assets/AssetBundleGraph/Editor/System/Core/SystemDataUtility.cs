@@ -74,9 +74,10 @@ namespace AssetBundleGraph {
 				labels.Add(connectionLabel);
 			};
 
+			//Dry-run to collect labels
 			((FilterBase)nodeScriptInstance).Setup(
 				BuildTarget.StandaloneWindows64,
-				new NodeData(),
+				new NodeData("", NodeKind.LOADER_GUI, 0, 0),
 				string.Empty,
 				new Dictionary<string, List<Asset>>{
 					{"0", new List<Asset>()}

@@ -17,7 +17,7 @@ namespace AssetBundleGraph {
 
 		// connection data
 		private const string CONNECTION_LABEL = "label";
-		private const string CONNECTION_ID = "connectionId";
+		private const string CONNECTION_ID = "id";
 		private const string CONNECTION_FROMNODE = "fromNode";
 		private const string CONNECTION_FROMNODE_CONPOINT_ID = "fromNodeConPointId";
 		private const string CONNECTION_TONODE = "toNode";
@@ -47,12 +47,12 @@ namespace AssetBundleGraph {
 		public ConnectionData(ConnectionGUI c) {
 			m_jsonData = null;
 
-			m_id = c.connectionId;
-			m_label = c.label;
-			m_fromNodeId = c.outputNodeId;
-			m_fromNodeConnectionPointId = c.outputPoint.pointId;
-			m_toNodeId = c.inputNodeId;
-			m_toNodeConnectionPoiontId = c.inputPoint.pointId;
+			m_id = c.Id;
+			m_label = c.Label;
+			m_fromNodeId = c.OutputNodeId;
+			m_fromNodeConnectionPointId = c.OutputPoint.Id;
+			m_toNodeId = c.InputNodeId;
+			m_toNodeConnectionPoiontId = c.InputPoint.Id;
 		}
 
 		public string Id {
@@ -146,32 +146,4 @@ namespace AssetBundleGraph {
 			return true;
 		}	
 	}
-
-
-//	public class ConnectionData {
-//		public readonly string connectionId;
-//		public readonly string connectionLabel;
-//		public readonly string fromNodeId;
-//		public readonly string fromNodeOutputPointId;
-//		public readonly string toNodeId;
-//		public readonly string toNodeInputPointId;
-//
-//		public ConnectionData (string connectionId, string connectionLabel, string fromNodeId, string fromNodeOutputPointId, string toNodeId, string toNodeInputPointId) {
-//			this.connectionId = connectionId;
-//			this.connectionLabel = connectionLabel;
-//			this.fromNodeId = fromNodeId;
-//			this.fromNodeOutputPointId = fromNodeOutputPointId;
-//			this.toNodeId = toNodeId;
-//			this.toNodeInputPointId = toNodeInputPointId;
-//		}
-//
-//		public ConnectionData (ConnectionData connection) {
-//			this.connectionId = connection.connectionId;
-//			this.connectionLabel = connection.connectionLabel;
-//			this.fromNodeId = connection.fromNodeId;
-//			this.fromNodeOutputPointId = connection.fromNodeOutputPointId;
-//			this.toNodeId = connection.toNodeId;
-//			this.toNodeInputPointId = connection.toNodeInputPointId;
-//		}
-//	}
 }

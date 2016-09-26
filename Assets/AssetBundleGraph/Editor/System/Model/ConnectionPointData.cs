@@ -10,31 +10,56 @@ using System.Security.Cryptography;
 
 namespace AssetBundleGraph {
 
-	public class ConnectionPointData {
+	[Serializable]
+	public partial class ConnectionPointData {
 
 		private const string ID = "id";
 		private const string LABEL = "label";
 		private const string PRIORITY = "orderPriority";
 		private const string SHOWLABEL = "showLabel";
 
-		private string id;
-		private string label;
+		/**
+		* In order to support Unity serialization for Undo, cyclic reference need to be avoided.
+		* For that reason, we are storing parentId instead of pointer to parent NodeData
+		*/
+
+		[SerializeField] private string id;
+		[SerializeField] private string label;
+		[SerializeField] private string parentId;
+		[SerializeField] private bool isInput;
+
 //		private int orderPriority;
 //		private bool showLabel;
 
-		public ConnectionPointData(string id, string label/*, int orderPriority, bool showLabel */) {
+		public ConnectionPointData(string id, string label, NodeData parent, bool isInput/*, int orderPriority, bool showLabel */) {
 			this.id = id;
 			this.label = label;
-//			this.orderPriority = orderPriority;
+			this.parentId = parent.Id;
+			this.isInput = isInput;
+					//			this.orderPriority = orderPriority;
 //			this.showLabel = showLabel;
 		}
 
-		public ConnectionPointData(ConnectionPointGUI pointGui) {
-			this.id = pointGui.pointId;
-			this.label = pointGui.label;
+		public ConnectionPointData(string label, NodeData parent, bool isInput) {
+			this.id = Guid.NewGuid().ToString();
+			this.label = label;
+			this.parentId = parent.Id;
+			this.isInput = isInput;
 //			this.orderPriority = pointGui.orderPriority;
 //			this.showLabel = pointGui.showLabel;
 		}
+
+		public ConnectionPointData(Dictionary<string, object> dic, NodeData parent, bool isInput) {
+
+			this.id = dic[ID] as string;
+			this.label = dic[LABEL] as string;
+			this.parentId = parent.Id;
+			this.isInput = isInput;
+
+			//			this.orderPriority = pointGui.orderPriority;
+			//			this.showLabel = pointGui.showLabel;
+		}
+
 
 		public string Id {
 			get {
@@ -46,7 +71,29 @@ namespace AssetBundleGraph {
 			get {
 				return label;
 			}
+			set {
+				label = value;
+			}
 		}
+
+		public string NodeId {
+			get {
+				return parentId;
+			}
+		}
+
+		public bool IsInput {
+			get {
+				return isInput;
+			}
+		}
+
+		public bool IsOutput {
+			get {
+				return !isInput;
+			}
+		}
+
 //		public int OrderPriority {
 //			get {
 //				return orderPriority;
@@ -59,7 +106,10 @@ namespace AssetBundleGraph {
 //		}
 
 		public Dictionary<string, object> ToJsonDictionary() {
-			return null;
+			return new Dictionary<string, object> () {
+				{ID, this.id},
+				{LABEL, this.label}
+			};
 		}
 	}
 }

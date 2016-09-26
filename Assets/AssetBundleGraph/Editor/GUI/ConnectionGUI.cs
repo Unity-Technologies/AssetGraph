@@ -8,53 +8,86 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	[Serializable] 
 	public class ConnectionGUI {
-		[SerializeField] public string label;
-		[SerializeField] public string connectionId;
+		[SerializeField] private string label;
+		[SerializeField] private string id;
 
-		[SerializeField] public string outputNodeId;
-		[SerializeField] public ConnectionPointGUI outputPoint;
-
-		[SerializeField] public string inputNodeId;
-		[SerializeField] public ConnectionPointGUI inputPoint;
-
-		[SerializeField] public ConnectionGUIInspectorHelper conInsp;
+		[SerializeField] private ConnectionPointData outputPoint;
+		[SerializeField] private ConnectionPointData inputPoint;
+		[SerializeField] private ConnectionGUIInspectorHelper conInsp;
 
 		[SerializeField] private string connectionButtonStyle;
 
+		public string Label {
+			get {
+				return label;
+			}
+			set {
+				label = value;
+			}
+		}
+
+		public string Id {
+			get {
+				return id;
+			}
+		}
+
+		public string OutputNodeId {
+			get {
+				return outputPoint.NodeId;
+			}
+		}
+
+		public string InputNodeId {
+			get {
+				return inputPoint.NodeId;
+			}
+		}
+
+		public ConnectionPointData OutputPoint {
+			get {
+				return outputPoint;
+			}
+		}
+
+		public ConnectionPointData InputPoint {
+			get {
+				return inputPoint;
+			}
+		}
+
 		private Rect buttonRect;
 
-		public static ConnectionGUI LoadConnection (string label, string connectionId, string startNodeId, ConnectionPointGUI output, string endNodeId, ConnectionPointGUI input) {
+		public static ConnectionGUI LoadConnection (string label, string id, ConnectionPointData output, ConnectionPointData input) {
 			return new ConnectionGUI(
 				label,
-				connectionId,
-				startNodeId,
+				id,
 				output,
-				endNodeId,
 				input
 			);
 		}
 
-		public static ConnectionGUI NewConnection (string label, string startNodeId, ConnectionPointGUI output, string endNodeId, ConnectionPointGUI input) {
+		public static ConnectionGUI CreateConnection (string label, ConnectionPointData output, ConnectionPointData input) {
 			return new ConnectionGUI(
 				label,
 				Guid.NewGuid().ToString(),
-				startNodeId,
 				output,
-				endNodeId,
 				input
 			);
 		}
 
-		private ConnectionGUI (string label, string connectionId, string startNodeId, ConnectionPointGUI output, string endNodeId, ConnectionPointGUI input) {
+		private ConnectionGUI (string label, string id, ConnectionPointData output, ConnectionPointData input) {
+
+			UnityEngine.Assertions.Assert.IsTrue(output.IsOutput, "Given Output point is not output.");
+			UnityEngine.Assertions.Assert.IsTrue(input.IsInput,   "Given Input point is not input.");
+
 			conInsp = ScriptableObject.CreateInstance<ConnectionGUIInspectorHelper>();
 			conInsp.hideFlags = HideFlags.DontSave;
 
 			this.label = label;
-			this.connectionId = connectionId;
+			this.id = id;
 
-			this.outputNodeId = startNodeId;
 			this.outputPoint = output;
-			this.inputNodeId = endNodeId;
 			this.inputPoint = input;
 
 			connectionButtonStyle = "sv_label_0";
@@ -126,18 +159,21 @@ namespace AssetBundleGraph {
 					throughput assets
 		*/
 		public void DrawConnection (List<NodeGUI> nodes, Dictionary<string, List<DepreacatedThroughputAsset>> throughputListDict) {
-			var startNodes = nodes.Where(node => node.nodeId == outputNodeId).ToList();
-			if (!startNodes.Any()) return;
-			
-			var startPoint = startNodes[0].GlobalConnectionPointPosition(outputPoint.pointId);
-			startPoint = NodeGUI.ScaleEffect(startPoint);
+
+			var startNode = nodes.Where(node => node.Id == OutputNodeId).First();
+			if (startNode == null) {
+				return;
+			}
+
+			var endNode = nodes.Where(node => node.Id == InputNodeId).First();
+			if (endNode == null) {
+				return;
+			}
+
+			var startPoint = NodeGUI.ScaleEffect(outputPoint.GetGlobalPosition(startNode));
 			var startV3 = new Vector3(startPoint.x, startPoint.y, 0f);
 
-			var endNodes = nodes.Where(node => node.nodeId == inputNodeId).ToList();
-			if (!endNodes.Any()) return;
-
-			var endPoint = endNodes[0].GlobalConnectionPointPosition(inputPoint.pointId);
-			endPoint = NodeGUI.ScaleEffect(endPoint);
+			var endPoint = NodeGUI.ScaleEffect(inputPoint.GetGlobalPosition(endNode));
 			var endV3 = new Vector3(endPoint.x, endPoint.y + 1f, 0f);
 			
 			var centerPoint = startPoint + ((endPoint - startPoint) / 2);
@@ -223,24 +259,8 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public bool IsStartAtConnectionPoint (ConnectionPointGUI p) {
-			return outputPoint == p;
-		}
-
-		public bool IsEndAtConnectionPoint (ConnectionPointGUI p) {
-			return inputPoint == p;
-		}
-
-		public bool IsSameDetail (NodeGUI start, ConnectionPointGUI output, NodeGUI end, ConnectionPointGUI input) {
-			if (
-				outputNodeId == start.nodeId &&
-				outputPoint == output && 
-				inputNodeId == end.nodeId &&
-				inputPoint == input
-			) {
-				return true;
-			}
-			return false;
+		public bool IsEqual (ConnectionPointData from, ConnectionPointData to) {
+			return (outputPoint == from && inputPoint == to);
 		}
 		
 		public void SetActive () {
@@ -258,9 +278,11 @@ namespace AssetBundleGraph {
 	}
 
 	public static class NodeEditor_ConnectionListExtension {
-		public static bool ContainsConnection(this List<ConnectionGUI> connections, NodeGUI start, ConnectionPointGUI output, NodeGUI end, ConnectionPointGUI input) {
+		public static bool ContainsConnection(this List<ConnectionGUI> connections, ConnectionPointData output, ConnectionPointData input) {
 			foreach (var con in connections) {
-				if (con.IsSameDetail(start, output, end, input)) return true;
+				if (con.IsEqual(output, input)) {
+					return true;
+				}
 			}
 			return false;
 		}

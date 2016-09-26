@@ -5,44 +5,23 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
+
 	/*
-		string:string pseudo dictionary to support Undo
+		string:Vector2 pseudo dictionary to support Undo
 	*/
-	[Serializable] public class SerializablePseudoDictionary {
+	[Serializable] public class SerializableVector2Dictionary {
 		[SerializeField] private List<string> keys = new List<string>();
-		[SerializeField] private List<string> values = new List<string>();
+		[SerializeField] private List<Vector2> values = new List<Vector2>();
 
-		public List<string> Keys {
-			get {
-				return keys;
-			}
-		}
-
-		public List<string> Values {
-			get {
-				return values;
-			}
-		}
-
-		public SerializablePseudoDictionary () {
-		}
-
-		public SerializablePseudoDictionary (Dictionary<string, string> baseDict) {
-			var dict = new Dictionary<string, string>(baseDict);
+		public SerializableVector2Dictionary (Dictionary<string, Vector2> baseDict) {
+			var dict = new Dictionary<string, Vector2>(baseDict);
 
 			keys = dict.Keys.ToList();
 			values = dict.Values.ToList();
 		}
 
-		public SerializablePseudoDictionary (Dictionary<string, object> json) {
-			foreach(var k in json.Keys) {
-				keys.Add(k);
-				values.Add(json[k] as string);
-			}
-		}
-
-		public void Add (string key, string val) {
-			var dict = new Dictionary<string, string>();
+		public void Add (string key, Vector2 val) {
+			var dict = new Dictionary<string, Vector2>();
 			
 			for (var i = 0; i < keys.Count; i++) {
 				var currentKey = keys[i];
@@ -54,11 +33,11 @@ namespace AssetBundleGraph {
 			dict[key] = val;
 
 			keys = new List<string>(dict.Keys);
-			values = new List<string>(dict.Values);
+			values = new List<Vector2>(dict.Values);
 		}
 
 		public bool ContainsKey (string key) {
-			var dict = new Dictionary<string, string>();
+			var dict = new Dictionary<string, Vector2>();
 			
 			for (var i = 0; i < keys.Count; i++) {
 				var currentKey = keys[i];
@@ -70,7 +49,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void Remove (string key) {
-			var dict = new Dictionary<string, string>();
+			var dict = new Dictionary<string, Vector2>();
 			
 			for (var i = 0; i < keys.Count; i++) {
 				var currentKey = keys[i];
@@ -80,11 +59,11 @@ namespace AssetBundleGraph {
 
 			dict.Remove(key);
 			keys = new List<string>(dict.Keys);
-			values = new List<string>(dict.Values);
+			values = new List<Vector2>(dict.Values);
 		}
 
-		public Dictionary<string, string> ReadonlyDict () {
-			var dict = new Dictionary<string, string>();
+		public Dictionary<string, Vector2> ReadonlyDict () {
+			var dict = new Dictionary<string, Vector2>();
 			if (keys == null) return dict;
 
 			for (var i = 0; i < keys.Count; i++) {

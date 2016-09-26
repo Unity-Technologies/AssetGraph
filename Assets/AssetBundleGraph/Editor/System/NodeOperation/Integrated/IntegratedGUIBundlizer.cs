@@ -8,10 +8,10 @@ using System.Text.RegularExpressions;
 namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeOperationBase {
 
-		private readonly string assetsOutputConnectionId;
+		private readonly ConnectionData assetOutputConnection;
 
-		public IntegratedGUIBundlizer(string assetsOutputConnectionId) {
-			this.assetsOutputConnectionId = assetsOutputConnectionId;
+		public IntegratedGUIBundlizer(ConnectionData assetOutputConnection) {
+			this.assetOutputConnection = assetOutputConnection;
 		}
 
 		public void Setup (BuildTarget target, NodeData node, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
@@ -24,16 +24,17 @@ namespace AssetBundleGraph {
 					}
 				);
 
-				foreach(var name in node.Variants.Values) {
-					ValidateVariantName(name, node.Variants.Values.ToList(), 
+				var variantNames = node.Variants.Select(v=>v.Name).ToList();
+				foreach(var variant in node.Variants) {
+					ValidateVariantName(variant.Name, variantNames, 
 						() => {
 							throw new NodeException(node.Name + ":Variant is empty.", node.Id);
 						},
 						() => {
-							throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + name + "\".", node.Id);
+							throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + variant.Name + "\".", node.Id);
 						},
 						() => {
-							throw new NodeException(node.Name + ":Variant name already exists \"" + name + "\".", node.Id);
+							throw new NodeException(node.Name + ":Variant name already exists \"" + variant.Name + "\".", node.Id);
 						});
 				}
 
@@ -53,8 +54,8 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = new List<Asset>(){ newAssetData };
 			}
 			
-			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
-				Output(node.Id, assetsOutputConnectionId, outputDict, new List<string>());
+			if (assetOutputConnection != null) {
+				Output(node.Id, assetOutputConnection.Id, outputDict, new List<string>());
 			}
 			
 		}
@@ -78,8 +79,8 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = new List<Asset>(){ newAssetData };
 			}
 			
-			if (assetsOutputConnectionId != AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID) {
-				Output(node.Id, assetsOutputConnectionId, outputDict, new List<string>());
+			if (assetOutputConnection != null) {
+				Output(node.Id, assetOutputConnection.Id, outputDict, new List<string>());
 			}
 			
 		}

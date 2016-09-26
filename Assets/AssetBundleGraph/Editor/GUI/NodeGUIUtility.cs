@@ -20,7 +20,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static Action<OnNodeEvent> NodeEventHandler {
+		public static Action<NodeEvent> NodeEventHandler {
 			get {
 				return NodeSingleton.s.emitAction;
 			}
@@ -120,42 +120,42 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static Dictionary<NodeKind, GUIStyle> SelectedStyle {
+		public static Dictionary<NodeKind, string> SelectedStyle {
 			get {
 				if(NodeSingleton.s.selectedStyle == null) {
-					NodeSingleton.s.selectedStyle = new Dictionary<NodeKind, GUIStyle>() {
-						{NodeKind.LOADER_GUI, 			new GUIStyle("flow node 0 on")},
-						{NodeKind.EXPORTER_GUI, 		new GUIStyle("flow node 0 on")},
-						{NodeKind.FILTER_SCRIPT, 		new GUIStyle("flow node 1 on")},
-						{NodeKind.FILTER_GUI, 			new GUIStyle("flow node 1 on")},
-						{NodeKind.IMPORTSETTING_GUI,	new GUIStyle("flow node 2 on")},
-						{NodeKind.GROUPING_GUI, 		new GUIStyle("flow node 3 on")},
-						{NodeKind.PREFABRICATOR_SCRIPT, new GUIStyle("flow node 4 on")},
-						{NodeKind.PREFABRICATOR_GUI, 	new GUIStyle("flow node 4 on")},
-						{NodeKind.BUNDLIZER_GUI, 		new GUIStyle("flow node 5 on")},
-						{NodeKind.BUNDLEBUILDER_GUI, 	new GUIStyle("flow node 6 on")},
-						{NodeKind.MODIFIER_GUI, 		new GUIStyle("flow node 6 on")}
+					NodeSingleton.s.selectedStyle = new Dictionary<NodeKind, string>() {
+						{NodeKind.LOADER_GUI, 			"flow node 0 on"},
+						{NodeKind.EXPORTER_GUI, 		"flow node 0 on"},
+						{NodeKind.FILTER_SCRIPT, 		"flow node 1 on"},
+						{NodeKind.FILTER_GUI, 			"flow node 1 on"},
+						{NodeKind.IMPORTSETTING_GUI,	"flow node 2 on"},
+						{NodeKind.GROUPING_GUI, 		"flow node 3 on"},
+						{NodeKind.PREFABRICATOR_SCRIPT, "flow node 4 on"},
+						{NodeKind.PREFABRICATOR_GUI, 	"flow node 4 on"},
+						{NodeKind.BUNDLIZER_GUI, 		"flow node 5 on"},
+						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6 on"},
+						{NodeKind.MODIFIER_GUI, 		"flow node 6 on"}
 					};
 				}
 				return NodeSingleton.s.selectedStyle;
 			}
 		}
 
-		public static Dictionary<NodeKind, GUIStyle> UnselectedStyle {
+		public static Dictionary<NodeKind, string> UnselectedStyle {
 			get {
 				if(NodeSingleton.s.unselectedStyle == null) {
-					NodeSingleton.s.unselectedStyle = new Dictionary<NodeKind, GUIStyle>() {
-						{NodeKind.LOADER_GUI, 			new GUIStyle("flow node 0")},
-						{NodeKind.EXPORTER_GUI, 		new GUIStyle("flow node 0")},
-						{NodeKind.FILTER_SCRIPT, 		new GUIStyle("flow node 1")},
-						{NodeKind.FILTER_GUI, 			new GUIStyle("flow node 1")},
-						{NodeKind.IMPORTSETTING_GUI,	new GUIStyle("flow node 2")},
-						{NodeKind.GROUPING_GUI, 		new GUIStyle("flow node 3")},
-						{NodeKind.PREFABRICATOR_SCRIPT, new GUIStyle("flow node 4")},
-						{NodeKind.PREFABRICATOR_GUI, 	new GUIStyle("flow node 4")},
-						{NodeKind.BUNDLIZER_GUI, 		new GUIStyle("flow node 5")},
-						{NodeKind.BUNDLEBUILDER_GUI, 	new GUIStyle("flow node 6")},
-						{NodeKind.MODIFIER_GUI, 		new GUIStyle("flow node 6")}
+					NodeSingleton.s.unselectedStyle = new Dictionary<NodeKind, string>() {
+						{NodeKind.LOADER_GUI, 			"flow node 0"},
+						{NodeKind.EXPORTER_GUI, 		"flow node 0"},
+						{NodeKind.FILTER_SCRIPT, 		"flow node 1"},
+						{NodeKind.FILTER_GUI, 			"flow node 1"},
+						{NodeKind.IMPORTSETTING_GUI,	"flow node 2"},
+						{NodeKind.GROUPING_GUI, 		"flow node 3"},
+						{NodeKind.PREFABRICATOR_SCRIPT, "flow node 4"},
+						{NodeKind.PREFABRICATOR_GUI, 	"flow node 4"},
+						{NodeKind.BUNDLIZER_GUI, 		"flow node 5"},
+						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6"},
+						{NodeKind.MODIFIER_GUI, 		"flow node 6"}
 					};
 				}
 				return NodeSingleton.s.unselectedStyle;
@@ -163,7 +163,7 @@ namespace AssetBundleGraph {
 		}
 
 		private class NodeSingleton {
-			public Action<OnNodeEvent> emitAction;
+			public Action<NodeEvent> emitAction;
 
 			public Texture2D inputPointTex;
 			public Texture2D outputPointTex;
@@ -179,8 +179,8 @@ namespace AssetBundleGraph {
 
 			public List<string> allNodeNames;
 
-			public Dictionary<NodeKind, GUIStyle> selectedStyle;
-			public Dictionary<NodeKind, GUIStyle> unselectedStyle;
+			public Dictionary<NodeKind, string> selectedStyle;
+			public Dictionary<NodeKind, string> unselectedStyle;
 
 			private static NodeSingleton s_singleton;
 

@@ -174,13 +174,6 @@ namespace AssetBundleGraph {
 			bool isActualRun,
 			Action<string, float> updateHandler=null
 		) {
-//			var relatedNodes = allNodes.Where(relation => relation.nodeId == node.Id).ToList();
-//			if (!relatedNodes.Any()) {
-//				return;
-//			}
-//
-//			var currentNodeData = relatedNodes[0];
-
 			if (currentNodeData.IsNodeOperationPerformed) {
 				return;
 			}
@@ -416,38 +409,47 @@ namespace AssetBundleGraph {
 					}
 
 				case NodeKind.BUNDLIZER_GUI: {
-						/*
-								Bundlizer requires assetOutputConnectionId and additional resourceOutputConnectionId.
-								both-connected, or both-not-connected, or one of them is connected. 4 patterns exists.
-								
-								Bundler Node's outputPoint [0] is always the point for assetOutputConnectionId.
-								Bundler Node's outputPoint [1] is always the point for resourceOutputConnectionId.
-								
-								if one of these outputPoint don't have connection, use Fake connection id for correct output.
+//						/*
+//								Bundlizer requires assetOutputConnectionId and additional resourceOutputConnectionId.
+//								both-connected, or both-not-connected, or one of them is connected. 4 patterns exists.
+//								
+//								Bundler Node's outputPoint [0] is always the point for assetOutputConnectionId.
+//								Bundler Node's outputPoint [1] is always the point for resourceOutputConnectionId.
+//								
+//								if one of these outputPoint don't have connection, use Fake connection id for correct output.
+//
+//								
+//								unorderedConnectionId \
+//														----> orderedConnectionIdsAndFakeConnectionIds. 
+//								orderedOutputPointId  / 
+//							*/
+//						var orderedNodeOutputPointIds = saveData.Nodes.Where(node => node.Id == currentNodeData.Id).SelectMany(node => node.OutputPoints).Select(p => p.Id).ToList();
+//						var nonOrderedConnectionsFromThisNodeToChildNode = saveData.Connections.Where(con => con.FromNodeId == currentNodeData.Id).ToList();
+//						var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
+//						for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
+//							var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
+//
+//							foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
+//								var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.FromNodeConnectionPointId;
+//								if (orderedNodeOutputPointId == connectionOutputPointId) {
+//									orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.Id;
+//									break;
+//								} else {
+//									orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
+//								}
+//							}
+//						}
 
-								
-								unorderedConnectionId \
-														----> orderedConnectionIdsAndFakeConnectionIds. 
-								orderedOutputPointId  / 
-							*/
-						var orderedNodeOutputPointIds = saveData.Nodes.Where(node => node.Id == currentNodeData.Id).SelectMany(node => node.OutputPoints).Select(p => p.Id).ToList();
-						var nonOrderedConnectionsFromThisNodeToChildNode = saveData.Connections.Where(con => con.FromNodeId == currentNodeData.Id).ToList();
-						var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
-						for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
-							var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
-
-							foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
-								var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.FromNodeConnectionPointId;
-								if (orderedNodeOutputPointId == connectionOutputPointId) {
-									orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.Id;
-									break;
-								} else {
-									orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
-								}
+						var connections = saveData.Connections.Where(c => c.FromNodeId == currentNodeData.Id).ToList();
+						ConnectionData assetOutputConnection = null;
+						foreach(var c in connections) {
+							if(currentNodeData.OutputPoints.Find(p => p.Id == c.FromNodeConnectionPointId) != null) {
+								assetOutputConnection = c;
+								break;
 							}
 						}
 
-						executor = new IntegratedGUIBundlizer(orderedConnectionIdsAndFakeConnectionIds[0]);
+						executor = new IntegratedGUIBundlizer(assetOutputConnection);
 						break;
 					}
 

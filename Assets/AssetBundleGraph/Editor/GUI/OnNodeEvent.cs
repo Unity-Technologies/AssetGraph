@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace AssetBundleGraph {
-	public class OnNodeEvent {
+	public class NodeEvent {
 		public enum EventType : int {
 			EVENT_NONE,
 
@@ -18,20 +18,30 @@ namespace AssetBundleGraph {
 			
 			EVENT_CLOSE_TAPPED,
 
-			EVENT_BEFORESAVE,
+			EVENT_RECORDUNDO,
 			EVENT_SAVE,
 		}
 
 		public readonly EventType eventType;
 		public readonly NodeGUI eventSourceNode;
-		public readonly string conPointId;
+		public readonly ConnectionPointData point;
 		public readonly Vector2 globalMousePosition;
+		public readonly string message;
 
-		public OnNodeEvent (EventType type, NodeGUI node, Vector2 localMousePos, string conPointId) {
+		public NodeEvent (EventType type, NodeGUI node, Vector2 localMousePos, ConnectionPointData point) {
 			this.eventType = type;
 			this.eventSourceNode = node;
-			this.conPointId = conPointId;
+			this.point = point;
 			this.globalMousePosition = new Vector2(localMousePos.x + node.GetX(), localMousePos.y + node.GetY());
+		}
+
+		public NodeEvent (EventType type, string message) {
+			this.eventType = type;
+			this.message = message;
+		}
+
+		public NodeEvent (EventType type) {
+			this.eventType = type;
 		}
 	}
 }

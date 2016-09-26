@@ -80,12 +80,8 @@ namespace AssetBundleGraph {
 			m_jsonData = null;
 
 			m_lastModified = DateTime.UtcNow;
-			m_allNodes = new List<NodeData>();
+			m_allNodes = nodes.Select(n => n.Data).ToList();
 			m_allConnections = new List<ConnectionData>();
-
-			foreach(var ngui in nodes) {
-				m_allNodes.Add(new NodeData(ngui));
-			}
 
 			foreach(var cgui in connections) {
 				m_allConnections.Add(new ConnectionData(cgui));
@@ -269,119 +265,5 @@ namespace AssetBundleGraph {
 
 			return !changed;
 		}
-	
-//		public void SaveGraph () {
-//			var nodeList = new List<Dictionary<string, object>>();
-//			foreach (var nodeGui in nodes) {
-//				var jsonRepresentationSourceDict = JsonRepresentationDict(nodeGui);
-//				nodeList.Add(jsonRepresentationSourceDict);
-//			}
-//
-//			var connectionList = new List<Dictionary<string, string>>();
-//			foreach (var connectionGui in connections) {
-//				var connectionDict = new Dictionary<string, string>{
-//					{AssetBundleGraphSettings.CONNECTION_LABEL, connectionGui.label},
-//					{AssetBundleGraphSettings.CONNECTION_ID, connectionGui.connectionId},
-//					{AssetBundleGraphSettings.CONNECTION_FROMNODE, connectionGui.outputNodeId},
-//					{AssetBundleGraphSettings.CONNECTION_FROMNODE_CONPOINT_ID, connectionGui.outputPoint.pointId},
-//					{AssetBundleGraphSettings.CONNECTION_TONODE, connectionGui.inputNodeId},
-//					{AssetBundleGraphSettings.CONNECTION_TONODE_CONPOINT_ID, connectionGui.inputPoint.pointId}
-//				};
-//
-//				connectionList.Add(connectionDict);
-//			}
-//
-//			var graphData = new Dictionary<string, object>{
-//				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_LASTMODIFIED, DateTime.Now.ToString()},
-//				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NODES, nodeList},
-//				{AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_CONNECTIONS, connectionList}
-//			};
-
-//			UpdateGraphData(graphData);
-//		}
-
-//		private static Dictionary<string, object> JsonRepresentationDict (NodeGUI node) {
-//			var nodeDict = new Dictionary<string, object>();
-//
-//			nodeDict[AssetBundleGraphSettings.NODE_NAME] = node.name;
-//			nodeDict[AssetBundleGraphSettings.NODE_ID] = node.nodeId;
-//			nodeDict[AssetBundleGraphSettings.NODE_KIND] = node.kind.ToString();
-//
-//			var outputLabels = node.OutputPointLabels();
-//			nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_LABELS] = outputLabels;
-//
-//			var outputPointIds = node.OutputPointIds();
-//			nodeDict[AssetBundleGraphSettings.NODE_OUTPUTPOINT_IDS] = outputPointIds;
-//
-//			var posDict = new Dictionary<string, object>();
-//			posDict[AssetBundleGraphSettings.NODE_POS_X] = node.GetX();
-//			posDict[AssetBundleGraphSettings.NODE_POS_Y] = node.GetY();
-//
-//			nodeDict[AssetBundleGraphSettings.NODE_POS] = posDict;
-//
-//			switch (node.kind) {
-//			case NodeKind.LOADER_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_LOADER_LOAD_PATH] = node.loadPath.ReadonlyDict();
-//					break;
-//				}
-//			case NodeKind.EXPORTER_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_EXPORTER_EXPORT_PATH] = node.exportTo.ReadonlyDict();
-//					break;
-//				}
-//
-//			case NodeKind.FILTER_SCRIPT:
-//			case NodeKind.PREFABRICATOR_SCRIPT: {
-//					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
-//					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
-//					break;
-//				}
-//
-//			case NodeKind.FILTER_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYWORDS] = node.filterContainsKeywords;
-//					nodeDict[AssetBundleGraphSettings.NODE_FILTER_CONTAINS_KEYTYPES] = node.filterContainsKeytypes;
-//					break;
-//				}
-//
-//			case NodeKind.IMPORTSETTING_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_IMPORTER_PACKAGES] = node.importerPackages.ReadonlyDict();
-//					break;
-//				}
-//
-//			case NodeKind.MODIFIER_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
-//					break;
-//				}
-//
-//			case NodeKind.GROUPING_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_GROUPING_KEYWORD] = node.groupingKeyword.ReadonlyDict();
-//					break;
-//				}
-//
-//			case NodeKind.PREFABRICATOR_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] = node.scriptClassName;
-//					nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_PATH] = node.scriptPath;
-//					break;
-//				}
-//
-//			case NodeKind.BUNDLIZER_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = node.bundleNameTemplate.ReadonlyDict();
-//					nodeDict[AssetBundleGraphSettings.NODE_BUNDLIZER_VARIANTS] = node.variants.ReadonlyDict();
-//					break;
-//				}
-//
-//			case NodeKind.BUNDLEBUILDER_GUI: {
-//					nodeDict[AssetBundleGraphSettings.NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = node.enabledBundleOptions.ReadonlyDict();
-//					break;
-//				}
-//
-//			default: {
-//					Debug.LogError(node.name + " is defined as unknown kind of node. value:" + node.kind);
-//					break;
-//				}
-//			}
-//			return nodeDict;
-//		}
-
-
 	}
 }

@@ -39,6 +39,19 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public SerializableMultiTargetVector2(Dictionary<string, object> json) {
+			m_values = new List<Entry>();
+			foreach (var buildTargetName in json.Keys) {
+				try {
+					BuildTargetGroup g =  (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), buildTargetName, true);
+					Vector2 val = (Vector2)json[buildTargetName];
+					m_values.Add(new Entry(g, val));
+				} catch(Exception e) {
+					Debug.LogWarning("Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
+				}
+			}
+		}
+
 		public List<Entry> Values {
 			get {
 				return m_values;
@@ -114,6 +127,14 @@ namespace AssetBundleGraph {
 			}
 
 			return p;
+		}
+
+		public Dictionary<string, object> ToJsonDictionary() {
+			Dictionary<string, object> dic = new Dictionary<string, object>();
+			foreach(Entry e in m_values) {
+				dic.Add(e.targetGroup.ToString(), e.value);
+			}
+			return dic;
 		}
 	}
 }
