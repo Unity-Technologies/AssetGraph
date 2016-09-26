@@ -1347,10 +1347,14 @@ namespace AssetBundleGraph {
 							}
 
 							var outputPoint = startConnectionPoint;
-							var inputPoint = endConnectionPoint;
-							
+							var inputPoint = endConnectionPoint;							
 							var label = startConnectionPoint.Label;
-							
+
+							// if two nodes are not supposed to connect, dismiss
+							if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+								break;
+							}
+
 							AddConnection(label, startNode, outputPoint, endNode, inputPoint);
 							SaveGraphWithReload();
 							break;
@@ -1388,19 +1392,19 @@ namespace AssetBundleGraph {
 								break;
 							}
 
-							// target point is determined.
-//							var connectablePoint = pointAtPosition;
-
 							var isInput = currentEventSource.point.IsInput;
 							var startNode = (isInput)? node : e.eventSourceNode;
 							var endNode   = (isInput)? e.eventSourceNode: node;
 							var startConnectionPoint = (isInput)? pointAtPosition : currentEventSource.point;
 							var endConnectionPoint   = (isInput)? currentEventSource.point: pointAtPosition;
-
 							var outputPoint = startConnectionPoint;
-							var inputPoint = endConnectionPoint;
-							
+							var inputPoint = endConnectionPoint;							
 							var label = startConnectionPoint.Label;
+
+							// if two nodes are not supposed to connect, dismiss
+							if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+								break;
+							}
 
 							AddConnection(label, startNode, outputPoint, endNode, inputPoint);
 							SaveGraphWithReload();

@@ -112,25 +112,39 @@ namespace AssetBundleGraph {
 
 		public static bool CanConnect (NodeData from, NodeData to) {
 			switch (from.Kind) {
-			case NodeKind.BUNDLEBUILDER_GUI: 
+			case NodeKind.GROUPING_GUI:
 				{
-					switch (from.Kind) {
+					switch (to.Kind) {
+					case NodeKind.GROUPING_GUI:
+					case NodeKind.PREFABRICATOR_SCRIPT:
+					case NodeKind.PREFABRICATOR_GUI:
 					case NodeKind.BUNDLIZER_GUI:
 						return true;
 					}
 					return false;
 				}
-			}
 
-			switch (from.Kind) {
-			case NodeKind.BUNDLIZER_GUI: 
+			case NodeKind.FILTER_SCRIPT:
+			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.LOADER_GUI:
+			case NodeKind.FILTER_GUI:
+			case NodeKind.IMPORTSETTING_GUI:			
+			case NodeKind.MODIFIER_GUI:
+			case NodeKind.PREFABRICATOR_GUI:
 				{
 					switch (to.Kind) {
-					case NodeKind.BUNDLEBUILDER_GUI: 
-						return true;
+					case NodeKind.BUNDLEBUILDER_GUI:
+						return false;
 					}
+					return true;
+				}
+
+			case NodeKind.EXPORTER_GUI:
+				{
+					// there is no output from exporter
 					return false;
 				}
+
 			case NodeKind.BUNDLEBUILDER_GUI: 
 				{
 					switch (to.Kind) {
@@ -138,6 +152,15 @@ namespace AssetBundleGraph {
 					case NodeKind.FILTER_GUI:
 					case NodeKind.GROUPING_GUI:
 					case NodeKind.EXPORTER_GUI:
+					case NodeKind.BUNDLIZER_GUI:
+						return true;
+					}
+					return false;
+				}
+			case NodeKind.BUNDLIZER_GUI: 
+				{
+					switch (to.Kind) {
+					case NodeKind.BUNDLEBUILDER_GUI: 
 						return true;
 					}
 					return false;

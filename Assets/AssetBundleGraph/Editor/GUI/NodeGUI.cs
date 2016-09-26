@@ -219,9 +219,9 @@ namespace AssetBundleGraph {
 						if(eventRaised) {
 							return;
 						}
-						var region = point.Region;
-						var globalConnectonPointRect = new Rect(region.x, region.y, region.width, region.height);
-						if (globalConnectonPointRect.Contains(Event.current.mousePosition)) {
+//						var region = point.Region;
+//						var globalConnectonPointRect = new Rect(region.x, region.y, region.width, region.height);
+						if (point.Region.Contains(Event.current.mousePosition)) {
 							NodeGUIUtility.NodeEventHandler(
 								new NodeEvent(NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, 
 									this, Event.current.mousePosition, point));
@@ -263,8 +263,12 @@ namespace AssetBundleGraph {
 			if (scaleFactor != SCALE_MAX) return;
 
 			var defaultPointTex = NodeGUIUtility.inputPointMarkTex;
+			bool shouldDrawEnable = 
+				!( eventSource != null && eventSource.eventSourceNode != null && 
+					!ConnectionData.CanConnect(eventSource.eventSourceNode.Data, m_data)
+				);
 
-			if (justConnecting && eventSource != null) {
+			if (shouldDrawEnable && justConnecting && eventSource != null) {
 				if (eventSource.eventSourceNode.Id != this.Id) {
 					var connectionPoint = eventSource.point;
 					if (connectionPoint.IsOutput) {
@@ -273,7 +277,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			foreach (var point in m_data.InputPoints) {
+			foreach (var point in m_data.InputPoints) {				
 				GUI.DrawTexture(
 					point.GetGlobalPointRegion(this), 
 					defaultPointTex
@@ -285,8 +289,12 @@ namespace AssetBundleGraph {
 			if (scaleFactor != SCALE_MAX) return;
 
 			var defaultPointTex = NodeGUIUtility.outputPointMarkConnectedTex;
+			bool shouldDrawEnable = 
+				!( eventSource != null && eventSource.eventSourceNode != null && 
+					!ConnectionData.CanConnect(m_data, eventSource.eventSourceNode.Data)
+				);
 
-			if (justConnecting && eventSource != null) {
+			if (shouldDrawEnable && justConnecting && eventSource != null) {
 				if (eventSource.eventSourceNode.Id != this.Id) {
 					var connectionPoint = eventSource.point;
 					if (connectionPoint.IsInput) {
@@ -299,6 +307,7 @@ namespace AssetBundleGraph {
 
 			foreach (var point in m_data.OutputPoints) {
 				var pointRegion = point.GetGlobalPointRegion(this);
+
 				GUI.DrawTexture(
 					pointRegion, 
 					defaultPointTex
