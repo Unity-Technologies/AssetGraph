@@ -13,7 +13,8 @@ namespace AssetBundleGraph {
 	/*
 	 * connection data saved in/to Json
 	 */ 
-	public partial class ConnectionData {
+	[Serializable]
+	public class ConnectionData {
 
 		// connection data
 		private const string CONNECTION_LABEL = "label";
@@ -23,30 +24,25 @@ namespace AssetBundleGraph {
 		private const string CONNECTION_TONODE = "toNode";
 		private const string CONNECTION_TONODE_CONPOINT_ID = "toNodeConPointId";
 
-		private Dictionary<string, object> m_jsonData;
-
-		private string m_id;
-		private string m_fromNodeId;
-		private string m_fromNodeConnectionPointId;
-		private string m_toNodeId;
-		private string m_toNodeConnectionPoiontId;
+		[SerializeField] private string m_id;
+		[SerializeField] private string m_fromNodeId;
+		[SerializeField] private string m_fromNodeConnectionPointId;
+		[SerializeField] private string m_toNodeId;
+		[SerializeField] private string m_toNodeConnectionPoiontId;
 
 		private string m_label;
 
 		public ConnectionData(Dictionary<string, object> jsonData) {
-			m_jsonData = jsonData;
 
-			m_id = m_jsonData[CONNECTION_ID] as string;
-			m_label = m_jsonData[CONNECTION_LABEL] as string;
-			m_fromNodeId = m_jsonData[CONNECTION_FROMNODE] as string;
-			m_fromNodeConnectionPointId = m_jsonData[CONNECTION_FROMNODE_CONPOINT_ID] as string;
-			m_toNodeId = m_jsonData[CONNECTION_TONODE] as string;
-			m_toNodeConnectionPoiontId = m_jsonData[CONNECTION_TONODE_CONPOINT_ID] as string;
+			m_id = jsonData[CONNECTION_ID] as string;
+			m_label = jsonData[CONNECTION_LABEL] as string;
+			m_fromNodeId = jsonData[CONNECTION_FROMNODE] as string;
+			m_fromNodeConnectionPointId = jsonData[CONNECTION_FROMNODE_CONPOINT_ID] as string;
+			m_toNodeId = jsonData[CONNECTION_TONODE] as string;
+			m_toNodeConnectionPoiontId = jsonData[CONNECTION_TONODE_CONPOINT_ID] as string;
 		}
 
 		public ConnectionData(ConnectionGUI c) {
-			m_jsonData = null;
-
 			m_id = c.Id;
 			m_label = c.Label;
 			m_fromNodeId = c.OutputNodeId;
@@ -167,6 +163,42 @@ namespace AssetBundleGraph {
 				}
 			}
 			return true;
-		}	
+		}
+
+		/*
+		 * Checks deserialized ConnectionData, and make some changes if necessary
+		 * return false if any changes are perfomed.
+		 */
+		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
+
+			var fromNode = allNodes.Find(n => n.Id == this.FromNodeId);
+			var toNode   = allNodes.Find(n => n.Id == this.ToNodeId);
+
+			if(fromNode == null) {
+				return false;
+			}
+
+			if(toNode == null) {
+				return false;
+			}
+
+			var outputPoint = fromNode.FindOutputPoint(this.FromNodeConnectionPointId);
+			var inputPoint  = toNode.FindInputPoint(this.ToNodeConnectionPointId);
+
+			if(null == outputPoint) {
+				return false;
+			}
+
+			if(null == inputPoint) {
+				return false;
+			}
+
+			// update connection label if not matching with outputPoint label
+			if( outputPoint.Label != m_label ) {
+				m_label = outputPoint.Label;
+			}
+
+			return true;
+		}
 	}
 }

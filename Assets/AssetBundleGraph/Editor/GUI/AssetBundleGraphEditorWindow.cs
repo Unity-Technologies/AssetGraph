@@ -1087,7 +1087,52 @@ namespace AssetBundleGraph {
 					break;
 				}
 
-				case EventType.ValidateCommand: {
+				case EventType.ValidateCommand: 
+				{
+					switch (Event.current.commandName) {
+					// Delete active node or connection.
+					case "Delete": {
+							if (activeObject.idPosDict.ReadonlyDict().Any()) {
+								Event.current.Use();
+							}
+							break;
+						}
+
+					case "Copy": {
+							if (activeObject.idPosDict.ReadonlyDict().Any()) {
+								Event.current.Use();
+							}
+							break;
+						}
+
+					case "Cut": {
+							if (activeObject.idPosDict.ReadonlyDict().Any()) {
+								Event.current.Use();
+							}
+							break;
+						}
+
+					case "Paste": {
+							if(copyField.datas == null)  {
+								break;
+							}
+
+							if (copyField.datas.Any()) {
+								Event.current.Use();
+							}
+							break;
+						}
+
+					case "SelectAll": {
+							Event.current.Use();
+							break;
+						}
+					}
+					break;
+				}
+
+				case EventType.ExecuteCommand: 
+				{
 					switch (Event.current.commandName) {
 						// Delete active node or connection.
 						case "Delete": {
@@ -1185,6 +1230,8 @@ namespace AssetBundleGraph {
   									duplicatingData.Add(pastingNode);
 								}
 							}
+							// consume copyField
+							copyField.datas = null;
 
 							if (!duplicatingData.Any()) {
 								break;
@@ -1454,7 +1501,7 @@ namespace AssetBundleGraph {
 								break;
 							}
 
-							Undo.RecordObject(this, "Select Node");
+							Undo.RecordObject(this, "Select " + tappedNode.Name);
 							activeObject = RenewActiveObject(new List<string>{tappedNodeId});
 							UpdateActivationOfObjects(activeObject);
 							break;
@@ -1564,7 +1611,7 @@ namespace AssetBundleGraph {
 								break;
 							}
 							
-							Undo.RecordObject(this, "Select Node");
+							Undo.RecordObject(this, "Select " + movedNode.Name);
 
 							activeObject = RenewActiveObject(new List<string>{movedNodeId});
 							UpdateActivationOfObjects(activeObject);
@@ -1584,7 +1631,7 @@ namespace AssetBundleGraph {
 
 			switch (e.eventType) {
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
-					var deletedOutputPointConnection = connections.Where(con => con.OutputPoint == e.point).First();
+					var deletedOutputPointConnection = connections.Find(con => con.OutputPoint == e.point);
 					
 					if (deletedOutputPointConnection == null) {
 						break;
@@ -1599,7 +1646,7 @@ namespace AssetBundleGraph {
 					var labelChangedConnectionPoint = e.point;
 					var changedLabel = labelChangedConnectionPoint.Label;
 
-					var connection = connections.Where(con => con.OutputPoint == labelChangedConnectionPoint).First();
+					var connection = connections.Find(con => con.OutputPoint == labelChangedConnectionPoint);
 
 					if (connection == null) {
 						break;

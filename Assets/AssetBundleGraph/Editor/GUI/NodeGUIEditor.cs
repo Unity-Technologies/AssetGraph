@@ -92,6 +92,7 @@ namespace AssetBundleGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				GUILayout.Label("Filter Settings:");
+				FilterEntry removing = null;
 				for (int i= 0; i < node.Data.FilterConditions.Count; ++i) {
 					var cond = node.Data.FilterConditions[i];
 
@@ -100,7 +101,7 @@ namespace AssetBundleGraph {
 					using (new GUILayout.HorizontalScope()) {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
 							using(new RecordUndoScope("Remove Filter Condition", node)){
-								node.Data.RemoveFilterCondition(cond);
+								removing = cond;
 							}
 						}
 						else {
@@ -126,7 +127,6 @@ namespace AssetBundleGraph {
 							if (newContainsKeyword != cond.FilterKeyword) {
 								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
 									cond.FilterKeyword = newContainsKeyword;
-									node.UpdateNodeRect();
 								}
 							}
 						}
@@ -145,8 +145,11 @@ namespace AssetBundleGraph {
 						node.Data.AddFilterCondition(
 							AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD, 
 							AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE);
-						node.UpdateNodeRect();
 					}
+				}
+
+				if(removing != null) {
+					node.Data.RemoveFilterCondition(removing);
 				}
 			}
 		}
@@ -477,13 +480,12 @@ namespace AssetBundleGraph {
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				GUILayout.Label("Variants:");
 				var variantNames = node.Data.Variants.Select(v => v.Name).ToList();
+				Variant removing = null;
 				foreach (var v in node.Data.Variants) {
-
 					using (new GUILayout.HorizontalScope()) {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							using(new RecordUndoScope("Remove Variant")){
-								node.Data.RemoveVariant(v);
-								node.UpdateNodeRect();
+							using(new RecordUndoScope("Remove Variant", node, true)){
+								removing = v;
 							}
 						}
 						else {
@@ -501,20 +503,20 @@ namespace AssetBundleGraph {
 							var variantName = EditorGUILayout.TextField(v.Name, s);
 
 							if (variantName != v.Name) {
-								using(new RecordUndoScope("Change Variant Name")){
+								using(new RecordUndoScope("Change Variant Name", node, true)){
 									v.Name = variantName;
-									node.UpdateNodeRect();
 								}
 							}
 						}
 					}
-
-					if (GUILayout.Button("+")) {
-						using(new RecordUndoScope("Add Variant", node, true)){
-							node.Data.AddVariant(AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
-							node.UpdateNodeRect();
-						}
+				}
+				if (GUILayout.Button("+")) {
+					using(new RecordUndoScope("Add Variant", node, true)){
+						node.Data.AddVariant(AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
 					}
+				}
+				if(removing != null) {
+					node.Data.RemoveVariant(removing);
 				}
 			}
 		}
@@ -763,7 +765,6 @@ namespace AssetBundleGraph {
 			if (newName != node.Name) {
 				using(new RecordUndoScope("Change Node Name", node, true)){
 					node.Name = newName;
-					node.UpdateNodeRect();
 				}
 			}
 		}

@@ -98,7 +98,7 @@ namespace AssetBundleGraph {
 	 * node data saved in/to Json
 	 */
 	[Serializable]
-	public partial class NodeData {
+	public class NodeData {
 
 		private const string NODE_NAME = "name";
 		private const string NODE_ID = "id";
@@ -504,6 +504,7 @@ namespace AssetBundleGraph {
 			var newData = new NodeData(m_name, m_kind, m_x, m_y);
 
 			switch(m_kind) {
+			case NodeKind.IMPORTSETTING_GUI:
 			case NodeKind.PREFABRICATOR_GUI:
 				break;
 			case NodeKind.MODIFIER_GUI:
@@ -646,6 +647,43 @@ namespace AssetBundleGraph {
 				}
 			}
 			throw new AssetBundleGraphException(m_name + ": Tried to access invalid method or property.");
+		}
+
+		/*
+		 * Checks deserialized NodeData, and make some changes if necessary
+		 * return false if validation failed.
+		 */
+		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
+
+			switch (m_kind) {	
+			case NodeKind.FILTER_SCRIPT:
+				if(!TestCreateScriptInstance()) {
+					Debug.LogWarning(m_name  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for \"" + 
+						m_scriptClassName + "\". No such class found in assembly.");
+					return false;
+				}
+
+				// TODO: node のコネクションのラベル情報にFilterScriptの最新情報を反映させる
+
+				break;
+			case NodeKind.PREFABRICATOR_SCRIPT: 
+				if(!TestCreateScriptInstance()) {
+					Debug.LogWarning(m_name  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for \"" + 
+						m_scriptClassName + "\". No such class found in assembly.");
+					return false;
+				}
+				break;
+			}
+
+			return true;
+		}
+
+		private bool TestCreateScriptInstance() {
+			if(string.IsNullOrEmpty(ScriptClassName)) {
+				return false;
+			}
+			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(m_scriptClassName);
+			return nodeScriptInstance != null;
 		}
 
 		/**

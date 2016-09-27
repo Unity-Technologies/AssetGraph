@@ -28,7 +28,7 @@ namespace AssetBundleGraph {
 				foreach(var variant in node.Variants) {
 					ValidateVariantName(variant.Name, variantNames, 
 						() => {
-							throw new NodeException(node.Name + ":Variant is empty.", node.Id);
+							throw new NodeException(node.Name + ":Variant name is empty.", node.Id);
 						},
 						() => {
 							throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + variant.Name + "\".", node.Id);

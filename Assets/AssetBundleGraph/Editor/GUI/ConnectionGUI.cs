@@ -160,12 +160,12 @@ namespace AssetBundleGraph {
 		*/
 		public void DrawConnection (List<NodeGUI> nodes, Dictionary<string, List<DepreacatedThroughputAsset>> throughputListDict) {
 
-			var startNode = nodes.Where(node => node.Id == OutputNodeId).First();
+			var startNode = nodes.Find(node => node.Id == OutputNodeId);
 			if (startNode == null) {
 				return;
 			}
 
-			var endNode = nodes.Where(node => node.Id == InputNodeId).First();
+			var endNode = nodes.Find(node => node.Id == InputNodeId);
 			if (endNode == null) {
 				return;
 			}
