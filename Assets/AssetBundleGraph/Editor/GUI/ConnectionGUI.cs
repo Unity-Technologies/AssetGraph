@@ -255,7 +255,7 @@ namespace AssetBundleGraph {
 
 			if (GUI.Button(buttonRect, throughputCount.ToString(), connectionButtonStyle)) {
 				conInsp.UpdateCon(this, throughputListDict);
-				ConnectionGUIUtility.ConnectionEventHandler(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
+				ConnectionGUIUtility.ConnectionEventHandler(new ConnectionEvent(ConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
 			}
 		}
 
@@ -273,7 +273,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void Delete () {
-			ConnectionGUIUtility.ConnectionEventHandler(new OnConnectionEvent(OnConnectionEvent.EventType.EVENT_CONNECTION_DELETED, this));
+			ConnectionGUIUtility.ConnectionEventHandler(new ConnectionEvent(ConnectionEvent.EventType.EVENT_CONNECTION_DELETED, this));
 		}
 	}
 

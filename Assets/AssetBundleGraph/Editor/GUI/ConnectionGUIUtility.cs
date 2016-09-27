@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	public class ConnectionGUIUtility {
 
-		public static Action<OnConnectionEvent> ConnectionEventHandler {
+		public static Action<ConnectionEvent> ConnectionEventHandler {
 			get {
 				return ConnectionGUISingleton.s.emitAction;
 			}
@@ -30,7 +30,7 @@ namespace AssetBundleGraph {
 		}
 
 		private class ConnectionGUISingleton {
-			public Action<OnConnectionEvent> emitAction;
+			public Action<ConnectionEvent> emitAction;
 
 			public Texture2D connectionArrowTex;
 

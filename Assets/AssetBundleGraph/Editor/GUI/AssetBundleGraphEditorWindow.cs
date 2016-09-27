@@ -1712,12 +1712,12 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public void HandleConnectionEvent (OnConnectionEvent e) {
+		public void HandleConnectionEvent (ConnectionEvent e) {
 			switch (modifyMode) {
 				case ModifyMode.NONE: {
 					switch (e.eventType) {
 						
-						case OnConnectionEvent.EventType.EVENT_CONNECTION_TAPPED: {
+						case ConnectionEvent.EventType.EVENT_CONNECTION_TAPPED: {
 							
 							if (Event.current.shift) {
 								Undo.RecordObject(this, "Select Objects");
@@ -1765,7 +1765,7 @@ namespace AssetBundleGraph {
 							}
 							break;
 						}
-						case OnConnectionEvent.EventType.EVENT_CONNECTION_DELETED: {
+						case ConnectionEvent.EventType.EVENT_CONNECTION_DELETED: {
 							Undo.RecordObject(this, "Delete Connection");
 
 							var deletedConnectionId = e.eventSourceCon.Id;

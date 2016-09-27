@@ -1,5 +1,5 @@
 namespace AssetBundleGraph {
-	public class OnConnectionEvent {
+	public class ConnectionEvent {
 		public enum EventType : int {
 			EVENT_NONE,
 
@@ -10,7 +10,7 @@ namespace AssetBundleGraph {
 		public readonly EventType eventType;
 		public readonly ConnectionGUI eventSourceCon;
 
-		public OnConnectionEvent (EventType type, ConnectionGUI con) {
+		public ConnectionEvent (EventType type, ConnectionGUI con) {
 			this.eventType = type;
 			this.eventSourceCon = con;
 		}
