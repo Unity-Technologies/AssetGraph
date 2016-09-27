@@ -8,14 +8,14 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 
 	[Serializable] 
-	public class SerializableMultiTargetString {
+	public class SerializableMultiTargetInt {
 
 		[Serializable]
 		public class Entry {
 			[SerializeField] public BuildTargetGroup targetGroup;
-			[SerializeField] public string value;
+			[SerializeField] public int value;
 
-			public Entry(BuildTargetGroup g, string v) {
+			public Entry(BuildTargetGroup g, int v) {
 				targetGroup = g;
 				value = v;
 			}
@@ -23,50 +23,36 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private List<Entry> m_values;
 
-		public SerializableMultiTargetString(string value) {
+		public SerializableMultiTargetInt(int value) {
 			m_values = new List<Entry>();
 			this[BuildTargetUtility.DefaultTarget] = value;
 		}
 
-		public SerializableMultiTargetString() {
+		public SerializableMultiTargetInt() {
 			m_values = new List<Entry>();
 		}
 
-		public SerializableMultiTargetString(MultiTargetProperty<string> property) {
-			m_values = new List<Entry>();
-			foreach(var k in property.Keys) {
-				m_values.Add(new Entry(k, property[k]));
-			}
-		}
-
-		public SerializableMultiTargetString(SerializableMultiTargetString rhs) {
+		public SerializableMultiTargetInt(SerializableMultiTargetInt rhs) {
 			m_values = new List<Entry>();
 			foreach(var v in rhs.m_values) {
 				m_values.Add(new Entry(v.targetGroup, v.value));
 			}
 		}
 
-		public SerializableMultiTargetString(Dictionary<string, object> json) {
+		public SerializableMultiTargetInt(Dictionary<string, object> json) {
 			m_values = new List<Entry>();
 			foreach (var buildTargetName in json.Keys) {
 				try {
 					BuildTargetGroup g =  (BuildTargetGroup)Enum.Parse(typeof(BuildTargetGroup), buildTargetName, true);
-					string val = json[buildTargetName] as string;
+					int val = Convert.ToInt32(json[buildTargetName]);
 					m_values.Add(new Entry(g, val));
 				} catch(Exception e) {
-					Debug.LogWarning("Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
+					Debug.LogWarning("Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e);
 				}
 			}
 		}
 
-
-		public List<Entry> Values {
-			get {
-				return m_values;
-			}
-		}
-
-		public string this[BuildTargetGroup g] {
+		public int this[BuildTargetGroup g] {
 			get {
 				int i = m_values.FindIndex(v => v.targetGroup == g);
 				if(i >= 0) {
@@ -85,7 +71,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public string this[BuildTarget index] {
+		public int this[BuildTarget index] {
 			get {
 				return this[BuildTargetUtility.TargetToGroup(index)];
 			}
@@ -94,13 +80,13 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public string DefaultValue {
+		public int DefaultValue {
 			get {
 				int i = m_values.FindIndex(v => v.targetGroup == BuildTargetUtility.DefaultTarget);
 				if(i >= 0) {
 					return m_values[i].value;
 				} else {
-					string defaultValue = string.Empty;
+					var defaultValue = 0;
 					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue));
 					return defaultValue;
 				}
@@ -110,7 +96,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public string CurrentPlatformValue {
+		public int CurrentPlatformValue {
 			get {
 				return this[EditorUserBuildSettings.selectedBuildTargetGroup];
 			}
@@ -125,16 +111,6 @@ namespace AssetBundleGraph {
 			if(index >= 0) {
 				m_values.RemoveAt(index);
 			}
-		}
-
-		public MultiTargetProperty<string> ToProperty () {
-			MultiTargetProperty<string> p = new MultiTargetProperty<string>();
-
-			foreach(Entry e in m_values) {
-				p.Set(e.targetGroup, e.value);
-			}
-
-			return p;
 		}
 
 		public Dictionary<string, object> ToJsonDictionary() {
