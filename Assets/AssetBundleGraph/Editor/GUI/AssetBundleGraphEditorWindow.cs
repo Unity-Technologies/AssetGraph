@@ -409,25 +409,16 @@ namespace AssetBundleGraph {
 			newSaveData.Save();
 		}
 
-		private void SaveGraphWithReloadSilent () {
-			SaveGraph();
-			try {
-				var target = BuildTargetUtility.
-					GroupToTarget(NodeGUIEditor.currentEditingGroup);
-				Setup(target);
-			} catch {
-				// display nothing.
-			}
-		}
-
-		private void SaveGraphWithReload () {
+		private void SaveGraphWithReload (bool silent = false) {
 			SaveGraph();
 			try {
 				var target = BuildTargetUtility.
 					GroupToTarget(NodeGUIEditor.currentEditingGroup);
 				Setup(target);
 			} catch (Exception e) {
-				Debug.LogError("Error occured during reload:" + e);
+				if(!silent){
+					Debug.LogError("Error occured during reload:" + e);
+				}
 			}
 		}
 
@@ -1631,28 +1622,16 @@ namespace AssetBundleGraph {
 
 			switch (e.eventType) {
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
-					var deletedOutputPointConnection = connections.Find(con => con.OutputPoint == e.point);
-					
-					if (deletedOutputPointConnection == null) {
-						break;
-					}
-					
-					// TODO: あ、線がdeleteされてない？
-
-					connections.Remove(deletedOutputPointConnection);
+					// deleting point is handled by caller, so we are deleting connections associated with it.
+					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+					Repaint();
 					break;
 				}
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
-					var labelChangedConnectionPoint = e.point;
-					var changedLabel = labelChangedConnectionPoint.Label;
-
-					var connection = connections.Find(con => con.OutputPoint == labelChangedConnectionPoint);
-
-					if (connection == null) {
-						break;
-					}
-
-					connection.Label = changedLabel;
+					// point label change is handled by caller, so we are changing label of connection associated with it.
+					var affectingConnections = connections.FindAll( c=> c.OutputPoint == e.point );
+					affectingConnections.ForEach(c => c.Label = e.point.Label);
+					Repaint();
 					break;
 				}
 				case NodeEvent.EventType.EVENT_RECORDUNDO: {
@@ -1660,7 +1639,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				case NodeEvent.EventType.EVENT_SAVE: {
-					SaveGraphWithReloadSilent();
+					SaveGraphWithReload(true);
 					Repaint();
 					break;
 				}

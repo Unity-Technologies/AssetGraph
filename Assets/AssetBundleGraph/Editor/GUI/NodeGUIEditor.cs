@@ -100,9 +100,7 @@ namespace AssetBundleGraph {
 
 					using (new GUILayout.HorizontalScope()) {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							using(new RecordUndoScope("Remove Filter Condition", node)){
-								removing = cond;
-							}
+							removing = cond;
 						}
 						else {
 							var newContainsKeyword = cond.FilterKeyword;
@@ -127,6 +125,8 @@ namespace AssetBundleGraph {
 							if (newContainsKeyword != cond.FilterKeyword) {
 								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
 									cond.FilterKeyword = newContainsKeyword;
+									// event must raise to propagate change to connection associated with point
+									NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
 								}
 							}
 						}
@@ -149,7 +149,11 @@ namespace AssetBundleGraph {
 				}
 
 				if(removing != null) {
-					node.Data.RemoveFilterCondition(removing);
+					using(new RecordUndoScope("Remove Filter Condition", node, true)){
+						// event must raise to remove connection associated with point
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+						node.Data.RemoveFilterCondition(removing);
+					}
 				}
 			}
 		}
@@ -484,9 +488,7 @@ namespace AssetBundleGraph {
 				foreach (var v in node.Data.Variants) {
 					using (new GUILayout.HorizontalScope()) {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							using(new RecordUndoScope("Remove Variant", node, true)){
-								removing = v;
-							}
+							removing = v;
 						}
 						else {
 							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
@@ -516,7 +518,11 @@ namespace AssetBundleGraph {
 					}
 				}
 				if(removing != null) {
-					node.Data.RemoveVariant(removing);
+					using(new RecordUndoScope("Remove Variant", node, true)){
+						// event must raise to remove connection associated with point
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+						node.Data.RemoveVariant(removing);
+					}
 				}
 			}
 		}
