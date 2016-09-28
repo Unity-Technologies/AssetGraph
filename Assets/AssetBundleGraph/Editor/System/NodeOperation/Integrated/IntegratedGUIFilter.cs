@@ -13,7 +13,13 @@ namespace AssetBundleGraph {
 			this.connectionIdsFromThisNodeToChildNodesOrFakeIds = connectionIdsFromThisNodeToChildNodes;
 		}
 
-		public void Setup (BuildTarget target, NodeData node, string _, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			// overlapping test.
 			try {
 				node.ValidateOverlappingFilterCondition(true);
@@ -39,7 +45,7 @@ namespace AssetBundleGraph {
 					}
 					
 					outputDict[groupKey] = outputs;
-					Output(node.Id, Id, outputDict, new List<string>());
+					Output(node, connection, outputDict, new List<string>());
 				};
 				
 				try {
@@ -50,7 +56,13 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (BuildTarget target, NodeData node, string _, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 
 			// overlapping test.
 			node.ValidateOverlappingFilterCondition(true);
@@ -72,7 +84,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(node.Id, Id, outputDict, new List<string>());
+					Output(node, connection, outputDict, new List<string>());
 				};
 				
 				try {

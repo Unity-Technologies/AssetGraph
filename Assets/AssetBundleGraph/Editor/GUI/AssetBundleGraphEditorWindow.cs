@@ -101,8 +101,8 @@ namespace AssetBundleGraph {
 		private AssetBundleGraphSelection selection;
 		private ScalePoint scalePoint;
 
-		private static Dictionary<string,Dictionary<string, List<DepreacatedThroughputAsset>>> s_connectionThroughputs = 
-			new Dictionary<string, Dictionary<string, List<DepreacatedThroughputAsset>>>();
+		private static Dictionary<ConnectionData,Dictionary<string, List<DepreacatedThroughputAsset>>> s_connectionThroughputs = 
+			new Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>>();
 		private static List<NodeException> s_nodeExceptionPool = new List<NodeException>();
 
 		private Texture2D selectionTex {
@@ -256,13 +256,13 @@ namespace AssetBundleGraph {
 		}
 
 		public void SelectNode(string nodeId) {
-			var selectObject = nodes.Where(node => node.Id == nodeId).ToList();
+			var selectObject = nodes.Find(node => node.Id == nodeId);
 			// set deactive for all nodes.
 			foreach (var node in nodes) {
 				node.SetInactive();
 			}
-			foreach(NodeGUI n in selectObject) {
-				n.SetActive();
+			if(selectObject != null) {
+				selectObject.SetActive();
 			}
 		}
 
@@ -477,50 +477,40 @@ namespace AssetBundleGraph {
 			var currentCount = 0.00f;
 			var totalCount = currentNodes.Count * 1f;
 
-			Action<string, float> updateHandler = (nodeId, progress) => {
-				var targetNodes = currentNodes.Where(node => node.Id == nodeId).ToList();
-				
-				var progressPercentage = ((currentCount/totalCount) * 100).ToString();
-				
+			Action<NodeData, float> updateHandler = (node, progress) => {
+				var progressPercentage = ((currentCount/totalCount) * 100).ToString();				
 				if (progressPercentage.Contains(".")) progressPercentage = progressPercentage.Split('.')[0];
 				
 				if (0 < progress) {
 					currentCount = currentCount + 1f;
 				}
 
-				if (targetNodes.Any()) {
-					targetNodes.ForEach(
-						node => {
-							EditorUtility.DisplayProgressBar("AssetBundleGraph Processing " + node.Name + ".", progressPercentage + "%", currentCount/totalCount);
-						}
-					);
-				}
+				EditorUtility.DisplayProgressBar("AssetBundleGraph Processing " + node.Name + ".", progressPercentage + "%", currentCount/totalCount);
 			};
 				
 			// perform setup. Fails if any exception raises.
 			AssetBundleGraphController.Perform(saveData, target, false);
 
-			/*
+			if(s_nodeExceptionPool.Count == 0) {
+				/*
 				remove bundlize setting names from unused Nodes.
 			*/
-//			var graphDescription = GraphDescriptionBuilder.BuildGraphDescriptionFromJson(saveData);
-			var usedNodeIds = saveData.Nodes.Select(usedNode => usedNode.Id).ToList();
-			UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
-			
-			// run datas.
-			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
+				var usedNodeIds = saveData.Nodes.Select(usedNode => usedNode.Id).ToList();
+				UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
+
+				// run datas.
+				s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
+				RefreshInspector(s_connectionThroughputs);
+				ShowErrorOnNodes();
+				AssetDatabase.Refresh();
+
+				Finally(currentNodes, currentConnections, s_connectionThroughputs, true);
+			}
 
 			EditorUtility.ClearProgressBar();
-			AssetDatabase.Refresh();
-
-			RefreshInspector(s_connectionThroughputs);
-
-			ShowErrorOnNodes();
-
-			Finally(currentNodes, currentConnections, s_connectionThroughputs, true);
 		}
 
-		private static void RefreshInspector (Dictionary<string,Dictionary<string, List<DepreacatedThroughputAsset>>> currentConnectionThroughputs) {
+		private static void RefreshInspector (Dictionary<ConnectionData,Dictionary<string, List<DepreacatedThroughputAsset>>> currentResult) {
 			if (Selection.activeObject == null) {
 				return;
 			}
@@ -533,9 +523,11 @@ namespace AssetBundleGraph {
 					if (string.IsNullOrEmpty(con.Id)) {
 						return; 
 					}
-					
-					if (currentConnectionThroughputs.ContainsKey(con.Id)) {
-						((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateThroughputs(currentConnectionThroughputs[con.Id]);
+
+					ConnectionData c = currentResult.Keys.ToList().Find(v => v.Id == con.Id);
+
+					if (c != null) {
+						((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateThroughputs(currentResult[c]);
 					}
 					break;
 				}
@@ -549,10 +541,10 @@ namespace AssetBundleGraph {
 		public static void Finally (
 			List<NodeGUI> currentNodes,
 			List<ConnectionGUI> currentConnections,
-			Dictionary<string, Dictionary<string, List<DepreacatedThroughputAsset>>> throughputsSource, 
+			Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> result, 
 			bool isRun
 		) {
-			var nodeThroughputs = NodeThroughputs(currentNodes, currentConnections, throughputsSource);
+			var nodeResult = CollectNodeGroupAndAssets(currentNodes, currentConnections, result);
 
 			var finallyBasedTypeRunner = Assembly.GetExecutingAssembly().GetTypes()
 					.Where(currentType => currentType.BaseType == typeof(FinallyBase))
@@ -565,7 +557,7 @@ namespace AssetBundleGraph {
 				}
 				var finallyInstance = (FinallyBase)finallyScriptInstance;
 
-				finallyInstance.Run(nodeThroughputs, isRun);
+				finallyInstance.Run(nodeResult, isRun);
 			}
 		}
 
@@ -616,49 +608,53 @@ namespace AssetBundleGraph {
 				groups
 					resources
 		*/
-		private static Dictionary<string, Dictionary<string, List<string>>> NodeThroughputs (
+		private static Dictionary<NodeData, Dictionary<string, List<DepreacatedThroughputAsset>>> CollectNodeGroupAndAssets (
 			List<NodeGUI> currentNodes,
 			List<ConnectionGUI> currentConnections,
-			Dictionary<string, Dictionary<string, List<DepreacatedThroughputAsset>>> throughputs
+			Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> result
 		) {
-			var nodeDatas = new Dictionary<string, Dictionary<string, List<string>>>();
+			var nodeDatas = new Dictionary<NodeData, Dictionary<string, List<DepreacatedThroughputAsset>>>();
 
-			var nodeIds = currentNodes.Select(node => node.Id).ToList();
-			var connectionIds = currentConnections.Select(con => con.Id).ToList();
+//			var nodeIds = currentNodes.Select(node => node.Id).ToList();
+//			var connectionIds = currentConnections.Select(con => con.Id).ToList();
 
-			foreach (var nodeOrConnectionId in throughputs.Keys) {
+			foreach (var c in result.Keys) {
 				// get endpoint node result.
-				if (nodeIds.Contains(nodeOrConnectionId)) {
-					var targetNodeName = currentNodes.Where(node => node.Id == nodeOrConnectionId).Select(node => node.Name).FirstOrDefault();
-					
-					var nodeThroughput = throughputs[nodeOrConnectionId];
-
-					if (!nodeDatas.ContainsKey(targetNodeName)) {
-						nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
-					}
-					foreach (var groupKey in nodeThroughput.Keys) {
-						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) {
-							nodeDatas[targetNodeName][groupKey] = new List<string>();
-						}
-						var assetPaths = nodeThroughput[groupKey].Select(asset => asset.path).ToList();
-						nodeDatas[targetNodeName][groupKey].AddRange(assetPaths);
-					}
-				}
+//				if (nodeIds.Contains(nodeOrConnectionId)) {
+//					var targetNodeName = currentNodes.Where(node => node.Id == nodeOrConnectionId).Select(node => node.Name).FirstOrDefault();
+//					
+//					var nodeThroughput = result[nodeOrConnectionId];
+//
+//					if (!nodeDatas.ContainsKey(targetNodeName)) {
+//						nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
+//					}
+//					foreach (var groupKey in nodeThroughput.Keys) {
+//						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) {
+//							nodeDatas[targetNodeName][groupKey] = new List<string>();
+//						}
+//						var assetPaths = nodeThroughput[groupKey].Select(asset => asset.path).ToList();
+//						nodeDatas[targetNodeName][groupKey].AddRange(assetPaths);
+//					}
+//				}
 
 				// get connection result.
-				if (connectionIds.Contains(nodeOrConnectionId)) {
-					var targetConnection = currentConnections.Where(con => con.Id == nodeOrConnectionId).FirstOrDefault();
-					var targetNodeName = currentNodes.Where(node => node.Id == targetConnection.OutputNodeId).Select(node => node.Name).FirstOrDefault();
-					
-					var nodeThroughput = throughputs[nodeOrConnectionId];
-					
-					if (!nodeDatas.ContainsKey(targetNodeName)) nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
-					foreach (var groupKey in nodeThroughput.Keys) {
-						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) nodeDatas[targetNodeName][groupKey] = new List<string>();
-						var assetPaths = nodeThroughput[groupKey].Select(asset => asset.path).ToList();
-						nodeDatas[targetNodeName][groupKey].AddRange(assetPaths);
-					}
+//				if (connectionIds.Contains(nodeOrConnectionId)) {
+
+				var targetConnection = currentConnections.Find(con => con.Id == c.Id);
+				var targetNode = currentNodes.Find(node => node.Id == targetConnection.OutputNodeId);
+				
+				var groupDict = result[c];
+				
+				if (!nodeDatas.ContainsKey(targetNode.Data)) {
+					nodeDatas[targetNode.Data] = new Dictionary<string, List<DepreacatedThroughputAsset>>();
 				}
+				foreach (var groupKey in groupDict.Keys) {
+					if (!nodeDatas[targetNode.Data].ContainsKey(groupKey)) {
+						nodeDatas[targetNode.Data][groupKey] = new List<DepreacatedThroughputAsset>();
+					}
+					nodeDatas[targetNode.Data][groupKey].AddRange(groupDict[groupKey]);
+				}
+//				}
 			}
 
 			return nodeDatas;
@@ -696,6 +692,7 @@ namespace AssetBundleGraph {
 
 				GUI.enabled = !isAnyIssueFound;
 				if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
+					SaveGraph();
 					Run(ActiveBuildTarget);
 				}
 				GUI.enabled = true;
@@ -738,9 +735,10 @@ namespace AssetBundleGraph {
 
 				// draw connections.
 				foreach (var con in connections) {
-					if (s_connectionThroughputs.ContainsKey(con.Id)) { 
-						var throughputListDict = s_connectionThroughputs[con.Id];
-						con.DrawConnection(nodes, throughputListDict);
+					var keyEnum = s_connectionThroughputs.Keys.Where(c => c.Id == con.Id);
+					if (keyEnum.Any()) { 
+						var assets = s_connectionThroughputs[keyEnum.First()];
+						con.DrawConnection(nodes, assets);
 					} else {
 						con.DrawConnection(nodes, new Dictionary<string, List<DepreacatedThroughputAsset>>());
 					}

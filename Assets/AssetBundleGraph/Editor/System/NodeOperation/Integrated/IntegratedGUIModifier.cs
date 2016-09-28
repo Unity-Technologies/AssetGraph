@@ -9,7 +9,13 @@ using System.IO;
 namespace AssetBundleGraph {
     public class IntegratedGUIModifier : INodeOperationBase {
 
-		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			if (groupedSources.Keys.Count == 0) {
 				return;
 			}
@@ -90,11 +96,17 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node, connection, outputDict, new List<string>());
 		}
 
 		
-		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			if (groupedSources.Keys.Count == 0) {
 				return;
 			}
@@ -184,7 +196,7 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node, connection, outputDict, new List<string>());
 		}
 
 //		/**

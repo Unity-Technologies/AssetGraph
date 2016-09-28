@@ -8,7 +8,13 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class IntegratedGUIBundleBuilder : INodeOperationBase {
-		public void Setup (BuildTarget target, NodeData node, string labelToNext, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			/*
 				merge multi group into ["0"] group.
 			*/
@@ -20,10 +26,16 @@ namespace AssetBundleGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			Output(node.Id, labelToNext, outputDict, new List<string>());
+			Output(node, connection, outputDict, new List<string>());
 		}
 		
-		public void Run (BuildTarget target, NodeData node, string labelToNext, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			
 			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
 			
@@ -109,7 +121,7 @@ namespace AssetBundleGraph {
 			outputDict["0"] = outputSources;
 			
 			var usedCache = new List<string>(alreadyCached);
-			Output(node.Id, labelToNext, outputDict, usedCache);
+			Output(node, connection, outputDict, usedCache);
 		}
 		
 		

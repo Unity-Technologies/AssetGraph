@@ -13,7 +13,13 @@ namespace AssetBundleGraph {
 	*/
 	public class IntegratedGUIImportSetting : INodeOperationBase {
 		
-		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
 			
@@ -123,10 +129,16 @@ namespace AssetBundleGraph {
 				outputDict[groupedSources.Keys.ToList()[0]] = importedAssets;
 			}
 
-			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node, connection, outputDict, new List<string>());
 		}
 		
-		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			var usedCache = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<Asset>>();
@@ -253,7 +265,7 @@ namespace AssetBundleGraph {
 			
 			outputDict[the1stGroupKey] = outputSources;
 
-			Output(node.Id, connectionIdToNextNode, outputDict, usedCache);
+			Output(node, connection, outputDict, usedCache);
 		}
 
 		public static void ValidateImportSample (string samplePath, 

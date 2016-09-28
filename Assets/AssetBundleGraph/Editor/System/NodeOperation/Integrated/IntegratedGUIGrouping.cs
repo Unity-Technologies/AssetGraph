@@ -9,16 +9,28 @@ namespace AssetBundleGraph
 {
     public class IntegratedGUIGrouping : INodeOperationBase {
 
-		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
-			GroupingOutput(target, node, connectionIdToNextNode, groupedSources, Output);
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
+			GroupingOutput(target, node, connection, groupedSources, Output);
 		}
 
-		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
-			GroupingOutput(target, node, connectionIdToNextNode, groupedSources, Output);
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
+			GroupingOutput(target, node, connection, groupedSources, Output);
 		}
 
 
-		private void GroupingOutput (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		private void GroupingOutput (BuildTarget target, NodeData node, ConnectionData connection, Dictionary<string, List<Asset>> groupedSources, Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) {
 
 			try {
 				ValidateGroupingKeyword(
@@ -61,7 +73,7 @@ namespace AssetBundleGraph
 				}
 			}
 			
-			Output(node.Id, connectionIdToNextNode, outputDict, new List<string>());
+			Output(node, connection, outputDict, new List<string>());
 		}
 
 		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {

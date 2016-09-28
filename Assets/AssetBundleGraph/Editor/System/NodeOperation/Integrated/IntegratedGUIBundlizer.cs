@@ -14,7 +14,13 @@ namespace AssetBundleGraph {
 			this.assetOutputConnection = assetOutputConnection;
 		}
 
-		public void Setup (BuildTarget target, NodeData node, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {			
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 
 			try {
 				ValidateBundleNameTemplate(
@@ -55,12 +61,18 @@ namespace AssetBundleGraph {
 			}
 			
 			if (assetOutputConnection != null) {
-				Output(node.Id, assetOutputConnection.Id, outputDict, new List<string>());
+				Output(node, assetOutputConnection, outputDict, new List<string>());
 			}
 			
 		}
 		
-		public void Run (BuildTarget target, NodeData node, string unused_connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
 				() => {
@@ -80,7 +92,7 @@ namespace AssetBundleGraph {
 			}
 			
 			if (assetOutputConnection != null) {
-				Output(node.Id, assetOutputConnection.Id, outputDict, new List<string>());
+				Output(node, assetOutputConnection, outputDict, new List<string>());
 			}
 			
 		}

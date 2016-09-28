@@ -70,15 +70,17 @@ namespace AssetBundleGraph {
 			}
 
 			var labels = new List<string>();
-			Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<Asset>> source, List<string> usedCache) => {
-				labels.Add(connectionLabel);
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
+				(NodeData node, ConnectionData connection, Dictionary<string, List<Asset>> source, List<string> usedCache) => 
+			{
+				labels.Add(connection.Label);
 			};
 
 			//Dry-run to collect labels
 			((FilterBase)nodeScriptInstance).Setup(
 				BuildTarget.StandaloneWindows64,
 				new NodeData("", NodeKind.LOADER_GUI, 0, 0),
-				string.Empty,
+				null,
 				new Dictionary<string, List<Asset>>{
 					{"0", new List<Asset>()}
 				},

@@ -11,11 +11,21 @@ namespace AssetBundleGraph {
 		/**
 			Setup is the method which validates and perform necessary setups in order to build.
 		*/
-		void Setup (BuildTarget target, NodeData nodeData, string labelToNext, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output);
+		void Setup (BuildTarget target, 
+			NodeData nodeData, 
+			ConnectionData connectionData, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
 
 		/**
 			Run is the method which actualy performs the build. It is always called after Setup() is performed.
 		*/
-		void Run   (BuildTarget target, NodeData nodeData, string labelToNext, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output);
+		void Run (BuildTarget target, 
+			NodeData nodeData, 
+			ConnectionData connectionData, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
 	}
 }

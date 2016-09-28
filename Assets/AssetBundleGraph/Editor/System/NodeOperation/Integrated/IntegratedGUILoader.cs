@@ -7,7 +7,13 @@ using UnityEditor;
 
 namespace AssetBundleGraph {
 	public class IntegratedGUILoader : INodeOperationBase {
-		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 
 			try {
 				ValidateLoadPath(
@@ -67,10 +73,16 @@ namespace AssetBundleGraph {
 				{"0", outputSource}
 			};
 
-			Output(node.Id, connectionIdToNextNode, outputDir, new List<string>());
+			Output(node, connection, outputDir, new List<string>());
 		}
 		
-		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> unused, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			ValidateLoadPath(
 				node.LoaderLoadPath[target],
 				node.GetLoaderFullLoadPath(target),
@@ -111,7 +123,7 @@ namespace AssetBundleGraph {
 					{"0", outputSource}
 				};
 
-				Output(node.Id, connectionIdToNextNode, outputDir, new List<string>());
+				Output(node, connection, outputDir, new List<string>());
 			} catch (Exception e) {
 				throw new NodeException(e.Message, node.Id);
 			}

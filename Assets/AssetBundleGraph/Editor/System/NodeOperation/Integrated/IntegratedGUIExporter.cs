@@ -8,7 +8,13 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperationBase {
-		public void Setup (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Setup (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 
 			try {
 				ValidateExportPath(
@@ -26,10 +32,16 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			Export(target, node, connectionIdToNextNode, groupedSources, Output, false);
+			Export(target, node, connection, groupedSources, Output, false);
 		}
 		
-		public void Run (BuildTarget target, NodeData node, string connectionIdToNextNode, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output) {
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			List<string> alreadyCached, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 			ValidateExportPath(
 				node.ExporterExportPath[target],
 				node.ExporterExportPath[target],
@@ -41,10 +53,16 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(target, node, connectionIdToNextNode, groupedSources, Output, true);
+			Export(target, node, connection, groupedSources, Output, true);
 		}
 
-		private void Export (BuildTarget target, NodeData node, string labelToNext, Dictionary<string, List<Asset>> groupedSources, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output, bool isRun) {
+		private void Export (BuildTarget target, 
+			NodeData node, 
+			ConnectionData connection, 
+			Dictionary<string, List<Asset>> groupedSources, 
+			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,
+			bool isRun) 
+		{
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict["0"] = new List<Asset>();
 
@@ -109,7 +127,7 @@ namespace AssetBundleGraph {
 				Debug.LogError(node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
-			Output(node.Id, labelToNext, outputDict, new List<string>());
+			Output(node, connection, outputDict, new List<string>());
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {
