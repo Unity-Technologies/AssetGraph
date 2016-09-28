@@ -9,8 +9,8 @@ namespace AssetBundleGraph {
 	public class IntegratedGUILoader : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -73,13 +73,13 @@ namespace AssetBundleGraph {
 				{"0", outputSource}
 			};
 
-			Output(node, connection, outputDir, new List<string>());
+			Output(node, connectionToOutput, outputDir, new List<string>());
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -123,7 +123,7 @@ namespace AssetBundleGraph {
 					{"0", outputSource}
 				};
 
-				Output(node, connection, outputDir, new List<string>());
+				Output(node, connectionToOutput, outputDir, new List<string>());
 			} catch (Exception e) {
 				throw new NodeException(e.Message, node.Id);
 			}

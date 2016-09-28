@@ -11,26 +11,26 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			if (groupedSources.Keys.Count == 0) {
+			if (inputGroupAssets.Keys.Count == 0) {
 				return;
 			}
 			
 			// Modifier merges multiple incoming groups into one.
-			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(node.Name + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			if (1 < inputGroupAssets.Keys.Count) {
+				Debug.LogWarning(node.Name + " Modifier merges incoming group into \"" + inputGroupAssets.Keys.ToList()[0]);
 			}
 
-			var groupMergeKey = groupedSources.Keys.ToList()[0];
+			var groupMergeKey = inputGroupAssets.Keys.ToList()[0];
 
 			// merge all assets into single list.
 			var inputSources = new List<Asset>();
-			foreach (var groupKey in groupedSources.Keys) {
-				inputSources.AddRange(groupedSources[groupKey]);
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				inputSources.AddRange(inputGroupAssets[groupKey]);
 			}
 			
 			if (!inputSources.Any()) {
@@ -96,32 +96,32 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 		}
 
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			if (groupedSources.Keys.Count == 0) {
+			if (inputGroupAssets.Keys.Count == 0) {
 				return;
 			}
 			
 			// Modifier merges multiple incoming groups into one.
-			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(node.Name + " Modifier merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			if (1 < inputGroupAssets.Keys.Count) {
+				Debug.LogWarning(node.Name + " Modifier merges incoming group into \"" + inputGroupAssets.Keys.ToList()[0]);
 			}
 
-			var groupMergeKey = groupedSources.Keys.ToList()[0];
+			var groupMergeKey = inputGroupAssets.Keys.ToList()[0];
 
 			// merge all assets into single list.
 			var inputSources = new List<Asset>();
-			foreach (var groupKey in groupedSources.Keys) {
-				inputSources.AddRange(groupedSources[groupKey]);
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				inputSources.AddRange(inputGroupAssets[groupKey]);
 			}
 			
 			if (!inputSources.Any()) {
@@ -196,7 +196,7 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 		}
 
 //		/**

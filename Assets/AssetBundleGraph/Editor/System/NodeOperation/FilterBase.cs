@@ -9,16 +9,16 @@ namespace AssetBundleGraph {
 	public class FilterBase : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			foreach (var groupKey in groupedSources.Keys) {
+			foreach (var groupKey in inputGroupAssets.Keys) {
 
 				var outputDict = new Dictionary<string, List<Asset>>();
 
-				var inputAssets = groupedSources[groupKey];
+				var inputAssets = inputGroupAssets[groupKey];
 
 				Action<ConnectionData, List<Asset>> _PreOutput = (ConnectionData c, List<Asset> outputAssets) => {
 					var outputs = new List<Asset>();
@@ -41,15 +41,15 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			foreach (var groupKey in groupedSources.Keys) {
+			foreach (var groupKey in inputGroupAssets.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
 
-				var inputSources = groupedSources[groupKey];				
+				var inputSources = inputGroupAssets[groupKey];				
 
 				Action<ConnectionData, List<Asset>> _Output = (ConnectionData c, List<Asset> outputSources) => {
 					var outputs = new List<Asset>();

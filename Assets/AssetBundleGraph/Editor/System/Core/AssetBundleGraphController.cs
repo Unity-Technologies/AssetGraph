@@ -169,7 +169,7 @@ namespace AssetBundleGraph {
 		private static void DoNodeOperation (
 			BuildTarget target,
 			NodeData currentNodeData,
-			ConnectionData currentConnectionData,
+			ConnectionData connectionToOutput,
 			SaveData saveData,
 			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> resultDict, 
 			Dictionary<NodeData, List<string>> cachedDict,
@@ -219,8 +219,8 @@ namespace AssetBundleGraph {
 			// load already exist cache from node.
 			alreadyCachedPaths.AddRange(GetCachedDataByNode(target, currentNodeData));
 
-			var inputParentResults = new Dictionary<string, List<Asset>>();
-
+			// Grab incoming assets from result by refering connections to parents
+			var inputGroupAssets = new Dictionary<string, List<Asset>>();
 			var connToParents = saveData.Connections.FindAll(con => con.ToNodeId == currentNodeData.Id);
 			foreach (var rCon in connToParents) {
 				if (!resultDict.ContainsKey(rCon)) {
@@ -229,10 +229,10 @@ namespace AssetBundleGraph {
 
 				var result = resultDict[rCon];
 				foreach (var groupKey in result.Keys) {
-					if (!inputParentResults.ContainsKey(groupKey)) {
-						inputParentResults[groupKey] = new List<Asset>();
+					if (!inputGroupAssets.ContainsKey(groupKey)) {
+						inputGroupAssets[groupKey] = new List<Asset>();
 					}
-					inputParentResults[groupKey].AddRange(result[groupKey]);	
+					inputGroupAssets[groupKey].AddRange(result[groupKey]);	
 				}
 			}
 
@@ -241,20 +241,20 @@ namespace AssetBundleGraph {
 				It stores result to resultDict.
 			*/
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
-				(NodeData sourceNode, ConnectionData targetConnection, Dictionary<string, List<Asset>> result, List<string> justCached) => 
+				(NodeData sourceNode, ConnectionData destinationConnection, Dictionary<string, List<Asset>> result, List<string> justCached) => 
 			{
-				if(targetConnection != null ) {
-					if (!resultDict.ContainsKey(targetConnection)) {
-						resultDict[targetConnection] = new Dictionary<string, List<Asset>>();
+				if(destinationConnection != null ) {
+					if (!resultDict.ContainsKey(destinationConnection)) {
+						resultDict[destinationConnection] = new Dictionary<string, List<Asset>>();
 					}
 					/*
 					merge connection result by group key.
 					*/
 					foreach (var groupKey in result.Keys) {
-						if (!resultDict[targetConnection].ContainsKey(groupKey)) {
-							resultDict[targetConnection][groupKey] = new List<Asset>();
+						if (!resultDict[destinationConnection].ContainsKey(groupKey)) {
+							resultDict[destinationConnection][groupKey] = new List<Asset>();
 						}
-						resultDict[targetConnection][groupKey].AddRange(result[groupKey]);
+						resultDict[destinationConnection][groupKey].AddRange(result[groupKey]);
 					}
 				}
 
@@ -270,10 +270,10 @@ namespace AssetBundleGraph {
 				INodeOperationBase executor = CreateOperation(saveData, currentNodeData);
 				if(executor != null) {
 					if(isActualRun) {
-						executor.Run(target, currentNodeData, currentConnectionData, inputParentResults, alreadyCachedPaths, Output);
+						executor.Run(target, currentNodeData, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
 					}
 					else {
-						executor.Setup(target, currentNodeData, currentConnectionData, inputParentResults, alreadyCachedPaths, Output);
+						executor.Setup(target, currentNodeData, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
 					}
 				}
 

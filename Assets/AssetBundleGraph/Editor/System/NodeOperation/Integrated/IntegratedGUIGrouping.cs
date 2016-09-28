@@ -11,26 +11,26 @@ namespace AssetBundleGraph
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			GroupingOutput(target, node, connection, groupedSources, Output);
+			GroupingOutput(target, node, connectionToOutput, inputGroupAssets, Output);
 		}
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			GroupingOutput(target, node, connection, groupedSources, Output);
+			GroupingOutput(target, node, connectionToOutput, inputGroupAssets, Output);
 		}
 
 
-		private void GroupingOutput (BuildTarget target, NodeData node, ConnectionData connection, Dictionary<string, List<Asset>> groupedSources, Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) {
+		private void GroupingOutput (BuildTarget target, NodeData node, ConnectionData connectionToOutput, Dictionary<string, List<Asset>> inputGroupAssets, Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) {
 
 			try {
 				ValidateGroupingKeyword(
@@ -51,8 +51,8 @@ namespace AssetBundleGraph
 
 			var mergedGroupedSources = new List<Asset>();
 
-			foreach (var groupKey in groupedSources.Keys) {
-				mergedGroupedSources.AddRange(groupedSources[groupKey]);
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				mergedGroupedSources.AddRange(inputGroupAssets[groupKey]);
 			}
 
 			var groupingKeyword = node.GroupingKeywords[target];
@@ -73,7 +73,7 @@ namespace AssetBundleGraph
 				}
 			}
 			
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 		}
 
 		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {

@@ -15,8 +15,8 @@ namespace AssetBundleGraph {
 		
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -28,16 +28,16 @@ namespace AssetBundleGraph {
 
 			var first = true;
 			
-			if (groupedSources.Keys.Count == 0) return;
+			if (inputGroupAssets.Keys.Count == 0) return;
 			
 			// ImportSetting merges multiple incoming groups into one, so warn this
-			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(node.Id + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			if (1 < inputGroupAssets.Keys.Count) {
+				Debug.LogWarning(node.Id + " ImportSetting merges incoming group into \"" + inputGroupAssets.Keys.ToList()[0]);
 			}
 
 			var inputSources = new List<Asset>();
-			foreach (var groupKey in groupedSources.Keys) {
-				inputSources.AddRange(groupedSources[groupKey]);
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				inputSources.AddRange(inputGroupAssets[groupKey]);
 			}
 				
 			var importedAssets = new List<Asset>();
@@ -126,16 +126,16 @@ namespace AssetBundleGraph {
 					Debug.LogError("importSetting:" + string.Join(", ", ignoredResource.ToArray()) + " are ignored.");
 				}
 
-				outputDict[groupedSources.Keys.ToList()[0]] = importedAssets;
+				outputDict[inputGroupAssets.Keys.ToList()[0]] = importedAssets;
 			}
 
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -163,19 +163,19 @@ namespace AssetBundleGraph {
 				}
 			);
 			
-			if (groupedSources.Keys.Count == 0) return;
+			if (inputGroupAssets.Keys.Count == 0) return;
 			
-			var the1stGroupKey = groupedSources.Keys.ToList()[0];
+			var the1stGroupKey = inputGroupAssets.Keys.ToList()[0];
 			
 			
 			// ImportSetting merges multiple incoming groups into one, so warn this
-			if (1 < groupedSources.Keys.Count) {
-				Debug.LogWarning(node.Name + " ImportSetting merges incoming group into \"" + groupedSources.Keys.ToList()[0]);
+			if (1 < inputGroupAssets.Keys.Count) {
+				Debug.LogWarning(node.Name + " ImportSetting merges incoming group into \"" + inputGroupAssets.Keys.ToList()[0]);
 			}
 
 			var inputSources = new List<Asset>();
-			foreach (var groupKey in groupedSources.Keys) {
-				inputSources.AddRange(groupedSources[groupKey]);
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				inputSources.AddRange(inputGroupAssets[groupKey]);
 			}
 			
 			var assetImportSettingUpdateMap = new Dictionary<Asset, bool>();
@@ -265,7 +265,7 @@ namespace AssetBundleGraph {
 			
 			outputDict[the1stGroupKey] = outputSources;
 
-			Output(node, connection, outputDict, usedCache);
+			Output(node, connectionToOutput, outputDict, usedCache);
 		}
 
 		public static void ValidateImportSample (string samplePath, 

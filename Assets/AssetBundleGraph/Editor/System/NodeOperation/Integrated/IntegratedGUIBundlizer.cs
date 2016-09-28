@@ -16,8 +16,8 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -52,8 +52,8 @@ namespace AssetBundleGraph {
 
 			var outputDict = new Dictionary<string, List<Asset>>();
 
-			foreach (var groupKey in groupedSources.Keys) {
-				var inputSources = groupedSources[groupKey];
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var inputSources = inputGroupAssets[groupKey];
 				
 				var bundleName = BundlizeAssets(target, node, groupKey, inputSources, false);
 				var newAssetData = Asset.CreateAssetWithImportPath(bundleName);
@@ -68,8 +68,8 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -82,8 +82,8 @@ namespace AssetBundleGraph {
 
 			var outputDict = new Dictionary<string, List<Asset>>();
 
-			foreach (var groupKey in groupedSources.Keys) {
-				var inputSources = groupedSources[groupKey];
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var inputSources = inputGroupAssets[groupKey];
 				
 				var bundleName = BundlizeAssets(target, node, groupKey, inputSources, true);
 				var newAssetData = Asset.CreateAssetWithImportPath(bundleName);

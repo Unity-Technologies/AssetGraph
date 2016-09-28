@@ -15,8 +15,8 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -28,10 +28,10 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			foreach (var groupKey in groupedSources.Keys) {
+			foreach (var groupKey in inputGroupAssets.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
 
-				var inputSources = groupedSources[groupKey];
+				var inputSources = inputGroupAssets[groupKey];
 				
 				Action<string, List<string>> _PreOutput = (string Id, List<string> outputSources) => {
 					var outputs = new List<Asset>();
@@ -45,7 +45,7 @@ namespace AssetBundleGraph {
 					}
 					
 					outputDict[groupKey] = outputs;
-					Output(node, connection, outputDict, new List<string>());
+					Output(node, connectionToOutput, outputDict, new List<string>());
 				};
 				
 				try {
@@ -58,8 +58,8 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -67,10 +67,10 @@ namespace AssetBundleGraph {
 			// overlapping test.
 			node.ValidateOverlappingFilterCondition(true);
 
-			foreach (var groupKey in groupedSources.Keys) {
+			foreach (var groupKey in inputGroupAssets.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
 
-				var inputSources = groupedSources[groupKey];
+				var inputSources = inputGroupAssets[groupKey];
 				
 				Action<string, List<string>> _Output = (string Id, List<string> outputSources) => {
 					var outputs = new List<Asset>();
@@ -84,7 +84,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(node, connection, outputDict, new List<string>());
+					Output(node, connectionToOutput, outputDict, new List<string>());
 				};
 				
 				try {

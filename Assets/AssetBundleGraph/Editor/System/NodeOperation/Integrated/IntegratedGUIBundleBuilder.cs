@@ -10,8 +10,8 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIBundleBuilder : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -21,18 +21,18 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict["0"] = new List<Asset>();
 
-			foreach (var groupKey in groupedSources.Keys) {
-				var outputSources = groupedSources[groupKey];
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var outputSources = inputGroupAssets[groupKey];
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -43,8 +43,8 @@ namespace AssetBundleGraph {
 				merge multi group into ["0"] group.
 			*/
 			var assetNames = new List<string>();
-			foreach (var groupKey in groupedSources.Keys) {
-				var internalAssetsOfCurrentGroup = groupedSources[groupKey];
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var internalAssetsOfCurrentGroup = inputGroupAssets[groupKey];
 				foreach (var internalAsset in internalAssetsOfCurrentGroup) {
 					assetNames.Add(internalAsset.fileNameAndExtension);
 					assetNames.Add(internalAsset.fileNameAndExtension + AssetBundleGraphSettings.MANIFEST_FOOTER);
@@ -121,7 +121,7 @@ namespace AssetBundleGraph {
 			outputDict["0"] = outputSources;
 			
 			var usedCache = new List<string>(alreadyCached);
-			Output(node, connection, outputDict, usedCache);
+			Output(node, connectionToOutput, outputDict, usedCache);
 		}
 		
 		

@@ -10,13 +10,13 @@ namespace AssetBundleGraph {
 	public class PrefabricatorBase : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			var invalids = new List<string>();
-			foreach (var sources in groupedSources.Values) {
+			foreach (var sources in inputGroupAssets.Values) {
 				foreach (var source in sources) {
 					if (string.IsNullOrEmpty(source.importFrom)) {
 						invalids.Add(source.absoluteAssetPath);
@@ -31,8 +31,8 @@ namespace AssetBundleGraph {
 			var prefabOutputDir = FileUtility.EnsurePrefabricatorCacheDirExists(target, node);				
 			var outputDict = new Dictionary<string, List<Asset>>();
 			
-			foreach (var groupKey in groupedSources.Keys) {
-				var inputSources = groupedSources[groupKey];
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var inputSources = inputGroupAssets[groupKey];
 
 				/*
 					ready input resource info for execute. not contains cache in this node.
@@ -80,21 +80,21 @@ namespace AssetBundleGraph {
 			
 			} 				
 
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 
 		}
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			var usedCache = new List<string>();
 			
 			var invalids = new List<string>();
-			foreach (var sources in groupedSources.Values) {
+			foreach (var sources in inputGroupAssets.Values) {
 				foreach (var source in sources) {
 					if (string.IsNullOrEmpty(source.importFrom)) {
 						invalids.Add(source.absoluteAssetPath);
@@ -110,8 +110,8 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			var cachedOrGenerated = new List<string>();
 
-			foreach (var groupKey in groupedSources.Keys) {
-				var inputSources = groupedSources[groupKey];
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var inputSources = inputGroupAssets[groupKey];
 
 				/*
 					ready input resource info for execute. not contains cache in this node.
@@ -227,7 +227,7 @@ namespace AssetBundleGraph {
 			}
 
 
-			Output(node, connection, outputDict, usedCache);
+			Output(node, connectionToOutput, outputDict, usedCache);
 		}
 
 		private bool isPrefabricateFunctionCalled = false;

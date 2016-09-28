@@ -154,16 +154,23 @@ namespace AssetBundleGraph {
 		public void UpdateRegion (NodeGUI node, int index, int max) {
 			var parentRegion = node.Region;
 			if(IsInput){
+
+				var initialY = (AssetBundleGraphGUISettings.NODE_BASE_HEIGHT - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT) / 2f;
+				var marginY  = initialY + AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * (index);
+
 				buttonRect = new Rect(
 					0,
-					((parentRegion.height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT/2f, 
+					marginY, 
 					AssetBundleGraphGUISettings.INPUT_POINT_WIDTH, 
 					AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT);
 			} else {
-				var y = ((parentRegion.height/(max + 1)) * (index + 1)) - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT/2f;
+
+				var initialY = (AssetBundleGraphGUISettings.NODE_BASE_HEIGHT - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT) / 2f;
+				var marginY  = initialY + AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * (index);
+
 				buttonRect = new Rect(
 					parentRegion.width - AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH + 1f, 
-					y + 1f, 
+					marginY, 
 					AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH, 
 					AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT);
 			}

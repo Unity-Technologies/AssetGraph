@@ -10,8 +10,8 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -32,13 +32,13 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			Export(target, node, connection, groupedSources, Output, false);
+			Export(target, node, connectionToOutput, inputGroupAssets, Output, false);
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
@@ -53,13 +53,13 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(target, node, connection, groupedSources, Output, true);
+			Export(target, node, connectionToOutput, inputGroupAssets, Output, true);
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connection, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,
 			bool isRun) 
 		{
@@ -68,9 +68,9 @@ namespace AssetBundleGraph {
 
 			var failedExports = new List<string>();
 
-			foreach (var groupKey in groupedSources.Keys) {
+			foreach (var groupKey in inputGroupAssets.Keys) {
 				var exportedAssets = new List<Asset>();
-				var inputSources = groupedSources[groupKey];
+				var inputSources = inputGroupAssets[groupKey];
 
 				foreach (var source in inputSources) {
 					if (isRun) {
@@ -127,7 +127,7 @@ namespace AssetBundleGraph {
 				Debug.LogError(node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
-			Output(node, connection, outputDict, new List<string>());
+			Output(node, connectionToOutput, outputDict, new List<string>());
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {

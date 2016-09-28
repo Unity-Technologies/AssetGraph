@@ -381,32 +381,27 @@ namespace AssetBundleGraph {
 			// UpdateNodeRect will be called outside OnGUI(), so it use inacurate but simple way to calcurate label width
 			// instead of CalcSize()
 			var contentLabelWordsLength = this.Name.Length;
-			switch (this.Kind) {
-			case NodeKind.FILTER_GUI:
-			case NodeKind.BUNDLIZER_GUI: {
-					
-					var inputLabels = m_data.InputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label.Length).ToList();
-					if (inputLabels.Any()) {
-						contentLabelWordsLength = contentLabelWordsLength + 1 + inputLabels[0];
-					}
 
-					var outputLabels = m_data.OutputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label.Length).ToList();
-					if (outputLabels.Any()) {
-						contentLabelWordsLength = contentLabelWordsLength + 1 + outputLabels[0];
-					}
-
-					// update node height by number of output connectionPoint.
-					var outputPointCount = m_data.OutputPoints.Count;
-					var inputPointCount  = m_data.InputPoints.Count;
-					var larger = Mathf.Max(outputPointCount, inputPointCount);
-					this.m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, 
-						m_baseRect.width, 
-						AssetBundleGraphGUISettings.NODE_BASE_HEIGHT + (AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * Mathf.Max(0, (larger - 1)))
-					);
-
-					break;
+			if(m_data.InputPoints.Count > 0) {
+				var inputLabels = m_data.InputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label.Length).ToList();
+				if (inputLabels.Any()) {
+					contentLabelWordsLength = contentLabelWordsLength + 1 + inputLabels[0];
 				}
 			}
+
+			if(m_data.OutputPoints.Count > 0) {
+				var outputLabels = m_data.OutputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label.Length).ToList();
+				if (outputLabels.Any()) {
+					contentLabelWordsLength = contentLabelWordsLength + 1 + outputLabels[0];
+				}
+			}
+
+			// update node height by number of output connectionPoint.
+			var nPoints = Mathf.Max(m_data.OutputPoints.Count, m_data.InputPoints.Count);
+			this.m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, 
+				m_baseRect.width, 
+				AssetBundleGraphGUISettings.NODE_BASE_HEIGHT + (AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
+			);
 
 			var newWidth = Mathf.Max(AssetBundleGraphGUISettings.NODE_BASE_WIDTH, contentLabelWordsLength * 10.0f);
 			m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, newWidth, m_baseRect.height);

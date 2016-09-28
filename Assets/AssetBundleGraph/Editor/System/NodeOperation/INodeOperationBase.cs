@@ -13,8 +13,8 @@ namespace AssetBundleGraph {
 		*/
 		void Setup (BuildTarget target, 
 			NodeData nodeData, 
-			ConnectionData connectionData, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
 
@@ -23,8 +23,8 @@ namespace AssetBundleGraph {
 		*/
 		void Run (BuildTarget target, 
 			NodeData nodeData, 
-			ConnectionData connectionData, 
-			Dictionary<string, List<Asset>> groupedSources, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
 	}
