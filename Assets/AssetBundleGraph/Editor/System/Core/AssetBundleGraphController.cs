@@ -243,25 +243,6 @@ namespace AssetBundleGraph {
 			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
 				(NodeData sourceNode, ConnectionData targetConnection, Dictionary<string, List<Asset>> result, List<string> justCached) => 
 			{
-				// this should not happen
-//				var targetConnectionIds = saveData.Connections
-//					.Where(con => con.Id == targetConnectionId)
-//					.Select(con => con.Id)
-//					.ToList();
-//
-//				if (!targetConnectionIds.Any()) {
-//					// if next connection does not exist, no results for next.
-//					// save results to resultDict with this endpoint node's id.
-//					resultDict[dataSourceNodeId] = new Dictionary<string, List<Asset>>();
-//					foreach (var groupKey in result.Keys) {
-//						if (!resultDict[dataSourceNodeId].ContainsKey(groupKey)) {
-//							resultDict[dataSourceNodeId][groupKey] = new List<Asset>();
-//						}
-//						resultDict[dataSourceNodeId][groupKey].AddRange(result[groupKey]);
-//					}
-//					return;
-//				}
-
 				if(targetConnection != null ) {
 					if (!resultDict.ContainsKey(targetConnection)) {
 						resultDict[targetConnection] = new Dictionary<string, List<Asset>>();

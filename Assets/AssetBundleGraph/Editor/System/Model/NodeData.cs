@@ -305,7 +305,7 @@ namespace AssetBundleGraph {
 				return m_isNodeOperationPerformed;
 			}
 			set {
-				m_isNodeOperationPerformed = true;
+				m_isNodeOperationPerformed = value;
 			}
 		}
 

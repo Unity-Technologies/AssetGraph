@@ -494,9 +494,11 @@ namespace AssetBundleGraph {
 			if(s_nodeExceptionPool.Count == 0) {
 				/*
 				remove bundlize setting names from unused Nodes.
-			*/
-				var usedNodeIds = saveData.Nodes.Select(usedNode => usedNode.Id).ToList();
-				UnbundlizeUnusedNodeBundleSettings(usedNodeIds);
+				*/
+				UnbundlizeUnusedNodeBundleSettings(saveData.Nodes);
+
+				// reset node perform status for actual run
+				saveData.Nodes.ForEach(n => n.IsNodeOperationPerformed = false);
 
 				// run datas.
 				s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
@@ -562,7 +564,7 @@ namespace AssetBundleGraph {
 		}
 
 		
-		private static void UnbundlizeUnusedNodeBundleSettings (List<string> usedNodeIds) {
+		private static void UnbundlizeUnusedNodeBundleSettings (List<NodeData> nodes) {
 			EditorUtility.DisplayProgressBar("unbundlize unused resources...", "ready", 0);
 
 			var filePathsInFolder = FileUtility
@@ -570,7 +572,7 @@ namespace AssetBundleGraph {
 				.Where(path => !FileUtility.IsMetaFile(path))
 				.ToList();
 
-			
+
 			var unusedNodeResourcePaths = new List<string>();
 			foreach (var filePath in filePathsInFolder) {
 				// Assets/AssetBundleGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
@@ -578,7 +580,9 @@ namespace AssetBundleGraph {
 
 				var nodeIdInCache = splitted[4];
 
-				if (usedNodeIds.Contains(nodeIdInCache)) continue;
+				if (nodes.Find(n => n.Id == nodeIdInCache) != null) {
+					continue;
+				}
 				unusedNodeResourcePaths.Add(filePath);
 			}
 
