@@ -11,41 +11,44 @@ namespace AssetBundleGraph
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			GroupingOutput(target, node, connectionToOutput, inputGroupAssets, Output);
+			GroupingOutput(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output);
 		}
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			GroupingOutput(target, node, connectionToOutput, inputGroupAssets, Output);
+			GroupingOutput(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output);
 		}
 
 
-		private void GroupingOutput (BuildTarget target, NodeData node, ConnectionData connectionToOutput, Dictionary<string, List<Asset>> inputGroupAssets, Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) {
+		private void GroupingOutput (BuildTarget target, 
+			NodeData node, 
+			ConnectionPointData inputPoint,
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
 
-			try {
-				ValidateGroupingKeyword(
-					node.GroupingKeywords[target],
-					() => {
-						throw new NodeException("Grouping Keyword can not be empty.", node.Id);
-					},
-					() => {
-						throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", AssetBundleGraphSettings.KEYWORD_WILDCARD, node.GroupingKeywords[target]), node.Id);
-					}
-				);
-			}  catch(NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
-			}
+			ValidateGroupingKeyword(
+				node.GroupingKeywords[target],
+				() => {
+					throw new NodeException("Grouping Keyword can not be empty.", node.Id);
+				},
+				() => {
+					throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", AssetBundleGraphSettings.KEYWORD_WILDCARD, node.GroupingKeywords[target]), node.Id);
+				}
+			);
 
 			var outputDict = new Dictionary<string, List<Asset>>();
 

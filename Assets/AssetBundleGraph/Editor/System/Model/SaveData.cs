@@ -14,7 +14,7 @@ namespace AssetBundleGraph {
 		*/
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
-		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
+		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "*";
 
 		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.

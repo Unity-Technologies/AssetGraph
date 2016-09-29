@@ -81,6 +81,7 @@ namespace AssetBundleGraph {
 				BuildTarget.StandaloneWindows64,
 				new NodeData("", NodeKind.LOADER_GUI, 0, 0),
 				null,
+				null,
 				new Dictionary<string, List<Asset>>{
 					{"0", new List<Asset>()}
 				},
@@ -104,11 +105,11 @@ namespace AssetBundleGraph {
 		}
 
 		public static string GetPathSafeTargetName (BuildTarget t) {
-			return t.ToString().Replace(" ", "_");
+			return t.ToString();
 		}
 
 		public static string GetPathSafeTargetGroupName (BuildTargetGroup g) {
-			return g.ToString().Replace(" ", "_");
+			return g.ToString();
 		}
 
 		public static string GetProjectName () {

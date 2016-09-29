@@ -15,18 +15,14 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			// overlapping test.
-			try {
-				node.ValidateOverlappingFilterCondition(true);
-			} catch(NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
-			}
+			node.ValidateOverlappingFilterCondition(true);
 
 			foreach (var groupKey in inputGroupAssets.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
@@ -58,6 +54,7 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 

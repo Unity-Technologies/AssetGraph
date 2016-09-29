@@ -412,9 +412,7 @@ namespace AssetBundleGraph {
 		private void SaveGraphWithReload (bool silent = false) {
 			SaveGraph();
 			try {
-				var target = BuildTargetUtility.
-					GroupToTarget(NodeGUIEditor.currentEditingGroup);
-				Setup(target);
+				Setup(EditorUserBuildSettings.activeBuildTarget);
 			} catch (Exception e) {
 				if(!silent){
 					Debug.LogError("Error occured during reload:" + e);
@@ -485,27 +483,21 @@ namespace AssetBundleGraph {
 					currentCount = currentCount + 1f;
 				}
 
-				EditorUtility.DisplayProgressBar("AssetBundleGraph Processing " + node.Name + ".", progressPercentage + "%", currentCount/totalCount);
+				EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
 			};
 				
 			// perform setup. Fails if any exception raises.
-			AssetBundleGraphController.Perform(saveData, target, false);
+			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, false);
 
 			// if there is not error reported, then run
 			if(s_nodeExceptionPool.Count == 0) {
-				/*
-				remove bundlize setting names from unused Nodes.
-				*/
-				UnbundlizeUnusedNodeBundleSettings(saveData.Nodes);
-
 				// run datas.
 				s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
-				RefreshInspector(s_connectionThroughputs);
-				ShowErrorOnNodes();
-				AssetDatabase.Refresh();
-
-				Finally(currentNodes, currentConnections, s_connectionThroughputs, true);
 			}
+			RefreshInspector(s_connectionThroughputs);
+			AssetDatabase.Refresh();
+			ShowErrorOnNodes();
+			Finally(currentNodes, currentConnections, s_connectionThroughputs, true);
 
 			EditorUtility.ClearProgressBar();
 		}
@@ -562,46 +554,6 @@ namespace AssetBundleGraph {
 		}
 
 		
-		private static void UnbundlizeUnusedNodeBundleSettings (List<NodeData> nodes) {
-			EditorUtility.DisplayProgressBar("unbundlize unused resources...", "ready", 0);
-
-			var filePathsInFolder = FileUtility
-				.FilePathsInFolder(AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH)
-				.Where(path => !FileUtility.IsMetaFile(path))
-				.ToList();
-
-
-			var unusedNodeResourcePaths = new List<string>();
-			foreach (var filePath in filePathsInFolder) {
-				// Assets/AssetBundleGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
-				var splitted = filePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
-
-				var nodeIdInCache = splitted[4];
-
-				if (nodes.Find(n => n.Id == nodeIdInCache) != null) {
-					continue;
-				}
-				unusedNodeResourcePaths.Add(filePath);
-			}
-
-			var max = unusedNodeResourcePaths.Count * 1.0f;
-			var count = 0;
-			foreach (var unusedNodeResourcePath in unusedNodeResourcePaths) {
-				// Assets/AssetBundleGraph/Cached/NodeKind/NodeId/platform-package/CachedResources
-				var splitted = unusedNodeResourcePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
-				var underNodeFilePathSource = splitted.Where((v,i) => 5 < i).ToArray();
-				var underNodeFilePath = string.Join(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), underNodeFilePathSource);
-				EditorUtility.DisplayProgressBar("unbundlize unused resources...", count + "/" + max + " " + splitted[3] + " : " + underNodeFilePath, count / max);
-				
-				var assetImporter = AssetImporter.GetAtPath(unusedNodeResourcePath);
-				assetImporter.assetBundleName = string.Empty;
-
-				count = count + 1;
-			}
-
-			EditorUtility.ClearProgressBar();
-		}
-
 		/**
 			collect node's result with node name.
 			structure is:
@@ -665,11 +617,7 @@ namespace AssetBundleGraph {
 		private void DrawGUIToolBar() {
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
-
-					var target = BuildTargetUtility.
-						GroupToTarget(NodeGUIEditor.currentEditingGroup);
-					
-					Setup(target);
+					Setup(EditorUserBuildSettings.activeBuildTarget);
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 

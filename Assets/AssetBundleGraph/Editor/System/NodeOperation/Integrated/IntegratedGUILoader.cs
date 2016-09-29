@@ -9,64 +9,51 @@ namespace AssetBundleGraph {
 	public class IntegratedGUILoader : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
+			ValidateLoadPath(
+				node.LoaderLoadPath[target],
+				node.GetLoaderFullLoadPath(target),
+				() => {
+					//can be empty
+					//throw new NodeException(node.Name + ": Load Path is empty.", node.Id);
+				}, 
+				() => {
+					throw new NodeException(node.Name + ": Directory not found: " + node.GetLoaderFullLoadPath(target), node.Id);
+				}
+			);
 
-			try {
-				ValidateLoadPath(
-					node.LoaderLoadPath[target],
-					node.GetLoaderFullLoadPath(target),
-					() => {
-						//can be empty
-						//throw new NodeException(node.Name + ": Load Path is empty.", node.Id);
-					}, 
-					() => {
-						throw new NodeException(node.Name + ": Directory not found: " + node.GetLoaderFullLoadPath(target), node.Id);
-					}
-				);
-			} catch(NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
-			}
-			
 			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
 			
 			var outputSource = new List<Asset>();
-			var targetFilePaths = FileUtility.FilePathsInFolder(node.GetLoaderFullLoadPath(target));
+			var targetFilePaths = FileUtility.GetFilePathsInFolder(node.GetLoaderFullLoadPath(target));
 
-			try {	
-				foreach (var targetFilePath in targetFilePaths) {
+			foreach (var targetFilePath in targetFilePaths) {
 
-					if(targetFilePath.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)) {
-						continue;
-					}
-
-					// already contained into Assets/ folder.
-					// imported path is Assets/SOMEWHERE_FILE_EXISTS.
-					if (targetFilePath.StartsWith(assetsFolderPath)) {
-						var relativePath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
-						
-						var assetType = TypeUtility.GetTypeOfAsset(relativePath);
-						if (assetType == typeof(object)) {
-							continue;
-						}
-
-						outputSource.Add(Asset.CreateNewAssetFromLoader(targetFilePath, relativePath));
-						continue;
-					}
-
-					throw new NodeException(node.Name + ": Invalid Load Path. Path must start with Assets/", node.Name);
+				if(targetFilePath.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)) {
+					continue;
 				}
-			} catch(NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
-			}
-			catch (Exception e) {
-				Debug.LogError(node.Name + " Error:" + e);
+
+				// already contained into Assets/ folder.
+				// imported path is Assets/SOMEWHERE_FILE_EXISTS.
+				if (targetFilePath.StartsWith(assetsFolderPath)) {
+					var relativePath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
+					
+					var assetType = TypeUtility.GetTypeOfAsset(relativePath);
+					if (assetType == typeof(object)) {
+						continue;
+					}
+
+					outputSource.Add(Asset.CreateNewAssetFromLoader(targetFilePath, relativePath));
+					continue;
+				}
+
+				throw new NodeException(node.Name + ": Invalid Load Path. Path must start with Assets/", node.Name);
 			}
 
 			var outputDir = new Dictionary<string, List<Asset>> {
@@ -78,28 +65,18 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			ValidateLoadPath(
-				node.LoaderLoadPath[target],
-				node.GetLoaderFullLoadPath(target),
-				() => {
-					//throw new AssetBundleGraphBuildException(node.Name + ": Load Path is empty.");
-				}, 
-				() => {
-					throw new AssetBundleGraphBuildException(node.Name + ": Directory not found: " + node.GetLoaderFullLoadPath(target));
-				}
-			);
-			
 			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
 			
 			var outputSource = new List<Asset>();
 			try {
-				var targetFilePaths = FileUtility.FilePathsInFolder(node.GetLoaderFullLoadPath(target));
+				var targetFilePaths = FileUtility.GetFilePathsInFolder(node.GetLoaderFullLoadPath(target));
 				
 				foreach (var targetFilePath in targetFilePaths) {
 

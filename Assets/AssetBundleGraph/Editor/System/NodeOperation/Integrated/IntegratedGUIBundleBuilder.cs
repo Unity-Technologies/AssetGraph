@@ -7,23 +7,50 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
+
 	public class IntegratedGUIBundleBuilder : INodeOperationBase {
+
+		private static readonly string key = "0";
+
 		public void Setup (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			/*
-				merge multi group into ["0"] group.
-			*/
-			var outputDict = new Dictionary<string, List<Asset>>();
-			outputDict["0"] = new List<Asset>();
 
-			foreach (var groupKey in inputGroupAssets.Keys) {
-				var outputSources = inputGroupAssets[groupKey];
-				outputDict["0"].AddRange(outputSources);
+			var outputDict = new Dictionary<string, List<Asset>>();
+			outputDict[key] = new List<Asset>();
+
+			var bundleNames = inputGroupAssets.Keys.ToList();
+
+			// validate if all assets configured with the same variant name
+			foreach (var name in bundleNames) {
+				var assets = inputGroupAssets[name];
+				if( assets.Count > 0 ) {
+					var variantName = assets[0].variantName;
+					foreach(var a in assets) {
+						if(a.variantName != variantName) {
+							throw new NodeException("Different variant name found on asset bundle group "+name + ":Expected=" + variantName + " Found=" + a.variantName, node.Id); 
+						}
+					}
+				} else {
+					//skip bundle if there is no asset assigned
+					Debug.LogWarning(node.Name + ":" + name + " has no asset assigned.");
+				}
+			}
+
+			// add manifest file
+			bundleNames.Add( SystemDataUtility.GetPathSafeTargetName(target) );
+			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+
+			foreach (var name in bundleNames) {
+				Asset bundle = Asset.CreateAssetWithImportPath( FileUtility.PathCombine(bundleOutputDir, name) );
+				Asset manifest = Asset.CreateAssetWithImportPath( FileUtility.PathCombine(bundleOutputDir, name + AssetBundleGraphSettings.MANIFEST_FOOTER) );
+				outputDict[key].Add(bundle);
+				outputDict[key].Add(manifest);
 			}
 
 			Output(connectionToOutput, outputDict, new List<string>());
@@ -31,6 +58,7 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -39,116 +67,57 @@ namespace AssetBundleGraph {
 			
 			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
 			
-			/*
-				merge multi group into ["0"] group.
-			*/
-			var assetNames = new List<string>();
-			foreach (var groupKey in inputGroupAssets.Keys) {
-				var internalAssetsOfCurrentGroup = inputGroupAssets[groupKey];
-				foreach (var internalAsset in internalAssetsOfCurrentGroup) {
-					assetNames.Add(internalAsset.fileNameAndExtension);
-					assetNames.Add(internalAsset.fileNameAndExtension + AssetBundleGraphSettings.MANIFEST_FOOTER);
-				}
-			}
+			AssetBundleBuild[] bundleBuild = new AssetBundleBuild[inputGroupAssets.Keys.Count];
 
-			/*
-				platform's bundle & manifest. 
-				e.g. iOS & iOS.manifest.
-			*/
-			var bundleFileName = SystemDataUtility.GetPathSafeTargetName(target);
-			var bundleFileManifest = bundleFileName + AssetBundleGraphSettings.MANIFEST_FOOTER;
-			
-			assetNames.Add(bundleFileName);
-			assetNames.Add(bundleFileManifest);
+			var bundleNames = inputGroupAssets.Keys.ToList();
 
-			/*
-				delete not intended assets.
-			*/
-			foreach (var cachedAsset in alreadyCached) {
-				var cachedFileName = Path.GetFileName(cachedAsset);
-				if (assetNames.Contains(cachedFileName)) {
+			for(int i=0; i<bundleNames.Count; ++i) {
+				var bundleName = bundleNames[i];
+				var assets = inputGroupAssets[bundleName];
+
+				if(assets.Count == 0) {
+					Debug.LogWarning(node.Name + ":" + bundleName + " build skipped. No asset assigned to this asset bundle.");
 					continue;
 				}
-				File.Delete(cachedAsset);
+
+				bundleBuild[i].assetBundleName = bundleName;
+				bundleBuild[i].assetBundleVariant = assets[0].variantName;
+				bundleBuild[i].assetNames = assets.Select(a => a.importFrom).ToArray();
 			}
 
-			BuildPipeline.BuildAssetBundles(bundleOutputDir, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
+
+			BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
 
 
-			/*
-				check assumed bundlized resources and actual generated assetbundles.
+			var output = new Dictionary<string, List<Asset>>();
+			output[key] = new List<Asset>();
 
-				"assuned bundlized resources info from bundlizer" are contained by "actual bundlized resources".
-			*/
-			var outputDict = new Dictionary<string, List<Asset>>();
-			var outputSources = new List<Asset>();
 
-			var newAssetPaths = new List<string>();
-			var generatedAssetBundlePaths = FileUtility.FilePathsInFolder(bundleOutputDir);
-			foreach (var newAssetPath in generatedAssetBundlePaths) {
-				newAssetPaths.Add(newAssetPath);
-				var newAssetData = Asset.CreateAssetWithImportPath(newAssetPath);
-				outputSources.Add(newAssetData);
-			}
-
-			// compare, erase & notice.
-			var containedAssetBundles = new List<string>();
-			
-			// collect intended output.
-			foreach (var generatedAssetPath in newAssetPaths) {
-				var generatedAssetName = Path.GetFileName(generatedAssetPath);
-
-				// collect intended assetBundle & assetBundleManifest file.
-				foreach (var bundledName in assetNames) {
-					if (generatedAssetName == bundledName) {
-						containedAssetBundles.Add(generatedAssetPath);
-						continue;
-					}
-				
-					var bundleManifestName = bundledName + AssetBundleGraphSettings.MANIFEST_FOOTER;
-					if (generatedAssetName == bundleManifestName) {
-						containedAssetBundles.Add(generatedAssetPath);
-						continue;
-					}
+			var generatedFiles = FileUtility.GetFilePathsInFolder(bundleOutputDir);
+			// add manifest file
+			bundleNames.Add( SystemDataUtility.GetPathSafeTargetName(target) );
+			foreach (var path in generatedFiles) {
+				var fileName = Path.GetFileName(path);
+				if( IsFileIntendedItem(fileName, bundleNames) ) {
+					output[key].Add( Asset.CreateAssetWithImportPath(path) );
+				} else {
+					Debug.LogWarning(node.Name + ":Irrelevant file found in assetbundle cache folder:" + fileName);
 				}
 			}
 
-			var diffs = newAssetPaths.Except(containedAssetBundles);
-			foreach (var diff in diffs) {
-				Debug.LogWarning(node.Name +": AssetBundle " + diff + " is not intended to build. Check if unnecessary importer or prefabricator exists in the graph.");
-			}
-		
-			outputDict["0"] = outputSources;
-			
-			Output(connectionToOutput, outputDict, alreadyCached);
+			Output(connectionToOutput, output, alreadyCached);
 		}
-		
-		
-		public static void RemoveAllAssetBundleSettings () {
-			RemoveBundleSettings(AssetBundleGraphSettings.ASSETS_PATH);
-		}
-		
-		public static void RemoveBundleSettings (string nodePath) {
-			EditorUtility.DisplayProgressBar("AssetBundleGraph unbundlize all resources...", nodePath, 0);
-			var filePathsInFolder = FileUtility.FilePathsInFolder(nodePath);
-			foreach (var filePath in filePathsInFolder) {
-				if (FileUtility.IsMetaFile(filePath)) {
-					continue;
-				}
-				if (FileUtility.ContainsHiddenFiles(filePath)) {
-					continue;
-				}
-				var assetImporter = AssetImporter.GetAtPath(filePath);
-				
-				// assetImporter is null when the asset is not accepted by Unity.
-				// e.g. file.my_new_extension is ignored by Unity.
-				if (assetImporter == null) continue;
 
-				if (assetImporter.GetType() == typeof(UnityEditor.MonoImporter)) continue;
-				
-				assetImporter.assetBundleName = string.Empty;
+		// Check if given file is generated Item
+		private bool IsFileIntendedItem(string filename, List<string> bundleNames) {
+			foreach(var name in bundleNames) {
+				// related files always start from bundle names, as variants and manifests
+				// are only appended on treail
+				if( filename.IndexOf(name) == 0 ) {
+					return true;
+				}
 			}
-			EditorUtility.ClearProgressBar();
+			return false;
 		}
 	}
 }

@@ -9,6 +9,7 @@ namespace AssetBundleGraph {
 	public class FilterBase : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -41,6 +42,7 @@ namespace AssetBundleGraph {
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 

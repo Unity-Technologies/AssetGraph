@@ -10,54 +10,7 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
-		{
-
-			try {
-				ValidateBundleNameTemplate(
-					node.BundleNameTemplate[target],
-					() => {
-						throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
-					}
-				);
-
-				var variantNames = node.Variants.Select(v=>v.Name).ToList();
-				foreach(var variant in node.Variants) {
-					ValidateVariantName(variant.Name, variantNames, 
-						() => {
-							throw new NodeException(node.Name + ":Variant name is empty.", node.Id);
-						},
-						() => {
-							throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + variant.Name + "\".", node.Id);
-						},
-						() => {
-							throw new NodeException(node.Name + ":Variant name already exists \"" + variant.Name + "\".", node.Id);
-						});
-				}
-
-			} catch (NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
-			}
-
-			var outputDict = new Dictionary<string, List<Asset>>();
-
-			foreach (var groupKey in inputGroupAssets.Keys) {
-				var inputSources = inputGroupAssets[groupKey];
-				
-				var bundleName = BundlizeAssets(target, node, groupKey, inputSources, false);
-				var newAssetData = Asset.CreateAssetWithImportPath(bundleName);
-				outputDict[groupKey] = new List<Asset>(){ newAssetData };
-			}
-			
-			Output(connectionToOutput, outputDict, null);
-		}
-		
-		public void Run (BuildTarget target, 
-			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -66,68 +19,82 @@ namespace AssetBundleGraph {
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
 				() => {
-					throw new AssetBundleGraphBuildException(node.Name + ": Bundle Name Template is empty.");
+					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
 				}
 			);
 
-			var outputDict = new Dictionary<string, List<Asset>>();
-
-			foreach (var groupKey in inputGroupAssets.Keys) {
-				var inputSources = inputGroupAssets[groupKey];
-				
-				var bundleName = BundlizeAssets(target, node, groupKey, inputSources, true);
-				var newAssetData = Asset.CreateAssetWithImportPath(bundleName);
-
-				outputDict[groupKey] = new List<Asset>(){ newAssetData };
+			var variantNames = node.Variants.Select(v=>v.Name).ToList();
+			foreach(var variant in node.Variants) {
+				ValidateVariantName(variant.Name, variantNames, 
+					() => {
+						throw new NodeException(node.Name + ":Variant name is empty.", node.Id);
+					},
+					() => {
+						throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + variant.Name + "\".", node.Id);
+					},
+					() => {
+						throw new NodeException(node.Name + ":Variant name already exists \"" + variant.Name + "\".", node.Id);
+					});
 			}
-			
-			Output(connectionToOutput, outputDict, null);
-
-		}
-
-		public string BundlizeAssets (BuildTarget target, NodeData node, string groupkey, List<Asset> sources, bool isRun) {		
-			var invalids = new List<string>();
-			foreach (var source in sources) {
-				if (string.IsNullOrEmpty(source.importFrom)) {
-					invalids.Add(source.absoluteAssetPath);
-				}
-			}
-			if (invalids.Any()) {
-				throw new AssetBundleGraphBuildException(node.Name + ": Invalid files to bundle. Following files need to be imported before bundlize: " + string.Join(", ", invalids.ToArray()) );
-			}
-
-			var bundleName = node.BundleNameTemplate[target];
 
 			/*
-				if contains KEYWORD_WILDCARD, use group identifier to bundlize name.
-			*/
-			if (bundleName.Contains(AssetBundleGraphSettings.KEYWORD_WILDCARD)) {
-				var templateHead = bundleName.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[0];
-				var templateTail = bundleName.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD)[1];
+			 * Check if incoming asset has valid import path
+			 */ 
+			var invalids = new List<Asset>();
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				inputGroupAssets[groupKey].ForEach( a => { if (string.IsNullOrEmpty(a.importFrom)) invalids.Add(a); } );
+			}
+			if (invalids.Any()) {
+				throw new NodeException(node.Name + 
+					": Invalid files are found. Following files need to be imported to put into asset bundle: " + 
+					string.Join(", ", invalids.Select(a =>a.absoluteAssetPath).ToArray()), node.Id );
+			}
 
-				bundleName = (templateHead + groupkey + templateTail + "." + SystemDataUtility.GetPathSafeTargetName(target)).ToLower();
+			var output = new Dictionary<string, List<Asset>>();
+
+			var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
+			var variantName = (currentVariant == null) ? null : currentVariant.Name;
+
+			// set configured assets in bundle name
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var bundleName = GetBundleName(target, node, groupKey, variantName);
+				output[bundleName] = ConfigureAssetBundleSettings(variantName, inputGroupAssets[groupKey]);
 			}
 			
-			for (var i = 0; i < sources.Count; i++) {
-				var source = sources[i];
+			Output(connectionToOutput, output, null);
+		}
+		
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionPointData inputPoint,
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
+			List<string> alreadyCached, 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
+			var output = new Dictionary<string, List<Asset>>();
 
-				// if already bundled in this running, avoid changing that name.
-				if (source.isBundled) {
-					continue;
-				}
-				
-				if (isRun) {
-					if (FileUtility.IsMetaFile(source.importFrom)) continue;	
-					var assetImporter = AssetImporter.GetAtPath(source.importFrom);
-					if (assetImporter == null) continue; 
-					assetImporter.assetBundleName = bundleName;
-				}
-				
-				// set as this resource is already bundled.
-				sources[i] = Asset.DuplicateAssetWithNewStatus(sources[i], sources[i].isNew, true);
+			var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
+			var variantName = (currentVariant == null) ? null : currentVariant.Name;
+
+			// set configured assets in bundle name
+			foreach (var groupKey in inputGroupAssets.Keys) {
+				var bundleName = GetBundleName(target, node, groupKey, variantName);
+				output[bundleName] = ConfigureAssetBundleSettings(variantName, inputGroupAssets[groupKey]);
 			}
 
-			return bundleName;
+			Output(connectionToOutput, output, null);
+		}
+
+		public List<Asset> ConfigureAssetBundleSettings (string variantName, List<Asset> assets) {		
+
+			List<Asset> configuredAssets = new List<Asset>();
+
+			foreach(var a in assets) {
+				configuredAssets.Add( Asset.DuplicateAssetWithVariant(a, variantName) );
+			}
+
+			return configuredAssets;
 		}
 
 		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty) {
@@ -151,6 +118,17 @@ namespace AssetBundleGraph {
 			if (overlappings.Any()) {
 				NameAlreadyExists();
 			}
+		}
+
+		public static string GetBundleName(BuildTarget target, NodeData node, string groupKey, string variantName) {
+			var bundleName = node.BundleNameTemplate[target];
+
+			bundleName = bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
+			if(variantName != null) {
+				bundleName = bundleName + "." + variantName;
+			}
+
+			return bundleName;
 		}
 	}
 }

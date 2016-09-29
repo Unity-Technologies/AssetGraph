@@ -10,33 +10,7 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
-		{
-
-			try {
-				ValidateExportPath(
-					node.ExporterExportPath[target],
-					node.ExporterExportPath[target],
-					() => {
-						throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
-					},
-					() => {
-						throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target], node.Id);
-					}
-				);
-			} catch(NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				return;
-			}
-
-			Export(target, node, connectionToOutput, inputGroupAssets, Output, false);
-		}
-		
-		public void Run (BuildTarget target, 
-			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -46,18 +20,30 @@ namespace AssetBundleGraph {
 				node.ExporterExportPath[target],
 				node.ExporterExportPath[target],
 				() => {
-					throw new AssetBundleGraphBuildException(node.Name + ":Export Path is empty.");
+					throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
 				},
 				() => {
-					throw new AssetBundleGraphBuildException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target]);
+					throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target], node.Id);
 				}
 			);
 
-			Export(target, node, connectionToOutput, inputGroupAssets, Output, true);
+			Export(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output, false);
+		}
+		
+		public void Run (BuildTarget target, 
+			NodeData node, 
+			ConnectionPointData inputPoint,
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
+			List<string> alreadyCached, 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
+			Export(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output, true);
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,

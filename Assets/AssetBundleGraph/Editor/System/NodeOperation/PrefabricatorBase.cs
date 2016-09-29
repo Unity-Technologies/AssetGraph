@@ -10,6 +10,7 @@ namespace AssetBundleGraph {
 	public class PrefabricatorBase : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -85,6 +86,7 @@ namespace AssetBundleGraph {
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -179,7 +181,7 @@ namespace AssetBundleGraph {
 					it contains "cached" or "generated as prefab" or "else" assets.
 					output all assets.
 				*/
-				var currentAssetsInThisNode = FileUtility.FilePathsInFolder(prefabOutputDir);
+				var currentAssetsInThisNode = FileUtility.GetFilePathsInFolder(prefabOutputDir);
 				foreach (var generatedCandidateAssetPath in currentAssetsInThisNode) {
 					
 					/*

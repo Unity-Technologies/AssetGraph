@@ -74,16 +74,12 @@ namespace AssetBundleGraph {
 			Action<NodeData, float> updateHandler=null
 		) {
 			bool validateFailed = false;
-			if(!isRun){
-				try {
-					ValidateNameCollision(saveData);
-					ValidateLoopConnection(saveData);
-				} catch (NodeException e) {
-					AssetBundleGraphEditorWindow.AddNodeException(e);
-					validateFailed = true;
-				}
-			} else {
-				IntegratedGUIBundleBuilder.RemoveAllAssetBundleSettings();
+			try {
+				ValidateNameCollision(saveData);
+				ValidateLoopConnection(saveData);
+			} catch (NodeException e) {
+				AssetBundleGraphEditorWindow.AddNodeException(e);
+				validateFailed = true;
 			}
 
 			var resultDict = new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
@@ -196,7 +192,7 @@ namespace AssetBundleGraph {
 			bool isActualRun,
 			Action<NodeData, float> updateHandler=null
 		) {
-			if (performedPoints.Contains(currentInputPoint)) {
+			if (currentInputPoint != null && performedPoints.Contains(currentInputPoint)) {
 				return;
 			}
 
@@ -299,10 +295,10 @@ namespace AssetBundleGraph {
 				INodeOperationBase executor = CreateOperation(saveData, currentNodeData);
 				if(executor != null) {
 					if(isActualRun) {
-						executor.Run(target, currentNodeData, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
+						executor.Run(target, currentNodeData, currentInputPoint, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
 					}
 					else {
-						executor.Setup(target, currentNodeData, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
+						executor.Setup(target, currentNodeData, currentInputPoint, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
 					}
 				}
 
@@ -427,7 +423,7 @@ namespace AssetBundleGraph {
 						}
 					}
 
-					return FileUtility.FilePathsInFolder(cachedPathBase);
+					return FileUtility.GetFilePathsInFolder(cachedPathBase);
 				}
 				 
 				case NodeKind.BUNDLIZER_GUI: {
@@ -456,7 +452,7 @@ namespace AssetBundleGraph {
 						}
 					}
 
-					return FileUtility.FilePathsInFolder(cachedPathBase);
+					return FileUtility.GetFilePathsInFolder(cachedPathBase);
 				}
 
 				default: {

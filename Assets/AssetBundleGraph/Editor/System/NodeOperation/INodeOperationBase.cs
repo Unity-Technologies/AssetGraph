@@ -13,6 +13,7 @@ namespace AssetBundleGraph {
 		*/
 		void Setup (BuildTarget target, 
 			NodeData nodeData, 
+			ConnectionPointData inputPoint, 
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
@@ -23,6 +24,7 @@ namespace AssetBundleGraph {
 		*/
 		void Run (BuildTarget target, 
 			NodeData nodeData, 
+			ConnectionPointData inputPoint,
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 

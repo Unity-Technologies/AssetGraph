@@ -16,6 +16,7 @@ namespace AssetBundleGraph {
 		public readonly Type assetType;
 		public readonly bool isNew;		
 		public readonly bool isBundled;
+		public readonly string variantName;
 
 		public string id {
 			get {
@@ -116,6 +117,20 @@ namespace AssetBundleGraph {
 			);
 		}
 
+		public static Asset DuplicateAssetWithVariant (Asset asset, string variantName) {
+			return new Asset(
+				guid:asset.guid,
+				assetDatabaseId:asset.assetDatabaseId,
+				absoluteAssetPath:asset.absoluteAssetPath,
+				importFrom:asset.importFrom,
+				exportTo:asset.exportTo,
+				assetType:asset.assetType,
+				isNew:asset.isNew,
+				isBundled:asset.isBundled,
+				variantName:asset.variantName
+			);
+		}
+
 		/**
 			Create Asset with new status (isNew, isBundled) configured
 		*/
@@ -164,7 +179,8 @@ namespace AssetBundleGraph {
 			string exportTo = null,
 			Type assetType = null,
 			bool isNew = false,
-			bool isBundled = false
+			bool isBundled = false,
+			string variantName = null
 		) {
 			if(assetType == typeof(object)) {
 				throw new AssetBundleGraphException("Unknown type asset is created:" + absoluteAssetPath);
@@ -181,6 +197,7 @@ namespace AssetBundleGraph {
 			this.assetType = assetType;
 			this.isNew = isNew;
 			this.isBundled = isBundled;
+			this.variantName = variantName;
 		}
 /*		
 		public static string GetPathWithoutBasePath (string localPathWithBasePath, string basePath) {
