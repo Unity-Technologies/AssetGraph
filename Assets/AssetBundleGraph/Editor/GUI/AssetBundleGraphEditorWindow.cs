@@ -80,7 +80,7 @@ namespace AssetBundleGraph {
 		public enum ScriptType : int {
 			SCRIPT_MODIFIER,		
 			SCRIPT_PREFABRICATOR,
-			SCRIPT_FINALLY
+			SCRIPT_POSTPROCESS
 		}
 
 
@@ -164,9 +164,9 @@ namespace AssetBundleGraph {
 					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabricator.cs");
 					break;
 				}
-			case ScriptType.SCRIPT_FINALLY: {
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyFinally.cs.template");
-					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyFinally.cs");
+			case ScriptType.SCRIPT_POSTPROCESS: {
+					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPostprocess.cs.template");
+					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPostprocess.cs");
 					break;
 				}
 			default: {
@@ -195,9 +195,9 @@ namespace AssetBundleGraph {
 		public static void GeneratePrefabricator () {
 			GenerateScript(ScriptType.SCRIPT_PREFABRICATOR);
 		}
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_FINALLY)]
-		public static void GenerateFinally () {
-			GenerateScript(ScriptType.SCRIPT_FINALLY);
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_POSTPROCESS)]
+		public static void GeneratePostprocess () {
+			GenerateScript(ScriptType.SCRIPT_POSTPROCESS);
 		}
 			
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
@@ -449,7 +449,7 @@ namespace AssetBundleGraph {
 
 			ShowErrorOnNodes();
 
-			Finally(nodes, connections, s_connectionThroughputs, false);
+			Postprocess(nodes, connections, s_connectionThroughputs, false);
 		}
 
 		/**
@@ -497,7 +497,7 @@ namespace AssetBundleGraph {
 			RefreshInspector(s_connectionThroughputs);
 			AssetDatabase.Refresh();
 			ShowErrorOnNodes();
-			Finally(currentNodes, currentConnections, s_connectionThroughputs, true);
+			Postprocess(currentNodes, currentConnections, s_connectionThroughputs, true);
 
 			EditorUtility.ClearProgressBar();
 		}
@@ -530,7 +530,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static void Finally (
+		public static void Postprocess (
 			List<NodeGUI> currentNodes,
 			List<ConnectionGUI> currentConnections,
 			Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> result, 
@@ -538,18 +538,18 @@ namespace AssetBundleGraph {
 		) {
 			var nodeResult = CollectNodeGroupAndAssets(currentNodes, currentConnections, result);
 
-			var finallyBasedTypeRunner = Assembly.GetExecutingAssembly().GetTypes()
-					.Where(currentType => currentType.BaseType == typeof(FinallyBase))
+			var postprocessBasedTypeRunner = Assembly.GetExecutingAssembly().GetTypes()
+					.Where(currentType => currentType.BaseType == typeof(PostprocessBase))
 					.Select(type => type.ToString())
 					.ToList();
-			foreach (var typeStr in finallyBasedTypeRunner) {
-				var finallyScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
-				if (finallyScriptInstance == null) {
+			foreach (var typeStr in postprocessBasedTypeRunner) {
+				var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+				if (postprocessScriptInstance == null) {
 					throw new AssetBundleGraphException("Running post process script failed because AssetBundleGraph failed to create script instance for " + typeStr + ". No such class found in assembly.");
 				}
-				var finallyInstance = (FinallyBase)finallyScriptInstance;
+				var postprocessInstance = (PostprocessBase)postprocessScriptInstance;
 
-				finallyInstance.Run(nodeResult, isRun);
+				postprocessInstance.Run(nodeResult, isRun);
 			}
 		}
 
