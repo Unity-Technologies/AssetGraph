@@ -15,10 +15,16 @@ namespace AssetBundleGraph {
 
 		[AttributeUsage(AttributeTargets.Class)] 
 		public class MenuItemName : Attribute {
-			public string Name;
+			private string m_name;
+
+			public string Name {
+				get {
+					return m_name;
+				}
+			}
 
 			public MenuItemName (string name) {
-				Name = name;
+				m_name = name;
 			}
 		}
 		
