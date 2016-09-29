@@ -145,37 +145,6 @@ namespace AssetBundleGraph {
 			return finalResult;
 		}
 
-//		/**
-//			Perform Setup on all serialized nodes respect to graph structure.
-//			@result returns ordered connectionIds
-//		*/
-//		private static List<string> PerformSetupForNode (
-//			string endNodeId, 
-//			List<NodeData> allNodes, 
-//			List<ConnectionData> connections, 
-//			Dictionary<string, Dictionary<string, List<Asset>>> resultDict,
-//			Dictionary<string, List<string>> cacheDict
-//		) {
-//			DoNodeOperation(endNodeId, allNodes, connections, resultDict, cacheDict, new List<string>(), false);
-//			return resultDict.Keys.ToList();
-//		}
-//
-//		/**
-//			Perform Run on all serialized nodes respect to graph structure.
-//			@result returns ordered connectionIds
-//		*/
-//		private static List<string> PerformForNode (
-//			string endNodeId, 
-//			List<NodeData> allNodes, 
-//			List<ConnectionData> connections, 
-//			Dictionary<string, Dictionary<string, List<Asset>>> resultDict,
-//			Dictionary<string, List<string>> cacheDict,
-//			bool isRun,
-//			Action<string, float> updateHandler=null
-//		) {
-//			DoNodeOperation(endNodeId, allNodes, connections, resultDict, cacheDict, new List<string>(), isRun, updateHandler);
-//			return resultDict.Keys.ToList();
-//		}
 
 		/**
 			Perform Run or Setup from parent of given terminal node recursively.
