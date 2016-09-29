@@ -62,36 +62,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static List<string> CreateCustomFilterInstanceForScript (string scriptClassName) {
-			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptClassName);
-			if (nodeScriptInstance == null) {
-				Debug.LogError("Failed to create instance for " + scriptClassName + ". No such class found in assembly.");
-				return new List<string>();
-			}
-
-			var labels = new List<string>();
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
-				(ConnectionData connection, Dictionary<string, List<Asset>> outputGroupAsset, List<string> cachedItems) => 
-			{
-				labels.Add(connection.Label);
-			};
-
-			//Dry-run to collect labels
-			((FilterBase)nodeScriptInstance).Setup(
-				BuildTarget.StandaloneWindows64,
-				new NodeData("", NodeKind.LOADER_GUI, 0, 0),
-				null,
-				null,
-				new Dictionary<string, List<Asset>>{
-					{"0", new List<Asset>()}
-				},
-				new List<string>(),
-				Output
-			);
-			return labels;
-
-		}
-
 		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperationBase {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {

@@ -11,8 +11,6 @@ using System.Security.Cryptography;
 namespace AssetBundleGraph {
 
 	public enum NodeKind : int {
-		FILTER_SCRIPT,
-
 		LOADER_GUI,
 		FILTER_GUI,
 		IMPORTSETTING_GUI,
@@ -178,7 +176,6 @@ namespace AssetBundleGraph {
 		public string ScriptClassName {
 			get {
 				ValidateAccess(
-					NodeKind.FILTER_SCRIPT, 
 					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
@@ -186,7 +183,6 @@ namespace AssetBundleGraph {
 			}
 			set {
 				ValidateAccess(
-					NodeKind.FILTER_SCRIPT, 
 					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
@@ -330,7 +326,6 @@ namespace AssetBundleGraph {
 			case NodeKind.IMPORTSETTING_GUI:
 				// nothing to do
 				break;
-			case NodeKind.FILTER_SCRIPT:
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				{
@@ -463,10 +458,6 @@ namespace AssetBundleGraph {
 				m_exporterExportPath = new SerializableMultiTargetString();
 				break;
 
-			case NodeKind.FILTER_SCRIPT:
-				m_scriptClassName = string.Empty;
-				break;
-
 			default:
 				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
 			}
@@ -513,10 +504,6 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				newData.m_exporterExportPath = new SerializableMultiTargetString(m_exporterExportPath);
-				break;
-
-			case NodeKind.FILTER_SCRIPT:
-				newData.m_scriptClassName = m_scriptClassName;
 				break;
 
 			default:
@@ -620,25 +607,7 @@ namespace AssetBundleGraph {
 			throw new AssetBundleGraphException(m_name + ": Tried to access invalid method or property.");
 		}
 
-		/*
-		 * Checks deserialized NodeData, and make some changes if necessary
-		 * return false if validation failed.
-		 */
 		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
-
-			switch (m_kind) {	
-			case NodeKind.FILTER_SCRIPT:
-				if(!TestCreateScriptInstance()) {
-					Debug.LogWarning(m_name  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for \"" + 
-						m_scriptClassName + "\". No such class found in assembly.");
-					return false;
-				}
-
-				// TODO: node のコネクションのラベル情報にFilterScriptの最新情報を反映させる
-
-				break;
-			}
-
 			return true;
 		}
 
@@ -680,7 +649,6 @@ namespace AssetBundleGraph {
 			};
 				
 			switch (m_kind) {
-			case NodeKind.FILTER_SCRIPT:
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;

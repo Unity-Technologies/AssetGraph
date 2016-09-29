@@ -351,7 +351,6 @@ namespace AssetBundleGraph {
 				Action<ConnectionPointData> drawConnectionPoint = (ConnectionPointData point) => 
 				{
 					switch (this.Kind) {
-					case NodeKind.FILTER_SCRIPT:
 					case NodeKind.FILTER_GUI:
 					case NodeKind.BUNDLECONFIG_GUI: 
 						{

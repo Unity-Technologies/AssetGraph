@@ -319,11 +319,6 @@ namespace AssetBundleGraph {
 
 			try {
 				switch (currentNodeData.Kind) {
-				case NodeKind.FILTER_SCRIPT: {
-						var scriptClassName = currentNodeData.ScriptClassName;
-						executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, currentNodeData);
-						break;
-					}
 				case NodeKind.LOADER_GUI: {
 						executor = new IntegratedGUILoader();
 						break;

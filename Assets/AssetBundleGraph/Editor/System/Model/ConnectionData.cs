@@ -119,7 +119,6 @@ namespace AssetBundleGraph {
 					return false;
 				}
 
-			case NodeKind.FILTER_SCRIPT:
 			case NodeKind.LOADER_GUI:
 			case NodeKind.FILTER_GUI:
 			case NodeKind.IMPORTSETTING_GUI:			
@@ -142,7 +141,6 @@ namespace AssetBundleGraph {
 			case NodeKind.BUNDLEBUILDER_GUI: 
 				{
 					switch (to.Kind) {
-					case NodeKind.FILTER_SCRIPT:
 					case NodeKind.FILTER_GUI:
 					case NodeKind.GROUPING_GUI:
 					case NodeKind.EXPORTER_GUI:

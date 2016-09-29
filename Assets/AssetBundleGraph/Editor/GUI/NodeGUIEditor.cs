@@ -73,20 +73,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private void DoInspectorFilterScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Filter(Script): Filter given assets by script.", MessageType.Info);
-			UpdateNodeName(node);
-
-			EditorGUILayout.LabelField("Script:", node.Data.ScriptClassName);
-
-			var outputs = node.Data.OutputPoints;
-			EditorGUILayout.LabelField("ConnectionPoints Count", outputs.Count.ToString());
-
-			foreach (var point in outputs) {
-				EditorGUILayout.LabelField("label", point.Label);
-			}
-		}
-
 		private void DoInspectorFilterGUI (NodeGUI node) {
 			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
 			UpdateNodeName(node);
@@ -688,9 +674,6 @@ namespace AssetBundleGraph {
 			switch (node.Kind) {
 			case NodeKind.LOADER_GUI:
 				DoInspectorLoaderGUI(node);
-				break;
-			case NodeKind.FILTER_SCRIPT:
-				DoInspectorFilterScriptGUI(node);
 				break;
 			case NodeKind.FILTER_GUI:
 				DoInspectorFilterGUI(node);

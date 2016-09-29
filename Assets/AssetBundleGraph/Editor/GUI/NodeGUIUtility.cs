@@ -144,7 +144,6 @@ namespace AssetBundleGraph {
 					NodeSingleton.s.selectedStyle = new Dictionary<NodeKind, string>() {
 						{NodeKind.LOADER_GUI, 			"flow node 0 on"},
 						{NodeKind.EXPORTER_GUI, 		"flow node 0 on"},
-						{NodeKind.FILTER_SCRIPT, 		"flow node 1 on"},
 						{NodeKind.FILTER_GUI, 			"flow node 1 on"},
 						{NodeKind.IMPORTSETTING_GUI,	"flow node 2 on"},
 						{NodeKind.GROUPING_GUI, 		"flow node 3 on"},
@@ -164,7 +163,6 @@ namespace AssetBundleGraph {
 					NodeSingleton.s.unselectedStyle = new Dictionary<NodeKind, string>() {
 						{NodeKind.LOADER_GUI, 			"flow node 0"},
 						{NodeKind.EXPORTER_GUI, 		"flow node 0"},
-						{NodeKind.FILTER_SCRIPT, 		"flow node 1"},
 						{NodeKind.FILTER_GUI, 			"flow node 1"},
 						{NodeKind.IMPORTSETTING_GUI,	"flow node 2"},
 						{NodeKind.GROUPING_GUI, 		"flow node 3"},

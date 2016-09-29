@@ -917,7 +917,7 @@ namespace AssetBundleGraph {
 					foreach (var refe in refs) {
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
 							Type scriptTypeInfo = ((MonoScript)refe).GetClass();							
-							Type inheritedTypeInfo = IsDragAndDropAcceptableScriptType(scriptTypeInfo);
+							Type inheritedTypeInfo = GetDragAndDropAcceptableScriptType(scriptTypeInfo);
 
 							if (inheritedTypeInfo != null) {
 								// at least one asset is script. change interface.
@@ -942,7 +942,7 @@ namespace AssetBundleGraph {
 						var refe = (MonoScript)item.Value;
 						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
 							Type scriptTypeInfo = refe.GetClass();
-							Type inheritedTypeInfo = IsDragAndDropAcceptableScriptType(scriptTypeInfo);
+							Type inheritedTypeInfo = GetDragAndDropAcceptableScriptType(scriptTypeInfo);
 
 							if (inheritedTypeInfo != null) {
 								var dropPos = Event.current.mousePosition;
@@ -1233,10 +1233,7 @@ namespace AssetBundleGraph {
 			return nodes.Where(nodeGui => nodeIds.Contains(nodeGui.Id)).Select(nodeGui => nodeGui.Data.ToJsonString()).ToList();
 		}
 
-		private Type IsDragAndDropAcceptableScriptType (Type type) {
-			if (typeof(FilterBase).IsAssignableFrom(type)) {
-				return typeof(FilterBase);
-			}
+		private Type GetDragAndDropAcceptableScriptType (Type type) {
 			if (typeof(PrefabBuilderBase).IsAssignableFrom(type)) {
 				return typeof(PrefabBuilderBase);
 			}
@@ -1247,19 +1244,11 @@ namespace AssetBundleGraph {
 		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
 			NodeGUI newNode = null;
 
-			if (scriptBaseType == typeof(FilterBase)) {
-				newNode = new NodeGUI(new NodeData(name, NodeKind.FILTER_SCRIPT, x, y));
+			if (scriptBaseType == typeof(PrefabBuilderBase)) {				
+				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
 				newNode.Data.ScriptClassName = scriptClassName;
-				
-				// add output point to this node.
-				// setup this filter then add output point by result of setup.
-				var outputPointLabels = SystemDataUtility.CreateCustomFilterInstanceForScript(scriptClassName);
-
-				foreach (var outputPointLabel in outputPointLabels) {
-					newNode.Data.AddOutputPoint(outputPointLabel);
-				}
 			}
-			
+
 			if (newNode == null) {
 				Debug.LogError("Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
 					") is not supported to create from code.");
