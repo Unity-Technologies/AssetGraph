@@ -93,72 +93,11 @@ namespace AssetBundleGraph {
 			connectionButtonStyle = "sv_label_0";
 		}
 
-		/**
-			Inspector GUI for this connection.
-		*/
-		[CustomEditor(typeof(ConnectionGUIInspectorHelper))]
-		public class ConnectionObj : Editor {
-
-			public override bool RequiresConstantRepaint() {
-				return true;
-			}
-
-			public override void OnInspectorGUI () {
-				var con = ((ConnectionGUIInspectorHelper)target).con;
-				if (con == null) return;
-				
-
-				var foldouts = ((ConnectionGUIInspectorHelper)target).foldouts;
-				
-
-				var count = 0;
-				var throughputListDict = ((ConnectionGUIInspectorHelper)target).throughputListDict;
-				if (throughputListDict == null)  return;
-
-				foreach (var throughputList in throughputListDict.Values) {
-					count += throughputList.Count;
-				}
-
-				EditorGUILayout.LabelField("Total", count.ToString());
-				
-				var redColor = new GUIStyle(EditorStyles.label);
-				redColor.normal.textColor = Color.gray;
-		 
-				var index = 0;
-				foreach (var groupKey in throughputListDict.Keys) {
-					var throughputList = throughputListDict[groupKey];
-
-					var foldout = foldouts[index];
-					
-					foldout = EditorGUILayout.Foldout(foldout, "Group Key:" + groupKey);
-					if (foldout) {
-						EditorGUI.indentLevel = 1;
-						for (var i = 0; i < throughputList.Count; i++) {
-							var sourceStr = throughputList[i].path;
-							var isBundled = throughputList[i].isBundled;
-							
-							if (isBundled) EditorGUILayout.LabelField(sourceStr, redColor); 
-							else EditorGUILayout.LabelField(sourceStr);
-						}
-						EditorGUI.indentLevel = 0;
-					}
-					foldouts[index] = foldout;
-
-					index++;
-				}
-			}
-		}
-
 		public Rect GetRect () {
 			return buttonRect;
 		}
 		
-		/**
-			throughputListDict contains:
-				group/
-					throughput assets
-		*/
-		public void DrawConnection (List<NodeGUI> nodes, Dictionary<string, List<DepreacatedThroughputAsset>> throughputListDict) {
+		public void DrawConnection (List<NodeGUI> nodes, Dictionary<string, List<Asset>> assetGroups) {
 
 			var startNode = nodes.Find(node => node.Id == OutputNodeId);
 			if (startNode == null) {
@@ -223,14 +162,16 @@ namespace AssetBundleGraph {
 			}
 
 			/*
-				draw throughtput badge.
+				draw asset item badge.
 			*/
-			var throughputCount = 0;
-			foreach (var list in throughputListDict.Values) {
-				throughputCount += list.Count;
+			var totalAssets = 0;
+			if(assetGroups != null) {
+				foreach (var list in assetGroups.Values) {
+					totalAssets += list.Count;
+				}
 			}
-			
-			var offsetSize = throughputCount.ToString().Length * 20f;
+
+			var offsetSize = totalAssets.ToString().Length * 20f;
 			
 			buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);
 
@@ -253,8 +194,8 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (GUI.Button(buttonRect, throughputCount.ToString(), connectionButtonStyle)) {
-				conInsp.UpdateCon(this, throughputListDict);
+			if (GUI.Button(buttonRect, totalAssets.ToString(), connectionButtonStyle)) {
+				conInsp.UpdateInspector(this, assetGroups);
 				ConnectionGUIUtility.ConnectionEventHandler(new ConnectionEvent(ConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
 			}
 		}

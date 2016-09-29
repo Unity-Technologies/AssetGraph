@@ -39,6 +39,21 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public string path {
+			get {
+				if(importFrom != null) {
+					return importFrom;
+				}
+				if(absoluteAssetPath != null) {
+					return absoluteAssetPath;
+				}
+				if(exportTo != null) {
+					return exportTo;
+				}
+				return null;
+			}
+		}
+
 		/**
 			Create Asset info from Loader
 		*/

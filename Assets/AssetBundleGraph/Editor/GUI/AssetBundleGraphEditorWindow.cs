@@ -103,8 +103,8 @@ namespace AssetBundleGraph {
 		private AssetBundleGraphSelection selection;
 		private ScalePoint scalePoint;
 
-		private static Dictionary<ConnectionData,Dictionary<string, List<DepreacatedThroughputAsset>>> s_connectionThroughputs = 
-			new Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>>();
+		private static Dictionary<ConnectionData,Dictionary<string, List<Asset>>> s_assetStreamMap = 
+			new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
 		private static List<NodeException> s_nodeExceptionPool = new List<NodeException>();
 
 		private Texture2D selectionTex {
@@ -444,14 +444,13 @@ namespace AssetBundleGraph {
 			// update static all node names.
 			NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-			// ready throughput datas.
-			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, false);
+			s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
 
-			RefreshInspector(s_connectionThroughputs);
+			RefreshInspector(s_assetStreamMap);
 
 			ShowErrorOnNodes();
 
-			Postprocess(nodes, connections, s_connectionThroughputs, false);
+			Postprocess(nodes, connections, s_assetStreamMap, false);
 		}
 
 		/**
@@ -489,29 +488,29 @@ namespace AssetBundleGraph {
 			};
 				
 			// perform setup. Fails if any exception raises.
-			s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, false);
+			s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
 
 			// if there is not error reported, then run
 			if(s_nodeExceptionPool.Count == 0) {
 				// run datas.
-				s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
+				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
 			}
-			RefreshInspector(s_connectionThroughputs);
+			RefreshInspector(s_assetStreamMap);
 			AssetDatabase.Refresh();
 			ShowErrorOnNodes();
-			Postprocess(currentNodes, currentConnections, s_connectionThroughputs, true);
+			Postprocess(currentNodes, currentConnections, s_assetStreamMap, true);
 
 			EditorUtility.ClearProgressBar();
 		}
 
-		private static void RefreshInspector (Dictionary<ConnectionData,Dictionary<string, List<DepreacatedThroughputAsset>>> currentResult) {
+		private static void RefreshInspector (Dictionary<ConnectionData,Dictionary<string, List<Asset>>> currentResult) {
 			if (Selection.activeObject == null) {
 				return;
 			}
 
 			switch (Selection.activeObject.GetType().ToString()) {
 				case "AssetBundleGraph.ConnectionGUIInspectorHelper": {
-					var con = ((ConnectionGUIInspectorHelper)Selection.activeObject).con;
+					var con = ((ConnectionGUIInspectorHelper)Selection.activeObject).connectionGUI;
 					
 					// null when multiple connection deleted.
 					if (string.IsNullOrEmpty(con.Id)) {
@@ -521,7 +520,7 @@ namespace AssetBundleGraph {
 					ConnectionData c = currentResult.Keys.ToList().Find(v => v.Id == con.Id);
 
 					if (c != null) {
-						((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateThroughputs(currentResult[c]);
+						((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateAssetGroups(currentResult[c]);
 					}
 					break;
 				}
@@ -535,7 +534,7 @@ namespace AssetBundleGraph {
 		public static void Postprocess (
 			List<NodeGUI> currentNodes,
 			List<ConnectionGUI> currentConnections,
-			Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> result, 
+			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> result, 
 			bool isRun
 		) {
 			var nodeResult = CollectNodeGroupAndAssets(currentNodes, currentConnections, result);
@@ -564,12 +563,12 @@ namespace AssetBundleGraph {
 				groups
 					resources
 		*/
-		private static Dictionary<NodeData, Dictionary<string, List<DepreacatedThroughputAsset>>> CollectNodeGroupAndAssets (
+		private static Dictionary<NodeData, Dictionary<string, List<Asset>>> CollectNodeGroupAndAssets (
 			List<NodeGUI> currentNodes,
 			List<ConnectionGUI> currentConnections,
-			Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> result
+			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> result
 		) {
-			var nodeDatas = new Dictionary<NodeData, Dictionary<string, List<DepreacatedThroughputAsset>>>();
+			var nodeDatas = new Dictionary<NodeData, Dictionary<string, List<Asset>>>();
 
 //			var nodeIds = currentNodes.Select(node => node.Id).ToList();
 //			var connectionIds = currentConnections.Select(con => con.Id).ToList();
@@ -602,11 +601,11 @@ namespace AssetBundleGraph {
 				var groupDict = result[c];
 				
 				if (!nodeDatas.ContainsKey(targetNode.Data)) {
-					nodeDatas[targetNode.Data] = new Dictionary<string, List<DepreacatedThroughputAsset>>();
+					nodeDatas[targetNode.Data] = new Dictionary<string, List<Asset>>();
 				}
 				foreach (var groupKey in groupDict.Keys) {
 					if (!nodeDatas[targetNode.Data].ContainsKey(groupKey)) {
-						nodeDatas[targetNode.Data][groupKey] = new List<DepreacatedThroughputAsset>();
+						nodeDatas[targetNode.Data][groupKey] = new List<Asset>();
 					}
 					nodeDatas[targetNode.Data][groupKey].AddRange(groupDict[groupKey]);
 				}
@@ -699,12 +698,13 @@ namespace AssetBundleGraph {
 
 				// draw connections.
 				foreach (var con in connections) {
-					var keyEnum = s_connectionThroughputs.Keys.Where(c => c.Id == con.Id);
+					var keyEnum = s_assetStreamMap.Keys.Where(c => c.Id == con.Id);
 					if (keyEnum.Any()) { 
-						var assets = s_connectionThroughputs[keyEnum.First()];
+						var assets = s_assetStreamMap[keyEnum.First()];
 						con.DrawConnection(nodes, assets);
 					} else {
-						con.DrawConnection(nodes, new Dictionary<string, List<DepreacatedThroughputAsset>>());
+						//TODO: may give null?
+						con.DrawConnection(nodes, new Dictionary<string, List<Asset>>());
 					}
 				}
 

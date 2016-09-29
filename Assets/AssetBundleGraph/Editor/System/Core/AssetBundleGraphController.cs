@@ -66,7 +66,7 @@ namespace AssetBundleGraph {
 		/**
 		 * Execute Run operations using current graph
 		 */
-		public static Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> 
+		public static Dictionary<ConnectionData, Dictionary<string, List<Asset>>> 
 		Perform (
 			SaveData saveData, 
 			BuildTarget target,
@@ -100,50 +100,50 @@ namespace AssetBundleGraph {
 					}
 				}
 			}
-			return CollectResult(resultDict);
+			return resultDict;
 		}
 
 		/**
 		 *  Collect build result: connectionId : < groupName : List<Asset> >
 		 */
-		private static Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>> 
-		CollectResult (Dictionary<ConnectionData, Dictionary<string, List<Asset>>> buildResult) {
-
-			var finalResult = new Dictionary<ConnectionData, Dictionary<string, List<DepreacatedThroughputAsset>>>();
-
-			foreach (var connection in buildResult.Keys) {
-				var groupDict = buildResult[connection];
-				var finalGroupDict = new Dictionary<string, List<DepreacatedThroughputAsset>>();
-
-				foreach (var groupKey in groupDict.Keys) {
-					var assets = groupDict[groupKey];
-					var finalAssets = new List<DepreacatedThroughputAsset>();
-
-					foreach (var assetData in assets) {
-						var bundled = assetData.isBundled;
-
-						if (!string.IsNullOrEmpty(assetData.importFrom)) {
-							finalAssets.Add(new DepreacatedThroughputAsset(assetData.importFrom, bundled));
-							continue;
-						} 
-
-						if (!string.IsNullOrEmpty(assetData.absoluteAssetPath)) {
-							var relativeAbsolutePath = assetData.absoluteAssetPath.Replace(FileUtility.ProjectPathWithSlash(), string.Empty);
-							finalAssets.Add(new DepreacatedThroughputAsset(relativeAbsolutePath, bundled));
-							continue;
-						}
-
-						if (!string.IsNullOrEmpty(assetData.exportTo)) {
-							finalAssets.Add(new DepreacatedThroughputAsset(assetData.exportTo, bundled));
-							continue;
-						}
-					}
-					finalGroupDict[groupKey] = finalAssets;
-				}
-				finalResult[connection] = finalGroupDict;
-			}
-			return finalResult;
-		}
+//		private static Dictionary<ConnectionData, Dictionary<string, List<Asset>>> 
+//		CollectResult (Dictionary<ConnectionData, Dictionary<string, List<Asset>>> buildResult) {
+//
+//			var finalResult = new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
+//
+//			foreach (var connection in buildResult.Keys) {
+//				var groupDict = buildResult[connection];
+//				var finalGroupDict = new Dictionary<string, List<Asset>>();
+//
+//				foreach (var groupKey in groupDict.Keys) {
+//					var assets = groupDict[groupKey];
+//					var finalAssets = new List<Asset>();
+//
+//					foreach (var assetData in assets) {
+//						var bundled = assetData.isBundled;
+//
+//						if (!string.IsNullOrEmpty(assetData.importFrom)) {
+//							finalAssets.Add(new DepreacatedThroughputAsset(assetData.importFrom, bundled));
+//							continue;
+//						} 
+//
+//						if (!string.IsNullOrEmpty(assetData.absoluteAssetPath)) {
+//							var relativeAbsolutePath = assetData.absoluteAssetPath.Replace(FileUtility.ProjectPathWithSlash(), string.Empty);
+//							finalAssets.Add(new DepreacatedThroughputAsset(relativeAbsolutePath, bundled));
+//							continue;
+//						}
+//
+//						if (!string.IsNullOrEmpty(assetData.exportTo)) {
+//							finalAssets.Add(new DepreacatedThroughputAsset(assetData.exportTo, bundled));
+//							continue;
+//						}
+//					}
+//					finalGroupDict[groupKey] = finalAssets;
+//				}
+//				finalResult[connection] = finalGroupDict;
+//			}
+//			return finalResult;
+//		}
 
 
 		/**

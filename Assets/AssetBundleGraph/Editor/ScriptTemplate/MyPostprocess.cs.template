@@ -13,10 +13,10 @@ public class MyPostprocess : AssetBundleGraph.PostprocessBase {
 	/* 
 	 * Run() is called when build or dry-run is performed. 
 	 * 
-	 * @param [in] throughputs	Dictionary of group of files targeted to build
+	 * @param [in] assetGroups	Dictionary of asset groups per Node 
 	 * @param [in] isRun		True if this is actual build. 
 	 */
-	public override void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.DepreacatedThroughputAsset>>> throughputs, bool isRun) {
+	public override void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
 
 		if (!isRun) {
 			return;
@@ -24,7 +24,7 @@ public class MyPostprocess : AssetBundleGraph.PostprocessBase {
 
 		Debug.Log("BUILD REPORT:");
 
-		foreach (var node in throughputs.Keys) {
+		foreach (var node in assetGroups.Keys) {
 			var result = throughputs[node];
 
 			StringBuilder sb = new StringBuilder();
