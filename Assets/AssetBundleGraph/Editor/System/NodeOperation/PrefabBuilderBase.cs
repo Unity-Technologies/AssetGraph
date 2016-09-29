@@ -9,15 +9,22 @@ using System.Reflection;
 
 namespace AssetBundleGraph {
 
-	[AttributeUsage(AttributeTargets.Class)] 
-	public class MenuItemName : Attribute {
-		public string Name;
-		public MenuItemName (string name) {
-			Name = name;
-		}
-	}
-
 	public class PrefabBuilderBase : INodeOperationBase {
+
+		[AttributeUsage(AttributeTargets.Class)] 
+		public class MenuItemName : Attribute {
+			private string m_name;
+
+			public string Name {
+				get {
+					return m_name;
+				}
+			}
+
+			public MenuItemName (string name) {
+				m_name = name;
+			}
+		}
 
 		private static  Dictionary<string, string> s_attributeClassNameMap;
 		

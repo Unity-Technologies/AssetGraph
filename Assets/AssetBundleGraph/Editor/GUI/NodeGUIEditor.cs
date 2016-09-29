@@ -355,7 +355,7 @@ namespace AssetBundleGraph {
 
 			TODO:
 		*/
-		[NonSerialized] private ModifierOperators.OperatorBase modifierOperatorInstance;
+		[NonSerialized] private ModifierBase modifierOperatorInstance;
 
 		private void DoInspectorGroupingGUI (NodeGUI node) {
 			if (node.Data.GroupingKeywords == null) {

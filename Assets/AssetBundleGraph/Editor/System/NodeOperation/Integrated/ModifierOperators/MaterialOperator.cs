@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
-    [Serializable] public class MaterialOperator : OperatorBase {
+    [Serializable] public class MaterialOperator : ModifierBase {
 		[SerializeField] public Shader shader;
 		
 		public enum BlendMode {
@@ -31,7 +31,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override OperatorBase DefaultSetting () {
+		public override ModifierBase DefaultSetting () {
 			return new MaterialOperator(
 				"UnityEngine.Material",
 				Shader.Find("Standard"),
@@ -69,9 +69,9 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override void DrawInspector (Action changed) {
-			var currentMaterial = GenerateSettingMaterial();
+			//var currentMaterial = GenerateSettingMaterial();
 			
-			GUILayout.Label("Shader シェーダ一覧を読み出すコードがinternalなので辛い");
+			// <- all items from here is not completed because they cannot call all functions.
 			// var newShader = ShaderPopup();
 			// if (newShader != this.material.shader) {
 			// 	this.material.shader = newShader;
@@ -85,12 +85,9 @@ namespace AssetBundleGraph.ModifierOperators {
 				changed();
 			}
 
-			GUILayout.Label("このへんの要素が軒並みそのままの形だと読み出せない。materialEditorが作り出せない + internalなメソッド使ってて取り出せない。");
-			GUILayout.Label("該当するような機構をこのクラスに抜き出して実装するかな、、");
-
-			GUILayout.Label("Main Maps", EditorStyles.boldLabel);
+			// GUILayout.Label("Main Maps", EditorStyles.boldLabel);
 			
-			DoAlbedoArea(currentMaterial);
+			// DoAlbedoArea(currentMaterial);// <- tested but faied to implement.
 			// this.DoSpecularMetallicArea();
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.normalMapText, this.bumpMap, (!(this.bumpMap.textureValue != null)) ? null : this.bumpScale);
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.heightMapText, this.heightMap, (!(this.heightMap.textureValue != null)) ? null : this.heigtMapScale);
@@ -106,9 +103,9 @@ namespace AssetBundleGraph.ModifierOperators {
 			// 	this.emissionMap.textureScaleAndOffset = this.albedoMap.textureScaleAndOffset;
 			// }
 
-			EditorGUILayout.Space();
+			// EditorGUILayout.Space();
 			
-			GUILayout.Label("Secondary Maps", EditorStyles.boldLabel);
+			// GUILayout.Label("Secondary Maps", EditorStyles.boldLabel);
 			
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.detailAlbedoText, this.detailAlbedoMap);
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.detailNormalMapText, this.detailNormalMap, this.detailNormalMapScale);
@@ -120,9 +117,11 @@ namespace AssetBundleGraph.ModifierOperators {
 			エディタ内部でしか使えないリスト関数とか取得関数使ってて変更できないのが悲しい。
 		*/
 		private void ShaderPopup() {
+			// <- cannot use these apis from Userspace editor script.
+
 			// bool enabled = GUI.enabled;
-			Rect rect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
-			rect = EditorGUI.PrefixLabel(rect, 47385, new GUIContent("Shader"));
+			// Rect rect = EditorGUILayout.GetControlRect(new GUILayoutOption[0]);
+			// rect = EditorGUI.PrefixLabel(rect, 47385, new GUIContent("Shader"));
 
 			// EditorGUI.showMixedValue = this.HasMultipleMixedShaderValues();
 			// GUIContent content = EditorGUIUtility.TempContent((!(this.shader != null)) ? "No Shader Selected" : this.shader.name);
@@ -140,10 +139,10 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		private void DoAlbedoArea(Material material) {
-			// var materialEditor = new MaterialEditor();// 落ちる
-			// materialEditor.target = material;// できない
+			// var materialEditor = new MaterialEditor();// <- cannot generate from here.
+			// materialEditor.target = material;// <- unusable.
 			
-			// ShaderGUI系のメソッドでパラメータ取得したいんだけど、このへんの関数がのきなみinternalなので呼べない。
+			// <- these APIs are defined as internal.
 			// var albedoMap = ShaderGUI.FindProperty("_MainTex", props);
 			// materialEditor.TexturePropertySingleLine(new GUIContent("Albedo", "Albedo (RGB) and Transparency (A)"), this.albedoMap, this.albedoColor);
 			// if ((int)material.GetFloat("_Mode") == 1) {
@@ -188,47 +187,6 @@ namespace AssetBundleGraph.ModifierOperators {
 			// 		}
 			// 	}
 			// }
-		}
-
-		public static void SetupMaterialWithBlendMode(Material material, BlendMode blendMode) {
-			switch (blendMode) {
-				case BlendMode.Opaque:
-					material.SetInt("_SrcBlend", 1);
-					material.SetInt("_DstBlend", 0);
-					material.SetInt("_ZWrite", 1);
-					material.DisableKeyword("_ALPHATEST_ON");
-					material.DisableKeyword("_ALPHABLEND_ON");
-					material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-					material.renderQueue = -1;
-					break;
-				case BlendMode.Cutout:
-					material.SetInt("_SrcBlend", 1);
-					material.SetInt("_DstBlend", 0);
-					material.SetInt("_ZWrite", 1);
-					material.EnableKeyword("_ALPHATEST_ON");
-					material.DisableKeyword("_ALPHABLEND_ON");
-					material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-					material.renderQueue = 2450;
-					break;
-				case BlendMode.Fade:
-					material.SetInt("_SrcBlend", 5);
-					material.SetInt("_DstBlend", 10);
-					material.SetInt("_ZWrite", 0);
-					material.DisableKeyword("_ALPHATEST_ON");
-					material.EnableKeyword("_ALPHABLEND_ON");
-					material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-					material.renderQueue = 3000;
-					break;
-				case BlendMode.Transparent:
-					material.SetInt("_SrcBlend", 1);
-					material.SetInt("_DstBlend", 10);
-					material.SetInt("_ZWrite", 0);
-					material.DisableKeyword("_ALPHATEST_ON");
-					material.DisableKeyword("_ALPHABLEND_ON");
-					material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-					material.renderQueue = 3000;
-					break;
-			}
 		}
 	}
 

@@ -1237,6 +1237,9 @@ namespace AssetBundleGraph {
 			if (typeof(PrefabBuilderBase).IsAssignableFrom(type)) {
 				return typeof(PrefabBuilderBase);
 			}
+			if (typeof(ModifierBase).IsAssignableFrom(type)) {
+				return typeof(ModifierBase);
+			}
 
 			return null;
 		}
@@ -1244,7 +1247,10 @@ namespace AssetBundleGraph {
 		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
 			NodeGUI newNode = null;
 
-			if (scriptBaseType == typeof(PrefabBuilderBase)) {				
+			if (scriptBaseType == typeof(ModifierBase)) {
+				Debug.LogError("Modifierに対してown class定義でModifierノードを追加。");
+			}
+			if (scriptBaseType == typeof(PrefabBuilderBase)) {
 				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
 				newNode.Data.ScriptClassName = scriptClassName;
 			}

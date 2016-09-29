@@ -228,7 +228,7 @@ namespace AssetBundleGraph {
 			if(data == string.Empty) {
 				return null;
 			}
-			var deserializedDataObject = JsonUtility.FromJson<ModifierOperators.OperatorBase>(data);
+			var deserializedDataObject = JsonUtility.FromJson<ModifierBase>(data);
 			if(deserializedDataObject != null) {
 				return Types.GetType (deserializedDataObject.operatorType, "Assembly-CSharp-Editor.dll");
 			}
@@ -284,7 +284,7 @@ namespace AssetBundleGraph {
 			if (!File.Exists(dataPath)) {
 				Type operatorType = modifierOperatorTypeMap[modifierType];
 
-				var operatorInstance = Activator.CreateInstance(operatorType) as ModifierOperators.OperatorBase;
+				var operatorInstance = Activator.CreateInstance(operatorType) as ModifierBase;
 
 				var operatorWithDefaultSettings = operatorInstance.DefaultSetting();
 
@@ -312,7 +312,7 @@ namespace AssetBundleGraph {
 			return data;
 		}
 
-		public static void SaveModifierOperatorToDisk(string nodeId, BuildTargetGroup targetPlatform, ModifierOperators.OperatorBase op) {
+		public static void SaveModifierOperatorToDisk(string nodeId, BuildTargetGroup targetPlatform, ModifierBase op) {
 
 			var dataPath = GetModifierDataPath(nodeId, targetPlatform);
 			var dataDir  = Directory.GetParent(dataPath);
@@ -349,12 +349,12 @@ namespace AssetBundleGraph {
 			{typeof(UnityEngine.SceneManagement.Scene), typeof(ModifierOperators.SceneOperator)},
 		};
 
-		public static ModifierOperators.OperatorBase CreateModifierOperator(string nodeId, BuildTargetGroup targetGroup) {
+		public static ModifierBase CreateModifierOperator(string nodeId, BuildTargetGroup targetGroup) {
 
 			string data = LoadModifierDataFromDisk(nodeId, targetGroup);
 			Type operatorType = modifierOperatorTypeMap[GetTargetType(nodeId)];
 
-			return JsonUtility.FromJson(data, operatorType) as ModifierOperators.OperatorBase;
+			return JsonUtility.FromJson(data, operatorType) as ModifierBase;
 		}
 	}
 }
