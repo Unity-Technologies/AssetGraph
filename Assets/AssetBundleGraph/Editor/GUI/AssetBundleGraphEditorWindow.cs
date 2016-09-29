@@ -88,6 +88,8 @@ namespace AssetBundleGraph {
 		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 
+		[SerializeField] private BuildTarget selectedTarget;
+
 		private bool showErrors;
 		private NodeEvent currentEventSource;
 		private Texture2D _selectionTex;
@@ -144,7 +146,7 @@ namespace AssetBundleGraph {
 
 			//TODO: Commandline Run should not go through Editor
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run(EditorUserBuildSettings.activeBuildTarget);
+			window.Run(window.ActiveBuildTarget);
 		}
 
 		public static void GenerateScript (ScriptType scriptType) {
@@ -239,8 +241,7 @@ namespace AssetBundleGraph {
 
 		public BuildTarget ActiveBuildTarget {
 			get {
-				// TODO: make this selectable from Window
-				return EditorUserBuildSettings.activeBuildTarget;
+				return selectedTarget;
 			}
 		}
 
@@ -268,6 +269,7 @@ namespace AssetBundleGraph {
 
 		private void Init() {
 			this.titleContent = new GUIContent("AssetBundle");
+			this.selectedTarget = EditorUserBuildSettings.activeBuildTarget;
 
 			Undo.undoRedoPerformed += () => {
 				SaveGraphWithReload();
@@ -412,7 +414,7 @@ namespace AssetBundleGraph {
 		private void SaveGraphWithReload (bool silent = false) {
 			SaveGraph();
 			try {
-				Setup(EditorUserBuildSettings.activeBuildTarget);
+				Setup(ActiveBuildTarget);
 			} catch (Exception e) {
 				if(!silent){
 					Debug.LogError("Error occured during reload:" + e);
@@ -617,7 +619,7 @@ namespace AssetBundleGraph {
 		private void DrawGUIToolBar() {
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
-					Setup(EditorUserBuildSettings.activeBuildTarget);
+					Setup(ActiveBuildTarget);
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
@@ -638,14 +640,26 @@ namespace AssetBundleGraph {
 				tbLabelTarget.fontStyle = FontStyle.Bold;
 
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
-				GUILayout.Label(BuildTargetUtility.TargetToHumaneString(EditorUserBuildSettings.activeBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+//				GUILayout.Label(BuildTargetUtility.TargetToHumaneString(ActiveBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
 
-				GUI.enabled = !isAnyIssueFound;
-				if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
-					SaveGraph();
-					Run(ActiveBuildTarget);
+
+				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
+				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == selectedTarget));
+
+				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
+					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+
+				if(newIndex != currentIndex) {
+					selectedTarget = supportedTargets[newIndex];
+					Setup(ActiveBuildTarget);
 				}
-				GUI.enabled = true;
+
+				using(new EditorGUI.DisabledScope(isAnyIssueFound)) {
+					if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
+						SaveGraph();
+						Run(ActiveBuildTarget);
+					}
+				}
 			}		
 		}
 

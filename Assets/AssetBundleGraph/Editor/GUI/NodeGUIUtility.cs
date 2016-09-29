@@ -111,12 +111,30 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static List<BuildTargetGroup> SupportedBuildTargets {
+		public static List<BuildTarget> SupportedBuildTargets {
 			get {
 				if(NodeSingleton.s.supportedBuildTargets == null) {
 					NodeSingleton.s.SetupSupportedBuildTargets();
 				}
 				return NodeSingleton.s.supportedBuildTargets;
+			}
+		}
+		public static string[] supportedBuildTargetNames {
+			get {
+				if(NodeSingleton.s.supportedBuildTargetNames == null) {
+					NodeSingleton.s.SetupSupportedBuildTargets();
+				}
+				return NodeSingleton.s.supportedBuildTargetNames;
+			}
+		}
+
+
+		public static List<BuildTargetGroup> SupportedBuildTargetGroups {
+			get {
+				if(NodeSingleton.s.supportedBuildTargetGroups == null) {
+					NodeSingleton.s.SetupSupportedBuildTargets();
+				}
+				return NodeSingleton.s.supportedBuildTargetGroups;
 			}
 		}
 
@@ -175,7 +193,9 @@ namespace AssetBundleGraph {
 			public Texture2D outputPointMarkConnectedTex;
 			public PlatformButton[] platformButtons;
 
-			public List<BuildTargetGroup> supportedBuildTargets;
+			public List<BuildTarget> supportedBuildTargets;
+			public string[] supportedBuildTargetNames;
+			public List<BuildTargetGroup> supportedBuildTargetGroups;
 
 			public List<string> allNodeNames;
 
@@ -220,7 +240,7 @@ namespace AssetBundleGraph {
 
 				buttons.Add(new PlatformButton(new GUIContent("Default", "Default settings"), BuildTargetGroup.Unknown));
 
-				foreach(var g in supportedBuildTargets) {
+				foreach(var g in supportedBuildTargetGroups) {
 					buttons.Add(new PlatformButton(new GUIContent(GetPlatformIcon(icons[g]), BuildTargetUtility.GroupToHumaneString(g)), g));
 				}
 
@@ -230,21 +250,31 @@ namespace AssetBundleGraph {
 			public void SetupSupportedBuildTargets() {
 				
 				if( supportedBuildTargets == null ) {
-					supportedBuildTargets = new List<BuildTargetGroup>();
+					supportedBuildTargets = new List<BuildTarget>();
+					supportedBuildTargetGroups = new List<BuildTargetGroup>();
 
 					try {
 						foreach(BuildTarget target in Enum.GetValues(typeof(BuildTarget))) {
 							if(BuildTargetUtility.IsBuildTargetSupported(target)) {
+								if(!supportedBuildTargets.Contains(target)) {
+									supportedBuildTargets.Add(target);
+								}
 								BuildTargetGroup g = BuildTargetUtility.TargetToGroup(target);
 								if(g == BuildTargetGroup.Unknown) {
 									// skip unknown platform
 									continue;
 								}
-								if(!supportedBuildTargets.Contains(g)) {
-									supportedBuildTargets.Add(g);
+								if(!supportedBuildTargetGroups.Contains(g)) {
+									supportedBuildTargetGroups.Add(g);
 								}
 							}
 						}
+
+						supportedBuildTargetNames = new string[supportedBuildTargets.Count];
+						for(int i =0; i < supportedBuildTargets.Count; ++i) {
+							supportedBuildTargetNames[i] = BuildTargetUtility.TargetToHumaneString(supportedBuildTargets[i]);
+						}
+
 					} catch(Exception e) {
 						Debug.LogError(e.ToString());
 					}
