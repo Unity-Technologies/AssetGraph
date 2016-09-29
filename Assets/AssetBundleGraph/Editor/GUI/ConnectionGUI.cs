@@ -195,9 +195,9 @@ namespace AssetBundleGraph {
 						break;
 					}
 					
-					case AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL: {
-						var labelPointV3 = new Vector3(centerPointV3.x - ((AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL.Length * 6f) / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL);
+					case AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL: {
+						var labelPointV3 = new Vector3(centerPointV3.x - ((AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL.Length * 6f) / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL);
 						break;
 					}
 

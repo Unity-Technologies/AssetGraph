@@ -21,7 +21,7 @@ namespace AssetBundleGraph {
 
 		GROUPING_GUI,
 		PREFABRICATOR_GUI,
-		BUNDLIZER_GUI,
+		BUNDLECONFIG_GUI,
 		BUNDLEBUILDER_GUI,
 
 		EXPORTER_GUI
@@ -126,11 +126,11 @@ namespace AssetBundleGraph {
 		//group settings
 		private const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 
-		//bundlizer settings
-		private const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
-		private const string NODE_BUNDLIZER_VARIANTS 		 = "variants";
-		private const string NODE_BUNDLIZER_VARIANTS_NAME 	 = "name";
-		private const string NODE_BUNDLIZER_VARIANTS_POINTID = "pointId";
+		//bundleconfig settings
+		private const string NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
+		private const string NODE_BUNDLECONFIG_VARIANTS 		 = "variants";
+		private const string NODE_BUNDLECONFIG_VARIANTS_NAME 	 = "name";
+		private const string NODE_BUNDLECONFIG_VARIANTS_POINTID = "pointId";
 
 		//bundlebuilder settings
 		private const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
@@ -147,7 +147,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private SerializableMultiTargetString m_loaderLoadPath;
 		[SerializeField] private SerializableMultiTargetString m_exporterExportPath;
 		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
-		[SerializeField] private SerializableMultiTargetString m_bundlizerBundleNameTemplate;
+		[SerializeField] private SerializableMultiTargetString m_bundleConfigBundleNameTemplate;
 		[SerializeField] private List<Variant> m_variants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 
@@ -266,16 +266,16 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString BundleNameTemplate {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLIZER_GUI 
+					NodeKind.BUNDLECONFIG_GUI 
 				);
-				return m_bundlizerBundleNameTemplate;
+				return m_bundleConfigBundleNameTemplate;
 			}
 		}
 
 		public List<Variant> Variants {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLIZER_GUI 
+					NodeKind.BUNDLECONFIG_GUI 
 				);
 				return m_variants;
 			}
@@ -372,18 +372,18 @@ namespace AssetBundleGraph {
 					m_groupingKeyword = new SerializableMultiTargetString(jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
 				}
 				break;
-			case NodeKind.BUNDLIZER_GUI:
+			case NodeKind.BUNDLECONFIG_GUI:
 				{
-					m_bundlizerBundleNameTemplate = new SerializableMultiTargetString(jsonData[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
+					m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(jsonData[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
 					m_variants = new List<Variant>();
-					if(jsonData.ContainsKey(NODE_BUNDLIZER_VARIANTS)){
-						var variants = jsonData[NODE_BUNDLIZER_VARIANTS] as List<object>;
+					if(jsonData.ContainsKey(NODE_BUNDLECONFIG_VARIANTS)){
+						var variants = jsonData[NODE_BUNDLECONFIG_VARIANTS] as List<object>;
 
 						for(int i=0; i<variants.Count; ++i) {
 							var v = variants[i] as Dictionary<string, object>;
 
-							var name    = v[NODE_BUNDLIZER_VARIANTS_NAME] as string;
-							var pointId = v[NODE_BUNDLIZER_VARIANTS_POINTID] as string;
+							var name    = v[NODE_BUNDLECONFIG_VARIANTS_NAME] as string;
+							var pointId = v[NODE_BUNDLECONFIG_VARIANTS_POINTID] as string;
 
 							var point = m_inputPoints.Find(p => p.Id == pointId);
 							UnityEngine.Assertions.Assert.IsNotNull(point, "Input point not found for " + name);
@@ -454,8 +454,8 @@ namespace AssetBundleGraph {
 				m_groupingKeyword = new SerializableMultiTargetString(AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT);
 				break;
 
-			case NodeKind.BUNDLIZER_GUI:
-				m_bundlizerBundleNameTemplate = new SerializableMultiTargetString(AssetBundleGraphSettings.BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT);
+			case NodeKind.BUNDLECONFIG_GUI:
+				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(AssetBundleGraphSettings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 				m_variants = new List<Variant>();
 				break;
 
@@ -506,7 +506,7 @@ namespace AssetBundleGraph {
 				newData.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
 				break;
 
-			case NodeKind.BUNDLIZER_GUI:
+			case NodeKind.BUNDLECONFIG_GUI:
 				foreach(var v in m_variants) {
 					newData.AddVariant(v.Name);
 				}
@@ -599,7 +599,7 @@ namespace AssetBundleGraph {
 
 		public void AddVariant(string name) {
 			ValidateAccess(
-				NodeKind.BUNDLIZER_GUI
+				NodeKind.BUNDLECONFIG_GUI
 			);
 
 			var point = new ConnectionPointData(name, this, true);
@@ -610,7 +610,7 @@ namespace AssetBundleGraph {
 
 		public void RemoveVariant(Variant v) {
 			ValidateAccess(
-				NodeKind.BUNDLIZER_GUI
+				NodeKind.BUNDLECONFIG_GUI
 			);
 
 			m_variants.Remove(v);
@@ -717,16 +717,16 @@ namespace AssetBundleGraph {
 				break;
 			case NodeKind.PREFABRICATOR_GUI:
 				break;
-			case NodeKind.BUNDLIZER_GUI:
-				nodeDict[NODE_BUNDLIZER_BUNDLENAME_TEMPLATE] = m_bundlizerBundleNameTemplate.ToJsonDictionary();
+			case NodeKind.BUNDLECONFIG_GUI:
+				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();
 				var variantsDict = new List<Dictionary<string, object>>();
 				foreach(var v in m_variants) {
 					var dv = new Dictionary<string, object>();
-					dv[NODE_BUNDLIZER_VARIANTS_NAME] 	= v.Name;
-					dv[NODE_BUNDLIZER_VARIANTS_POINTID] = v.ConnectionPoint.Id;
+					dv[NODE_BUNDLECONFIG_VARIANTS_NAME] 	= v.Name;
+					dv[NODE_BUNDLECONFIG_VARIANTS_POINTID] = v.ConnectionPoint.Id;
 					variantsDict.Add(dv);
 				}
-				nodeDict[NODE_BUNDLIZER_VARIANTS] = variantsDict;
+				nodeDict[NODE_BUNDLECONFIG_VARIANTS] = variantsDict;
 				break;
 			case NodeKind.BUNDLEBUILDER_GUI:
 				nodeDict[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = m_bundleBuilderEnabledBundleOptions.ToJsonDictionary();

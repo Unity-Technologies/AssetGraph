@@ -353,7 +353,7 @@ namespace AssetBundleGraph {
 					switch (this.Kind) {
 					case NodeKind.FILTER_SCRIPT:
 					case NodeKind.FILTER_GUI:
-					case NodeKind.BUNDLIZER_GUI: 
+					case NodeKind.BUNDLECONFIG_GUI: 
 						{
 							var label = point.Label;
 							if( label != AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL ) {

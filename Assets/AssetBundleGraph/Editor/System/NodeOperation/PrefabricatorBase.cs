@@ -220,13 +220,8 @@ namespace AssetBundleGraph {
 			// delete unused cached prefabs.
 			var unusedCachePaths = alreadyCached.Except(cachedOrGenerated).Where(path => !FileUtility.IsMetaFile(path)).ToList();
 			foreach (var unusedCachePath in unusedCachePaths) {
-				// unbundlize unused prefabricated cached asset.
-				var assetImporter = AssetImporter.GetAtPath(unusedCachePath);
-  				assetImporter.assetBundleName = string.Empty;
-
 				FileUtility.DeleteFileThenDeleteFolderIfEmpty(unusedCachePath);
 			}
-
 
 			Output(connectionToOutput, outputDict, cachedItems);
 		}

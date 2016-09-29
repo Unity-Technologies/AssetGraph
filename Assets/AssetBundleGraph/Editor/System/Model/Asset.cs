@@ -147,27 +147,6 @@ namespace AssetBundleGraph {
 			);
 		}
 
-		/**
-		 * used by Bundlizer
-		 * new assets which is generated on Bundlized.
-			no file exists. only setting applyied.
-		*/
-		public static Asset DuplicateAssetWithNewImportPath (Asset asset, string importFrom) {
-			return new Asset(
-				guid:asset.guid,
-				assetDatabaseId:asset.assetDatabaseId,
-				absoluteAssetPath:asset.absoluteAssetPath,
-				importFrom:importFrom,
-				exportTo:asset.exportTo,
-				assetType:asset.assetType,
-				isNew:asset.isNew,
-				isBundled:asset.isBundled
-			);
-		}
-
-
-
-
 		private Asset (
 			Guid guid,
 			string assetDatabaseId = null,

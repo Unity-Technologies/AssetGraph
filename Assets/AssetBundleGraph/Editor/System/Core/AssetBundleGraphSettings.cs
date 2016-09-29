@@ -31,8 +31,7 @@ namespace AssetBundleGraph {
 		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
 		
 		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
-//		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
-		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
+		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";
 
 		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
 		public const string MODIFIER_OPERATOR_DATAS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierOperatorDatas";
@@ -84,7 +83,7 @@ namespace AssetBundleGraph {
 		public const string MENU_MODIFIER_NAME = "Modifier";
 		public const string MENU_GROUPING_NAME = "Grouping";
 		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
-		public const string MENU_BUNDLIZER_NAME = "Bundlizer";
+		public const string MENU_BUNDLECONFIG_NAME = "BundleConfig";
 		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
 		public const string MENU_EXPORTER_NAME = "Exporter";
 
@@ -95,7 +94,7 @@ namespace AssetBundleGraph {
 			{"Create " + MENU_MODIFIER_NAME + " Node", NodeKind.MODIFIER_GUI},
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
 			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
-			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
+			{"Create " + MENU_BUNDLECONFIG_NAME + " Node", NodeKind.BUNDLECONFIG_GUI},
 			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
 			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
 		};
@@ -107,7 +106,7 @@ namespace AssetBundleGraph {
 			{NodeKind.MODIFIER_GUI, "Modifier"},
 			{NodeKind.GROUPING_GUI, "Grouping"},
 			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
-			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
+			{NodeKind.BUNDLECONFIG_GUI, "BundleConfig"},
 			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
 			{NodeKind.EXPORTER_GUI, "Exporter"}
 		};
@@ -117,14 +116,14 @@ namespace AssetBundleGraph {
 		*/
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
-		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
+		public const string BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
 
 		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
-		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLIZER_VARIANTNAME_DEFAULT = "";
+		public const string BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
+		public const string BUNDLECONFIG_VARIANTNAME_DEFAULT = "";
 
 		public const string DEFAULT_FILTER_KEYWORD = "";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";

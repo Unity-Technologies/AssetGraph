@@ -449,10 +449,10 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		private void DoInspectorBundlizerGUI (NodeGUI node) {
+		private void DoInspectorBundleConfiguratorGUI (NodeGUI node) {
 			if (node.Data.BundleNameTemplate == null) return;
 
-			EditorGUILayout.HelpBox("Bundlizer: Create asset bundle settings with given group of assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("BundleConfigurator: Create asset bundle settings with given group of assets.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -497,7 +497,7 @@ namespace AssetBundleGraph {
 								s.fontSize = 12;
 							};
 
-							IntegratedGUIBundlizer.ValidateVariantName(v.Name, variantNames, 
+							IntegratedGUIBundleConfigurator.ValidateVariantName(v.Name, variantNames, 
 								makeStyleBold,
 								makeStyleBold,
 								makeStyleBold);
@@ -514,7 +514,7 @@ namespace AssetBundleGraph {
 				}
 				if (GUILayout.Button("+")) {
 					using(new RecordUndoScope("Add Variant", node, true)){
-						node.Data.AddVariant(AssetBundleGraphSettings.BUNDLIZER_VARIANTNAME_DEFAULT);
+						node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
 					}
 				}
 				if(removing != null) {
@@ -706,8 +706,8 @@ namespace AssetBundleGraph {
 			case NodeKind.PREFABRICATOR_GUI:
 				DoInspectorPrefabricatorGUI(node);
 				break;
-			case NodeKind.BUNDLIZER_GUI:
-				DoInspectorBundlizerGUI(node);
+			case NodeKind.BUNDLECONFIG_GUI:
+				DoInspectorBundleConfiguratorGUI(node);
 				break;
 			case NodeKind.BUNDLEBUILDER_GUI:
 				DoInspectorBundleBuilderGUI(node);

@@ -114,7 +114,7 @@ namespace AssetBundleGraph {
 					case NodeKind.GROUPING_GUI:
 					case NodeKind.PREFABRICATOR_SCRIPT:
 					case NodeKind.PREFABRICATOR_GUI:
-					case NodeKind.BUNDLIZER_GUI:
+					case NodeKind.BUNDLECONFIG_GUI:
 						return true;
 					}
 					return false;
@@ -148,12 +148,12 @@ namespace AssetBundleGraph {
 					case NodeKind.FILTER_GUI:
 					case NodeKind.GROUPING_GUI:
 					case NodeKind.EXPORTER_GUI:
-					case NodeKind.BUNDLIZER_GUI:
+					case NodeKind.BUNDLECONFIG_GUI:
 						return true;
 					}
 					return false;
 				}
-			case NodeKind.BUNDLIZER_GUI: 
+			case NodeKind.BUNDLECONFIG_GUI: 
 				{
 					switch (to.Kind) {
 					case NodeKind.BUNDLEBUILDER_GUI: 

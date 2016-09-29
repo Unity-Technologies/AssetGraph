@@ -361,8 +361,8 @@ namespace AssetBundleGraph {
 						break;
 					}
 
-				case NodeKind.BUNDLIZER_GUI: {
-						executor = new IntegratedGUIBundlizer();
+				case NodeKind.BUNDLECONFIG_GUI: {
+						executor = new IntegratedGUIBundleConfigurator();
 						break;
 					}
 
@@ -426,7 +426,7 @@ namespace AssetBundleGraph {
 					return FileUtility.GetFilePathsInFolder(cachedPathBase);
 				}
 				 
-				case NodeKind.BUNDLIZER_GUI: {
+				case NodeKind.BUNDLECONFIG_GUI: {
 					// do nothing.
 					break;
 				}

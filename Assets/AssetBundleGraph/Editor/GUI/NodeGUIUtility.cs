@@ -132,7 +132,7 @@ namespace AssetBundleGraph {
 						{NodeKind.GROUPING_GUI, 		"flow node 3 on"},
 						{NodeKind.PREFABRICATOR_SCRIPT, "flow node 4 on"},
 						{NodeKind.PREFABRICATOR_GUI, 	"flow node 4 on"},
-						{NodeKind.BUNDLIZER_GUI, 		"flow node 5 on"},
+						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5 on"},
 						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6 on"},
 						{NodeKind.MODIFIER_GUI, 		"flow node 6 on"}
 					};
@@ -153,7 +153,7 @@ namespace AssetBundleGraph {
 						{NodeKind.GROUPING_GUI, 		"flow node 3"},
 						{NodeKind.PREFABRICATOR_SCRIPT, "flow node 4"},
 						{NodeKind.PREFABRICATOR_GUI, 	"flow node 4"},
-						{NodeKind.BUNDLIZER_GUI, 		"flow node 5"},
+						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5"},
 						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6"},
 						{NodeKind.MODIFIER_GUI, 		"flow node 6"}
 					};

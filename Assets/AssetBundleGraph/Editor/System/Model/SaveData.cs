@@ -14,14 +14,14 @@ namespace AssetBundleGraph {
 		*/
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
-		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "*";
+		public const string BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT = "*";
 
 		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
-		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLIZER_VARIANTNAME_DEFAULT = "";
+		public const string BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
+		public const string BUNDLECONFIG_VARIANTNAME_DEFAULT = "";
 
 		public const string DEFAULT_FILTER_KEYWORD = "keyword";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";
