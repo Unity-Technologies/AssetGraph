@@ -151,7 +151,6 @@ namespace AssetBundleGraph {
 		[SerializeField] private List<Variant> m_variants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 
-		[SerializeField] private List<ConnectionData> m_connections;
 		[SerializeField] private bool m_isNodeOperationPerformed;
 
 
@@ -300,22 +299,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public bool IsNodeOperationPerformed {
-			get {
-				return m_isNodeOperationPerformed;
-			}
-			set {
-				m_isNodeOperationPerformed = value;
-			}
-		}
-
-		public List<ConnectionData> ConnectionsToParent {
-			get {
-				return m_connections;
-			}
-		}
-
-
 		/*
 		 *  Create NodeData from JSON
 		 */ 
@@ -324,7 +307,6 @@ namespace AssetBundleGraph {
 			m_name = jsonData[NODE_NAME] as string;
 			m_id = jsonData[NODE_ID]as string;
 			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
-			m_connections = new List<ConnectionData>();
 
 			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
 			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
@@ -435,7 +417,6 @@ namespace AssetBundleGraph {
 			m_x = x;
 			m_y = y;
 			m_kind = kind;
-			m_connections = new List<ConnectionData>();
 
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
@@ -577,10 +558,6 @@ namespace AssetBundleGraph {
 				return v;
 			}
 			return FindOutputPoint(id);
-		}
-
-		public void AddConnectionToParent (ConnectionData connection) {
-			m_connections.Add(connection);
 		}
 
 		public string GetLoaderFullLoadPath(BuildTarget g) {

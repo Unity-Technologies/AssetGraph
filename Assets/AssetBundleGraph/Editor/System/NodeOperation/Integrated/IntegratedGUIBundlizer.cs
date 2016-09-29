@@ -8,18 +8,12 @@ using System.Text.RegularExpressions;
 namespace AssetBundleGraph {
     public class IntegratedGUIBundlizer : INodeOperationBase {
 
-		private readonly ConnectionData assetOutputConnection;
-
-		public IntegratedGUIBundlizer(ConnectionData assetOutputConnection) {
-			this.assetOutputConnection = assetOutputConnection;
-		}
-
 		public void Setup (BuildTarget target, 
 			NodeData node, 
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 
 			try {
@@ -48,7 +42,6 @@ namespace AssetBundleGraph {
 				AssetBundleGraphEditorWindow.AddNodeException(e);
 				return;
 			}
-			
 
 			var outputDict = new Dictionary<string, List<Asset>>();
 
@@ -60,10 +53,7 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = new List<Asset>(){ newAssetData };
 			}
 			
-			if (assetOutputConnection != null) {
-				Output(node, assetOutputConnection, outputDict, new List<string>());
-			}
-			
+			Output(connectionToOutput, outputDict, null);
 		}
 		
 		public void Run (BuildTarget target, 
@@ -71,7 +61,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
@@ -91,10 +81,8 @@ namespace AssetBundleGraph {
 				outputDict[groupKey] = new List<Asset>(){ newAssetData };
 			}
 			
-			if (assetOutputConnection != null) {
-				Output(node, assetOutputConnection, outputDict, new List<string>());
-			}
-			
+			Output(connectionToOutput, outputDict, null);
+
 		}
 
 		public string BundlizeAssets (BuildTarget target, NodeData node, string groupkey, List<Asset> sources, bool isRun) {		

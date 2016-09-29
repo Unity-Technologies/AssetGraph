@@ -70,8 +70,6 @@ namespace AssetBundleGraph {
 			foreach(var c in connList) {
 				m_allConnections.Add(new ConnectionData(c as Dictionary<string, object>));
 			}
-
-			AddConnectionsToNodes();
 		}
 
 		public SaveData(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
@@ -84,21 +82,6 @@ namespace AssetBundleGraph {
 			foreach(var cgui in connections) {
 				m_allConnections.Add(new ConnectionData(cgui));
 			}
-
-			AddConnectionsToNodes();
-		}
-
-		private void AddConnectionsToNodes() {
-			/*
-				adding parentNode to childNode for run up relationship from childNode.
-			*/
-			foreach (var connection in m_allConnections) {
-				var targetNodes = m_allNodes.Where(node => node.Id == connection.ToNodeId).ToList();
-				foreach (var targetNode in targetNodes) {
-					targetNode.AddConnectionToParent(connection);
-				}
-			}
-
 		}
 
 		public DateTime LastModified {

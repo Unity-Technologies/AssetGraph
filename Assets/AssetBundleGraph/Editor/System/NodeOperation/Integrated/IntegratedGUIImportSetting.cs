@@ -18,7 +18,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			// reserve importSetting type for limit asset.
 			var importSettingSampleType = string.Empty;
@@ -129,7 +129,7 @@ namespace AssetBundleGraph {
 				outputDict[inputGroupAssets.Keys.ToList()[0]] = importedAssets;
 			}
 
-			Output(node, connectionToOutput, outputDict, new List<string>());
+			Output(connectionToOutput, outputDict, null);
 		}
 		
 		public void Run (BuildTarget target, 
@@ -137,9 +137,9 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			var usedCache = new List<string>();
+			var cachedItems = new List<string>();
 			
 			var outputDict = new Dictionary<string, List<Asset>>();
 
@@ -265,7 +265,7 @@ namespace AssetBundleGraph {
 			
 			outputDict[the1stGroupKey] = outputSources;
 
-			Output(node, connectionToOutput, outputDict, usedCache);
+			Output(connectionToOutput, outputDict, cachedItems);
 		}
 
 		public static void ValidateImportSample (string samplePath, 

@@ -8,9 +8,9 @@ using System.Text.RegularExpressions;
 
 namespace AssetBundleGraph {
     public class IntegratedGUIFilter : INodeOperationBase {
-		private readonly string[] connectionIdsFromThisNodeToChildNodesOrFakeIds;
-		public IntegratedGUIFilter (string[] connectionIdsFromThisNodeToChildNodes) {
-			this.connectionIdsFromThisNodeToChildNodesOrFakeIds = connectionIdsFromThisNodeToChildNodes;
+		private readonly List<ConnectionData> connectionsToChild;
+		public IntegratedGUIFilter (List<ConnectionData> connectionsToChild) {
+			this.connectionsToChild = connectionsToChild;
 		}
 
 		public void Setup (BuildTarget target, 
@@ -18,7 +18,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			// overlapping test.
 			try {
@@ -45,7 +45,7 @@ namespace AssetBundleGraph {
 					}
 					
 					outputDict[groupKey] = outputs;
-					Output(node, connectionToOutput, outputDict, new List<string>());
+					Output(connectionToOutput, outputDict, null);
 				};
 				
 				try {
@@ -61,7 +61,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 
 			// overlapping test.
@@ -84,7 +84,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(node, connectionToOutput, outputDict, new List<string>());
+					Output(connectionToOutput, outputDict, null);
 				};
 				
 				try {
@@ -95,56 +95,54 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private class ExhaustiveAssetPathData {
-			public readonly string importFrom;
-			public readonly string absoluteAssetPath;
-			public bool isFilterExhausted = false;
+		private class FilterableAsset {
+			public Asset asset;
+			public bool isFiltered = false;
 
-			public ExhaustiveAssetPathData (string absoluteAssetPath, string importFrom) {
-				this.importFrom = importFrom;
-				this.absoluteAssetPath = absoluteAssetPath;
+			public FilterableAsset (Asset asset) {
+				this.asset = asset;
 			}
 		}
 
 		private void Filter (NodeData node, List<Asset> assets, Action<string, List<string>> FilterResultReceiver) {
-			var exhaustiveAssets = new List<ExhaustiveAssetPathData>();
+			var filteringAssets = new List<FilterableAsset>();
 			foreach (var asset in assets) {
-				exhaustiveAssets.Add(new ExhaustiveAssetPathData(asset.absoluteAssetPath, asset.importFrom));
+				filteringAssets.Add(new FilterableAsset(asset));
 			}
 
-			for (var i = 0; i < connectionIdsFromThisNodeToChildNodesOrFakeIds.Length; i++) {
-
+			foreach(var connToChild in connectionsToChild) {
 				// these 3 parameters depends on their contents order.
 				// TODO: separate connection id order and keyword/keytype.
 
-				var Id = connectionIdsFromThisNodeToChildNodesOrFakeIds[i];
-				var keyword = node.FilterConditions[i].FilterKeyword;
-				var keytype = node.FilterConditions[i].FilterKeytype;
+				var Id = connToChild.Id;
+
+				var filter = node.FilterConditions.Find(fc => fc.ConnectionPoint.Id == connToChild.FromNodeConnectionPointId);
+				UnityEngine.Assertions.Assert.IsNotNull(filter);
 
 				// filter by keyword first
-				List<ExhaustiveAssetPathData> keywordContainsAssets = exhaustiveAssets.Where(
+				List<FilterableAsset> keywordContainsAssets = filteringAssets.Where(
 					assetData => 
-					!assetData.isFilterExhausted && 
-					Regex.IsMatch(assetData.importFrom, keyword, RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace)
+					!assetData.isFiltered && 
+					Regex.IsMatch(assetData.asset.importFrom, filter.FilterKeyword, RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace)
 				).ToList();
-				
+
 				var typeMatchedAssetsAbsolutePaths = new List<string>();
 
 				// then, filter by type
 				foreach (var containedAssetData in keywordContainsAssets) {
-					if (keytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
-						var assumedType = TypeUtility.FindTypeOfAsset(containedAssetData.importFrom);
-						if (assumedType == null || keytype != assumedType.ToString()) {
+					if (filter.FilterKeytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+						var assumedType = TypeUtility.FindTypeOfAsset(containedAssetData.asset.importFrom);
+						if (assumedType == null || filter.FilterKeytype != assumedType.ToString()) {
 							continue;
 						}
 					}
-					typeMatchedAssetsAbsolutePaths.Add(containedAssetData.absoluteAssetPath);
+					typeMatchedAssetsAbsolutePaths.Add(containedAssetData.asset.absoluteAssetPath);
 				}
 
 				// mark assets as exhausted.
-				foreach (var exhaustiveAsset in exhaustiveAssets) {
-					if (typeMatchedAssetsAbsolutePaths.Contains(exhaustiveAsset.absoluteAssetPath)) {
-						exhaustiveAsset.isFilterExhausted = true;
+				foreach (var a in filteringAssets) {
+					if (typeMatchedAssetsAbsolutePaths.Contains(a.asset.absoluteAssetPath)) {
+						a.isFiltered = true;
 					}
 				}
 

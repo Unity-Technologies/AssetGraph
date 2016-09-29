@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			var invalids = new List<string>();
 			foreach (var sources in inputGroupAssets.Values) {
@@ -80,8 +80,7 @@ namespace AssetBundleGraph {
 			
 			} 				
 
-			Output(node, connectionToOutput, outputDict, new List<string>());
-
+			Output(connectionToOutput, outputDict, null);
 		}
 
 		public void Run (BuildTarget target, 
@@ -89,9 +88,9 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			var usedCache = new List<string>();
+			var cachedItems = new List<string>();
 			
 			var invalids = new List<string>();
 			foreach (var sources in inputGroupAssets.Values) {
@@ -151,7 +150,7 @@ namespace AssetBundleGraph {
 						Debug.Log(node.Name + " created new prefab: " + newPrefabOutputPath );
 					} else {
 						// cached.
-						usedCache.Add(newPrefabOutputPath);
+						cachedItems.Add(newPrefabOutputPath);
 						cachedOrGenerated.Add(newPrefabOutputPath);
 						Debug.Log(node.Name + " used cached prefab: " + newPrefabOutputPath );
 					}
@@ -227,7 +226,7 @@ namespace AssetBundleGraph {
 			}
 
 
-			Output(node, connectionToOutput, outputDict, usedCache);
+			Output(connectionToOutput, outputDict, cachedItems);
 		}
 
 		private bool isPrefabricateFunctionCalled = false;

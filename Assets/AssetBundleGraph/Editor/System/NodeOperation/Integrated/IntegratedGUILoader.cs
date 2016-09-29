@@ -12,7 +12,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 
 			try {
@@ -73,7 +73,7 @@ namespace AssetBundleGraph {
 				{"0", outputSource}
 			};
 
-			Output(node, connectionToOutput, outputDir, new List<string>());
+			Output(connectionToOutput, outputDir, null);
 		}
 		
 		public void Run (BuildTarget target, 
@@ -81,7 +81,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			ValidateLoadPath(
 				node.LoaderLoadPath[target],
@@ -123,7 +123,7 @@ namespace AssetBundleGraph {
 					{"0", outputSource}
 				};
 
-				Output(node, connectionToOutput, outputDir, new List<string>());
+				Output(connectionToOutput, outputDir, null);
 			} catch (Exception e) {
 				throw new NodeException(e.Message, node.Id);
 			}

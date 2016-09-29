@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			/*
 				merge multi group into ["0"] group.
@@ -26,7 +26,7 @@ namespace AssetBundleGraph {
 				outputDict["0"].AddRange(outputSources);
 			}
 
-			Output(node, connectionToOutput, outputDict, new List<string>());
+			Output(connectionToOutput, outputDict, new List<string>());
 		}
 		
 		public void Run (BuildTarget target, 
@@ -34,7 +34,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			
 			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
@@ -120,8 +120,7 @@ namespace AssetBundleGraph {
 		
 			outputDict["0"] = outputSources;
 			
-			var usedCache = new List<string>(alreadyCached);
-			Output(node, connectionToOutput, outputDict, usedCache);
+			Output(connectionToOutput, outputDict, alreadyCached);
 		}
 		
 		

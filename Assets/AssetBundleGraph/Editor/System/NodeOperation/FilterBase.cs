@@ -12,7 +12,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			foreach (var groupKey in inputGroupAssets.Keys) {
 
@@ -29,7 +29,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(node, c, outputDict, new List<string>());
+					Output(c, outputDict, null);
 				};
 				try {
 					In(inputAssets, _PreOutput);
@@ -44,7 +44,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			foreach (var groupKey in inputGroupAssets.Keys) {
 				var outputDict = new Dictionary<string, List<Asset>>();
@@ -60,7 +60,7 @@ namespace AssetBundleGraph {
 					}
 
 					outputDict[groupKey] = outputs;
-					Output(node, c, outputDict, new List<string>());
+					Output(c, outputDict, null);
 				};
 				try {
 					In(inputSources, _Output);

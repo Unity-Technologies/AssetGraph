@@ -491,14 +491,12 @@ namespace AssetBundleGraph {
 			// perform setup. Fails if any exception raises.
 			AssetBundleGraphController.Perform(saveData, target, false);
 
+			// if there is not error reported, then run
 			if(s_nodeExceptionPool.Count == 0) {
 				/*
 				remove bundlize setting names from unused Nodes.
 				*/
 				UnbundlizeUnusedNodeBundleSettings(saveData.Nodes);
-
-				// reset node perform status for actual run
-				saveData.Nodes.ForEach(n => n.IsNodeOperationPerformed = false);
 
 				// run datas.
 				s_connectionThroughputs = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);

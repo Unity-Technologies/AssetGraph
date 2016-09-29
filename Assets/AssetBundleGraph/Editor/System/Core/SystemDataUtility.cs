@@ -70,8 +70,8 @@ namespace AssetBundleGraph {
 			}
 
 			var labels = new List<string>();
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
-				(NodeData node, ConnectionData connection, Dictionary<string, List<Asset>> source, List<string> usedCache) => 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
+				(ConnectionData connection, Dictionary<string, List<Asset>> outputGroupAsset, List<string> cachedItems) => 
 			{
 				labels.Add(connection.Label);
 			};

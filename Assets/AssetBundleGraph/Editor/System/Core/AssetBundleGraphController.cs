@@ -13,41 +13,55 @@ namespace AssetBundleGraph {
 	 * AssetBundleGraphController executes operations based on graph 
 	 */
 	public class AssetBundleGraphController {
-//		/**
-//		 * Execute Setup operations using current graph
-//		 */
-//		public static Dictionary<string, Dictionary<string, List<DepreacatedThroughputAsset>>> 
-//		PerformSetup (SaveData saveData) {
-//			var graphDescription = GraphDescriptionBuilder.BuildGraphDescriptionFromJson(deserializedJsonData);
-//			
-//			var terminalNodeIds = graphDescription.terminalNodeIds;
-//			var allNodes = graphDescription.allNodes;
-//			var allConnections = graphDescription.allConnections;
-//
-//			/*
-//				Validation: node names should not overlapping.
-//			*/
-//			{
-//				var nodeNames = allNodes.Select(node => node.nodeName).ToList();
-//				var overlappings = nodeNames.GroupBy(x => x)
-//					.Where(group => 1 < group.Count())
-//					.Select(group => group.Key)
-//					.ToList();
-//
-//				if (overlappings.Any()) {
-//					throw new AssetBundleGraphException("Duplicate node name found:" + overlappings[0] + " please rename and avoid same name.");
-//				}
-//			}
-//
-//			var resultDict = new Dictionary<string, Dictionary<string, List<Asset>>>();
-//			var cacheDict  = new Dictionary<string, List<string>>();
-//
-//			foreach (var terminalNodeId in terminalNodeIds) {
-//				PerformSetupForNode(terminalNodeId, allNodes, allConnections, resultDict, cacheDict);
-//			}
-//			
-//			return CollectResult(resultDict);
-//		}
+
+		/*
+		 * Verify node name has no collision
+		 */
+		private static void ValidateNameCollision(SaveData saveData) {
+			var nodeNames = saveData.Nodes.Select(node => node.Name).ToList();
+			var overlappings = nodeNames.GroupBy(x => x)
+				.Where(group => 1 < group.Count())
+				.Select(group => group.Key)
+				.ToList();
+
+			if (overlappings.Any()) {
+				throw new NodeException("Duplicate node name found:" + overlappings[0] + " please rename and avoid name collision.", 
+					saveData.Nodes.Find(n=>n.Name == overlappings[0]).Id);
+			}
+		}
+
+		/*
+		 * Verify nodes does not create cycle
+		 */
+		private static void ValidateLoopConnection(SaveData saveData) {
+			var leaf = saveData.CollectAllLeafNodes();
+			foreach (var leafNode in leaf) {
+				MarkAndTraverseParent(saveData, leafNode, new List<ConnectionData>(), new List<NodeData>());
+			}
+		}
+
+		private static void MarkAndTraverseParent(SaveData saveData, NodeData current, List<ConnectionData> visitedConnections, List<NodeData> visitedNode) {
+
+			// if node is visited from other route, just quit
+			if(visitedNode.Contains(current)) {
+				return;
+			}
+
+			var connectionsToParents = saveData.Connections.FindAll(con => con.ToNodeId == current.Id);
+			foreach(var c in connectionsToParents) {
+				if(visitedConnections.Contains(c)) {
+					throw new NodeException("Looped connection detected. Please fix connections to avoid loop.", current.Id);
+				}
+
+				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
+				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
+
+				visitedConnections.Add(c);
+				MarkAndTraverseParent(saveData, parentNode, visitedConnections, visitedNode);
+			}
+
+			visitedNode.Add(current);
+		}
 
 		/**
 		 * Execute Run operations using current graph
@@ -58,20 +72,15 @@ namespace AssetBundleGraph {
 			BuildTarget target,
 			bool isRun,
 			Action<NodeData, float> updateHandler=null
-		) {			
-			/*
-				Validation: node names should not overlapping.
-				perform only when setup
-			*/
+		) {
+			bool validateFailed = false;
 			if(!isRun){
-				var nodeNames = saveData.Nodes.Select(node => node.Name).ToList();
-				var overlappings = nodeNames.GroupBy(x => x)
-					.Where(group => 1 < group.Count())
-					.Select(group => group.Key)
-					.ToList();
-
-				if (overlappings.Any()) {
-					throw new AssetBundleGraphException("Duplicate node name found:" + overlappings[0] + " please rename and avoid same name.");
+				try {
+					ValidateNameCollision(saveData);
+					ValidateLoopConnection(saveData);
+				} catch (NodeException e) {
+					AssetBundleGraphEditorWindow.AddNodeException(e);
+					validateFailed = true;
 				}
 			} else {
 				IntegratedGUIBundleBuilder.RemoveAllAssetBundleSettings();
@@ -80,12 +89,21 @@ namespace AssetBundleGraph {
 			var resultDict = new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
 			var cacheDict  = new Dictionary<NodeData, List<string>>();
 
-			var leaf = saveData.CollectAllLeafNodes();
+			// if validation failed, node may contain looped connections, so we are not going to 
+			// go into each operations.
+			if(!validateFailed) {
+				var leaf = saveData.CollectAllLeafNodes();
 
-			foreach (var leafNode in leaf) {
-				DoNodeOperation(target, leafNode, null, saveData, resultDict, cacheDict, new List<ConnectionData>(), isRun, updateHandler);
+				foreach (var leafNode in leaf) {
+					if( leafNode.InputPoints.Count == 0 ) {
+						DoNodeOperation(target, leafNode, null, null, saveData, resultDict, cacheDict, new List<ConnectionPointData>(), isRun, updateHandler);
+					} else {
+						foreach(var inputPoint in leafNode.InputPoints) {
+							DoNodeOperation(target, leafNode, inputPoint, null, saveData, resultDict, cacheDict, new List<ConnectionPointData>(), isRun, updateHandler);
+						}
+					}
+				}
 			}
-
 			return CollectResult(resultDict);
 		}
 
@@ -169,35 +187,41 @@ namespace AssetBundleGraph {
 		private static void DoNodeOperation (
 			BuildTarget target,
 			NodeData currentNodeData,
+			ConnectionPointData currentInputPoint,
 			ConnectionData connectionToOutput,
 			SaveData saveData,
 			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> resultDict, 
 			Dictionary<NodeData, List<string>> cachedDict,
-			List<ConnectionData> visitedConnections,
+			List<ConnectionPointData> performedPoints,
 			bool isActualRun,
 			Action<NodeData, float> updateHandler=null
 		) {
-			if (currentNodeData.IsNodeOperationPerformed) {
+			if (performedPoints.Contains(currentInputPoint)) {
 				return;
 			}
 
 			/*
-			 * Perform prarent node recursively from this node
+			 * Find connections coming into this node from parent node, and traverse recursively
 			*/
-			foreach (var c in currentNodeData.ConnectionsToParent) {
+			var connectionsToParents = saveData.Connections.FindAll(con => con.ToNodeId == currentNodeData.Id);
 
-				if (visitedConnections.Contains(c)) {
-					throw new NodeException("connection loop detected:", c.FromNodeId);
-				}
-				visitedConnections.Add(c);
+			foreach (var c in connectionsToParents) {
 
 				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
 				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
 
 				// check if nodes can connect together
 				ConnectionData.ValidateConnection(parentNode, currentNodeData);
-
-				DoNodeOperation(target, parentNode, c, saveData, resultDict, cachedDict, visitedConnections, isActualRun, updateHandler);
+				if( parentNode.InputPoints.Count > 0 ) {
+					// if node has multiple input, node is operated per input
+					foreach(var parentInputPoint in parentNode.InputPoints) {
+						DoNodeOperation(target, parentNode, parentInputPoint, c, saveData, resultDict, cachedDict, performedPoints, isActualRun, updateHandler);
+					}
+				} 
+				// if parent does not have input point, call with inputPoint==null
+				else {
+					DoNodeOperation(target, parentNode, null, c, saveData, resultDict, cachedDict, performedPoints, isActualRun, updateHandler);
+				}
 			}
 
 			/*
@@ -221,18 +245,21 @@ namespace AssetBundleGraph {
 
 			// Grab incoming assets from result by refering connections to parents
 			var inputGroupAssets = new Dictionary<string, List<Asset>>();
-			var connToParents = saveData.Connections.FindAll(con => con.ToNodeId == currentNodeData.Id);
-			foreach (var rCon in connToParents) {
-				if (!resultDict.ContainsKey(rCon)) {
-					continue;
-				}
-
-				var result = resultDict[rCon];
-				foreach (var groupKey in result.Keys) {
-					if (!inputGroupAssets.ContainsKey(groupKey)) {
-						inputGroupAssets[groupKey] = new List<Asset>();
+			if(currentInputPoint != null) {
+				// aggregates all input assets coming from current inputPoint
+				var connToParentsFromCurrentInput = saveData.Connections.FindAll(con => con.ToNodeConnectionPointId == currentInputPoint.Id);
+				foreach (var rCon in connToParentsFromCurrentInput) {
+					if (!resultDict.ContainsKey(rCon)) {
+						continue;
 					}
-					inputGroupAssets[groupKey].AddRange(result[groupKey]);	
+
+					var result = resultDict[rCon];
+					foreach (var groupKey in result.Keys) {
+						if (!inputGroupAssets.ContainsKey(groupKey)) {
+							inputGroupAssets[groupKey] = new List<Asset>();
+						}
+						inputGroupAssets[groupKey].AddRange(result[groupKey]);	
+					}
 				}
 			}
 
@@ -240,8 +267,8 @@ namespace AssetBundleGraph {
 				the Action passes to NodeOperaitons.
 				It stores result to resultDict.
 			*/
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
-				(NodeData sourceNode, ConnectionData destinationConnection, Dictionary<string, List<Asset>> result, List<string> justCached) => 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output = 
+				(ConnectionData destinationConnection, Dictionary<string, List<Asset>> outputGroupAsset, List<string> cachedItems) => 
 			{
 				if(destinationConnection != null ) {
 					if (!resultDict.ContainsKey(destinationConnection)) {
@@ -250,11 +277,11 @@ namespace AssetBundleGraph {
 					/*
 					merge connection result by group key.
 					*/
-					foreach (var groupKey in result.Keys) {
+					foreach (var groupKey in outputGroupAsset.Keys) {
 						if (!resultDict[destinationConnection].ContainsKey(groupKey)) {
 							resultDict[destinationConnection][groupKey] = new List<Asset>();
 						}
-						resultDict[destinationConnection][groupKey].AddRange(result[groupKey]);
+						resultDict[destinationConnection][groupKey].AddRange(outputGroupAsset[groupKey]);
 					}
 				}
 
@@ -262,7 +289,9 @@ namespace AssetBundleGraph {
 					if (!cachedDict.ContainsKey(currentNodeData)) {
 						cachedDict[currentNodeData] = new List<string>();
 					}
-					cachedDict[currentNodeData].AddRange(justCached);
+					if(cachedItems != null) {
+						cachedDict[currentNodeData].AddRange(cachedItems);
+					}
 				}
 			};
 
@@ -279,12 +308,11 @@ namespace AssetBundleGraph {
 
 			} catch (NodeException e) {
 				AssetBundleGraphEditorWindow.AddNodeException(e);
-				//Debug.LogError("error occured:\"" + e.reason + "\", please check information on node.");
-				return;
-				//throw new AssetBundleGraphException(node.Name + ": " + e.reason);
 			}
 
-			currentNodeData.IsNodeOperationPerformed = true;
+			// mark this point as performed
+			performedPoints.Add(currentInputPoint);
+
 			if (updateHandler != null) {
 				updateHandler(currentNodeData, 1f);
 			}
@@ -310,31 +338,9 @@ namespace AssetBundleGraph {
 						break;
 					}
 				case NodeKind.FILTER_GUI: {
-						/**
-								Filter requires "outputPoint ordered exist connection Id and Fake connection Id" for
-								exhausting assets by keyword and type correctly.
-
-								outputPoint which has connection can through assets by keyword and keytype,
-								also outputPoint which doesn't have connection should take assets by keyword and keytype.
-						*/
-						var orderedNodeOutputPointIds = saveData.Nodes.Where(node => node.Id == currentNodeData.Id).SelectMany(node => node.OutputPoints).Select(p => p.Id).ToList();
-						var nonOrderedConnectionsFromThisNodeToChildNode = saveData.Connections.Where(con => con.FromNodeId == currentNodeData.Id).ToList();
-						var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
-
-						for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
-							var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
-
-							foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
-								var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.FromNodeConnectionPointId;
-								if (orderedNodeOutputPointId == connectionOutputPointId) {
-									orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.Id;
-									break;
-								} else {
-									orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.FILTER_FAKE_CONNECTION_ID;
-								}
-							}
-						}
-						executor = new IntegratedGUIFilter(orderedConnectionIdsAndFakeConnectionIds);
+						// Filter requires multiple output connections
+						var connectionsToChild = saveData.Connections.FindAll(c => c.FromNodeId == currentNodeData.Id);
+						executor = new IntegratedGUIFilter(connectionsToChild);
 						break;
 					}
 
@@ -360,47 +366,7 @@ namespace AssetBundleGraph {
 					}
 
 				case NodeKind.BUNDLIZER_GUI: {
-//						/*
-//								Bundlizer requires assetOutputConnectionId and additional resourceOutputConnectionId.
-//								both-connected, or both-not-connected, or one of them is connected. 4 patterns exists.
-//								
-//								Bundler Node's outputPoint [0] is always the point for assetOutputConnectionId.
-//								Bundler Node's outputPoint [1] is always the point for resourceOutputConnectionId.
-//								
-//								if one of these outputPoint don't have connection, use Fake connection id for correct output.
-//
-//								
-//								unorderedConnectionId \
-//														----> orderedConnectionIdsAndFakeConnectionIds. 
-//								orderedOutputPointId  / 
-//							*/
-//						var orderedNodeOutputPointIds = saveData.Nodes.Where(node => node.Id == currentNodeData.Id).SelectMany(node => node.OutputPoints).Select(p => p.Id).ToList();
-//						var nonOrderedConnectionsFromThisNodeToChildNode = saveData.Connections.Where(con => con.FromNodeId == currentNodeData.Id).ToList();
-//						var orderedConnectionIdsAndFakeConnectionIds = new string[orderedNodeOutputPointIds.Count];
-//						for (var i = 0; i < orderedNodeOutputPointIds.Count; i++) {
-//							var orderedNodeOutputPointId = orderedNodeOutputPointIds[i];
-//
-//							foreach (var nonOrderedConnectionFromThisNodeToChildNode in nonOrderedConnectionsFromThisNodeToChildNode) {
-//								var connectionOutputPointId = nonOrderedConnectionFromThisNodeToChildNode.FromNodeConnectionPointId;
-//								if (orderedNodeOutputPointId == connectionOutputPointId) {
-//									orderedConnectionIdsAndFakeConnectionIds[i] = nonOrderedConnectionFromThisNodeToChildNode.Id;
-//									break;
-//								} else {
-//									orderedConnectionIdsAndFakeConnectionIds[i] = AssetBundleGraphSettings.BUNDLIZER_FAKE_CONNECTION_ID;
-//								}
-//							}
-//						}
-
-						var connections = saveData.Connections.Where(c => c.FromNodeId == currentNodeData.Id).ToList();
-						ConnectionData assetOutputConnection = null;
-						foreach(var c in connections) {
-							if(currentNodeData.OutputPoints.Find(p => p.Id == c.FromNodeConnectionPointId) != null) {
-								assetOutputConnection = c;
-								break;
-							}
-						}
-
-						executor = new IntegratedGUIBundlizer(assetOutputConnection);
+						executor = new IntegratedGUIBundlizer();
 						break;
 					}
 

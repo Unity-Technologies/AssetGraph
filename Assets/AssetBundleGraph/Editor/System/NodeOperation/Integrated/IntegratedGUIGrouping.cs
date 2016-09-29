@@ -14,7 +14,7 @@ namespace AssetBundleGraph
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			GroupingOutput(target, node, connectionToOutput, inputGroupAssets, Output);
 		}
@@ -24,13 +24,13 @@ namespace AssetBundleGraph
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			GroupingOutput(target, node, connectionToOutput, inputGroupAssets, Output);
 		}
 
 
-		private void GroupingOutput (BuildTarget target, NodeData node, ConnectionData connectionToOutput, Dictionary<string, List<Asset>> inputGroupAssets, Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) {
+		private void GroupingOutput (BuildTarget target, NodeData node, ConnectionData connectionToOutput, Dictionary<string, List<Asset>> inputGroupAssets, Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) {
 
 			try {
 				ValidateGroupingKeyword(
@@ -73,7 +73,7 @@ namespace AssetBundleGraph
 				}
 			}
 			
-			Output(node, connectionToOutput, outputDict, new List<string>());
+			Output(connectionToOutput, outputDict, null);
 		}
 
 		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {

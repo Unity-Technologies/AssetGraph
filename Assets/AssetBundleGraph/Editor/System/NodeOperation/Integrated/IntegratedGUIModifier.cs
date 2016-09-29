@@ -14,7 +14,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			if (inputGroupAssets.Keys.Count == 0) {
 				return;
@@ -96,7 +96,7 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(node, connectionToOutput, outputDict, new List<string>());
+			Output(connectionToOutput, outputDict, null);
 		}
 
 		
@@ -105,7 +105,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			if (inputGroupAssets.Keys.Count == 0) {
 				return;
@@ -196,7 +196,7 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict[groupMergeKey] = outputSources;
 
-			Output(node, connectionToOutput, outputDict, new List<string>());
+			Output(connectionToOutput, outputDict, null);
 		}
 
 //		/**

@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 
 			try {
@@ -40,7 +40,7 @@ namespace AssetBundleGraph {
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
 			List<string> alreadyCached, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			ValidateExportPath(
 				node.ExporterExportPath[target],
@@ -60,7 +60,7 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			ConnectionData connectionToOutput, 
 			Dictionary<string, List<Asset>> inputGroupAssets, 
-			Action<NodeData, ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,
 			bool isRun) 
 		{
 			var outputDict = new Dictionary<string, List<Asset>>();
@@ -127,7 +127,7 @@ namespace AssetBundleGraph {
 				Debug.LogError(node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
-			Output(node, connectionToOutput, outputDict, new List<string>());
+			Output(connectionToOutput, outputDict, null);
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {
