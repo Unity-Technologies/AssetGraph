@@ -167,8 +167,8 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
-		public static string EnsurePrefabricatorCacheDirExists(BuildTarget t, NodeData node) {
-			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, NodeData node) {
+			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 
 			if (!Directory.Exists(cacheDir)) {
 				Directory.CreateDirectory(cacheDir);

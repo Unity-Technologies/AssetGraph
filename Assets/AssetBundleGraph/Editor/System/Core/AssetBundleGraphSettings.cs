@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Generate Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
-		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
+		public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";
 		
 		public const string GUI_TEXT_MENU_GENERATE_POSTPROCESS = GUI_TEXT_MENU_GENERATE + "/Postprocess Script";
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
@@ -30,7 +30,7 @@ namespace AssetBundleGraph {
 		public const string SCRIPT_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/ScriptTemplate/";
 		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
 		
-		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
+		public const string PREFABBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabs";
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";
 
 		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
@@ -82,7 +82,7 @@ namespace AssetBundleGraph {
 		public const string MENU_IMPORTSETTING_NAME = "ImportSetting";
 		public const string MENU_MODIFIER_NAME = "Modifier";
 		public const string MENU_GROUPING_NAME = "Grouping";
-		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
+		public const string MENU_PREFABBUILDER_NAME = "PrefabBuilder";
 		public const string MENU_BUNDLECONFIG_NAME = "BundleConfig";
 		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
 		public const string MENU_EXPORTER_NAME = "Exporter";
@@ -93,7 +93,7 @@ namespace AssetBundleGraph {
 			{"Create " + MENU_IMPORTSETTING_NAME + " Node", NodeKind.IMPORTSETTING_GUI},
 			{"Create " + MENU_MODIFIER_NAME + " Node", NodeKind.MODIFIER_GUI},
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
-			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
+			{"Create " + MENU_PREFABBUILDER_NAME + " Node", NodeKind.PREFABBUILDER_GUI},
 			{"Create " + MENU_BUNDLECONFIG_NAME + " Node", NodeKind.BUNDLECONFIG_GUI},
 			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
 			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
@@ -105,7 +105,7 @@ namespace AssetBundleGraph {
 			{NodeKind.IMPORTSETTING_GUI, "ImportSetting"},
 			{NodeKind.MODIFIER_GUI, "Modifier"},
 			{NodeKind.GROUPING_GUI, "Grouping"},
-			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
+			{NodeKind.PREFABBUILDER_GUI, "PrefabBuilder"},
 			{NodeKind.BUNDLECONFIG_GUI, "BundleConfig"},
 			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
 			{NodeKind.EXPORTER_GUI, "Exporter"}

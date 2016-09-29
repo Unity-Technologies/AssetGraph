@@ -12,7 +12,7 @@ namespace AssetBundleGraph {
 
 	public enum NodeKind : int {
 		FILTER_SCRIPT,
-		PREFABRICATOR_SCRIPT,
+		PREFABBUILDER_SCRIPT,
 
 		LOADER_GUI,
 		FILTER_GUI,
@@ -20,7 +20,7 @@ namespace AssetBundleGraph {
 		MODIFIER_GUI,
 
 		GROUPING_GUI,
-		PREFABRICATOR_GUI,
+		PREFABBUILDER_GUI,
 		BUNDLECONFIG_GUI,
 		BUNDLEBUILDER_GUI,
 
@@ -180,8 +180,8 @@ namespace AssetBundleGraph {
 			get {
 				ValidateAccess(
 					NodeKind.FILTER_SCRIPT, 
-					NodeKind.PREFABRICATOR_SCRIPT,
-					NodeKind.PREFABRICATOR_GUI,
+					NodeKind.PREFABBUILDER_SCRIPT,
+					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
 				return m_scriptClassName;
@@ -189,8 +189,8 @@ namespace AssetBundleGraph {
 			set {
 				ValidateAccess(
 					NodeKind.FILTER_SCRIPT, 
-					NodeKind.PREFABRICATOR_SCRIPT,
-					NodeKind.PREFABRICATOR_GUI,
+					NodeKind.PREFABBUILDER_SCRIPT,
+					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
 				m_scriptClassName = value;
@@ -334,8 +334,8 @@ namespace AssetBundleGraph {
 				// nothing to do
 				break;
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
-			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABBUILDER_SCRIPT:
+			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				{
 					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
@@ -435,7 +435,7 @@ namespace AssetBundleGraph {
 			}
 
 			switch(m_kind) {
-			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.IMPORTSETTING_GUI:
 				break;
 			case NodeKind.MODIFIER_GUI:
@@ -468,7 +468,7 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABBUILDER_SCRIPT:
 				m_scriptClassName = string.Empty;
 				break;
 
@@ -486,7 +486,7 @@ namespace AssetBundleGraph {
 
 			switch(m_kind) {
 			case NodeKind.IMPORTSETTING_GUI:
-			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABBUILDER_GUI:
 				break;
 			case NodeKind.MODIFIER_GUI:
 				newData.m_scriptClassName 	= m_scriptClassName;
@@ -521,7 +521,7 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABBUILDER_SCRIPT:
 				newData.m_scriptClassName = m_scriptClassName;
 				break;
 
@@ -643,7 +643,7 @@ namespace AssetBundleGraph {
 				// TODO: node のコネクションのラベル情報にFilterScriptの最新情報を反映させる
 
 				break;
-			case NodeKind.PREFABRICATOR_SCRIPT: 
+			case NodeKind.PREFABBUILDER_SCRIPT: 
 				if(!TestCreateScriptInstance()) {
 					Debug.LogWarning(m_name  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for \"" + 
 						m_scriptClassName + "\". No such class found in assembly.");
@@ -694,7 +694,7 @@ namespace AssetBundleGraph {
 				
 			switch (m_kind) {
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABBUILDER_SCRIPT:
 			case NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
 				break;
@@ -715,7 +715,7 @@ namespace AssetBundleGraph {
 			case NodeKind.GROUPING_GUI:
 				nodeDict[NODE_GROUPING_KEYWORD] = m_groupingKeyword.ToJsonDictionary();
 				break;
-			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABBUILDER_GUI:
 				break;
 			case NodeKind.BUNDLECONFIG_GUI:
 				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();

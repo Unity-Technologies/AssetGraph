@@ -79,7 +79,7 @@ namespace AssetBundleGraph {
 
 		public enum ScriptType : int {
 			SCRIPT_MODIFIER,		
-			SCRIPT_PREFABRICATOR,
+			SCRIPT_PREFABBUILDER,
 			SCRIPT_POSTPROCESS
 		}
 
@@ -159,9 +159,9 @@ namespace AssetBundleGraph {
 				destinationPath = FileUtility.PathCombine(destinationBasePath, "MyModifier.cs");
 				break;
 			}
-			case ScriptType.SCRIPT_PREFABRICATOR: {
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabricator.cs.template");
-					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabricator.cs");
+			case ScriptType.SCRIPT_PREFABBUILDER: {
+					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabBuilder.cs.template");
+					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabBuilder.cs");
 					break;
 				}
 			case ScriptType.SCRIPT_POSTPROCESS: {
@@ -191,9 +191,9 @@ namespace AssetBundleGraph {
 		public static void GenerateModifier () {
 			GenerateScript(ScriptType.SCRIPT_MODIFIER);
 		}
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABRICATOR)]
-		public static void GeneratePrefabricator () {
-			GenerateScript(ScriptType.SCRIPT_PREFABRICATOR);
+		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER)]
+		public static void GeneratePrefabBuilder () {
+			GenerateScript(ScriptType.SCRIPT_PREFABBUILDER);
 		}
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_POSTPROCESS)]
 		public static void GeneratePostprocess () {
@@ -1223,8 +1223,8 @@ namespace AssetBundleGraph {
 			if (typeof(FilterBase).IsAssignableFrom(type)) {
 				return typeof(FilterBase);
 			}
-			if (typeof(PrefabricatorBase).IsAssignableFrom(type)) {
-				return typeof(PrefabricatorBase);
+			if (typeof(PrefabBuilderBase).IsAssignableFrom(type)) {
+				return typeof(PrefabBuilderBase);
 			}
 
 			return null;
@@ -1246,8 +1246,8 @@ namespace AssetBundleGraph {
 				}
 			}
 			
-			if (scriptBaseType == typeof(PrefabricatorBase)) {				
-				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABRICATOR_SCRIPT, x, y));
+			if (scriptBaseType == typeof(PrefabBuilderBase)) {				
+				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_SCRIPT, x, y));
 				newNode.Data.ScriptClassName = scriptClassName;
 			}
 			

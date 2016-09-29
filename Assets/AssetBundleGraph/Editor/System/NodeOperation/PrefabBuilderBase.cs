@@ -7,7 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
-	public class PrefabricatorBase : INodeOperationBase {
+	public class PrefabBuilderBase : INodeOperationBase {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
 			ConnectionPointData inputPoint,
@@ -26,10 +26,10 @@ namespace AssetBundleGraph {
 			}
 
 			if (invalids.Any()) {
-				throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before prefabricated.", node.Id);
+				throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before used to build prefab.", node.Id);
 			}
 
-			var prefabOutputDir = FileUtility.EnsurePrefabricatorCacheDirExists(target, node);				
+			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);				
 			var outputDict = new Dictionary<string, List<Asset>>();
 			
 			foreach (var groupKey in inputGroupAssets.Keys) {
@@ -51,20 +51,20 @@ namespace AssetBundleGraph {
 				var generated = new List<string>();
 				
 				/*
-					Prefabricate(string prefabName) method.
+					BuildPrefab(string prefabName) method.
 				*/
-				Func<string, string> Prefabricate = (string prefabName) => {
+				Func<string, string> BuildPrefab = (string prefabName) => {
 					var newPrefabOutputPath = Path.Combine(prefabOutputDir, prefabName);
 					generated.Add(newPrefabOutputPath);
-					isPrefabricateFunctionCalled = true;
+					isBuildPrefabFunctionCalled = true;
 
 					return newPrefabOutputPath;
 				};
 
-				ValidateCanCreatePrefab(target, node, groupKey, assets, prefabOutputDir, Prefabricate);
+				ValidateCanCreatePrefab(target, node, groupKey, assets, prefabOutputDir, BuildPrefab);
 
-				if (!isPrefabricateFunctionCalled) {
-					Debug.LogWarning(node.Name +": Prefabricate delegate was not called. Prefab might not be created properly.");
+				if (!isBuildPrefabFunctionCalled) {
+					Debug.LogWarning(node.Name +": BuildPrefab delegate was not called. Prefab might not be created properly.");
 				}
 
 				foreach (var generatedPrefabPath in generated) {
@@ -104,10 +104,10 @@ namespace AssetBundleGraph {
 			}
 			
 			if (invalids.Any()) {
-				throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before prefabricated.", node.Id);
+				throw new NodeException(string.Join(", ", invalids.ToArray()) + " are not imported yet. These assets need to be imported before used to build prefab.", node.Id);
 			}
 
-			var prefabOutputDir = FileUtility.EnsurePrefabricatorCacheDirExists(target, node);
+			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var outputDict = new Dictionary<string, List<Asset>>();
 			var cachedOrGenerated = new List<string>();
 
@@ -132,9 +132,9 @@ namespace AssetBundleGraph {
 				
 				
 				/*
-					Prefabricate(GameObject baseObject, string prefabName, bool forceGenerate) method.
+					BuildPrefab(GameObject baseObject, string prefabName, bool forceGenerate) method.
 				*/
-				Func<GameObject, string, bool, string> Prefabricate = (GameObject baseObject, string prefabName, bool forceGenerate) => {
+				Func<GameObject, string, bool, string> BuildPrefab = (GameObject baseObject, string prefabName, bool forceGenerate) => {
 					var newPrefabOutputPath = Path.Combine(prefabOutputDir, prefabName);
 					
 					if (forceGenerate || !SystemDataUtility.IsAllAssetsCachedAndUpdated(inputSources, alreadyCached, newPrefabOutputPath)) {
@@ -157,7 +157,7 @@ namespace AssetBundleGraph {
 						Debug.Log(node.Name + " used cached prefab: " + newPrefabOutputPath );
 					}
 
-					isPrefabricateFunctionCalled = true;
+					isBuildPrefabFunctionCalled = true;
 
 					return newPrefabOutputPath;
 				};
@@ -166,14 +166,14 @@ namespace AssetBundleGraph {
 					execute inheritee's input method.
 				*/
 				try {
-					CreatePrefab(target, node, groupKey, assets, prefabOutputDir, Prefabricate);
+					CreatePrefab(target, node, groupKey, assets, prefabOutputDir, BuildPrefab);
 				} catch (Exception e) {
 					Debug.LogError(node.Name + " Error:" + e);
 					throw new NodeException(node.Name + " Error:" + e, node.Id);
 				}
 
-				if (!isPrefabricateFunctionCalled) {
-					Debug.LogWarning(node.Name +": Prefabricate delegate was not called. Prefab might not be created properly.");
+				if (!isBuildPrefabFunctionCalled) {
+					Debug.LogWarning(node.Name +": BuildPrefab delegate was not called. Prefab might not be created properly.");
 				}
 
 				/*
@@ -226,14 +226,14 @@ namespace AssetBundleGraph {
 			Output(connectionToOutput, outputDict, cachedItems);
 		}
 
-		private bool isPrefabricateFunctionCalled = false;
+		private bool isBuildPrefabFunctionCalled = false;
 
-		public virtual void ValidateCanCreatePrefab (BuildTarget target, NodeData node, string groupKey, List<DepreacatedAssetInfo> sources, string prefabOutputDir, Func<string, string> Prefabricate) {
+		public virtual void ValidateCanCreatePrefab (BuildTarget target, NodeData node, string groupKey, List<DepreacatedAssetInfo> sources, string prefabOutputDir, Func<string, string> BuildPrefab) {
 			Debug.LogError(node.Name + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this);
 			throw new NodeException(node.Name + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, node.Id);
 		}
 
-		public virtual void CreatePrefab (BuildTarget target, NodeData node, string groupKey, List<DepreacatedAssetInfo> sources, string prefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
+		public virtual void CreatePrefab (BuildTarget target, NodeData node, string groupKey, List<DepreacatedAssetInfo> sources, string prefabOutputDir, Func<GameObject, string, bool, string> BuildPrefab) {
 			Debug.LogError(node.Name + ":Subclass did not implement \"CreatePrefab ()\" method:" + this);
 			throw new NodeException(node.Name + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, node.Id);
 		}

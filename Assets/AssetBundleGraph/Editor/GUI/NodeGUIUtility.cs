@@ -130,8 +130,8 @@ namespace AssetBundleGraph {
 						{NodeKind.FILTER_GUI, 			"flow node 1 on"},
 						{NodeKind.IMPORTSETTING_GUI,	"flow node 2 on"},
 						{NodeKind.GROUPING_GUI, 		"flow node 3 on"},
-						{NodeKind.PREFABRICATOR_SCRIPT, "flow node 4 on"},
-						{NodeKind.PREFABRICATOR_GUI, 	"flow node 4 on"},
+						{NodeKind.PREFABBUILDER_SCRIPT, "flow node 4 on"},
+						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4 on"},
 						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5 on"},
 						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6 on"},
 						{NodeKind.MODIFIER_GUI, 		"flow node 6 on"}
@@ -151,8 +151,8 @@ namespace AssetBundleGraph {
 						{NodeKind.FILTER_GUI, 			"flow node 1"},
 						{NodeKind.IMPORTSETTING_GUI,	"flow node 2"},
 						{NodeKind.GROUPING_GUI, 		"flow node 3"},
-						{NodeKind.PREFABRICATOR_SCRIPT, "flow node 4"},
-						{NodeKind.PREFABRICATOR_GUI, 	"flow node 4"},
+						{NodeKind.PREFABBUILDER_SCRIPT, "flow node 4"},
+						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4"},
 						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5"},
 						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6"},
 						{NodeKind.MODIFIER_GUI, 		"flow node 6"}

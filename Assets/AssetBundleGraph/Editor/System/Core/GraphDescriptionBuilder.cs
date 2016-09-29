@@ -117,8 +117,8 @@ namespace AssetBundleGraph {
 //
 //				case NodeKind.MODIFIER_GUI:
 //				
-//				case NodeKind.PREFABRICATOR_SCRIPT:
-//				case NodeKind.PREFABRICATOR_GUI: {
+//				case NodeKind.PREFABBUILDER_SCRIPT:
+//				case NodeKind.PREFABBUILDER_GUI: {
 //						var scriptClassName = nodeDict[AssetBundleGraphSettings.NODE_SCRIPT_CLASSNAME] as string;
 //						allNodes.Add(
 //							new NodeData(

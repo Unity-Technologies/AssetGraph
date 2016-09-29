@@ -324,9 +324,9 @@ namespace AssetBundleGraph {
 						executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, currentNodeData);
 						break;
 					}
-				case NodeKind.PREFABRICATOR_SCRIPT: {
+				case NodeKind.PREFABBUILDER_SCRIPT: {
 						var scriptClassName = currentNodeData.ScriptClassName;
-						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, currentNodeData);
+						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabBuilderBase>(scriptClassName, currentNodeData);
 						break;
 					}
 				case NodeKind.LOADER_GUI: {
@@ -352,12 +352,12 @@ namespace AssetBundleGraph {
 						executor = new IntegratedGUIGrouping();
 						break;
 					}
-				case NodeKind.PREFABRICATOR_GUI: {
+				case NodeKind.PREFABBUILDER_GUI: {
 						var scriptClassName = currentNodeData.ScriptClassName;
 						if (string.IsNullOrEmpty(scriptClassName)) {
 							throw new NodeException(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.", currentNodeData.Id);
 						}
-						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabricatorBase>(scriptClassName, currentNodeData);
+						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabBuilderBase>(scriptClassName, currentNodeData);
 						break;
 					}
 
@@ -401,10 +401,10 @@ namespace AssetBundleGraph {
 					return new List<string>();
 				}
 				
-				case NodeKind.PREFABRICATOR_SCRIPT:
-				case NodeKind.PREFABRICATOR_GUI: {
+				case NodeKind.PREFABBUILDER_SCRIPT:
+				case NodeKind.PREFABBUILDER_GUI: {
 					var cachedPathBase = FileUtility.PathCombine(
-						AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, 
+						AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, 
 						node.Id,
 						SystemDataUtility.GetPathSafeTargetName(t)
 					);
@@ -413,7 +413,7 @@ namespace AssetBundleGraph {
 					if (!Directory.Exists(cachedPathBase)) {
 						// search default platform + package
 						cachedPathBase = FileUtility.PathCombine(
-							AssetBundleGraphSettings.PREFABRICATOR_CACHE_PLACE, 
+							AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, 
 							node.Id,
 							SystemDataUtility.GetPathSafeDefaultTargetName()
 						);

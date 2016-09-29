@@ -248,7 +248,7 @@ namespace AssetBundleGraph {
 				{
 					GUIStyle s = new GUIStyle("TextFieldDropDownText");
 					/*
-						check prefabricator script-type string.
+						check prefab builder script-type string.
 					*/
 					if (string.IsNullOrEmpty(node.Data.ScriptClassName)) {
 						s.fontStyle = FontStyle.Bold;
@@ -408,15 +408,15 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private void DoInspectorPrefabricatorScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
+		private void DoInspectorPrefabBuilderScriptGUI (NodeGUI node) {
+			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			EditorGUILayout.LabelField("Script:", node.Data.ScriptClassName);
 		}
 
-		private void DoInspectorPrefabricatorGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
+		private void DoInspectorPrefabBuilderGUI (NodeGUI node) {
+			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
@@ -424,7 +424,7 @@ namespace AssetBundleGraph {
 				GUIStyle s = new GUIStyle("TextFieldDropDownText");
 
 				/*
-					check prefabricator script-type string.
+					check prefab builder script-type string.
 				*/
 				if (string.IsNullOrEmpty(node.Data.ScriptClassName)) {
 					s.fontStyle = FontStyle.Bold;
@@ -700,11 +700,11 @@ namespace AssetBundleGraph {
 			case NodeKind.GROUPING_GUI:
 				DoInspectorGroupingGUI(node);
 				break;
-			case NodeKind.PREFABRICATOR_SCRIPT:
-				DoInspectorPrefabricatorScriptGUI(node);
+			case NodeKind.PREFABBUILDER_SCRIPT:
+				DoInspectorPrefabBuilderScriptGUI(node);
 				break;
-			case NodeKind.PREFABRICATOR_GUI:
-				DoInspectorPrefabricatorGUI(node);
+			case NodeKind.PREFABBUILDER_GUI:
+				DoInspectorPrefabBuilderGUI(node);
 				break;
 			case NodeKind.BUNDLECONFIG_GUI:
 				DoInspectorBundleConfiguratorGUI(node);

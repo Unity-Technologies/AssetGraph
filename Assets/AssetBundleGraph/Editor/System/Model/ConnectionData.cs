@@ -112,8 +112,8 @@ namespace AssetBundleGraph {
 				{
 					switch (to.Kind) {
 					case NodeKind.GROUPING_GUI:
-					case NodeKind.PREFABRICATOR_SCRIPT:
-					case NodeKind.PREFABRICATOR_GUI:
+					case NodeKind.PREFABBUILDER_SCRIPT:
+					case NodeKind.PREFABBUILDER_GUI:
 					case NodeKind.BUNDLECONFIG_GUI:
 						return true;
 					}
@@ -121,12 +121,12 @@ namespace AssetBundleGraph {
 				}
 
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABRICATOR_SCRIPT:
+			case NodeKind.PREFABBUILDER_SCRIPT:
 			case NodeKind.LOADER_GUI:
 			case NodeKind.FILTER_GUI:
 			case NodeKind.IMPORTSETTING_GUI:			
 			case NodeKind.MODIFIER_GUI:
-			case NodeKind.PREFABRICATOR_GUI:
+			case NodeKind.PREFABBUILDER_GUI:
 				{
 					switch (to.Kind) {
 					case NodeKind.BUNDLEBUILDER_GUI:

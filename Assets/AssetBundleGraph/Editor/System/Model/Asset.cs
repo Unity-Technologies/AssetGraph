@@ -53,7 +53,7 @@ namespace AssetBundleGraph {
 		}
 
 		/**
-			new assets which is generated on Imported or Prefabricated.
+			new assets which is generated on ImportSetting and PrefabBuilder.
 		*/
 		public static Asset CreateNewAssetWithImportPathAndStatus (string importFrom, bool isNew, bool isBundled) {
 			return new Asset(
