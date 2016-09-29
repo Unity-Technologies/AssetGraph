@@ -86,19 +86,7 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			
 			foreach (var groupKey in inputGroupAssets.Keys) {
-				var inputSources = inputGroupAssets[groupKey];
-
-				/*
-					ready input resource info for execute. not contains cache in this node.
-				*/
-				var assets = new List<DepreacatedAssetInfo>();
-				foreach (var assetData in inputSources) {
-					var assetName = assetData.fileNameAndExtension;
-					var assetType = assetData.assetType;
-					var assetPath = assetData.importFrom;
-					var assetDatabaseId = assetData.assetDatabaseId;
-					assets.Add(new DepreacatedAssetInfo(assetName, assetType, assetPath, assetDatabaseId));
-				}
+				var assets = inputGroupAssets[groupKey];
 
 				// collect generated prefab path.
 				var generated = new List<string>();
@@ -135,7 +123,7 @@ namespace AssetBundleGraph {
 					add input sources for next node.
 				*/
 				if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<Asset>();
-				outputDict[groupKey].AddRange(inputSources);
+				outputDict[groupKey].AddRange(assets);
 			} 				
 
 			Output(connectionToOutput, outputDict, null);
@@ -169,32 +157,19 @@ namespace AssetBundleGraph {
 			var cachedOrGenerated = new List<string>();
 
 			foreach (var groupKey in inputGroupAssets.Keys) {
-				var inputSources = inputGroupAssets[groupKey];
-
-				/*
-					ready input resource info for execute. not contains cache in this node.
-				*/
-				var assets = new List<DepreacatedAssetInfo>();
-				foreach (var assetData in inputSources) {
-					var assetName = assetData.fileNameAndExtension;
-					var assetType = assetData.assetType;
-					var assetPath = assetData.importFrom;
-					var assetDatabaseId = assetData.assetDatabaseId;
-					assets.Add(new DepreacatedAssetInfo(assetName, assetType, assetPath, assetDatabaseId));
-				}
+				var assets = inputGroupAssets[groupKey];
 
 				// collect generated prefab path.
 				var generated = new List<string>();
 				var outputSources = new List<Asset>();
-				
-				
+
 				/*
 					BuildPrefab(GameObject baseObject, string prefabName, bool forceGenerate) method.
 				*/
 				Func<GameObject, string, bool, string> BuildPrefab = (GameObject baseObject, string prefabName, bool forceGenerate) => {
 					var newPrefabOutputPath = Path.Combine(prefabOutputDir, prefabName);
 					
-					if (forceGenerate || !SystemDataUtility.IsAllAssetsCachedAndUpdated(inputSources, alreadyCached, newPrefabOutputPath)) {
+					if (forceGenerate || !SystemDataUtility.IsAllAssetsCachedAndUpdated(assets, alreadyCached, newPrefabOutputPath)) {
 						// not cached, create new.
 						UnityEngine.Object prefabFile = PrefabUtility.CreateEmptyPrefab(newPrefabOutputPath);
 					
@@ -269,7 +244,7 @@ namespace AssetBundleGraph {
 				/*
 					add current resources to next node's resources.
 				*/
-				outputSources.AddRange(inputSources);
+				outputSources.AddRange(assets);
 
 				outputDict[groupKey] = outputSources;
 			}
@@ -285,12 +260,12 @@ namespace AssetBundleGraph {
 
 		private bool isBuildPrefabFunctionCalled = false;
 
-		public virtual void ValidateCanCreatePrefab (BuildTarget target, NodeData node, string groupKey, List<DepreacatedAssetInfo> sources, string prefabOutputDir, Func<string, string> BuildPrefab) {
+		public virtual void ValidateCanCreatePrefab (BuildTarget target, NodeData node, string groupKey, List<Asset> sources, string prefabOutputDir, Func<string, string> BuildPrefab) {
 			Debug.LogError(node.Name + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this);
 			throw new NodeException(node.Name + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, node.Id);
 		}
 
-		public virtual void CreatePrefab (BuildTarget target, NodeData node, string groupKey, List<DepreacatedAssetInfo> sources, string prefabOutputDir, Func<GameObject, string, bool, string> BuildPrefab) {
+		public virtual void CreatePrefab (BuildTarget target, NodeData node, string groupKey, List<Asset> sources, string prefabOutputDir, Func<GameObject, string, bool, string> BuildPrefab) {
 			Debug.LogError(node.Name + ":Subclass did not implement \"CreatePrefab ()\" method:" + this);
 			throw new NodeException(node.Name + ":Subclass did not implement \"ValidateCanCreatePrefab ()\" method:" + this, node.Id);
 		}

@@ -4,12 +4,12 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-[AssetBundleGraph.MenuItemName("MyBuilder")]
+[AssetBundleGraph.PrefabBuilderBase.MenuItemName("MyBuilder")]
 public class MyPrefabBuilder : AssetBundleGraph.PrefabBuilderBase {
 	public override void ValidateCanCreatePrefab (BuildTarget target, 
 		AssetBundleGraph.NodeData node, 
 		string groupKey, 
-		List<AssetBundleGraph.DepreacatedAssetInfo> sources, 
+		List<AssetBundleGraph.Asset> sources, 
 		string prefabOutputDir, 
 		Func<string, string> BuildPrefab) 
 	{
@@ -19,7 +19,7 @@ public class MyPrefabBuilder : AssetBundleGraph.PrefabBuilderBase {
 	public override void CreatePrefab (BuildTarget target, 
 		AssetBundleGraph.NodeData node, 
 		string groupKey, 
-		List<AssetBundleGraph.DepreacatedAssetInfo> sources, 
+		List<AssetBundleGraph.Asset> sources, 
 		string prefabOutputDir, 
 		Func<GameObject, string, bool, string> BuildPrefab) 
 	{
