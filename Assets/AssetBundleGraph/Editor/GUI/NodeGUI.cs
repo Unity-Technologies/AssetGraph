@@ -515,6 +515,24 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
+		public static void ShowTypeNamesMenu (string current, List<string> contents, Action<string> ExistSelected) {
+			var menu = new GenericMenu();
+
+			for (var i = 0; i < contents.Count; i++) {
+				var type = contents[i];
+				var selected = false;
+				if (type == current) selected = true;
+
+				menu.AddItem(
+					new GUIContent(type),
+					selected,
+					() => {
+						ExistSelected(type);
+					}
+				);
+			}
+			menu.ShowAsContext();
+		}
 
 		public static void ShowFilterKeyTypeMenu (string current, Action<string> Selected) {
 			var menu = new GenericMenu();

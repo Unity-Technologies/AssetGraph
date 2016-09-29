@@ -112,7 +112,6 @@ namespace AssetBundleGraph {
 				{
 					switch (to.Kind) {
 					case NodeKind.GROUPING_GUI:
-					case NodeKind.PREFABBUILDER_SCRIPT:
 					case NodeKind.PREFABBUILDER_GUI:
 					case NodeKind.BUNDLECONFIG_GUI:
 						return true;
@@ -121,7 +120,6 @@ namespace AssetBundleGraph {
 				}
 
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABBUILDER_SCRIPT:
 			case NodeKind.LOADER_GUI:
 			case NodeKind.FILTER_GUI:
 			case NodeKind.IMPORTSETTING_GUI:			

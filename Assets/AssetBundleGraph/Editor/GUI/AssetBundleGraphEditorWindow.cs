@@ -1260,12 +1260,6 @@ namespace AssetBundleGraph {
 				}
 			}
 			
-			if (scriptBaseType == typeof(PrefabBuilderBase)) {				
-				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_SCRIPT, x, y));
-				newNode.Data.ScriptClassName = scriptClassName;
-			}
-			
-			
 			if (newNode == null) {
 				Debug.LogError("Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
 					") is not supported to create from code.");

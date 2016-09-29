@@ -324,11 +324,6 @@ namespace AssetBundleGraph {
 						executor = SystemDataUtility.CreateNodeOperationInstance<FilterBase>(scriptClassName, currentNodeData);
 						break;
 					}
-				case NodeKind.PREFABBUILDER_SCRIPT: {
-						var scriptClassName = currentNodeData.ScriptClassName;
-						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabBuilderBase>(scriptClassName, currentNodeData);
-						break;
-					}
 				case NodeKind.LOADER_GUI: {
 						executor = new IntegratedGUILoader();
 						break;
@@ -357,7 +352,7 @@ namespace AssetBundleGraph {
 						if (string.IsNullOrEmpty(scriptClassName)) {
 							throw new NodeException(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.", currentNodeData.Id);
 						}
-						executor = SystemDataUtility.CreateNodeOperationInstance<PrefabBuilderBase>(scriptClassName, currentNodeData);
+						executor = SystemDataUtility.CreatePrefabBuilderOperationInstance<PrefabBuilderBase>(scriptClassName, currentNodeData);
 						break;
 					}
 
@@ -401,7 +396,6 @@ namespace AssetBundleGraph {
 					return new List<string>();
 				}
 				
-				case NodeKind.PREFABBUILDER_SCRIPT:
 				case NodeKind.PREFABBUILDER_GUI: {
 					var cachedPathBase = FileUtility.PathCombine(
 						AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, 

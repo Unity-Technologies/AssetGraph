@@ -12,7 +12,6 @@ namespace AssetBundleGraph {
 
 	public enum NodeKind : int {
 		FILTER_SCRIPT,
-		PREFABBUILDER_SCRIPT,
 
 		LOADER_GUI,
 		FILTER_GUI,
@@ -180,7 +179,6 @@ namespace AssetBundleGraph {
 			get {
 				ValidateAccess(
 					NodeKind.FILTER_SCRIPT, 
-					NodeKind.PREFABBUILDER_SCRIPT,
 					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
@@ -189,7 +187,6 @@ namespace AssetBundleGraph {
 			set {
 				ValidateAccess(
 					NodeKind.FILTER_SCRIPT, 
-					NodeKind.PREFABBUILDER_SCRIPT,
 					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
@@ -334,7 +331,6 @@ namespace AssetBundleGraph {
 				// nothing to do
 				break;
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABBUILDER_SCRIPT:
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				{
@@ -468,7 +464,6 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABBUILDER_SCRIPT:
 				m_scriptClassName = string.Empty;
 				break;
 
@@ -521,7 +516,6 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABBUILDER_SCRIPT:
 				newData.m_scriptClassName = m_scriptClassName;
 				break;
 
@@ -643,13 +637,6 @@ namespace AssetBundleGraph {
 				// TODO: node のコネクションのラベル情報にFilterScriptの最新情報を反映させる
 
 				break;
-			case NodeKind.PREFABBUILDER_SCRIPT: 
-				if(!TestCreateScriptInstance()) {
-					Debug.LogWarning(m_name  + ": Node could not be created properly because AssetBundleGraph failed to create script instance for \"" + 
-						m_scriptClassName + "\". No such class found in assembly.");
-					return false;
-				}
-				break;
 			}
 
 			return true;
@@ -694,7 +681,7 @@ namespace AssetBundleGraph {
 				
 			switch (m_kind) {
 			case NodeKind.FILTER_SCRIPT:
-			case NodeKind.PREFABBUILDER_SCRIPT:
+			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
 				break;
@@ -714,8 +701,6 @@ namespace AssetBundleGraph {
 				break;
 			case NodeKind.GROUPING_GUI:
 				nodeDict[NODE_GROUPING_KEYWORD] = m_groupingKeyword.ToJsonDictionary();
-				break;
-			case NodeKind.PREFABBUILDER_GUI:
 				break;
 			case NodeKind.BUNDLECONFIG_GUI:
 				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();

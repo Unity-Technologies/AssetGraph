@@ -95,9 +95,24 @@ namespace AssetBundleGraph {
 		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperationBase {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
-				throw new NodeException("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T), node.Id);
+				throw new NodeException(node.Name + ": Failed to create instance:" + typeStr + " derived from:" + typeof(T), node.Id);
 			}
 			return ((T)nodeScriptInstance);
+		}
+
+		public static T CreatePrefabBuilderOperationInstance<T> (string className, NodeData node) where T : INodeOperationBase {
+			var map = PrefabBuilderBase.GetAttributeClassNameMap();
+
+			// if user changed their own Prefabricator className or attrName, attrNameOrClassName is already changed and that shoud be change from Inspector of Prefabricator.
+			if (!map.ContainsKey(className)) {
+				throw new NodeException(node.Name + ": Failed to create PrefabBuilder:" + className + ". No matching className or attribute name found.", node.Id);
+			}
+
+			var instance = Assembly.GetExecutingAssembly().CreateInstance(map[className]);
+			if (instance == null) {
+				throw new NodeException(node.Name + ": Failed to create PrefabBuilder:" + className + ". CreateInstance failed.", node.Id);
+			}
+			return (T)instance;
 		}
 
 		public static string GetPathSafeDefaultTargetName () {

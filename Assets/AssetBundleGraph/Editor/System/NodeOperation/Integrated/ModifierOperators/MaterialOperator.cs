@@ -1,10 +1,9 @@
 using System;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
-	[Serializable] public class MaterialOperator : OperatorBase {
+    [Serializable] public class MaterialOperator : OperatorBase {
 		[SerializeField] public Shader shader;
 		
 		public enum BlendMode {

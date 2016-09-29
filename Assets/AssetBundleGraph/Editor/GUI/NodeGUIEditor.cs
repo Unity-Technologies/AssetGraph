@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AssetBundleGraph {
 	/**
@@ -408,42 +409,45 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private void DoInspectorPrefabBuilderScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
-			UpdateNodeName(node);
-
-			EditorGUILayout.LabelField("Script:", node.Data.ScriptClassName);
-		}
-
 		private void DoInspectorPrefabBuilderGUI (NodeGUI node) {
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				GUIStyle s = new GUIStyle("TextFieldDropDownText");
+				var map = PrefabBuilderBase.GetAttributeClassNameMap();
+				if(map.Count > 0) {
+					using(new GUILayout.HorizontalScope()) {
+						GUILayout.Label("PrefabBuilder:");
+						GUILayout.FlexibleSpace();
+						if (GUILayout.Button(node.Data.ScriptClassName, "Popup", GUILayout.Width(120))) {
+							var builders = map.Keys.ToList();
 
-				/*
-					check prefab builder script-type string.
-				*/
-				if (string.IsNullOrEmpty(node.Data.ScriptClassName)) {
-					s.fontStyle = FontStyle.Bold;
-					s.fontSize  = 12;
-				} else {
-					var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.Data.ScriptClassName);
-
-					if (loadedType == null) {
-						s.fontStyle = FontStyle.Bold;
-						s.fontSize  = 12;
+							if(builders.Count > 0) {
+								NodeGUI.ShowTypeNamesMenu(node.Data.ScriptClassName, builders, (string selectedClassName) => 
+									{
+										using(new RecordUndoScope("Modify PrefabBuilder class", node, true)) {
+											node.Data.ScriptClassName = selectedClassName;
+										}
+									} 
+								);
+							}
+						}
 					}
-				}
-				
-				GUILayout.Label("ここをドロップダウンにする。");
-				var newScriptClass = EditorGUILayout.TextField("Classname", node.Data.ScriptClassName, s);
-
-				if (newScriptClass != node.Data.ScriptClassName) {
-					using(new RecordUndoScope("Change Script Classname", node, true)){
-						node.Data.ScriptClassName = newScriptClass;
+				} else {
+					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
+						using(new GUILayout.HorizontalScope()) {
+							GUILayout.Label("PrefabBuilder:");
+							GUILayout.FlexibleSpace();
+							GUILayout.Label(node.Data.ScriptClassName);
+						}
+					} else {
+						string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
+						EditorGUILayout.HelpBox(
+							string.Format(
+								"You need to create at least one PrefabBuilder script to use PrefabBuilder node. To start, select {0}>{1}>{2} menu and generate new script from template.",
+								menuNames[1],menuNames[2], menuNames[3]
+							), MessageType.Info);
 					}
 				}
 			}
@@ -699,9 +703,6 @@ namespace AssetBundleGraph {
 				break;
 			case NodeKind.GROUPING_GUI:
 				DoInspectorGroupingGUI(node);
-				break;
-			case NodeKind.PREFABBUILDER_SCRIPT:
-				DoInspectorPrefabBuilderScriptGUI(node);
 				break;
 			case NodeKind.PREFABBUILDER_GUI:
 				DoInspectorPrefabBuilderGUI(node);

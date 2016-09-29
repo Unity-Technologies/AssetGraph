@@ -5,9 +5,55 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AssetBundleGraph {
+
+	[AttributeUsage(AttributeTargets.Class)] 
+	public class MenuItemName : Attribute {
+		public string Name;
+		public MenuItemName (string name) {
+			Name = name;
+		}
+	}
+
 	public class PrefabBuilderBase : INodeOperationBase {
+
+		private static  Dictionary<string, string> s_attributeClassNameMap;
+		
+		public static Dictionary<string, string> GetAttributeClassNameMap () {
+
+			if(s_attributeClassNameMap == null) {
+				// attribute name or class name : class name
+				s_attributeClassNameMap = new Dictionary<string, string>(); 
+
+				var builders = Assembly
+					.GetExecutingAssembly()
+					.GetTypes()
+					.Where(t => t != typeof(PrefabBuilderBase))
+					.Where(t => typeof(PrefabBuilderBase).IsAssignableFrom(t));
+				
+				foreach (var type in builders) {
+					// set attribute-name as key of dict if atribute is exist.
+					MenuItemName attr = 
+						type.GetCustomAttributes(typeof(MenuItemName), true).FirstOrDefault() as MenuItemName;
+
+					var typename = type.ToString();
+
+
+					if (attr != null) {
+						if (!s_attributeClassNameMap.ContainsKey(attr.Name)) {
+							s_attributeClassNameMap[attr.Name] = typename;
+						}
+					} else {
+						s_attributeClassNameMap[typename] = typename;
+					}
+
+				}
+			}
+			return s_attributeClassNameMap;
+		}
+
 		public void Setup (BuildTarget target, 
 			NodeData node, 
 			ConnectionPointData inputPoint,
@@ -77,8 +123,12 @@ namespace AssetBundleGraph {
 					if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<Asset>();
 					outputDict[groupKey].Add(newAsset);
 				}
+
+				/*
+					add input sources for next node.
+				*/
+				if (!outputDict.ContainsKey(groupKey)) outputDict[groupKey] = new List<Asset>();
 				outputDict[groupKey].AddRange(inputSources);
-			
 			} 				
 
 			Output(connectionToOutput, outputDict, null);
