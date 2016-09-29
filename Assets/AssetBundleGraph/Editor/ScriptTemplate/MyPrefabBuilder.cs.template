@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
+[AssetBundleGraph.MenuItemName("MyBuilder")]
 public class MyPrefabBuilder : AssetBundleGraph.PrefabBuilderBase {
 	public override void ValidateCanCreatePrefab (BuildTarget target, 
 		AssetBundleGraph.NodeData node, 
