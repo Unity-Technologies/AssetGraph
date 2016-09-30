@@ -52,6 +52,12 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public List<Entry> Values {
+			get {
+				return m_values;
+			}
+		}
+
 		public int this[BuildTargetGroup g] {
 			get {
 				int i = m_values.FindIndex(v => v.targetGroup == g);

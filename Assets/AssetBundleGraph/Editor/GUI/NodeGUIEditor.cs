@@ -543,39 +543,37 @@ namespace AssetBundleGraph {
 				using (disabledScope) {
 					int bundleOptions = node.Data.BundleBuilderBundleOptions[currentEditingGroup];
 
+					bool isDisableWriteTypeTreeEnabled  = 0 < (bundleOptions & (int)BuildAssetBundleOptions.DisableWriteTypeTree);
+					bool isIgnoreTypeTreeChangesEnabled = 0 < (bundleOptions & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
+
+					// buildOptions are validated during loading. Two flags should not be true at the same time.
+					UnityEngine.Assertions.Assert.IsFalse(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled);
+
+					bool isSomethingDisabled = isDisableWriteTypeTreeEnabled || isIgnoreTypeTreeChangesEnabled;
+
 					foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
 
 						// contains keyword == enabled. if not, disabled.
 						bool isEnabled = (bundleOptions & (int)option.option) != 0;
 
-						var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
-						if (result != isEnabled) {
-							using(new RecordUndoScope("Change Bundle Options", node, true)){
-								bundleOptions = (result) ? 
-									((int)option.option | bundleOptions) : 
-									(((~(int)option.option)) & bundleOptions);
-								node.Data.BundleBuilderBundleOptions[currentEditingGroup] = bundleOptions;
-								/*
-								 * Cannot use DisableWriteTypeTree and IgnoreTypeTreeChanges options together.
-								 */
-								if (result &&
-									option.option == BuildAssetBundleOptions.DisableWriteTypeTree &&
-									0 != (node.Data.BundleBuilderBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.DisableWriteTypeTree))
-								{
-									var currentValue = node.Data.BundleBuilderBundleOptions[currentEditingGroup];
-									node.Data.BundleBuilderBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.DisableWriteTypeTree)) & currentValue);
-								}
+						bool isToggleDisabled = 
+							(option.option == BuildAssetBundleOptions.DisableWriteTypeTree  && isIgnoreTypeTreeChangesEnabled) ||
+							(option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges && isDisableWriteTypeTreeEnabled);
 
-								if (result &&
-									option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges &&
-									0 != (node.Data.BundleBuilderBundleOptions[currentEditingGroup] & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges))
-								{
-									var currentValue = node.Data.BundleBuilderBundleOptions[currentEditingGroup];
-									node.Data.BundleBuilderBundleOptions[currentEditingGroup] = (((~(int)BuildAssetBundleOptions.IgnoreTypeTreeChanges)) & currentValue);
+						using(new EditorGUI.DisabledScope(isToggleDisabled)) {
+							var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
+							if (result != isEnabled) {
+								using(new RecordUndoScope("Change Bundle Options", node, true)){
+									bundleOptions = (result) ? 
+										((int)option.option | bundleOptions) : 
+										(((~(int)option.option)) & bundleOptions);
+									node.Data.BundleBuilderBundleOptions[currentEditingGroup] = bundleOptions;
 								}
 							}
-							return;
 						}
+					}
+					if(isSomethingDisabled) {
+						EditorGUILayout.HelpBox("'Disable Write Type Tree' and 'Ignore Type Tree Changes' can not be used together.", MessageType.Info);
 					}
 				}
 			}

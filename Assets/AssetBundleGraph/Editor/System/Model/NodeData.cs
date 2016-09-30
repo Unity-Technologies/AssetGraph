@@ -608,6 +608,25 @@ namespace AssetBundleGraph {
 		}
 
 		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
+
+			switch(m_kind) {
+			case NodeKind.BUNDLEBUILDER_GUI:
+				{
+					foreach(var v in m_bundleBuilderEnabledBundleOptions.Values) {
+						bool isDisableWriteTypeTreeEnabled  = 0 < (v.value & (int)BuildAssetBundleOptions.DisableWriteTypeTree);
+						bool isIgnoreTypeTreeChangesEnabled = 0 < (v.value & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
+
+						// If both are marked something is wrong. Clear both flag and save.
+						if(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled) {
+							int flag = ~((int)BuildAssetBundleOptions.DisableWriteTypeTree + (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
+							v.value = v.value & flag;
+							Debug.LogWarning(m_name + ": DisableWriteTypeTree and IgnoreTypeTreeChanges can not be used together. Settings overwritten.");
+						}
+					}
+				}
+				break;
+			}
+
 			return true;
 		}
 
