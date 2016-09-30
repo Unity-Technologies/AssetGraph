@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace AssetBundleGraph {
 	public class AssetBundleGraphSettings {
@@ -12,9 +13,9 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Generate Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
-		public const string GUI_TEXT_MENU_GENERATE_PREFABRICATOR = GUI_TEXT_MENU_GENERATE + "/Prefabricator Script";
+		public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";
 		
-		public const string GUI_TEXT_MENU_GENERATE_FINALLY = GUI_TEXT_MENU_GENERATE + "/Finally Script";
+		public const string GUI_TEXT_MENU_GENERATE_POSTPROCESS = GUI_TEXT_MENU_GENERATE + "/Postprocess Script";
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
@@ -29,9 +30,8 @@ namespace AssetBundleGraph {
 		public const string SCRIPT_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/ScriptTemplate/";
 		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
 		
-		public const string PREFABRICATOR_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabricated";
-		public const string BUNDLIZER_CACHE_PLACE		= APPLICATIONDATAPATH_CACHE_PATH + "Bundlized";
-		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "BundleBuilt";
+		public const string PREFABBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabs";
+		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";
 
 		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
 		public const string MODIFIER_OPERATOR_DATAS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierOperatorDatas";
@@ -47,20 +47,29 @@ namespace AssetBundleGraph {
 
 		public const char KEYWORD_WILDCARD = '*';
 
-		public static List<string> DefaultBundleOptionSettings = new List<string> {
-			"Uncompressed AssetBundle",
-			"Disable Write TypeTree",
-			"Deterministic AssetBundle",
-			"Force Rebuild AssetBundle",
-			"Ignore TypeTree Changes",
-			"Append Hash To AssetBundle Name",
-        #if UNITY_5_3
-            "ChunkBased Compression"
-        #endif			
+		public struct BuildAssetBundleOption {
+			public readonly BuildAssetBundleOptions option;
+			public readonly string description;
+			public BuildAssetBundleOption(string desc, BuildAssetBundleOptions opt) {
+				option = opt;
+				description = desc;
+			}
+		}
+
+		public static List<BuildAssetBundleOption> BundleOptionSettings = new List<BuildAssetBundleOption> {
+			new BuildAssetBundleOption("Uncompressed AssetBundle", BuildAssetBundleOptions.UncompressedAssetBundle),
+			new BuildAssetBundleOption("Disable Write TypeTree", BuildAssetBundleOptions.DisableWriteTypeTree),
+			new BuildAssetBundleOption("Deterministic AssetBundle", BuildAssetBundleOptions.DeterministicAssetBundle),
+			new BuildAssetBundleOption("Force Rebuild AssetBundle", BuildAssetBundleOptions.ForceRebuildAssetBundle),
+			new BuildAssetBundleOption("Ignore TypeTree Changes", BuildAssetBundleOptions.IgnoreTypeTreeChanges),
+			new BuildAssetBundleOption("Append Hash To AssetBundle Name", BuildAssetBundleOptions.AppendHashToAssetBundleName),
+			new BuildAssetBundleOption("ChunkBased Compression", BuildAssetBundleOptions.ChunkBasedCompression),
+			new BuildAssetBundleOption("Strict Mode", BuildAssetBundleOptions.StrictMode),
+			new BuildAssetBundleOption("Omit Class Versions", BuildAssetBundleOptions.OmitClassVersions)
 		};
-		
-		public const string PLATFORM_DEFAULT_NAME = "Default";
-		public const string PLATFORM_STANDALONE = "Standalone";
+
+		//public const string PLATFORM_DEFAULT_NAME = "Default";
+		//public const string PLATFORM_STANDALONE = "Standalone";
 
 		public const float WINDOW_SPAN = 20f;
 
@@ -73,8 +82,8 @@ namespace AssetBundleGraph {
 		public const string MENU_IMPORTSETTING_NAME = "ImportSetting";
 		public const string MENU_MODIFIER_NAME = "Modifier";
 		public const string MENU_GROUPING_NAME = "Grouping";
-		public const string MENU_PREFABRICATOR_NAME = "Prefabricator";
-		public const string MENU_BUNDLIZER_NAME = "Bundlizer";
+		public const string MENU_PREFABBUILDER_NAME = "PrefabBuilder";
+		public const string MENU_BUNDLECONFIG_NAME = "BundleConfig";
 		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
 		public const string MENU_EXPORTER_NAME = "Exporter";
 
@@ -84,8 +93,8 @@ namespace AssetBundleGraph {
 			{"Create " + MENU_IMPORTSETTING_NAME + " Node", NodeKind.IMPORTSETTING_GUI},
 			{"Create " + MENU_MODIFIER_NAME + " Node", NodeKind.MODIFIER_GUI},
 			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
-			{"Create " + MENU_PREFABRICATOR_NAME + " Node", NodeKind.PREFABRICATOR_GUI},
-			{"Create " + MENU_BUNDLIZER_NAME + " Node", NodeKind.BUNDLIZER_GUI},
+			{"Create " + MENU_PREFABBUILDER_NAME + " Node", NodeKind.PREFABBUILDER_GUI},
+			{"Create " + MENU_BUNDLECONFIG_NAME + " Node", NodeKind.BUNDLECONFIG_GUI},
 			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
 			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
 		};
@@ -96,8 +105,8 @@ namespace AssetBundleGraph {
 			{NodeKind.IMPORTSETTING_GUI, "ImportSetting"},
 			{NodeKind.MODIFIER_GUI, "Modifier"},
 			{NodeKind.GROUPING_GUI, "Grouping"},
-			{NodeKind.PREFABRICATOR_GUI, "Prefabricator"},
-			{NodeKind.BUNDLIZER_GUI, "Bundlizer"},
+			{NodeKind.PREFABBUILDER_GUI, "PrefabBuilder"},
+			{NodeKind.BUNDLECONFIG_GUI, "BundleConfig"},
 			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
 			{NodeKind.EXPORTER_GUI, "Exporter"}
 		};
@@ -105,76 +114,25 @@ namespace AssetBundleGraph {
 		/*
 			data key for AssetBundleGraph.json
 		*/
-		public const string ASSETBUNDLEGRAPH_DATA_LASTMODIFIED = "lastModified";
-		public const string ASSETBUNDLEGRAPH_DATA_NODES = "nodes";
-		public const string ASSETBUNDLEGRAPH_DATA_CONNECTIONS = "connections";
-
-		// node const.
-		public const string NODE_NAME = "name";
-		public const string NODE_ID = "id";
-		public const string NODE_KIND = "kind";
-		public const string NODE_SCRIPT_CLASSNAME = "scriptClassName";
-		public const string NODE_SCRIPT_PATH = "scriptPath";
-		public const string NODE_POS = "pos";
-		public const string NODE_POS_X = "x";
-		public const string NODE_POS_Y = "y";
-		public const string NODE_OUTPUTPOINT_LABELS = "outputPointLabels";
-		public const string NODE_OUTPUTPOINT_IDS = "outputPointIds";
-
-		// node dependent settings.
-		public const string NODE_LOADER_LOAD_PATH = "loadPath";
-		public const string NODE_EXPORTER_EXPORT_PATH = "exportTo";
-		public const string NODE_FILTER_CONTAINS_KEYWORDS = "filterContainsKeywords";
-		public const string NODE_FILTER_CONTAINS_KEYTYPES = "filterContainsKeytypes";
-		public const string NODE_IMPORTER_PACKAGES = "importerPackages";
-		public const string NODE_GROUPING_KEYWORD = "groupingKeyword";
-		public const string NODE_BUNDLIZER_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
-		public const string NODE_BUNDLIZER_VARIANTS = "variants";
-		public const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
-		public const string BUNDLIZER_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
-
-		// connection const.
-		public const string CONNECTION_LABEL = "label";
-		public const string CONNECTION_ID = "connectionId";
-		public const string CONNECTION_FROMNODE = "fromNode";
-		public const string CONNECTION_FROMNODE_CONPOINT_ID = "fromNodeConPointId";
-		public const string CONNECTION_TONODE = "toNode";
-		public const string CONNECTION_TONODE_CONPOINT_ID = "toNodeConPointId";
+		public const string BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*.assetbundle";
 
 		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
-		public const string BUNDLIZER_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLIZER_VARIANTNAME_DEFAULT = "";
+		public const string BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
+		public const string BUNDLECONFIG_VARIANTNAME_DEFAULT = "";
 
-		public const string BUNDLIZER_FAKE_CONNECTION_ID = "b_______-____-____-____-____________";
-
-		public const string DEFAULT_FILTER_KEYWORD = "keyword";
+		public const string DEFAULT_FILTER_KEYWORD = "";
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";
 		
 		public const string FILTER_KEYWORD_WILDCARD = "*";
 		public const string FILTER_FAKE_CONNECTION_ID = "f_______-____-____-____-____________";
 		
-		
+
 		public const string NODE_INPUTPOINT_FIXED_LABEL = "FIXED_INPUTPOINT_ID";
-
-
-		public enum NodeKind : int {
-			LOADER_GUI,
-			FILTER_GUI,
-			IMPORTSETTING_GUI,
-			MODIFIER_GUI,
-			
-			GROUPING_GUI,
-			PREFABRICATOR_GUI,
-			BUNDLIZER_GUI,
-			BUNDLEBUILDER_GUI,
-			
-			EXPORTER_GUI
-		}
 
 		public static NodeKind NodeKindFromString (string val) {
 			return (NodeKind)Enum.Parse(typeof(NodeKind), val);

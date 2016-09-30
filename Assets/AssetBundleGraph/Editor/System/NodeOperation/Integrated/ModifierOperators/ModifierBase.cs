@@ -12,10 +12,20 @@ namespace AssetBundleGraph {
 
 	*/
 	[Serializable] public class ModifierBase {
-		[AttributeUsage(AttributeTargets.Class)] public class DropdownMenuName : Attribute {
-			public string Name;
 
-			public DropdownMenuName () {}
+		[AttributeUsage(AttributeTargets.Class)] 
+		public class MenuItemName : Attribute {
+			private string m_name;
+
+			public string Name {
+				get {
+					return m_name;
+				}
+			}
+
+			public MenuItemName (string name) {
+				m_name = name;
+			}
 		}
 		
 		[SerializeField] public string operatorType;

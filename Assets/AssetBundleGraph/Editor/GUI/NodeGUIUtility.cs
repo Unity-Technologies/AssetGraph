@@ -10,7 +10,17 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	public class NodeGUIUtility {
 
-		public static Action<OnNodeEvent> FireNodeEvent {
+		public struct PlatformButton {
+			public readonly GUIContent ui;
+			public readonly BuildTargetGroup targetGroup;
+
+			public PlatformButton(GUIContent ui, BuildTargetGroup g) {
+				this.ui = ui;
+				this.targetGroup = g;
+			}
+		}
+
+		public static Action<NodeEvent> NodeEventHandler {
 			get {
 				return NodeSingleton.s.emitAction;
 			}
@@ -73,22 +83,23 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static Texture2D[] platformButtonTextures {
+		public static PlatformButton[] platformButtons {
 			get {
-				if(NodeSingleton.s.platformButtonTextures == null) {
-					NodeSingleton.s.SetupPlatformIcons();
+				if(NodeSingleton.s.platformButtons == null) {
+					NodeSingleton.s.SetupPlatformButtons();
 				}
-				return NodeSingleton.s.platformButtonTextures;
+				return NodeSingleton.s.platformButtons;
 			}
 		}
 
-		public static string[] platformStrings {
-			get {
-				if(NodeSingleton.s.platformStrings == null) {
-					NodeSingleton.s.SetupPlatformStrings();
+		public static PlatformButton GetPlatformButtonFor(BuildTargetGroup g) {
+			foreach(var button in platformButtons) {
+				if(button.targetGroup == g) {
+					return button;
 				}
-				return NodeSingleton.s.platformStrings;
 			}
+
+			throw new AssetBundleGraphException("Fatal: unknown target group requsted(can't happen)" + g);
 		}
 
 		public static List<string> allNodeNames {
@@ -100,12 +111,73 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static int GetNewWindowId() {
-			return NodeSingleton.s.nodeCreateCount++;
+		public static List<BuildTarget> SupportedBuildTargets {
+			get {
+				if(NodeSingleton.s.supportedBuildTargets == null) {
+					NodeSingleton.s.SetupSupportedBuildTargets();
+				}
+				return NodeSingleton.s.supportedBuildTargets;
+			}
+		}
+		public static string[] supportedBuildTargetNames {
+			get {
+				if(NodeSingleton.s.supportedBuildTargetNames == null) {
+					NodeSingleton.s.SetupSupportedBuildTargets();
+				}
+				return NodeSingleton.s.supportedBuildTargetNames;
+			}
+		}
+
+
+		public static List<BuildTargetGroup> SupportedBuildTargetGroups {
+			get {
+				if(NodeSingleton.s.supportedBuildTargetGroups == null) {
+					NodeSingleton.s.SetupSupportedBuildTargets();
+				}
+				return NodeSingleton.s.supportedBuildTargetGroups;
+			}
+		}
+
+		public static Dictionary<NodeKind, string> SelectedStyle {
+			get {
+				if(NodeSingleton.s.selectedStyle == null) {
+					NodeSingleton.s.selectedStyle = new Dictionary<NodeKind, string>() {
+						{NodeKind.LOADER_GUI, 			"flow node 0 on"},
+						{NodeKind.EXPORTER_GUI, 		"flow node 0 on"},
+						{NodeKind.FILTER_GUI, 			"flow node 1 on"},
+						{NodeKind.IMPORTSETTING_GUI,	"flow node 2 on"},
+						{NodeKind.GROUPING_GUI, 		"flow node 3 on"},
+						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4 on"},
+						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5 on"},
+						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6 on"},
+						{NodeKind.MODIFIER_GUI, 		"flow node 6 on"}
+					};
+				}
+				return NodeSingleton.s.selectedStyle;
+			}
+		}
+
+		public static Dictionary<NodeKind, string> UnselectedStyle {
+			get {
+				if(NodeSingleton.s.unselectedStyle == null) {
+					NodeSingleton.s.unselectedStyle = new Dictionary<NodeKind, string>() {
+						{NodeKind.LOADER_GUI, 			"flow node 0"},
+						{NodeKind.EXPORTER_GUI, 		"flow node 0"},
+						{NodeKind.FILTER_GUI, 			"flow node 1"},
+						{NodeKind.IMPORTSETTING_GUI,	"flow node 2"},
+						{NodeKind.GROUPING_GUI, 		"flow node 3"},
+						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4"},
+						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5"},
+						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6"},
+						{NodeKind.MODIFIER_GUI, 		"flow node 6"}
+					};
+				}
+				return NodeSingleton.s.unselectedStyle;
+			}
 		}
 
 		private class NodeSingleton {
-			public Action<OnNodeEvent> emitAction;
+			public Action<NodeEvent> emitAction;
 
 			public Texture2D inputPointTex;
 			public Texture2D outputPointTex;
@@ -115,12 +187,16 @@ namespace AssetBundleGraph {
 			public Texture2D inputPointMarkTex;
 			public Texture2D outputPointMarkTex;
 			public Texture2D outputPointMarkConnectedTex;
-			public Texture2D[] platformButtonTextures;
-			public string[] platformStrings;
+			public PlatformButton[] platformButtons;
+
+			public List<BuildTarget> supportedBuildTargets;
+			public string[] supportedBuildTargetNames;
+			public List<BuildTargetGroup> supportedBuildTargetGroups;
 
 			public List<string> allNodeNames;
 
-			public int nodeCreateCount;
+			public Dictionary<NodeKind, string> selectedStyle;
+			public Dictionary<NodeKind, string> unselectedStyle;
 
 			private static NodeSingleton s_singleton;
 
@@ -134,127 +210,75 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			public void SetupPlatformIcons () {
-				var assetBundleGraphPlatformSettings = AssetBundleGraphPlatformSettings.platforms;
+			public void SetupPlatformButtons () {
+				SetupSupportedBuildTargets();
+				var buttons = new List<PlatformButton>();
 
-				var platformTexList = new List<Texture2D>();
+				Dictionary<BuildTargetGroup, string> icons = new Dictionary<BuildTargetGroup, string> {
+					{BuildTargetGroup.Android, 		"BuildSettings.Android.Small"},
+					{BuildTargetGroup.iOS, 			"BuildSettings.iPhone.Small"},
+					{BuildTargetGroup.Nintendo3DS, 	"BuildSettings.N3DS.Small"},
+					{BuildTargetGroup.PS3,			"BuildSettings.PS3.Small"},
+					{BuildTargetGroup.PS4, 			"BuildSettings.PS4.Small"},
+					{BuildTargetGroup.PSM, 			"BuildSettings.PSM.Small"},
+					{BuildTargetGroup.PSP2, 		"BuildSettings.PSP2.Small"},
+					{BuildTargetGroup.SamsungTV, 	"BuildSettings.Android.Small"},
+					{BuildTargetGroup.Standalone, 	"BuildSettings.Standalone.Small"},
+					{BuildTargetGroup.Tizen, 		"BuildSettings.Tizen.Small"},
+					{BuildTargetGroup.tvOS, 		"BuildSettings.tvOS.Small"},
+					{BuildTargetGroup.Unknown, 		"BuildSettings.Standalone.Small"},
+					{BuildTargetGroup.WebGL, 		"BuildSettings.WebGL.Small"},
+					{BuildTargetGroup.WiiU, 		"BuildSettings.WiiU.Small"},
+					{BuildTargetGroup.WSA, 			"BuildSettings.WP8.Small"},
+					{BuildTargetGroup.XBOX360, 		"BuildSettings.Xbox360.Small"},
+					{BuildTargetGroup.XboxOne, 		"BuildSettings.XboxOne.Small"}
+				};
 
-				platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));//dummy.
+				buttons.Add(new PlatformButton(new GUIContent("Default", "Default settings"), BuildTargetGroup.Unknown));
 
-				if (assetBundleGraphPlatformSettings.Contains("Web")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.Web"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Standalone")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.Standalone"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("iPhone") || assetBundleGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
-					platformTexList.Add(GetPlatformIcon("BuildSettings.iPhone"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Android")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.Android"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("BlackBerry")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.BlackBerry"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Tizen")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.Tizen"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("XBox360")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.XBox360"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("XboxOne")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.XboxOne"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("PS3")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.PS3"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("PSP2")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.PSP2"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("PS4")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.PS4"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("StandaloneGLESEmu")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.StandaloneGLESEmu"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Metro")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.Metro"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("WP8")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.WP8"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("WebGL")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.WebGL"));
-				}
-				if (assetBundleGraphPlatformSettings.Contains("SamsungTV")) {
-					platformTexList.Add(GetPlatformIcon("BuildSettings.SamsungTV"));
+				foreach(var g in supportedBuildTargetGroups) {
+					buttons.Add(new PlatformButton(new GUIContent(GetPlatformIcon(icons[g]), BuildTargetUtility.GroupToHumaneString(g)), g));
 				}
 
-				platformButtonTextures = platformTexList.ToArray();
+				this.platformButtons = buttons.ToArray();
 			}
 
+			public void SetupSupportedBuildTargets() {
+				
+				if( supportedBuildTargets == null ) {
+					supportedBuildTargets = new List<BuildTarget>();
+					supportedBuildTargetGroups = new List<BuildTargetGroup>();
 
-			public void SetupPlatformStrings () {
-				var assetBundleGraphPlatformSettings = AssetBundleGraphPlatformSettings.platforms;
+					try {
+						foreach(BuildTarget target in Enum.GetValues(typeof(BuildTarget))) {
+							if(BuildTargetUtility.IsBuildTargetSupported(target)) {
+								if(!supportedBuildTargets.Contains(target)) {
+									supportedBuildTargets.Add(target);
+								}
+								BuildTargetGroup g = BuildTargetUtility.TargetToGroup(target);
+								if(g == BuildTargetGroup.Unknown) {
+									// skip unknown platform
+									continue;
+								}
+								if(!supportedBuildTargetGroups.Contains(g)) {
+									supportedBuildTargetGroups.Add(g);
+								}
+							}
+						}
 
-				var platformStringList = new List<string>();
+						supportedBuildTargetNames = new string[supportedBuildTargets.Count];
+						for(int i =0; i < supportedBuildTargets.Count; ++i) {
+							supportedBuildTargetNames[i] = BuildTargetUtility.TargetToHumaneString(supportedBuildTargets[i]);
+						}
 
-				platformStringList.Add("Default");
-
-				if (assetBundleGraphPlatformSettings.Contains("Web")) {
-					platformStringList.Add("Web");
+					} catch(Exception e) {
+						Debug.LogError(e.ToString());
+					}
 				}
-				if (assetBundleGraphPlatformSettings.Contains("Standalone")) {
-					platformStringList.Add("Standalone");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("iPhone") || assetBundleGraphPlatformSettings.Contains("iOS")) {// iPhone or iOS converted to iOS.
-					platformStringList.Add("iOS");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Android")) {
-					platformStringList.Add("Android");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("BlackBerry")) {
-					platformStringList.Add("BlackBerry");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Tizen")) {
-					platformStringList.Add("Tizen");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("XBox360")) {
-					platformStringList.Add("XBox360");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("XboxOne")) {
-					platformStringList.Add("XboxOne");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("PS3")) {
-					platformStringList.Add("PS3");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("PSP2")) {
-					platformStringList.Add("PSP2");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("PS4")) {
-					platformStringList.Add("PS4");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("StandaloneGLESEmu")) {
-					platformStringList.Add("StandaloneGLESEmu");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("Metro")) {
-					platformStringList.Add("Metro");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("WP8")) {
-					platformStringList.Add("WP8");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("WebGL")) {
-					platformStringList.Add("WebGL");
-				}
-				if (assetBundleGraphPlatformSettings.Contains("SamsungTV")) {
-					platformStringList.Add("SamsungTV");
-				}
-
-				platformStrings = platformStringList.ToArray();
 			}
 
-			private Texture2D GetPlatformIcon(string locTitle) {
-				return EditorGUIUtility.IconContent(locTitle + ".Small").image as Texture2D;
+			private Texture2D GetPlatformIcon(string name) {
+				return EditorGUIUtility.IconContent(name).image as Texture2D;
 			}
 		}
 	}

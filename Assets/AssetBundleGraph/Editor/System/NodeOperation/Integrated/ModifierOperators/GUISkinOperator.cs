@@ -25,13 +25,14 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var guiSkin = asset as GUISkin;
+			//var guiSkin = asset as GUISkin;
 
 			var changed = false;
 			
 			return changed; 
 		}
-		GUIStyle box;
+
+//		GUIStyle box = GUI.skin.box;
 		/*
 active	Rendering settings for when the control is pressed down.
 alignment	Text alignment.
@@ -89,7 +90,7 @@ verticalSlider	Style used by default for the background part of GUI.VerticalSlid
 verticalSliderThumb	Style used by default for the thumb that is dragged in GUI.VerticalSlider controls.
 window	Style used by default for Window controls (SA GUI.Window).
 			*/
-			guiSkin.box = this.box;
+			guiSkin.box = GUI.skin.box;
 		}
 
 		public override void DrawInspector (Action changed) {

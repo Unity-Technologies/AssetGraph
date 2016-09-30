@@ -25,7 +25,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var physicMaterial = asset as PhysicMaterial;
+			//var physicMaterial = asset as PhysicMaterial;
 
 			var changed = false;
 
@@ -43,7 +43,7 @@ staticFriction	The friction coefficient used when an object is lying on a surfac
 		}
 
 		public override void Modify<T> (T asset) {
-			var physicMaterial = asset as PhysicMaterial;
+			//var physicMaterial = asset as PhysicMaterial;
 			
 		}
 		

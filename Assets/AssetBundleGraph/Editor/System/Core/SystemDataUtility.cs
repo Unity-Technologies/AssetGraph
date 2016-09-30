@@ -62,90 +62,38 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static string GetPlatformValue (Dictionary<string, string> packageDict, string platform) {
-			var key = CreateKeyNameFromString(platform);
-			if (packageDict.ContainsKey(key)) {
-				return packageDict[key];
+		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperationBase {
+			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
+			if (nodeScriptInstance == null) {
+				throw new NodeException(node.Name + ": Failed to create instance:" + typeStr + " derived from:" + typeof(T), node.Id);
 			}
-
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-
-			throw new AssetBundleGraphException("Default setting not found.");
+			return ((T)nodeScriptInstance);
 		}
 
-		public static List<string> GetPlatformValue (Dictionary<string, List<string>> packageDict, string platform) {
-			var key = CreateKeyNameFromString(platform);
-			if (packageDict.ContainsKey(key)) {
-				return packageDict[key];
+		public static T CreatePrefabBuilderOperationInstance<T> (string className, NodeData node) where T : INodeOperationBase {
+			var map = PrefabBuilderBase.GetAttributeClassNameMap();
+
+			if(map.ContainsKey(className)) {
+				className = map[className];
 			}
 
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
+			var instance = Assembly.GetExecutingAssembly().CreateInstance(className);
+			if (instance == null) {
+				throw new NodeException(node.Name + ": Failed to create PrefabBuilder:" + className + ". CreateInstance failed.", node.Id);
 			}
-
-			throw new AssetBundleGraphException("Default setting not found.");
+			return (T)instance;
 		}
 
-		public static List<string> GetCurrentPlatformValue (Dictionary<string, List<string>> packageDict) {
-			var platformPackageKeyCandidate = GetCurrentPlatformKey();
-			
-			if (packageDict.ContainsKey(platformPackageKeyCandidate)) {
-				return packageDict[platformPackageKeyCandidate];
-			}
-			
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-
-			throw new AssetBundleGraphException("Default setting not found.");
+		public static string GetPathSafeDefaultTargetName () {
+			return GetPathSafeTargetGroupName(BuildTargetUtility.DefaultTarget);
 		}
 
-		public static string GetCurrentPlatformValue (Dictionary<string, string> packageDict) {
-			var platformPackageKeyCandidate = GetCurrentPlatformKey();
-			/*
-				check best match for platform + pacakge.
-			*/
-			if (packageDict.ContainsKey(platformPackageKeyCandidate)) {
-				return packageDict[platformPackageKeyCandidate];
-			}
-			
-			/*
-				check next match for defaultPlatform + package.
-			*/
-			var defaultPlatformAndCurrentPackageCandidate = GetDefaultPlatformKey();
-			if (packageDict.ContainsKey(defaultPlatformAndCurrentPackageCandidate)) {
-				return packageDict[defaultPlatformAndCurrentPackageCandidate];
-			}
-
-			/*
-				check default platform.
-			*/
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-			
-			throw new AssetBundleGraphException("Default setting not found.");
+		public static string GetPathSafeTargetName (BuildTarget t) {
+			return t.ToString();
 		}
 
-		public static string GetCurrentPlatformShortName () {
-			var currentPlatformCandidate = EditorUserBuildSettings.activeBuildTarget.ToString();
-			return currentPlatformCandidate;
-		}
-
-		public static string GetCurrentPlatformKey () {
-			var currentPlatformCandidate = GetCurrentPlatformShortName();
-
-			return CreateKeyNameFromString(currentPlatformCandidate);
-		}
-
-		public static string GetDefaultPlatformKey () {
-			return CreateKeyNameFromString(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME);
-		}
-
-		public static string CreateKeyNameFromString (string keyname) {
-			return keyname.Replace(" ", "_");
+		public static string GetPathSafeTargetGroupName (BuildTargetGroup g) {
+			return g.ToString();
 		}
 
 		public static string GetProjectName () {
@@ -157,3 +105,4 @@ namespace AssetBundleGraph {
 
 	}
 }
+

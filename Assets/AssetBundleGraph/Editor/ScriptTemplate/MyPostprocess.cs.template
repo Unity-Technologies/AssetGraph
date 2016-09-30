@@ -1,0 +1,45 @@
+using UnityEngine;
+using UnityEditor;
+
+using System;
+using System.IO;
+using System.Text;
+using System.Collections.Generic;
+
+/**
+Example code for asset bundle build postprocess.
+*/
+public class MyPostprocess : AssetBundleGraph.PostprocessBase {
+	/* 
+	 * Run() is called when build or dry-run is performed. 
+	 * 
+	 * @param [in] assetGroups	Dictionary of asset groups per Node 
+	 * @param [in] isRun		True if this is actual build. 
+	 */
+	public override void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
+
+		if (!isRun) {
+			return;
+		}
+
+		Debug.Log("BUILD REPORT:");
+
+		foreach (var node in assetGroups.Keys) {
+			var result = throughputs[node];
+
+			StringBuilder sb = new StringBuilder();
+
+			foreach (var groupKey in result.Keys) {
+				var assets = result[groupKey];
+
+				sb.AppendFormat("In {0}:\n", groupKey);
+
+				foreach (var a in assets) {
+					sb.AppendFormat("\t {0} {1}\n", a.path, (a.isBundled)?"[in AssetBundle]":"");
+				}
+			}
+
+			Debug.LogFormat("Node:{0}\n---\n{1}", node.Name, sb.ToString());
+		}
+	}
+}

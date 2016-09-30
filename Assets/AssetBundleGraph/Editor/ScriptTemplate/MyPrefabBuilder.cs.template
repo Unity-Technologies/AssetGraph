@@ -1,0 +1,28 @@
+using UnityEngine;
+using UnityEditor;
+
+using System;
+using System.Collections.Generic;
+
+[AssetBundleGraph.PrefabBuilderBase.MenuItemName("MyBuilder")]
+public class MyPrefabBuilder : AssetBundleGraph.PrefabBuilderBase {
+	public override void ValidateCanCreatePrefab (BuildTarget target, 
+		AssetBundleGraph.NodeData node, 
+		string groupKey, 
+		List<AssetBundleGraph.Asset> sources, 
+		string prefabOutputDir, 
+		Func<string, string> BuildPrefab) 
+	{
+		//TODO: implement code to validate if prefab can be created.
+	}
+
+	public override void CreatePrefab (BuildTarget target, 
+		AssetBundleGraph.NodeData node, 
+		string groupKey, 
+		List<AssetBundleGraph.Asset> sources, 
+		string prefabOutputDir, 
+		Func<GameObject, string, bool, string> BuildPrefab) 
+	{
+		//TODO: implement code to create prefab.
+	}
+}

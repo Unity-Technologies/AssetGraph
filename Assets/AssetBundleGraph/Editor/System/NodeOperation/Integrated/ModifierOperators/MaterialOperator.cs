@@ -69,7 +69,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override void DrawInspector (Action changed) {
-			var currentMaterial = GenerateSettingMaterial();
+			//var currentMaterial = GenerateSettingMaterial();
 			
 			// <- all items from here is not completed because they cannot call all functions.
 			// var newShader = ShaderPopup();

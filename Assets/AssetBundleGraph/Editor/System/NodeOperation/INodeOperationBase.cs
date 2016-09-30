@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace AssetBundleGraph {
 	/**
@@ -8,13 +9,25 @@ namespace AssetBundleGraph {
 	public interface INodeOperationBase {
 
 		/**
-			fire when setup.
+			Setup is the method which validates and perform necessary setups in order to build.
 		*/
-		void Setup (string nodeName, string connectionIdToNextNode, string labelToNext, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output);
+		void Setup (BuildTarget target, 
+			NodeData nodeData, 
+			ConnectionPointData inputPoint, 
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
+			List<string> alreadyCached, 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
 
 		/**
-			fire when build.
+			Run is the method which actualy performs the build. It is always called after Setup() is performed.
 		*/
-		void Run (string nodeName, string connectionIdToNextNode, string labelToNext, Dictionary<string, List<Asset>> groupedSources, List<string> alreadyCached, Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output);
+		void Run (BuildTarget target, 
+			NodeData nodeData, 
+			ConnectionPointData inputPoint,
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
+			List<string> alreadyCached, 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
 	}
 }

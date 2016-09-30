@@ -28,7 +28,7 @@ namespace AssetBundleGraph {
 			File.Delete(localTargetFilePath);
 			File.Delete(localTargetFilePath + AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION);
 			var directoryPath = Directory.GetParent(localTargetFilePath).FullName;
-			var restFiles = FilePathsInFolder(directoryPath);
+			var restFiles = GetFilePathsInFolder(directoryPath);
 			if (!restFiles.Any()) {
 				Directory.Delete(directoryPath, true);
 				File.Delete(directoryPath + AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION);
@@ -37,11 +37,11 @@ namespace AssetBundleGraph {
 
 		public static List<string> FilePathsOfFile (string filePath) {
 			var folderPath = Path.GetDirectoryName(filePath);
-			var results = FilePathsInFolder(folderPath);
+			var results = GetFilePathsInFolder(folderPath);
 			return results;
 		}
 
-		public static List<string> FilePathsInFolder (string localFolderPath) {
+		public static List<string> GetFilePathsInFolder (string localFolderPath) {
 			var filePaths = new List<string>();
 			
 			if (string.IsNullOrEmpty(localFolderPath)) return filePaths;
@@ -165,6 +165,32 @@ namespace AssetBundleGraph {
 				if (path.StartsWith(AssetBundleGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)) return true;
 			}
 			return false;
+		}
+
+		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, NodeData node) {
+			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+
+			if (!Directory.Exists(cacheDir)) {
+				Directory.CreateDirectory(cacheDir);
+			}
+			if (!cacheDir.EndsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) {
+				cacheDir = cacheDir + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
+			}
+			return cacheDir;
+		}
+
+
+		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, NodeData node, bool remake = false) {
+			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+
+			if (!Directory.Exists(cacheDir)) {
+				Directory.CreateDirectory(cacheDir);
+			} else {
+				if(remake) {
+					RemakeDirectory(cacheDir);
+				}
+			}
+			return cacheDir;
 		}
 	}
 }

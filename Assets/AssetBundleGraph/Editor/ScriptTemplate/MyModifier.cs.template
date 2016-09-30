@@ -4,7 +4,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-[AssetBundleGraph.ModifierBase.DropdownMenuName(Name="MyModifier")]
+[AssetBundleGraph.ModifierBase.MenuItemName("MyModifier")]
 public class MyModifier : AssetBundleGraph.ModifierBase {
 
 }

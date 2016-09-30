@@ -29,7 +29,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		}
 
 		public override bool IsChanged<T> (T asset) {
-			var animator = asset as Animator;
+			//var animator = asset as Animator;
 
 			var changed = false;
 
@@ -81,7 +81,7 @@ velocity	Gets the avatar velocity for the last evaluated frame.
 		}
 
 		public override void Modify<T> (T asset) {
-			var flare = asset as Shader;
+			//var flare = asset as Shader;
 			
 		}
 		

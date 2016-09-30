@@ -15,7 +15,7 @@ namespace AssetBundleGraph {
 		public const float OUTPUT_POINT_WIDTH = 10f;
 		public const float OUTPUT_POINT_HEIGHT = 23f;
 
-		public const float FILTER_OUTPUT_SPAN = 33f;
+		public const float FILTER_OUTPUT_SPAN = 32f;
 
 		public const float CONNECTION_POINT_MARK_SIZE = 19f;
 
