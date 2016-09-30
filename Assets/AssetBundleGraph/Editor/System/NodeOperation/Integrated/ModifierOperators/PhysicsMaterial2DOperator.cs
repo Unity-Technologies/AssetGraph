@@ -33,7 +33,7 @@ namespace AssetBundleGraph.ModifierOperators {
 			var changed = false;
 			
 			if (physicsMaterial2D.friction != this.friction) changed = true;
-			if (physicsMaterial2D.bounciness != this.bounciness) bounciness = true; 
+			if (physicsMaterial2D.bounciness != this.bounciness) changed = true; 
 
 			return changed; 
 		}
