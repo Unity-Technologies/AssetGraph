@@ -7,7 +7,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
-	public class IntegratedGUIExporter : INodeOperationBase {
+	public class IntegratedGUIExporter : INodeOperation {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
 			ConnectionPointData inputPoint,

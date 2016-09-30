@@ -6,7 +6,7 @@ namespace AssetBundleGraph {
 	/**
 		interface of all nodes
 	*/
-	public interface INodeOperationBase {
+	public interface INodeOperation {
 
 		/**
 			Setup is the method which validates and perform necessary setups in order to build.

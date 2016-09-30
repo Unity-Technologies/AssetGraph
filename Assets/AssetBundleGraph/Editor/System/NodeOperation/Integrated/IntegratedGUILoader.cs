@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 namespace AssetBundleGraph {
-	public class IntegratedGUILoader : INodeOperationBase {
+	public class IntegratedGUILoader : INodeOperation {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
 			ConnectionPointData inputPoint,

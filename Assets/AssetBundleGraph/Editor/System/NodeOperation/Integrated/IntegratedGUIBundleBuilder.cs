@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 
-	public class IntegratedGUIBundleBuilder : INodeOperationBase {
+	public class IntegratedGUIBundleBuilder : INodeOperation {
 
 		private static readonly string key = "0";
 

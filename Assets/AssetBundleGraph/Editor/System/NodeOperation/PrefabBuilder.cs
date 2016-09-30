@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace AssetBundleGraph {
 
-	public class PrefabBuilderBase : INodeOperationBase {
+	public class PrefabBuilder : INodeOperation {
 
 		[AttributeUsage(AttributeTargets.Class)] 
 		public class MenuItemName : Attribute {
@@ -37,8 +37,8 @@ namespace AssetBundleGraph {
 				var builders = Assembly
 					.GetExecutingAssembly()
 					.GetTypes()
-					.Where(t => t != typeof(PrefabBuilderBase))
-					.Where(t => typeof(PrefabBuilderBase).IsAssignableFrom(t));
+					.Where(t => t != typeof(PrefabBuilder))
+					.Where(t => typeof(PrefabBuilder).IsAssignableFrom(t));
 				
 				foreach (var type in builders) {
 					// set attribute-name as key of dict if atribute is exist.

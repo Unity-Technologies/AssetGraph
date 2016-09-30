@@ -62,7 +62,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperationBase {
+		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperation {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
 				throw new NodeException(node.Name + ": Failed to create instance:" + typeStr + " derived from:" + typeof(T), node.Id);
@@ -70,8 +70,8 @@ namespace AssetBundleGraph {
 			return ((T)nodeScriptInstance);
 		}
 
-		public static T CreatePrefabBuilderOperationInstance<T> (string className, NodeData node) where T : INodeOperationBase {
-			var map = PrefabBuilderBase.GetAttributeClassNameMap();
+		public static T CreatePrefabBuilderOperationInstance<T> (string className, NodeData node) where T : INodeOperation {
+			var map = PrefabBuilder.GetAttributeClassNameMap();
 
 			if(map.ContainsKey(className)) {
 				className = map[className];

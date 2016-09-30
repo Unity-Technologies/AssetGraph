@@ -11,7 +11,7 @@ namespace AssetBundleGraph {
 	/**
 		IntegratedGUIImportSetting is the class for apply specific setting to already imported files.
 	*/
-	public class IntegratedGUIImportSetting : INodeOperationBase {
+	public class IntegratedGUIImportSetting : INodeOperation {
 		
 		public void Setup (BuildTarget target, 
 			NodeData node, 

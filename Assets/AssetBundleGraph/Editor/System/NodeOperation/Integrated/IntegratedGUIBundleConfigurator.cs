@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace AssetBundleGraph {
-    public class IntegratedGUIBundleConfigurator : INodeOperationBase {
+    public class IntegratedGUIBundleConfigurator : INodeOperation {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace AssetBundleGraph {
-    public class IntegratedGUIFilter : INodeOperationBase {
+    public class IntegratedGUIFilter : INodeOperation {
 		private readonly List<ConnectionData> connectionsToChild;
 		public IntegratedGUIFilter (List<ConnectionData> connectionsToChild) {
 			this.connectionsToChild = connectionsToChild;

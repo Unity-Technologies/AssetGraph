@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 
 namespace AssetBundleGraph {
-    public class IntegratedGUIModifier : INodeOperationBase {
+    public class IntegratedGUIModifier : INodeOperation {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 

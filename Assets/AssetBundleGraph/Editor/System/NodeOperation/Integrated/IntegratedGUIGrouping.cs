@@ -7,7 +7,7 @@ using UnityEditor;
 
 namespace AssetBundleGraph
 {
-    public class IntegratedGUIGrouping : INodeOperationBase {
+    public class IntegratedGUIGrouping : INodeOperation {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 

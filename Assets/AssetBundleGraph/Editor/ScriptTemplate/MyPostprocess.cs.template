@@ -9,14 +9,14 @@ using System.Collections.Generic;
 /**
 Example code for asset bundle build postprocess.
 */
-public class MyPostprocess : AssetBundleGraph.PostprocessBase {
+public class MyPostprocess : AssetBundleGraph.IPostprocess {
 	/* 
 	 * Run() is called when build or dry-run is performed. 
 	 * 
 	 * @param [in] assetGroups	Dictionary of asset groups per Node 
 	 * @param [in] isRun		True if this is actual build. 
 	 */
-	public override void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
+	public void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
 
 		if (!isRun) {
 			return;
@@ -25,7 +25,7 @@ public class MyPostprocess : AssetBundleGraph.PostprocessBase {
 		Debug.Log("BUILD REPORT:");
 
 		foreach (var node in assetGroups.Keys) {
-			var result = throughputs[node];
+			var result = assetGroups[node];
 
 			StringBuilder sb = new StringBuilder();
 

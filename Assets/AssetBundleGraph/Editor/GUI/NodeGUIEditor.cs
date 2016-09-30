@@ -399,7 +399,7 @@ namespace AssetBundleGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				var map = PrefabBuilderBase.GetAttributeClassNameMap();
+				var map = PrefabBuilder.GetAttributeClassNameMap();
 				if(map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
 						GUILayout.Label("PrefabBuilder:");

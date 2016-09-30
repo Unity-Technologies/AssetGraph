@@ -271,7 +271,7 @@ namespace AssetBundleGraph {
 			};
 
 			try {
-				INodeOperationBase executor = CreateOperation(saveData, currentNodeData);
+				INodeOperation executor = CreateOperation(saveData, currentNodeData);
 				if(executor != null) {
 					if(isActualRun) {
 						executor.Run(target, currentNodeData, currentInputPoint, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
@@ -294,8 +294,8 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static INodeOperationBase CreateOperation(SaveData saveData, NodeData currentNodeData) {
-			INodeOperationBase executor = null;
+		public static INodeOperation CreateOperation(SaveData saveData, NodeData currentNodeData) {
+			INodeOperation executor = null;
 
 			try {
 				switch (currentNodeData.Kind) {
@@ -327,7 +327,7 @@ namespace AssetBundleGraph {
 						if (string.IsNullOrEmpty(scriptClassName)) {
 							throw new NodeException(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.", currentNodeData.Id);
 						}
-						executor = SystemDataUtility.CreatePrefabBuilderOperationInstance<PrefabBuilderBase>(scriptClassName, currentNodeData);
+						executor = SystemDataUtility.CreatePrefabBuilderOperationInstance<PrefabBuilder>(scriptClassName, currentNodeData);
 						break;
 					}
 

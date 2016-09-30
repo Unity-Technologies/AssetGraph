@@ -550,16 +550,14 @@ namespace AssetBundleGraph {
 		) {
 			var nodeResult = CollectNodeGroupAndAssets(currentNodes, currentConnections, result);
 
-			var postprocessBasedTypeRunner = Assembly.GetExecutingAssembly().GetTypes()
-					.Where(currentType => currentType.BaseType == typeof(PostprocessBase))
-					.Select(type => type.ToString())
-					.ToList();
-			foreach (var typeStr in postprocessBasedTypeRunner) {
-				var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(typeStr);
+			var postprocessType = typeof(IPostprocess);
+			var ppTypes = Assembly.GetExecutingAssembly().GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
+			foreach (var t in ppTypes) {
+				var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(t.Name);
 				if (postprocessScriptInstance == null) {
-					throw new AssetBundleGraphException("Running post process script failed because AssetBundleGraph failed to create script instance for " + typeStr + ". No such class found in assembly.");
+					throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
 				}
-				var postprocessInstance = (PostprocessBase)postprocessScriptInstance;
+				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
 
 				postprocessInstance.Run(nodeResult, isRun);
 			}
@@ -1245,8 +1243,8 @@ namespace AssetBundleGraph {
 		}
 
 		private Type GetDragAndDropAcceptableScriptType (Type type) {
-			if (typeof(PrefabBuilderBase).IsAssignableFrom(type)) {
-				return typeof(PrefabBuilderBase);
+			if (typeof(PrefabBuilder).IsAssignableFrom(type)) {
+				return typeof(PrefabBuilder);
 			}
 			if (typeof(ModifierBase).IsAssignableFrom(type)) {
 				return typeof(ModifierBase);
@@ -1261,7 +1259,7 @@ namespace AssetBundleGraph {
 			if (scriptBaseType == typeof(ModifierBase)) {
 				Debug.LogError("Modifierに対してown class定義でModifierノードを追加。");
 			}
-			if (scriptBaseType == typeof(PrefabBuilderBase)) {
+			if (scriptBaseType == typeof(PrefabBuilder)) {
 				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
 				newNode.Data.ScriptClassName = scriptClassName;
 			}
