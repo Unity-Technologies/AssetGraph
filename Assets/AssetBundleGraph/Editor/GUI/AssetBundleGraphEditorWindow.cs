@@ -424,83 +424,94 @@ namespace AssetBundleGraph {
 
 
 		private void Setup (BuildTarget target) {
-			ResetNodeExceptionPool();
 
 			EditorUtility.ClearProgressBar();
 
-			if (!SaveData.IsSaveDataAvailableAtDisk()) {
-				SaveData.RecreateDataOnDisk();
-				Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
-				return;
+			try {
+				ResetNodeExceptionPool();
+
+				if (!SaveData.IsSaveDataAvailableAtDisk()) {
+					SaveData.RecreateDataOnDisk();
+					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
+					return;
+				}
+
+				foreach (var node in nodes) {
+					node.HideProgress();
+				}
+
+				// reload data from file.
+				SaveData saveData = SaveData.LoadFromDisk();
+
+				// update static all node names.
+				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
+
+				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
+
+				RefreshInspector(s_assetStreamMap);
+				ShowErrorOnNodes();
+
+				Postprocess(nodes, connections, s_assetStreamMap, false);
+			} catch(Exception e) {
+				Debug.LogError(e);
+			} finally {
+				EditorUtility.ClearProgressBar();
 			}
-
-			foreach (var node in nodes) {
-				node.HideProgress();
-			}
-
-			// reload data from file.
-			SaveData saveData = SaveData.LoadFromDisk();
-
-			// update static all node names.
-			NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
-
-			s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
-
-			RefreshInspector(s_assetStreamMap);
-
-			ShowErrorOnNodes();
-
-			Postprocess(nodes, connections, s_assetStreamMap, false);
 		}
 
 		/**
 		 * Execute the build.
 		 */
 		private void Run (BuildTarget target) {
-			ResetNodeExceptionPool();
 
-			if (!SaveData.IsSaveDataAvailableAtDisk()) {
-				SaveData.RecreateDataOnDisk();
-				Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
-				return;
-			}
+			try {
+				ResetNodeExceptionPool();
 
-			// load data from file.
-			SaveData saveData = SaveData.LoadFromDisk();
-
-			List<NodeGUI> currentNodes = null;
-			List<ConnectionGUI> currentConnections = null;
-
-			ConstructGraphFromSaveData(saveData, out currentNodes, out currentConnections);
-
-			var currentCount = 0.00f;
-			var totalCount = currentNodes.Count * 1f;
-
-			Action<NodeData, float> updateHandler = (node, progress) => {
-				var progressPercentage = ((currentCount/totalCount) * 100).ToString();				
-				if (progressPercentage.Contains(".")) progressPercentage = progressPercentage.Split('.')[0];
-				
-				if (0 < progress) {
-					currentCount = currentCount + 1f;
+				if (!SaveData.IsSaveDataAvailableAtDisk()) {
+					SaveData.RecreateDataOnDisk();
+					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
+					return;
 				}
 
-				EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
-			};
-				
-			// perform setup. Fails if any exception raises.
-			s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
+				// load data from file.
+				SaveData saveData = SaveData.LoadFromDisk();
 
-			// if there is not error reported, then run
-			if(s_nodeExceptionPool.Count == 0) {
-				// run datas.
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
+				List<NodeGUI> currentNodes = null;
+				List<ConnectionGUI> currentConnections = null;
+
+				ConstructGraphFromSaveData(saveData, out currentNodes, out currentConnections);
+
+				var currentCount = 0.00f;
+				var totalCount = currentNodes.Count * 1f;
+
+				Action<NodeData, float> updateHandler = (node, progress) => {
+					var progressPercentage = ((currentCount/totalCount) * 100).ToString();				
+					if (progressPercentage.Contains(".")) progressPercentage = progressPercentage.Split('.')[0];
+
+					if (0 < progress) {
+						currentCount = currentCount + 1f;
+					}
+
+					EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
+				};
+
+				// perform setup. Fails if any exception raises.
+				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
+
+				// if there is not error reported, then run
+				if(s_nodeExceptionPool.Count == 0) {
+					// run datas.
+					s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
+				}
+				RefreshInspector(s_assetStreamMap);
+				AssetDatabase.Refresh();
+				ShowErrorOnNodes();
+				Postprocess(currentNodes, currentConnections, s_assetStreamMap, true);
+			} catch(Exception e) {
+				Debug.LogError(e);
+			} finally {
+				EditorUtility.ClearProgressBar();
 			}
-			RefreshInspector(s_assetStreamMap);
-			AssetDatabase.Refresh();
-			ShowErrorOnNodes();
-			Postprocess(currentNodes, currentConnections, s_assetStreamMap, true);
-
-			EditorUtility.ClearProgressBar();
 		}
 
 		private static void RefreshInspector (Dictionary<ConnectionData,Dictionary<string, List<Asset>>> currentResult) {
