@@ -17,8 +17,6 @@ namespace AssetBundleGraph {
 		public static BuildTargetGroup currentEditingGroup = 
 			BuildTargetUtility.DefaultTarget;
 
-		private List<Action> messageActions;
-
 		public override bool RequiresConstantRepaint() {
 			return true;
 		}
@@ -663,12 +661,6 @@ namespace AssetBundleGraph {
 			var node = currentTarget.node;
 			if (node == null) return;
 
-			if(messageActions == null) {
-				messageActions = new List<Action>();
-			}
-
-			messageActions.Clear();
-
 			switch (node.Kind) {
 			case NodeKind.LOADER_GUI:
 				DoInspectorLoaderGUI(node);
@@ -706,11 +698,6 @@ namespace AssetBundleGraph {
 			if (errors != null && errors.Any()) {
 				foreach (var error in errors) {
 					EditorGUILayout.HelpBox(error, MessageType.Error);
-				}
-			}
-			using (new EditorGUILayout.VerticalScope()) {
-				foreach(Action a in messageActions) {
-					a.Invoke();
 				}
 			}
 		}

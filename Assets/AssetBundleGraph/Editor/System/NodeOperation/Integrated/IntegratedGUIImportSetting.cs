@@ -152,16 +152,16 @@ namespace AssetBundleGraph {
 			var sampleAssetPath = string.Empty;
 			ValidateImportSample(samplingDirectoryPath,
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException(node.Name + ": No ImportSettings Directory found for this node:" + node.Name + " please supply assets to this node.");
+					throw new AssetBundleGraphException(node.Name + ": No ImportSettings Directory found for this node:" + node.Name + " please supply assets to this node.");
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException(node.Name + ": No saved ImportSettings found for asset:" + samplePath);
+					throw new AssetBundleGraphException(node.Name + ": No saved ImportSettings found for asset:" + samplePath);
 				},
 				(string samplePath) => {
 					sampleAssetPath = samplePath;
 				},
 				(string samplePath) => {
-					throw new AssetBundleGraphBuildException(node.Name + ": Too many ImportSettings found. please open editor and resolve issue:" + samplePath);
+					throw new AssetBundleGraphException(node.Name + ": Too many ImportSettings found. please open editor and resolve issue:" + samplePath);
 				}
 			);
 			

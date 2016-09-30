@@ -27,7 +27,6 @@ namespace AssetBundleGraph {
 		public const string DEFAULT_FILTER_KEYTYPE = "Any";
 
 		public const string FILTER_KEYWORD_WILDCARD = "*";
-		public const string FILTER_FAKE_CONNECTION_ID = "f_______-____-____-____-____________";
 
 		public const string NODE_INPUTPOINT_FIXED_LABEL = "FIXED_INPUTPOINT_ID";
 	}

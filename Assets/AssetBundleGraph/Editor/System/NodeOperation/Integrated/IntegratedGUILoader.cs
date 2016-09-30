@@ -93,7 +93,7 @@ namespace AssetBundleGraph {
 						continue;
 					}
 					
-					throw new AssetBundleGraphSetupException(node.Name + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath);
+					throw new AssetBundleGraphException(node.Name + ": Invalid target file path. Path needs to be set under Assets/ :" + targetFilePath);
 				}
 				
 				var outputDir = new Dictionary<string, List<Asset>> {

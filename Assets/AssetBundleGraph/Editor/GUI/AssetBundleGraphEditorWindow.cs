@@ -138,7 +138,7 @@ namespace AssetBundleGraph {
 				BuildTarget target = BuildTargetUtility.BuildTargetFromString(currentParams[0]);
 
 				if(!BuildTargetUtility.IsBuildTargetSupported(target)) {
-					throw new AssetBundleGraphBuildException(target + " is not supported to build with this Unity. Please install platform support with installer(s).");
+					throw new AssetBundleGraphException(target + " is not supported to build with this Unity. Please install platform support with installer(s).");
 				}
 
 				EditorUserBuildSettings.SwitchActiveBuildTarget(target);

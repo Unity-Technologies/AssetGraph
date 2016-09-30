@@ -83,6 +83,7 @@ namespace AssetBundleGraph {
 			}
 
 			var resultDict = new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
+			var performedIds = new List<string>();
 			var cacheDict  = new Dictionary<NodeData, List<string>>();
 
 			// if validation failed, node may contain looped connections, so we are not going to 
@@ -92,10 +93,10 @@ namespace AssetBundleGraph {
 
 				foreach (var leafNode in leaf) {
 					if( leafNode.InputPoints.Count == 0 ) {
-						DoNodeOperation(target, leafNode, null, null, saveData, resultDict, cacheDict, new List<ConnectionPointData>(), isRun, updateHandler);
+						DoNodeOperation(target, leafNode, null, null, saveData, resultDict, cacheDict, performedIds, isRun, updateHandler);
 					} else {
 						foreach(var inputPoint in leafNode.InputPoints) {
-							DoNodeOperation(target, leafNode, inputPoint, null, saveData, resultDict, cacheDict, new List<ConnectionPointData>(), isRun, updateHandler);
+							DoNodeOperation(target, leafNode, inputPoint, null, saveData, resultDict, cacheDict, performedIds, isRun, updateHandler);
 						}
 					}
 				}
@@ -157,11 +158,11 @@ namespace AssetBundleGraph {
 			SaveData saveData,
 			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> resultDict, 
 			Dictionary<NodeData, List<string>> cachedDict,
-			List<ConnectionPointData> performedPoints,
+			List<string> performedIds,
 			bool isActualRun,
 			Action<NodeData, float> updateHandler=null
 		) {
-			if (currentInputPoint != null && performedPoints.Contains(currentInputPoint)) {
+			if (performedIds.Contains(currentNodeData.Id) || (currentInputPoint != null && performedIds.Contains(currentInputPoint.Id))) {
 				return;
 			}
 
@@ -180,13 +181,22 @@ namespace AssetBundleGraph {
 				if( parentNode.InputPoints.Count > 0 ) {
 					// if node has multiple input, node is operated per input
 					foreach(var parentInputPoint in parentNode.InputPoints) {
-						DoNodeOperation(target, parentNode, parentInputPoint, c, saveData, resultDict, cachedDict, performedPoints, isActualRun, updateHandler);
+						DoNodeOperation(target, parentNode, parentInputPoint, c, saveData, resultDict, cachedDict, performedIds, isActualRun, updateHandler);
 					}
 				} 
 				// if parent does not have input point, call with inputPoint==null
 				else {
-					DoNodeOperation(target, parentNode, null, c, saveData, resultDict, cachedDict, performedPoints, isActualRun, updateHandler);
+					DoNodeOperation(target, parentNode, null, c, saveData, resultDict, cachedDict, performedIds, isActualRun, updateHandler);
 				}
+			}
+
+			// mark this point as performed
+			if(currentInputPoint != null) {
+				performedIds.Add(currentInputPoint.Id);
+			} 
+			// Root node does not have input point, so we are storing node id instead.
+			else {
+				performedIds.Add(currentNodeData.Id);
 			}
 
 			/*
@@ -273,10 +283,11 @@ namespace AssetBundleGraph {
 
 			} catch (NodeException e) {
 				AssetBundleGraphEditorWindow.AddNodeException(e);
+				// since error occured, this node should stop running for other inputpoints. Adding node id to stop.
+				if(!performedIds.Contains(currentNodeData.Id)) {
+					performedIds.Add(currentNodeData.Id);
+				}
 			}
-
-			// mark this point as performed
-			performedPoints.Add(currentInputPoint);
 
 			if (updateHandler != null) {
 				updateHandler(currentNodeData, 1f);
