@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class CubemapOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(Cubemap))]
+	public class CubemapOperator : Modifier {
 		
 		[SerializeField] public int anisoLevel;// limit to 16.
 		[SerializeField] public UnityEngine.FilterMode filterMode;
@@ -32,7 +34,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new CubemapOperator(
 				"UnityEngine.Cubemap",
 				1,

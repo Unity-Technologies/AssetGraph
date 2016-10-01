@@ -31,7 +31,7 @@ namespace AssetBundleGraph {
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
 			
 			var outputSource = new List<Asset>();
-			var targetFilePaths = FileUtility.GetFilePathsInFolder(node.GetLoaderFullLoadPath(target));
+			var targetFilePaths = FileUtility.GetAllFilePathsInFolder(node.GetLoaderFullLoadPath(target));
 
 			foreach (var targetFilePath in targetFilePaths) {
 
@@ -76,7 +76,7 @@ namespace AssetBundleGraph {
 			
 			var outputSource = new List<Asset>();
 			try {
-				var targetFilePaths = FileUtility.GetFilePathsInFolder(node.GetLoaderFullLoadPath(target));
+				var targetFilePaths = FileUtility.GetAllFilePathsInFolder(node.GetLoaderFullLoadPath(target));
 				
 				foreach (var targetFilePath in targetFilePaths) {
 

@@ -45,10 +45,7 @@ namespace AssetBundleGraph {
 			
 
 			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
-			ValidateImportSample(samplingDirectoryPath,
-				(string samplePath) => {
-					// do nothing. keep importing new asset for sampling.
-				},
+			ValidateImportSample(samplingDirectoryPath,				
 				(string samplePath) => {
 					// do nothing. keep importing new asset for sampling.
 				},
@@ -150,10 +147,7 @@ namespace AssetBundleGraph {
 			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
 			
 			var sampleAssetPath = string.Empty;
-			ValidateImportSample(samplingDirectoryPath,
-				(string samplePath) => {
-					throw new AssetBundleGraphException(node.Name + ": No ImportSettings Directory found for this node:" + node.Name + " please supply assets to this node.");
-				},
+			ValidateImportSample(samplingDirectoryPath,				
 				(string samplePath) => {
 					throw new AssetBundleGraphException(node.Name + ": No saved ImportSettings found for asset:" + samplePath);
 				},
@@ -271,13 +265,12 @@ namespace AssetBundleGraph {
 		}
 
 		public static void ValidateImportSample (string samplePath, 
-			Action<string> NoSampleFolderFound, 
 			Action<string> NoSampleFound, 
 			Action<string> ValidSampleFound,
 			Action<string> TooManySampleFound
 		) {
 			if (Directory.Exists(samplePath)) {
-				var filesInSampling = FileUtility.FilePathsInFolderOnly1Level(samplePath)
+				var filesInSampling = FileUtility.GetFilePathsInFolder(samplePath)
 					.Where(path => !path.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION))
 					.ToList();
 
@@ -297,7 +290,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			NoSampleFolderFound(samplePath);
+			NoSampleFound(samplePath);
 		}
 
 	}

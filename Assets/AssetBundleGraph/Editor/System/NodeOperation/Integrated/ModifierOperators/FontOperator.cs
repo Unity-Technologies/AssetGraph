@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class FontOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(Font))]
+	public class FontOperator : Modifier {
 		
 		/*
 		CharacterInfo:
@@ -41,7 +43,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new FontOperator(
 				"UnityEngine.Font"
 			);

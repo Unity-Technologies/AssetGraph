@@ -75,13 +75,10 @@ namespace AssetBundleGraph {
 
 			// validate saved data.
 			ValidateModifiyOperationData(
-				node.Id,
+				node,
 				target,
 				() => {
 					throw new NodeException("No ModifierOperatorData found. please Setup first.", node.Id);
-				},
-				() => {
-					/*do nothing.*/
 				}
 			);
 			
@@ -130,12 +127,6 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			// modifierType is fixed. 			
-			if (!string.IsNullOrEmpty(node.ScriptClassName)) {
-				Debug.LogError("modifierのScript版実装中。");
-				return;
-			}
-
 			Type assetType = TypeUtility.FindTypeOfAsset(inputSources[0].importFrom);
 
 			// check support.
@@ -146,20 +137,17 @@ namespace AssetBundleGraph {
 
 			// validate saved data.
 			ValidateModifiyOperationData(
-				node.Id,
+				node,
 				target,
 				() => {
 					throw new NodeException("No ModifierOperatorData found. please Setup first.", node.Id);
-				},
-				() => {
-					/*do nothing.*/
 				}
 			);
 			
 			var outputSources = new List<Asset>();
 
 			var g = BuildTargetUtility.TargetToGroup(target);
-			var modifyOperatorInstance = CreateModifierOperator(node.Id, g);
+			var modifyOperatorInstance = CreateModifierOperator(node, g);
 
 			var isChanged = false;
 			foreach (var inputSource in inputSources) {
@@ -211,24 +199,21 @@ namespace AssetBundleGraph {
 //		}
 //		
 		public static void ValidateModifiyOperationData (
-			string nodeId,
+			NodeData node,
 			BuildTarget target,
-			Action noAssetOperationDataFound,
-			Action validAssetOperationDataFound
+			Action noAssetOperationDataFound
 		) {
-			if( HasModifierDataFor(nodeId, BuildTargetUtility.TargetToGroup(target), true) ) {
-				validAssetOperationDataFound();
-				return;
+			if( !HasModifierDataFor(node, BuildTargetUtility.TargetToGroup(target), true) ) {
+				noAssetOperationDataFound();
 			}
-			noAssetOperationDataFound();
 		}
 			
-		private static Type GetTargetType (string nodeId) {
-			var data = LoadModifierDataFromDisk(nodeId, BuildTargetUtility.DefaultTarget);
+		private static Type GetTargetType (NodeData node) {
+			var data = LoadModifierDataFromDisk(node.Id, BuildTargetUtility.DefaultTarget);
 			if(data == string.Empty) {
 				return null;
 			}
-			var deserializedDataObject = JsonUtility.FromJson<ModifierBase>(data);
+			var deserializedDataObject = JsonUtility.FromJson<Modifier>(data);
 			if(deserializedDataObject != null) {
 				return Types.GetType (deserializedDataObject.operatorType, "Assembly-CSharp-Editor.dll");
 			}
@@ -243,13 +228,13 @@ namespace AssetBundleGraph {
 			return GetModifierDataPath(nodeId, BuildTargetUtility.DefaultTarget);
 		}
 			
-		public static bool HasModifierDataFor (string nodeId, BuildTargetGroup targetGroup, bool checkDefault=false) {
-			var dataPath = GetModifierDataPath(nodeId, targetGroup);
+		public static bool HasModifierDataFor (NodeData node, BuildTargetGroup targetGroup, bool checkDefault=false) {
+			var dataPath = GetModifierDataPath(node.Id, targetGroup);
 			if(File.Exists(dataPath)) {
 				return true;
 			}
 			if(checkDefault) {
-				dataPath = GetDefaultModifierDataPath(nodeId);
+				dataPath = GetDefaultModifierDataPath(node.Id);
 				if(File.Exists(dataPath)) {
 					return true;
 				}
@@ -257,8 +242,8 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
-		public static void DeletePlatformData(string nodeId, BuildTargetGroup targetGroup) {
-			var platformOpdataPath = GetModifierDataPath(nodeId, targetGroup);
+		public static void DeletePlatformData(NodeData node, BuildTargetGroup targetGroup) {
+			var platformOpdataPath = GetModifierDataPath(node.Id, targetGroup);
 			if (File.Exists(platformOpdataPath)) {
 				File.Delete(platformOpdataPath);
 			}
@@ -284,7 +269,7 @@ namespace AssetBundleGraph {
 			if (!File.Exists(dataPath)) {
 				Type operatorType = modifierOperatorTypeMap[modifierType];
 
-				var operatorInstance = Activator.CreateInstance(operatorType) as ModifierBase;
+				var operatorInstance = Activator.CreateInstance(operatorType) as Modifier;
 
 				var operatorWithDefaultSettings = operatorInstance.DefaultSetting();
 
@@ -312,7 +297,7 @@ namespace AssetBundleGraph {
 			return data;
 		}
 
-		public static void SaveModifierOperatorToDisk(string nodeId, BuildTargetGroup targetPlatform, ModifierBase op) {
+		public static void SaveModifierOperatorToDisk(string nodeId, BuildTargetGroup targetPlatform, Modifier op) {
 
 			var dataPath = GetModifierDataPath(nodeId, targetPlatform);
 			var dataDir  = Directory.GetParent(dataPath);
@@ -349,12 +334,17 @@ namespace AssetBundleGraph {
 			{typeof(UnityEngine.SceneManagement.Scene), typeof(ModifierOperators.SceneOperator)},
 		};
 
-		public static ModifierBase CreateModifierOperator(string nodeId, BuildTargetGroup targetGroup) {
+		public static Modifier CreateModifierOperator(NodeData node, BuildTargetGroup targetGroup) {
 
-			string data = LoadModifierDataFromDisk(nodeId, targetGroup);
-			Type operatorType = modifierOperatorTypeMap[GetTargetType(nodeId)];
+			string data = LoadModifierDataFromDisk(node.Id, targetGroup);
+			Type targetType = GetTargetType(node);
 
-			return JsonUtility.FromJson(data, operatorType) as ModifierBase;
+			if(targetType != null) {
+				Type operatorType = modifierOperatorTypeMap[GetTargetType(node)];
+				return JsonUtility.FromJson(data, operatorType) as Modifier;
+			} else {
+				return null;
+			}
 		}
 	}
 }

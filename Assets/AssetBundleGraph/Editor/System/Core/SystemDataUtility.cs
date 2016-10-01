@@ -84,6 +84,17 @@ namespace AssetBundleGraph {
 			return (T)instance;
 		}
 
+		public static T CreateModifierOperatorInstance<T> (string className, NodeData node, Type type) where T : Modifier {
+			var map = Modifier.GetAttributeClassNameMap(type);
+
+			if(map.ContainsKey(className)) {
+				className = map[className];
+			}
+
+			var instance = Assembly.GetExecutingAssembly().CreateInstance(className);
+			return (T)instance;
+		}
+
 		public static string GetPathSafeDefaultTargetName () {
 			return GetPathSafeTargetGroupName(BuildTargetUtility.DefaultTarget);
 		}

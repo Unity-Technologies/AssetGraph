@@ -208,15 +208,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-//		public Rect Region {
-//			get {
-//				return m_rect;
-//			}
-//			set {
-//				m_rect = value;
-//			}
-//		}
-
 		public List<ConnectionPointData> InputPoints {
 			get {
 				return m_inputPoints;

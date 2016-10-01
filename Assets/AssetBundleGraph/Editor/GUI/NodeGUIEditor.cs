@@ -17,6 +17,20 @@ namespace AssetBundleGraph {
 		public static BuildTargetGroup currentEditingGroup = 
 			BuildTargetUtility.DefaultTarget;
 
+		/*
+			・NonSerializedをセットしないと、ModifierOperators.OperatorBase型に戻ってしまう。
+			・SerializeFieldにする or なにもつけないと、もれなくModifierOperators.OperatorBase型にもどる
+			・Undo/Redoを行うためには、ModifierOperators.OperatorBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
+			・ModifierOperators.OperatorBase意外に晒していい型がない
+
+			という無茶苦茶な難題があります。
+			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
+			っていうのが相反するようです。うーんどうしよう。
+
+			TODO:
+		*/
+		[NonSerialized] private Modifier m_modifierOperatorInstance;
+
 		public override bool RequiresConstantRepaint() {
 			return true;
 		}
@@ -159,15 +173,12 @@ namespace AssetBundleGraph {
 				var samplingPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
 
 				IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
-					(string noFolderFound) => {
-						EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
-					},
 					(string noFilesFound) => {
-						EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
+						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
 					},
 					(string samplingAssetPath) => {
-						EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-						if (GUILayout.Button("Setup Import Setting")) {
+						//EditorGUILayout.LabelField("Sampling Asset:", samplingAssetPath);
+						if (GUILayout.Button("Configure Import Setting")) {
 							var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
 							Selection.activeObject = obj;
 						}
@@ -190,26 +201,28 @@ namespace AssetBundleGraph {
 		}
 
 		private void DoInspectorModifierGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Modifier: Force apply asset settings to given assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-//			var currentModifierTargetType = IntegratedGUIModifier.ModifierOperationTargetTypeName(node.Id);
-
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				// show incoming type of Assets and reset interface.
-				IntegratedGUIModifier.ValidateModifiyOperationData(
-					node.Id,
-					BuildTargetUtility.GroupToTarget(currentEditingGroup),
-					() => {
-						GUILayout.Label("No modifier data found, please Reload first.");
-					},
-					() => {
-					}
-				);
+//				IntegratedGUIModifier.ValidateModifiyOperationData(
+//					node.Data,
+//					BuildTargetUtility.GroupToTarget(currentEditingGroup),
+//					() => {
+//						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
+//					}
+//				);
 				
-				if (!IntegratedGUIModifier.HasModifierDataFor(node.Id, currentEditingGroup, true)) {
+//				if (!IntegratedGUIModifier.HasModifierDataFor(node.Data, currentEditingGroup, true)) {
+//					return;
+//				}
+
+				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+				if(incomingType == null) {
+					EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
 					return;
 				}
 
@@ -220,140 +233,110 @@ namespace AssetBundleGraph {
 					using(new RecordUndoScope("Reset Modifier", node, true)){
 						var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.Id);
 						FileUtility.RemakeDirectory(modifierFolderPath);
-						modifierOperatorInstance = null;
+						m_modifierOperatorInstance = null;
 					}
 					return;
 				}
 
 				GUILayout.Space(10f);
 
-				var usingScriptMode = !string.IsNullOrEmpty(node.Data.ScriptClassName);
+				var scriptMode = !string.IsNullOrEmpty(node.Data.ScriptClassName);
 
-				// use modifier script manually.
-				{
-					GUIStyle s = new GUIStyle("TextFieldDropDownText");
-					/*
-						check prefab builder script-type string.
-					*/
-					if (string.IsNullOrEmpty(node.Data.ScriptClassName)) {
-						s.fontStyle = FontStyle.Bold;
-						s.fontSize  = 12;
-					} else {
-						var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.Data.ScriptClassName);
+				var map = Modifier.GetAttributeClassNameMap(incomingType);
+				if(map.Count > 0) {
+					var newScriptMode = EditorGUILayout.ToggleLeft("Use Script", scriptMode);
 
-						if (loadedType == null) {
-							s.fontStyle = FontStyle.Bold;
-							s.fontSize  = 12;
+					if (newScriptMode != scriptMode) {
+						using(new RecordUndoScope("Modify Modifier Use Script", node, true)) {
+							node.Data.ScriptClassName = (newScriptMode)? map.Keys.First() : string.Empty;
+							m_modifierOperatorInstance = null;
 						}
 					}
-					
-					var before = !string.IsNullOrEmpty(node.Data.ScriptClassName);
-					usingScriptMode = EditorGUILayout.ToggleLeft("Use ModifierOperator Script", !string.IsNullOrEmpty(node.Data.ScriptClassName));
-					
-					// detect mode changed.
-					if (before != usingScriptMode) {
-						// checked. initialize value of scriptClassName.
-						if (usingScriptMode) {
-							using(new RecordUndoScope("Change Modifier", node, true)){
-								node.Data.ScriptClassName = "MyModifier";
-							}
-						}
 
-						// unchecked.
-						if (!usingScriptMode) {
-							using(new RecordUndoScope("Change Modifier", node, true)){
-								node.Data.ScriptClassName = string.Empty;
+					if(newScriptMode) {
+						if (GUILayout.Button(node.Data.ScriptClassName, "Popup")) {
+							var builders = map.Keys.ToList();
+
+							if(builders.Count > 0) {
+								NodeGUI.ShowTypeNamesMenu(node.Data.ScriptClassName, builders, (string selectedClassName) => 
+									{
+										using(new RecordUndoScope("Modify Modifier class", node, true)) {
+											node.Data.ScriptClassName = selectedClassName;
+											m_modifierOperatorInstance = null;
+										}
+									}  
+								);
 							}
 						}
 					}
-					
-					if (!usingScriptMode) {
-						EditorGUI.BeginDisabledGroup(true);	
-					}
-					GUILayout.Label("ここをドロップダウンにする。2");
-					var newScriptClass = EditorGUILayout.TextField("Classname", node.Data.ScriptClassName, s);
-					if (newScriptClass != node.Data.ScriptClassName) {
-						using(new RecordUndoScope("Change Script Class Name", node, true)){
-							node.Data.ScriptClassName = newScriptClass;
+
+					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
+						if(!map.ContainsKey(node.Data.ScriptClassName)) {
+							EditorGUILayout.HelpBox(node.Data.ScriptClassName + " not found. Did you delete Modifier script or changed name?", MessageType.Warning);
 						}
 					}
-					if (!usingScriptMode) {
-						EditorGUI.EndDisabledGroup();	
-					}
+
+				} else {
+					string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_MODIFIER.Split('/');
+					EditorGUILayout.HelpBox(
+						string.Format(
+							"No CustomModifier found for {3} type. \n" +
+							"You need to create at least one Modifier script to select script for Modifier. " +
+							"To start, select {0}>{1}>{2} menu and create a new script.",
+							menuNames[1],menuNames[2], menuNames[3], incomingType.FullName
+						), MessageType.Info);
 				}
 
 				GUILayout.Space(10f);
 
-				if (usingScriptMode) {
-					EditorGUI.BeginDisabledGroup(true);
-				}
-					
 				/*
 					if platform tab is changed, renew modifierOperatorInstance for that tab.
 				*/
 				if(DrawPlatformSelector(node)) {
-					modifierOperatorInstance = null;
+					m_modifierOperatorInstance = null;
 				};
-				using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-					var disabledScope = DrawOverrideTargetToggle(node, IntegratedGUIModifier.HasModifierDataFor(node.Id, currentEditingGroup), (bool enabled) => {
+				using (new EditorGUILayout.VerticalScope()) {
+					var disabledScope = DrawOverrideTargetToggle(node, IntegratedGUIModifier.HasModifierDataFor(node.Data, currentEditingGroup), (bool enabled) => {
 						if(enabled) {
 							// do nothing
 						} else {
-							IntegratedGUIModifier.DeletePlatformData(node.Id, currentEditingGroup);
+							IntegratedGUIModifier.DeletePlatformData(node.Data, currentEditingGroup);
 						}
 						// reset modifier operator when state change
-						modifierOperatorInstance = null;						
+						m_modifierOperatorInstance = null;						
 					});
 
 					using (disabledScope) {
-						/*
-						reload modifierOperator instance from saved modifierOperator data.
-						*/
-						if (modifierOperatorInstance == null) {
-							// CreateModifierOperator will create default modifier operator if no target specific settings are present
-							modifierOperatorInstance = IntegratedGUIModifier.CreateModifierOperator(node.Id, currentEditingGroup);
+						//reload modifierOperator instance from saved modifierOperator data.
+						if (m_modifierOperatorInstance == null) {
+							if(scriptMode) {
+								m_modifierOperatorInstance = SystemDataUtility.CreateModifierOperatorInstance<Modifier>(node.Data.ScriptClassName, node.Data, incomingType);
+							} else {
+								// CreateModifierOperator will create default modifier operator if no target specific settings are present
+								m_modifierOperatorInstance = IntegratedGUIModifier.CreateModifierOperator(node.Data, currentEditingGroup);
+							}
 						}
 
-						/*
-						Show ModifierOperator Inspector.
-						*/
-						if (modifierOperatorInstance != null) {
+						//Show ModifierOperator Inspector
+						if (m_modifierOperatorInstance != null) {
 							Action onChangedAction = () => {
 								IntegratedGUIModifier.SaveModifierOperatorToDisk(
-									node.Id, currentEditingGroup, modifierOperatorInstance);
+									node.Id, currentEditingGroup, m_modifierOperatorInstance);
 
 								// reflect change of data.
 								AssetDatabase.Refresh();
 
-								modifierOperatorInstance = null;
+								m_modifierOperatorInstance = null;
 							};
 
 							GUILayout.Space(10f);
 
-							modifierOperatorInstance.DrawInspector(onChangedAction);
+							m_modifierOperatorInstance.DrawInspector(onChangedAction);
 						}
 					}
 				}
-
-				if (usingScriptMode) {
-					EditorGUI.EndDisabledGroup();
-				}
 			}
 		}
-
-		/*
-			・NonSerializedをセットしないと、ModifierOperators.OperatorBase型に戻ってしまう。
-			・SerializeFieldにする or なにもつけないと、もれなくModifierOperators.OperatorBase型にもどる
-			・Undo/Redoを行うためには、ModifierOperators.OperatorBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
-			・ModifierOperators.OperatorBase意外に晒していい型がない
-
-			という無茶苦茶な難題があります。
-			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
-			っていうのが相反するようです。うーんどうしよう。
-
-			TODO:
-		*/
-		[NonSerialized] private ModifierBase modifierOperatorInstance;
 
 		private void DoInspectorGroupingGUI (NodeGUI node) {
 			if (node.Data.GroupingKeywords == null) {
@@ -722,6 +705,29 @@ namespace AssetBundleGraph {
 				);
 			}
 			menu.ShowAsContext();
+		}
+
+		private Type FindIncomingAssetType(ConnectionPointData inputPoint) {
+
+			var assetGroups = AssetBundleGraphEditorWindow.GetIncomingAssetGroups(inputPoint);
+
+			if(assetGroups == null) {
+				return null;
+			}
+
+			var assets = assetGroups.SelectMany(v => v.Value);
+			if(assets.Any()) {				
+				Type expectedType = TypeUtility.FindTypeOfAsset(assets.First().importFrom);
+//				foreach(var a  in assets) {
+//					Type assetType = TypeUtility.FindTypeOfAsset(a.importFrom);
+//					if(assetType != expectedType) {
+//						return null;
+//					}
+//				}
+				return expectedType;
+			}
+
+			return null;
 		}
 
 		private void UpdateNodeName (NodeGUI node) {

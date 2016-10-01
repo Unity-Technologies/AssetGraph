@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class PhysicMaterialOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(PhysicMaterial))]
+	public class PhysicMaterialOperator : Modifier {
 		
 		public PhysicMaterialOperator () {}
 
@@ -18,7 +20,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new PhysicMaterialOperator(
 				"UnityEngine.PhysicMaterial"
 			);

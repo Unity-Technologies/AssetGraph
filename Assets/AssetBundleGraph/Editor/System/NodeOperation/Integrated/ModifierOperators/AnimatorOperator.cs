@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class AnimatorOperator : ModifierBase {
+	[Serializable] public class AnimatorOperator : Modifier {
 		
 		public AnimatorOperator () {}
 
@@ -22,7 +22,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new AnimatorOperator(
 				"UnityEngine.Animator"
 			);

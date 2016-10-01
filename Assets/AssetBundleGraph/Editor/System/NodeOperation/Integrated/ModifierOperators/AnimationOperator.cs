@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class AnimationOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(Animation))]
+	public class AnimationOperator : Modifier {
 		
 		public AnimationOperator () {}
 
@@ -18,7 +20,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new AnimationOperator(
 				"UnityEngine.Animation"
 			);

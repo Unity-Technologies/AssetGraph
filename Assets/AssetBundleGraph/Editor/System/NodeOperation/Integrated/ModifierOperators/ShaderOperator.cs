@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class ShaderOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(Shader))]
+	public class ShaderOperator : Modifier {
 		[SerializeField] int maximumLOD;
 
 		public ShaderOperator () {}
@@ -21,7 +23,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new ShaderOperator(
 				"UnityEngine.Shader",
 				200// based on default shader LOD from shader's inspector.

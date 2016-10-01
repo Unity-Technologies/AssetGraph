@@ -99,9 +99,11 @@ namespace AssetBundleGraph {
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
 		private Vector2 errorScrollPos = new Vector2(0,0);
+		private Rect graphRegion = new Rect();
 		private CopyField copyField = new CopyField();		
 		private AssetBundleGraphSelection selection;
 		private ScalePoint scalePoint;
+		private GraphBackground background = new GraphBackground();
 
 		private static Dictionary<ConnectionData,Dictionary<string, List<Asset>>> s_assetStreamMap = 
 			new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
@@ -579,9 +581,6 @@ namespace AssetBundleGraph {
 		) {
 			var nodeDatas = new Dictionary<NodeData, Dictionary<string, List<Asset>>>();
 
-//			var nodeIds = currentNodes.Select(node => node.Id).ToList();
-//			var connectionIds = currentConnections.Select(con => con.Id).ToList();
-
 			foreach (var c in result.Keys) {
 				// get endpoint node result.
 //				if (nodeIds.Contains(nodeOrConnectionId)) {
@@ -622,6 +621,22 @@ namespace AssetBundleGraph {
 			}
 
 			return nodeDatas;
+		}
+
+		public static Dictionary<string, List<Asset>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
+			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
+			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
+
+			if(s_assetStreamMap == null) {
+				return null;
+			}
+
+			var keyEnum = s_assetStreamMap.Keys.Where(c => c.ToNodeConnectionPointId == inputPoint.Id);
+			if (keyEnum.Any()) { 
+				return s_assetStreamMap[keyEnum.First()];
+			}
+
+			return null;
 		}
 
 		private void DrawGUIToolBar() {
@@ -672,6 +687,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawGUINodeErrors() {
+
 			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
 			{
 				using (new EditorGUILayout.VerticalScope()) {
@@ -687,8 +703,11 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawGUINodeGraph() {
-			scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-			{
+
+			background.Draw(graphRegion, scrollPos);
+
+			using(var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos) ) {
+				scrollPos = scrollScope.scrollPosition;
 
 				// draw node window x N.
 				{
@@ -704,7 +723,6 @@ namespace AssetBundleGraph {
 					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING);
 				}
 
-
 				// draw connections.
 				foreach (var con in connections) {
 					var keyEnum = s_assetStreamMap.Keys.Where(c => c.Id == con.Id);
@@ -712,30 +730,20 @@ namespace AssetBundleGraph {
 						var assets = s_assetStreamMap[keyEnum.First()];
 						con.DrawConnection(nodes, assets);
 					} else {
-						//TODO: may give null?
 						con.DrawConnection(nodes, new Dictionary<string, List<Asset>>());
 					}
 				}
-
-
-
+					
 				// draw connection output point marks.
 				foreach (var node in nodes) {
 					node.DrawConnectionOutputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING, Event.current);
 				}
 
-				/*
-					draw connecting line if modifing connection.
-				*/
+				// draw connecting line if modifing connection.
 				switch (modifyMode) {
 				case ModifyMode.CONNECTING: {
 						// from start node to mouse.
 						DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition, currentEventSource);
-
-						break;
-					}
-				case ModifyMode.NONE: {
-						// do nothing
 						break;
 					}
 				case ModifyMode.SELECTING: {
@@ -744,157 +752,165 @@ namespace AssetBundleGraph {
 					}
 				}
 
-				/*
-					mouse drag event handling.
-				*/
-				switch (Event.current.type) {
-				// draw line while dragging.
-				case EventType.MouseDrag: {
-						switch (modifyMode) {
-						case ModifyMode.NONE: {
-								switch (Event.current.button) {
-								case 0:{// left click
-										if (Event.current.command) {
-											scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
-											modifyMode = ModifyMode.SCALING;
-											break;
-										}
-
-										selection = new AssetBundleGraphSelection(Event.current.mousePosition);
-										modifyMode = ModifyMode.SELECTING;
-										break;
-									}
-								case 2:{// middle click.
-										scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
-										modifyMode = ModifyMode.SCALING;
-										break;
-									}
-								}
-								break;
-							}
-						case ModifyMode.SELECTING: {
-								// do nothing.
-								break;
-							}
-						case ModifyMode.SCALING: {
-								var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
-								var distance = baseDistance / NodeGUI.SCALE_WIDTH;
-								var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
-
-								if (!direction) distance = -distance;
-
-								// var before = NodeGUI.scaleFactor;
-								NodeGUI.scaleFactor = scalePoint.startScale + (distance * NodeGUI.SCALE_RATIO);
-
-								if (NodeGUI.scaleFactor < NodeGUI.SCALE_MIN) NodeGUI.scaleFactor = NodeGUI.SCALE_MIN;
-								if (NodeGUI.SCALE_MAX < NodeGUI.scaleFactor) NodeGUI.scaleFactor = NodeGUI.SCALE_MAX;
-								break;
-							}
-						}
-
-						HandleUtility.Repaint();
-						Event.current.Use();
-						break;
-					}
-				}
-
-				/*
-					mouse up event handling.
-					use rawType for detect for detectiong mouse-up which raises outside of window.
-				*/
-				switch (Event.current.rawType) {
-				case EventType.MouseUp: {
-						switch (modifyMode) {
-						/*
-								select contained nodes & connections.
-							*/
-						case ModifyMode.SELECTING: {
-								var x = 0f;
-								var y = 0f;
-								var width = 0f;
-								var height = 0f;
-
-								if (Event.current.mousePosition.x < selection.x) {
-									x = Event.current.mousePosition.x;
-									width = selection.x - Event.current.mousePosition.x;
-								}
-								if (selection.x < Event.current.mousePosition.x) {
-									x = selection.x;
-									width = Event.current.mousePosition.x - selection.x;
-								}
-
-								if (Event.current.mousePosition.y < selection.y) {
-									y = Event.current.mousePosition.y;
-									height = selection.y - Event.current.mousePosition.y;
-								}
-								if (selection.y < Event.current.mousePosition.y) {
-									y = selection.y;
-									height = Event.current.mousePosition.y - selection.y;
-								}
-
-
-								var activeObjectIds = new List<string>();
-
-								var selectedRect = new Rect(x, y, width, height);
-
-
-								foreach (var node in nodes) {
-									var nodeRect = new Rect(node.GetRect());
-									nodeRect.x = nodeRect.x * NodeGUI.scaleFactor;
-									nodeRect.y = nodeRect.y * NodeGUI.scaleFactor;
-									nodeRect.width = nodeRect.width * NodeGUI.scaleFactor;
-									nodeRect.height = nodeRect.height * NodeGUI.scaleFactor;
-									// get containd nodes,
-									if (nodeRect.Overlaps(selectedRect)) {
-										activeObjectIds.Add(node.Id);
-									}
-								}
-
-								foreach (var connection in connections) {
-									// get contained connection badge.
-									if (connection.GetRect().Overlaps(selectedRect)) {
-										activeObjectIds.Add(connection.Id);
-									}
-								}
-
-								if (Event.current.shift) {
-									// add current active object ids to new list.
-									foreach (var alreadySelectedObjectId in activeObject.idPosDict.ReadonlyDict().Keys) {
-										if (!activeObjectIds.Contains(alreadySelectedObjectId)) activeObjectIds.Add(alreadySelectedObjectId);
-									}
-								} else {
-									// do nothing, means cancel selections if nodes are not contained by selection.
-								}
-
-
-								Undo.RecordObject(this, "Select Objects");
-
-								activeObject = RenewActiveObject(activeObjectIds);
-								UpdateActivationOfObjects(activeObject);
-
-								selection = new AssetBundleGraphSelection(Vector2.zero);
-								modifyMode = ModifyMode.NONE;
-
-								HandleUtility.Repaint();
-								Event.current.Use();
-								break;
-							}
-
-						case ModifyMode.SCALING: {
-								modifyMode = ModifyMode.NONE;
-								break;
-							}
-						}
-						break;
-					}
-				}
+				// handle Graph GUI events
+				HandleGraphGUIEvents();
 
 				// set rect for scroll.
 				if (nodes.Any()) {
 					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
 				}
 			}
-			EditorGUILayout.EndScrollView();
+			if(Event.current.type == EventType.Repaint) {
+				var newRgn = GUILayoutUtility.GetLastRect();
+				if(newRgn != graphRegion) {
+					graphRegion = newRgn;
+					Repaint();
+				}
+			}
+		}
+
+		private void HandleGraphGUIEvents() {
+			
+			//mouse drag event handling.
+			switch (Event.current.type) {
+			// draw line while dragging.
+			case EventType.MouseDrag: {
+					switch (modifyMode) {
+					case ModifyMode.NONE: {
+							switch (Event.current.button) {
+							case 0:{// left click
+									if (Event.current.command) {
+										scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
+										modifyMode = ModifyMode.SCALING;
+										break;
+									}
+
+									selection = new AssetBundleGraphSelection(Event.current.mousePosition);
+									modifyMode = ModifyMode.SELECTING;
+									break;
+								}
+							case 2:{// middle click.
+									scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
+									modifyMode = ModifyMode.SCALING;
+									break;
+								}
+							}
+							break;
+						}
+					case ModifyMode.SELECTING: {
+							// do nothing.
+							break;
+						}
+					case ModifyMode.SCALING: {
+							var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
+							var distance = baseDistance / NodeGUI.SCALE_WIDTH;
+							var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
+
+							if (!direction) distance = -distance;
+
+							// var before = NodeGUI.scaleFactor;
+							NodeGUI.scaleFactor = scalePoint.startScale + (distance * NodeGUI.SCALE_RATIO);
+
+							if (NodeGUI.scaleFactor < NodeGUI.SCALE_MIN) NodeGUI.scaleFactor = NodeGUI.SCALE_MIN;
+							if (NodeGUI.SCALE_MAX < NodeGUI.scaleFactor) NodeGUI.scaleFactor = NodeGUI.SCALE_MAX;
+							break;
+						}
+					}
+
+					HandleUtility.Repaint();
+					Event.current.Use();
+					break;
+				}
+			}
+
+			// mouse up event handling.
+			// use rawType for detect for detectiong mouse-up which raises outside of window.
+			switch (Event.current.rawType) {
+			case EventType.MouseUp: {
+					switch (modifyMode) {
+					/*
+								select contained nodes & connections.
+							*/
+					case ModifyMode.SELECTING: {
+							var x = 0f;
+							var y = 0f;
+							var width = 0f;
+							var height = 0f;
+
+							if (Event.current.mousePosition.x < selection.x) {
+								x = Event.current.mousePosition.x;
+								width = selection.x - Event.current.mousePosition.x;
+							}
+							if (selection.x < Event.current.mousePosition.x) {
+								x = selection.x;
+								width = Event.current.mousePosition.x - selection.x;
+							}
+
+							if (Event.current.mousePosition.y < selection.y) {
+								y = Event.current.mousePosition.y;
+								height = selection.y - Event.current.mousePosition.y;
+							}
+							if (selection.y < Event.current.mousePosition.y) {
+								y = selection.y;
+								height = Event.current.mousePosition.y - selection.y;
+							}
+
+
+							var activeObjectIds = new List<string>();
+
+							var selectedRect = new Rect(x, y, width, height);
+
+
+							foreach (var node in nodes) {
+								var nodeRect = new Rect(node.GetRect());
+								nodeRect.x = nodeRect.x * NodeGUI.scaleFactor;
+								nodeRect.y = nodeRect.y * NodeGUI.scaleFactor;
+								nodeRect.width = nodeRect.width * NodeGUI.scaleFactor;
+								nodeRect.height = nodeRect.height * NodeGUI.scaleFactor;
+								// get containd nodes,
+								if (nodeRect.Overlaps(selectedRect)) {
+									activeObjectIds.Add(node.Id);
+								}
+							}
+
+							foreach (var connection in connections) {
+								// get contained connection badge.
+								if (connection.GetRect().Overlaps(selectedRect)) {
+									activeObjectIds.Add(connection.Id);
+								}
+							}
+
+							if (Event.current.shift) {
+								// add current active object ids to new list.
+								foreach (var alreadySelectedObjectId in activeObject.idPosDict.ReadonlyDict().Keys) {
+									if (!activeObjectIds.Contains(alreadySelectedObjectId)) activeObjectIds.Add(alreadySelectedObjectId);
+								}
+							} else {
+								// do nothing, means cancel selections if nodes are not contained by selection.
+							}
+
+
+							Undo.RecordObject(this, "Select Objects");
+
+							activeObject = RenewActiveObject(activeObjectIds);
+							UpdateActivationOfObjects(activeObject);
+
+							selection = new AssetBundleGraphSelection(Vector2.zero);
+							modifyMode = ModifyMode.NONE;
+
+							HandleUtility.Repaint();
+							Event.current.Use();
+							break;
+						}
+
+					case ModifyMode.SCALING: {
+							modifyMode = ModifyMode.NONE;
+							break;
+						}
+					}
+					break;
+				}
+			}
 		}
 
 		public void OnEnable () {
@@ -1246,8 +1262,8 @@ namespace AssetBundleGraph {
 			if (typeof(PrefabBuilder).IsAssignableFrom(type)) {
 				return typeof(PrefabBuilder);
 			}
-			if (typeof(ModifierBase).IsAssignableFrom(type)) {
-				return typeof(ModifierBase);
+			if (typeof(Modifier).IsAssignableFrom(type)) {
+				return typeof(Modifier);
 			}
 
 			return null;
@@ -1256,7 +1272,7 @@ namespace AssetBundleGraph {
 		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
 			NodeGUI newNode = null;
 
-			if (scriptBaseType == typeof(ModifierBase)) {
+			if (scriptBaseType == typeof(Modifier)) {
 				Debug.LogError("Modifierに対してown class定義でModifierノードを追加。");
 			}
 			if (scriptBaseType == typeof(PrefabBuilder)) {

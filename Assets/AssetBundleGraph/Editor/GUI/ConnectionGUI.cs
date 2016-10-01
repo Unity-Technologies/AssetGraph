@@ -124,7 +124,20 @@ namespace AssetBundleGraph {
 			var startTan = new Vector3(startPoint.x + pointDistance, startPoint.y, 0f);
 			var endTan = new Vector3(endPoint.x - pointDistance, endPoint.y, 0f);
 
-			Handles.DrawBezier(startV3, endV3, startTan, endTan, Color.gray, null, 4f);
+			var totalAssets = 0;
+			var totalGroups = 0;
+			if(assetGroups != null) {
+				totalAssets = assetGroups.Select(v => v.Value.Count).Sum();
+				totalGroups = assetGroups.Keys.Count;
+			}
+
+			if(conInsp != null && Selection.activeObject == conInsp && conInsp.connectionGUI == this) {
+				Handles.DrawBezier(startV3, endV3, startTan, endTan, new Color(0.43f, 0.65f, 0.90f, 1.0f), null, 2f);
+			} else {
+				Handles.DrawBezier(startV3, endV3, startTan, endTan, ((totalAssets > 0) ? Color.white : Color.gray), null, 2f);
+			}
+
+
 
 			// draw connection label if connection's label is not normal.
 			if (NodeGUI.scaleFactor == NodeGUI.SCALE_MAX) {
@@ -148,32 +161,17 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			// draw connection arrow.
-			if (NodeGUI.scaleFactor == NodeGUI.SCALE_MAX) {
-				GUI.DrawTexture(
-					new Rect(
-						endV3.x - AssetBundleGraphGUISettings.CONNECTION_ARROW_WIDTH + 4f, 
-						endV3.y - (AssetBundleGraphGUISettings.CONNECTION_ARROW_HEIGHT / 2f) - 1f, 
-						AssetBundleGraphGUISettings.CONNECTION_ARROW_WIDTH, 
-						AssetBundleGraphGUISettings.CONNECTION_ARROW_HEIGHT
-					), 
-					ConnectionGUIUtility.connectionArrowTex
-				);
+			string connectionLabel;
+			if(totalGroups > 1) {
+				connectionLabel = string.Format("{0}:{1}", totalAssets, totalGroups);
+			} else {
+				connectionLabel = string.Format("{0}", totalAssets);
 			}
 
-			/*
-				draw asset item badge.
-			*/
-			var totalAssets = 0;
-			if(assetGroups != null) {
-				foreach (var list in assetGroups.Values) {
-					totalAssets += list.Count;
-				}
-			}
+			var style = new GUIStyle(connectionButtonStyle);
 
-			var offsetSize = totalAssets.ToString().Length * 20f;
-			
-			buttonRect = new Rect(centerPointV3.x - offsetSize/2f, centerPointV3.y - 7f, offsetSize, 20f);
+			var labelSize = style.CalcSize(new GUIContent(connectionLabel));
+			buttonRect = new Rect(centerPointV3.x - labelSize.x/2f, centerPointV3.y - labelSize.y/2f, labelSize.x, 30f);
 
 			if (
 				Event.current.type == EventType.ContextClick
@@ -194,7 +192,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (GUI.Button(buttonRect, totalAssets.ToString(), connectionButtonStyle)) {
+			if (GUI.Button(buttonRect, connectionLabel, style)) {
 				conInsp.UpdateInspector(this, assetGroups);
 				ConnectionGUIUtility.ConnectionEventHandler(new ConnectionEvent(ConnectionEvent.EventType.EVENT_CONNECTION_TAPPED, this));
 			}

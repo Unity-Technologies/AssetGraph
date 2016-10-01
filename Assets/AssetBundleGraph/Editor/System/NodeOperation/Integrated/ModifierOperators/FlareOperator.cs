@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class FlareOperator : ModifierBase {
+	[Serializable] public class FlareOperator : Modifier {
 		
 		public FlareOperator () {}
 
@@ -18,7 +18,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new FlareOperator(
 				"UnityEngine.Flare"
 			);

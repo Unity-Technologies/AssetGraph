@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class SceneOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(UnityEngine.SceneManagement.Scene))]
+	public class SceneOperator : Modifier {
 		
 		public SceneOperator () {}
 		
@@ -18,7 +20,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new SceneOperator(
 				"UnityEngine.SceneManagement.Scene"
 			);

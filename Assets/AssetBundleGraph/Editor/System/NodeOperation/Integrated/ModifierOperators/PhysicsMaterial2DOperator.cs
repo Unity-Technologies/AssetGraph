@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.ModifierOperators {
 	
-	[Serializable] public class PhysicsMaterial2DOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(PhysicsMaterial2D))]
+	public class PhysicsMaterial2DOperator : Modifier {
 		
 		[SerializeField] public float friction;
 		[SerializeField] public float bounciness;
@@ -21,7 +23,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new PhysicsMaterial2DOperator(
 				"UnityEngine.PhysicsMaterial2D"
 			);

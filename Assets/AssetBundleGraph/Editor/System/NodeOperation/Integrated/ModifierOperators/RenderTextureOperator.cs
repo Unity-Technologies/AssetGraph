@@ -68,7 +68,9 @@ namespace AssetBundleGraph.ModifierOperators {
 			Assetの作り直しとかを強制的にやればいけるのかもしれませんが、GUID変わりそう。
 
 	*/
-	[Serializable] public class RenderTextureOperator : ModifierBase {
+	[Serializable] 
+	[CustomModifier("Default Editor", typeof(RenderTexture))]
+	public class RenderTextureOperator : Modifier {
 		// [SerializeField] public Int32 width, height;
 
 		// public enum AntiAliasing : int {
@@ -118,7 +120,7 @@ namespace AssetBundleGraph.ModifierOperators {
 		/*
 			constructor for default data setting.
 		*/
-		public override ModifierBase DefaultSetting () {
+		public override Modifier DefaultSetting () {
 			return new RenderTextureOperator(
 				"UnityEngine.RenderTexture",
 				UnityEngine.TextureWrapMode.Clamp,
