@@ -4,25 +4,47 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-[AssetBundleGraph.PrefabBuilderBase.MenuItemName("MyBuilder")]
-public class MyPrefabBuilder : AssetBundleGraph.PrefabBuilderBase {
-	public override void ValidateCanCreatePrefab (BuildTarget target, 
-		AssetBundleGraph.NodeData node, 
-		string groupKey, 
-		List<AssetBundleGraph.Asset> sources, 
-		string prefabOutputDir, 
-		Func<string, string> BuildPrefab) 
-	{
-		//TODO: implement code to validate if prefab can be created.
+using AssetBundleGraph;
+
+[AssetBundleGraph.CustomPrefabBuilder("MyBuilder")]
+public class MyPrefabBuilder : IPrefabBuilder {
+
+	[SerializeField] private bool doSomething;
+
+	/**
+	 * Test if prefab can be created with incoming assets.
+	 */ 
+	public bool CanCreatePrefab (string groupKey, List<Asset> assets) {
+		return false;
 	}
 
-	public override void CreatePrefab (BuildTarget target, 
-		AssetBundleGraph.NodeData node, 
-		string groupKey, 
-		List<AssetBundleGraph.Asset> sources, 
-		string prefabOutputDir, 
-		Func<GameObject, string, bool, string> BuildPrefab) 
-	{
-		//TODO: implement code to create prefab.
+	/**
+	 * Create Prefab.
+	 */ 
+	public List<Asset> CreatePrefab (string groupKey, List<Asset> assets, string prefabSaveDir, bool isBuild) {
+		var builtAssets = new List<Asset>();
+
+		return builtAssets;
+	}
+
+	/**
+	 * Draw Inspector GUI for this PrefabBuilder.
+	 */ 
+	public void OnInspectorGUI (Action onValueChanged) {
+
+		GUILayout.Label("My Builder Inspector");
+
+		var newValue = GUILayout.Toggle(doSomething, "Do Something");
+		if(newValue != doSomething) {
+			doSomething = newValue;
+			onValueChanged();
+		}
+	}
+
+	/**
+	 * Serialize this PrefabBuilder to JSON using JsonUtility.
+	 */ 
+	public string Serialize() {
+		return JsonUtility.ToJson(this);
 	}
 }

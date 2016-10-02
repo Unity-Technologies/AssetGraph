@@ -117,16 +117,6 @@ namespace AssetBundleGraph {
 			return attr.Name;
 		}
 
-		public static string GUINameToClassName(string guiName, Type targetType) {
-			var map = GetAttributeClassNameMap(targetType);
-
-			if(map.ContainsKey(guiName)) {
-				return map[guiName];
-			}
-
-			return null;
-		}
-
 		public static string GetModifierGUIName(string className) {
 			var type = Type.GetType(className);
 			if(type != null) {
@@ -137,6 +127,16 @@ namespace AssetBundleGraph {
 				}
 			}
 			return string.Empty;
+		}
+
+		public static string GUINameToClassName(string guiName, Type targetType) {
+			var map = GetAttributeClassNameMap(targetType);
+
+			if(map.ContainsKey(guiName)) {
+				return map[guiName];
+			}
+
+			return null;
 		}
 
 		public static Type GetModifierTargetType(IModifier m) {
@@ -156,6 +156,16 @@ namespace AssetBundleGraph {
 				}
 			}
 			return null;
+		}
+
+		public static bool HasValidCustomModifierAttribute(Type t) {
+			CustomModifier attr = 
+				t.GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+
+			if(attr != null) {
+				return !string.IsNullOrEmpty(attr.Name) && attr.For != null;
+			}
+			return false;
 		}
 
 		public static IModifier CreateModifier(NodeData node, BuildTarget target) {
@@ -185,6 +195,24 @@ namespace AssetBundleGraph {
 				return (IModifier) Assembly.GetExecutingAssembly().CreateInstance(className);
 			}
 			return null;
+		}
+
+		public static IModifier CreateModifier(string className) {
+
+			if(className == null) {
+				return null;
+			}
+
+			Type t = Type.GetType(className);
+			if(t == null) {
+				return null;
+			}
+
+			if(!HasValidCustomModifierAttribute(t)) {
+				return null;
+			}
+
+			return (IModifier) Assembly.GetExecutingAssembly().CreateInstance(className);
 		}
 	}
 }

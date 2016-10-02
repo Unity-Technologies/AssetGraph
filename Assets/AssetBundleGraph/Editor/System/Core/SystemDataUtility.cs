@@ -70,20 +70,6 @@ namespace AssetBundleGraph {
 			return ((T)nodeScriptInstance);
 		}
 
-		public static T CreatePrefabBuilderOperationInstance<T> (string className, NodeData node) where T : INodeOperation {
-			var map = PrefabBuilder.GetAttributeClassNameMap();
-
-			if(map.ContainsKey(className)) {
-				className = map[className];
-			}
-
-			var instance = Assembly.GetExecutingAssembly().CreateInstance(className);
-			if (instance == null) {
-				throw new NodeException(node.Name + ": Failed to create PrefabBuilder:" + className + ". CreateInstance failed.", node.Id);
-			}
-			return (T)instance;
-		}
-
 		public static string GetPathSafeDefaultTargetName () {
 			return GetPathSafeTargetGroupName(BuildTargetUtility.DefaultTarget);
 		}

@@ -323,11 +323,7 @@ namespace AssetBundleGraph {
 						break;
 					}
 				case NodeKind.PREFABBUILDER_GUI: {
-						var scriptClassName = currentNodeData.ScriptClassName;
-						if (string.IsNullOrEmpty(scriptClassName)) {
-							throw new NodeException(currentNodeData.Name + ": Classname is empty. Set valid classname. Configure valid script name from editor.", currentNodeData.Id);
-						}
-						executor = SystemDataUtility.CreatePrefabBuilderOperationInstance<PrefabBuilder>(scriptClassName, currentNodeData);
+						executor = new IntegratedPrefabBuilder();
 						break;
 					}
 

@@ -18,6 +18,7 @@ namespace AssetBundleGraph {
 			BuildTargetUtility.DefaultTarget;
 
 		[NonSerialized] private IModifier m_modifier;
+		[NonSerialized] private IPrefabBuilder m_prefabBuilder;
 
 		public override bool RequiresConstantRepaint() {
 			return true;
@@ -254,15 +255,19 @@ namespace AssetBundleGraph {
 							m_modifier = ModifierUtility.CreateModifier(node.Data, currentEditingGroup);
 							if(m_modifier != null) {
 								node.Data.ScriptClassName = m_modifier.GetType().FullName;
-								node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+								if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+									node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+								}
 							}
 						}
 
 						if (m_modifier != null) {
 							Action onChangedAction = () => {
-								using(new RecordUndoScope("Change Modifier Setting", node, true)) {
+								using(new RecordUndoScope("Change Modifier Setting", node)) {
 									node.Data.ScriptClassName = m_modifier.GetType().FullName;
-									node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+									if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+										node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+									}
 								}
 							};
 
@@ -317,19 +322,24 @@ namespace AssetBundleGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				var map = PrefabBuilder.GetAttributeClassNameMap();
+				var map = PrefabBuilderUtility.GetAttributeClassNameMap();
 				if(map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
-						GUILayout.Label("PrefabBuilder:");
-						GUILayout.FlexibleSpace();
-						if (GUILayout.Button(node.Data.ScriptClassName, "Popup", GUILayout.Width(120))) {
+						GUILayout.Label("PrefabBuilder");
+						var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(node.Data.ScriptClassName);
+
+						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
 							var builders = map.Keys.ToList();
 
 							if(builders.Count > 0) {
-								NodeGUI.ShowTypeNamesMenu(node.Data.ScriptClassName, builders, (string selectedClassName) => 
+								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
 									{
-										using(new RecordUndoScope("Modify PrefabBuilder class", node, true)) {
-											node.Data.ScriptClassName = selectedClassName;
+										using(new RecordUndoScope("Change PrefabBuilder class", node, true)) {
+											m_prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(selectedGUIName);
+											if(m_prefabBuilder != null) {
+												node.Data.ScriptClassName = PrefabBuilderUtility.GUINameToClassName(selectedGUIName);
+												node.Data.InstanceData.DefaultValue = m_prefabBuilder.Serialize();
+											}
 										}
 									} 
 								);
@@ -339,17 +349,60 @@ namespace AssetBundleGraph {
 				} else {
 					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
 						using(new GUILayout.HorizontalScope()) {
-							GUILayout.Label("PrefabBuilder:");
+							GUILayout.Label("PrefabBuilder");
 							GUILayout.FlexibleSpace();
-							GUILayout.Label(node.Data.ScriptClassName);
+							GUILayout.Label(PrefabBuilderUtility.GetPrefabBuilderGUIName(node.Data.ScriptClassName));
 						}
 					} else {
 						string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
 						EditorGUILayout.HelpBox(
 							string.Format(
-								"You need to create at least one PrefabBuilder script to use PrefabBuilder node. To start, select {0}>{1}>{2} menu and generate new script from template.",
+								"You need to create at least one PrefabBuilder script to use PrefabBuilder node. To start, select {0}>{1}>{2} menu and create new script from template.",
 								menuNames[1],menuNames[2], menuNames[3]
 							), MessageType.Info);
+					}
+				}
+
+				GUILayout.Space(10f);
+
+				if(DrawPlatformSelector(node)) {
+					// if platform tab is changed, renew prefabBuilder for that tab.
+					m_prefabBuilder = null;
+				}
+				using (new EditorGUILayout.VerticalScope()) {
+					var disabledScope = DrawOverrideTargetToggle(node, node.Data.InstanceData.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+						if(enabled) {
+							node.Data.InstanceData[currentEditingGroup] = node.Data.InstanceData.DefaultValue;
+						} else {
+							node.Data.InstanceData.Remove(currentEditingGroup);
+						}
+						m_prefabBuilder = null;
+					});
+
+					using (disabledScope) {
+						//reload prefabBuilder instance from saved instance data.
+						if (m_prefabBuilder == null) {
+							m_prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(node.Data, currentEditingGroup);
+							if(m_prefabBuilder != null) {
+								node.Data.ScriptClassName = m_prefabBuilder.GetType().FullName;
+								if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+									node.Data.InstanceData[currentEditingGroup] = m_prefabBuilder.Serialize();
+								}
+							}
+						}
+
+						if (m_prefabBuilder != null) {
+							Action onChangedAction = () => {
+								using(new RecordUndoScope("Change PrefabBuilder Setting", node)) {
+									node.Data.ScriptClassName = m_prefabBuilder.GetType().FullName;
+									if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+										node.Data.InstanceData[currentEditingGroup] = m_prefabBuilder.Serialize();
+									}
+								}
+							};
+
+							m_prefabBuilder.OnInspectorGUI(onChangedAction);
+						}
 					}
 				}
 			}

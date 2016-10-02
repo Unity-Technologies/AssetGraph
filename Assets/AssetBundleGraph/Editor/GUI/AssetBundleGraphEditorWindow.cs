@@ -1253,10 +1253,10 @@ namespace AssetBundleGraph {
 		}
 
 		private Type GetDragAndDropAcceptableScriptType (Type type) {
-			if (typeof(PrefabBuilder).IsAssignableFrom(type)) {
-				return typeof(PrefabBuilder);
+			if (typeof(IPrefabBuilder).IsAssignableFrom(type) && !type.IsInterface && PrefabBuilderUtility.HasValidCustomPrefabBuilderAttribute(type)) {
+				return typeof(IPrefabBuilder);
 			}
-			if (typeof(IModifier).IsAssignableFrom(type)) {
+			if (typeof(IModifier).IsAssignableFrom(type) && !type.IsInterface && ModifierUtility.HasValidCustomModifierAttribute(type)) {
 				return typeof(IModifier);
 			}
 
@@ -1267,11 +1267,20 @@ namespace AssetBundleGraph {
 			NodeGUI newNode = null;
 
 			if (scriptBaseType == typeof(IModifier)) {
-				Debug.LogError("Modifierに対してown class定義でModifierノードを追加。");
+				var modifier = ModifierUtility.CreateModifier(scriptClassName);
+				UnityEngine.Assertions.Assert.IsNotNull(modifier);
+
+				newNode = new NodeGUI(new NodeData(name, NodeKind.MODIFIER_GUI, x, y));
+				newNode.Data.ScriptClassName = scriptClassName;
+				newNode.Data.InstanceData.DefaultValue = modifier.Serialize();
 			}
-			if (scriptBaseType == typeof(PrefabBuilder)) {
+			if (scriptBaseType == typeof(IPrefabBuilder)) {
+				var builder = PrefabBuilderUtility.CreatePrefabBuilderByClassName(scriptClassName);
+				UnityEngine.Assertions.Assert.IsNotNull(builder);
+
 				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
 				newNode.Data.ScriptClassName = scriptClassName;
+				newNode.Data.InstanceData.DefaultValue = builder.Serialize();
 			}
 
 			if (newNode == null) {
