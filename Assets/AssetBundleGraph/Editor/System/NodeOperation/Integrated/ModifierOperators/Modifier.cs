@@ -76,19 +76,19 @@ namespace AssetBundleGraph {
 		public Modifier () {}// this class is required for serialization. and reflection
 
         public virtual Modifier DefaultSetting () {
-			throw new Exception("should override DefaultSetting method.");
+			throw new Exception("Not Implemented. Subclass must override DefaultSetting method.");
 		}
 
 		public virtual bool IsChanged<T> (T asset) {
-			throw new Exception("should override IsChanged method.");
+			throw new Exception("Not Implemented. Subclass must override IsChanged method.");
 		}
 
 		public virtual void Modify<T> (T asset) {
-			throw new Exception("should override Modify method.");
+			throw new Exception("Not Implemented. Subclass must override Modify method.");
 		}
 
         public virtual void DrawInspector (Action changed) {
-            throw new Exception("should override DrawInspector method.");
+			throw new Exception("Not Implemented. Subclass must override DrawInspector method.");
         }
     }
 }
