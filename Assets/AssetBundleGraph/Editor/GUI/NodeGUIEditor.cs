@@ -145,35 +145,39 @@ namespace AssetBundleGraph {
 				platform key is contained by Unity's importer inspector itself.
 			*/
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var nodeId = node.Id;
+				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+				IntegratedGUIImportSetting.ConfigStatus status = 
+					IntegratedGUIImportSetting.GetConfigStatus(node.Data);
 
-				var samplingPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
-
-				IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
-					(string noFilesFound) => {
+				if(incomingType == null) {
+					// try to retrieve incoming type from configuration
+					if(status == IntegratedGUIImportSetting.ConfigStatus.GoodSampleFound) {
+						incomingType = IntegratedGUIImportSetting.GetReferenceAssetImporter(node.Data).GetType();
+					} else {
 						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
-					},
-					(string samplingAssetPath) => {
-						//EditorGUILayout.LabelField("Sampling Asset:", samplingAssetPath);
-						if (GUILayout.Button("Configure Import Setting")) {
-							var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
-							Selection.activeObject = obj;
-						}
-						if (GUILayout.Button("Reset Import Setting")) {
-							using(new SaveScope(node)){
-								FileUtility.RemakeDirectory(samplingPath);
-							}
-						}
-					},
-					(string tooManyFilesFoundMessage) => {
-						if (GUILayout.Button("Reset Import Setting")) {
-							// delete all import setting files.
-							using(new SaveScope(node)){
-								FileUtility.RemakeDirectory(samplingPath);
-							}
-						}
+						return;
 					}
-				);
+				}
+
+				switch(status) {
+				case IntegratedGUIImportSetting.ConfigStatus.NoSampleFound:
+					// IntegratedGUIImportSetting.Setup() must run to grab another sample to configure.
+					EditorGUILayout.HelpBox("Press Refresh to configure.", MessageType.Info);
+					break;
+				case IntegratedGUIImportSetting.ConfigStatus.GoodSampleFound:
+					if (GUILayout.Button("Configure Import Setting")) {
+						Selection.activeObject = IntegratedGUIImportSetting.GetReferenceAssetImporter(node.Data);
+					}
+					if (GUILayout.Button("Reset Import Setting")) {
+						IntegratedGUIImportSetting.ResetConfig(node.Data);
+					}
+					break;
+				case IntegratedGUIImportSetting.ConfigStatus.TooManySamplesFound:
+					if (GUILayout.Button("Reset Import Setting")) {
+						IntegratedGUIImportSetting.ResetConfig(node.Data);
+					}
+					break;
+				}
 			}
 		}
 
@@ -700,7 +704,7 @@ namespace AssetBundleGraph {
 			if(assetGroups == null) {
 				return null;
 			}
-			return IntegratedGUIModifier.FindIncomingAssetType(assetGroups.SelectMany(v => v.Value).ToList());
+			return TypeUtility.FindIncomingAssetType(assetGroups.SelectMany(v => v.Value).ToList());
 		}
 
 		private void UpdateNodeName (NodeGUI node) {

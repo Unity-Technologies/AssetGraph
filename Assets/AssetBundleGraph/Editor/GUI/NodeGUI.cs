@@ -350,22 +350,17 @@ namespace AssetBundleGraph {
 			if (scaleFactor == SCALE_MAX) {
 				Action<ConnectionPointData> drawConnectionPoint = (ConnectionPointData point) => 
 				{
-					switch (this.Kind) {
-					case NodeKind.FILTER_GUI:
-					case NodeKind.BUNDLECONFIG_GUI: 
-						{
-							var label = point.Label;
-							if( label != AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL ) {
-								var region = point.Region;
-								// if point is output node, then label position offset is minus. otherwise plus.
-								var xOffset = (point.IsOutput) ? - m_baseRect.width : AssetBundleGraphGUISettings.INPUT_POINT_WIDTH;
-								var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
-								var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
+					var label = point.Label;
+					if( label != AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL &&
+						label != AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL) 
+					{
+						var region = point.Region;
+						// if point is output node, then label position offset is minus. otherwise plus.
+						var xOffset = (point.IsOutput) ? - m_baseRect.width : AssetBundleGraphGUISettings.INPUT_POINT_WIDTH;
+						var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
+						var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
 
-								GUI.Label(labelRect, label, labelStyle);
-							}
-							break;
-						}
+						GUI.Label(labelRect, label, labelStyle);
 					}
 					GUI.backgroundColor = Color.clear;
 					Texture2D tex = (point.IsInput)? NodeGUIUtility.inputPointTex : NodeGUIUtility.outputPointTex;

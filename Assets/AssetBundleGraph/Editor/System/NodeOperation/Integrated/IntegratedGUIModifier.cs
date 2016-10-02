@@ -71,17 +71,7 @@ namespace AssetBundleGraph {
 			// Modifier does not add, filter or change structure of group, so just pass given group of assets
 			Output(connectionToOutput, inputGroupAssets, null);
 		}
-
-		public static Type FindIncomingAssetType(List<Asset> assets) {
-
-			if(assets.Any()) {
-				Type expectedType = TypeUtility.FindTypeOfAsset(assets.First().importFrom);
-				return expectedType;
-			}
-
-			return null;
-		}
-
+			
 		public static void ValidateModifier (
 			NodeData node,
 			BuildTarget target,
@@ -91,7 +81,7 @@ namespace AssetBundleGraph {
 			Action failedToCreateModifier,
 			Action<Type, Type> incomingTypeMismatch
 		) {
-			Type expectedType = FindIncomingAssetType(incomingAssets);
+			Type expectedType = TypeUtility.FindIncomingAssetType(incomingAssets);
 			if(expectedType != null) {
 				foreach(var a  in incomingAssets) {
 					Type assetType = TypeUtility.FindTypeOfAsset(a.importFrom);

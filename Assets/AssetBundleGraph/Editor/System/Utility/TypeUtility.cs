@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -119,5 +120,15 @@ namespace AssetBundleGraph {
 			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'object'.");
 			return typeof(object);
 		}			
+
+		public static Type FindIncomingAssetType(List<Asset> assets) {
+
+			if(assets.Any()) {
+				Type expectedType = FindTypeOfAsset(assets.First().importFrom);
+				return expectedType;
+			}
+
+			return null;
+		}
 	}
 }
