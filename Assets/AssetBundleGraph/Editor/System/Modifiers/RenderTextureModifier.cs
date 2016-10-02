@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 	/*
 		paramter definitions for RenderTexture.
 
@@ -12,7 +12,7 @@ namespace AssetBundleGraph.ModifierOperators {
 				サポートしたいAsset型をGetType().ToString()した文字列をkey、このクラスのTypeをvalueとして設定する。
 
 				例：RenderTextureのModify処理をこのクラスで対応するようにしたい場合、
-				{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)}
+				{"UnityEngine.RenderTexture", typeof(IModifier.RenderTextureModifier)}
 				とか書く。
 
 			1.このクラスに対象Assetの型のModifierとしての処理を記述する
@@ -69,8 +69,8 @@ namespace AssetBundleGraph.ModifierOperators {
 
 	*/
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(RenderTexture))]
-	public class RenderTextureOperator : Modifier {
+	[CustomModifier("Default Modifier", typeof(RenderTexture))]
+	public class RenderTextureModifier : IModifier {
 		// [SerializeField] public Int32 width, height;
 
 		// public enum AntiAliasing : int {
@@ -98,38 +98,13 @@ namespace AssetBundleGraph.ModifierOperators {
 
 
 
-		public RenderTextureOperator () {}
-
-		private RenderTextureOperator (
-			string operatorType,
-			// Int32 width, Int32 height,
-			// AntiAliasing antiAliasing,
-			// UnityEngine.RenderTextureFormat colorFormat,
-			// DepthBuffer depthBuffer,
-			UnityEngine.TextureWrapMode wrapMode,
-			UnityEngine.FilterMode filterMode,
-			Int32 anisoLevel
-		) {
-			this.operatorType = operatorType;
-			
-			this.wrapMode = wrapMode;
-			this.filterMode = filterMode;
-			this.anisoLevel = anisoLevel;
+		public RenderTextureModifier () {
+			wrapMode = TextureWrapMode.Clamp;
+			filterMode = FilterMode.Bilinear;
+			anisoLevel = 0;
 		}
 
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new RenderTextureOperator(
-				"UnityEngine.RenderTexture",
-				UnityEngine.TextureWrapMode.Clamp,
-				UnityEngine.FilterMode.Bilinear,
-				0
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			var renderTex = asset as RenderTexture;
 
 			var changed = false;
@@ -141,9 +116,9 @@ namespace AssetBundleGraph.ModifierOperators {
 			return changed; 
 		}
 
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			var renderTex = asset as RenderTexture;
-			
+
 			renderTex.wrapMode = this.wrapMode;
 			renderTex.filterMode = this.filterMode;
 
@@ -156,33 +131,37 @@ namespace AssetBundleGraph.ModifierOperators {
 			}
 		}
 
-		public override void DrawInspector (Action changed) {
+		public void OnInspectorGUI (Action onValueChanged) {
 			// wrapMode
 			var newWrapMode = (UnityEngine.TextureWrapMode)EditorGUILayout.Popup("Wrap Mode", (int)this.wrapMode, Enum.GetNames(typeof(UnityEngine.TextureWrapMode)), new GUILayoutOption[0]);
 			if (newWrapMode != this.wrapMode) {
 				this.wrapMode = newWrapMode;
-				changed();
+				onValueChanged();
 			}
-			
+
 			// filterMode
 			var newFilterMode = (UnityEngine.FilterMode)EditorGUILayout.Popup("Filter Mode", (int)this.filterMode, Enum.GetNames(typeof(UnityEngine.FilterMode)), new GUILayoutOption[0]);
 			if (newFilterMode != this.filterMode) {
 				this.filterMode = newFilterMode;
-				changed();
+				onValueChanged();
 			}
 
 			// anisoLevel
 			using (new GUILayout.HorizontalScope()) {
 				GUILayout.Label("Aniso Level");
-				
+
 				var changedVal = (int)EditorGUILayout.Slider(this.anisoLevel, 0, 16);
 				if (changedVal != this.anisoLevel) {
 					this.anisoLevel = changedVal;
-					changed();
+					onValueChanged();
 				}
 			}
 			EditorGUILayout.HelpBox("Aniso Level can be set if target Asset(RenderTexture)'s Depth Buffer is No depth buffer. ", MessageType.Info);
 		}
-	}
 
+		public string Serialize() {
+			//TODO: implement this
+			return null;
+		}
+	}
 }

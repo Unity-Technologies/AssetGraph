@@ -3,53 +3,46 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(PhysicsMaterial2D))]
-	public class PhysicsMaterial2DOperator : Modifier {
+	[CustomModifier("Default Modifier", typeof(PhysicsMaterial2D))]
+	public class PhysicsMaterial2DModifier : IModifier {
 		
 		[SerializeField] public float friction;
 		[SerializeField] public float bounciness;
 
-		public PhysicsMaterial2DOperator () {}
-
-		private PhysicsMaterial2DOperator (
-			string operatorType
-		) {
-			this.operatorType = operatorType;
+		public PhysicsMaterial2DModifier () {
+			
 		}
 
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new PhysicsMaterial2DOperator(
-				"UnityEngine.PhysicsMaterial2D"
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			var physicsMaterial2D = asset as PhysicsMaterial2D;
 
 			var changed = false;
-			
+
 			if (physicsMaterial2D.friction != this.friction) changed = true;
 			if (physicsMaterial2D.bounciness != this.bounciness) changed = true; 
 
 			return changed; 
 		}
 
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			var physicsMaterial2D = asset as PhysicsMaterial2D;
-			
+
 			physicsMaterial2D.friction = this.friction;
 			physicsMaterial2D.bounciness = this.bounciness; 
 		}
-		
-		public override void DrawInspector (Action changed) {
+
+		public void OnInspectorGUI (Action onValueChanged) {
+			//TODO: implement this
 			GUILayout.Label(""+ friction);
 			GUILayout.Label("bounciness");
+		}
+
+		public string Serialize() {
+			//TODO: implement this
+			return null;
 		}
 	}
 

@@ -19,7 +19,6 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
-		public const string GUI_TEXT_MENU_DELETE_MODIFIER_OPERATOR_DATAS = "Window/AssetBundleGraph/Clear Modifier Datas";
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
@@ -34,9 +33,6 @@ namespace AssetBundleGraph {
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";
 
 		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
-		public const string MODIFIER_OPERATOR_DATAS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ModifierOperatorDatas";
-		public const string MODIFIER_OPERATOR_DATA_NANE_PREFIX = "modifierOperatorData";
-		public const string MODIFIER_OPERATOR_DATA_NANE_SUFFIX = "json";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -78,7 +74,6 @@ namespace AssetBundleGraph {
 		*/
 		public const string MENU_LOADER_NAME = "Loader";
 		public const string MENU_FILTER_NAME = "Filter";
-		// public const string MENU_IMPORTER_NAME = "Importer";
 		public const string MENU_IMPORTSETTING_NAME = "ImportSetting";
 		public const string MENU_MODIFIER_NAME = "Modifier";
 		public const string MENU_GROUPING_NAME = "Grouping";

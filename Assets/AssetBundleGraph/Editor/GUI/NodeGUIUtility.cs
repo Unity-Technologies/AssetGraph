@@ -150,7 +150,7 @@ namespace AssetBundleGraph {
 						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4 on"},
 						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5 on"},
 						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6 on"},
-						{NodeKind.MODIFIER_GUI, 		"flow node 6 on"}
+						{NodeKind.MODIFIER_GUI, 		"flow node 2 on"}
 					};
 				}
 				return NodeSingleton.s.selectedStyle;
@@ -167,9 +167,9 @@ namespace AssetBundleGraph {
 						{NodeKind.IMPORTSETTING_GUI,	"flow node 2"},
 						{NodeKind.GROUPING_GUI, 		"flow node 3"},
 						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4"},
-						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5"},
+						{NodeKind.BUNDLECONFIG_GUI, 	"flow node 5"},
 						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6"},
-						{NodeKind.MODIFIER_GUI, 		"flow node 6"}
+						{NodeKind.MODIFIER_GUI, 		"flow node 2"}
 					};
 				}
 				return NodeSingleton.s.unselectedStyle;

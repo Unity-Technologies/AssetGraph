@@ -4,47 +4,25 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(Cubemap))]
-	public class CubemapOperator : Modifier {
+	[CustomModifier("Default Modifier", typeof(Cubemap))]
+	public class CubemapModifier : IModifier {
 		
 		[SerializeField] public int anisoLevel;// limit to 16.
 		[SerializeField] public UnityEngine.FilterMode filterMode;
 		[SerializeField] public float mipMapBias;
 		[SerializeField] public UnityEngine.TextureWrapMode wrapMode;
 
-		public CubemapOperator () {}
-
-		private CubemapOperator (
-			string operatorType,
-			int anisoLevel,
-			FilterMode filterMode,
-			float mipMapBias,
-			TextureWrapMode wrapMode
-		) {
-			this.operatorType = operatorType;
-			this.anisoLevel = anisoLevel;
-			this.filterMode = filterMode;
-			this.mipMapBias = mipMapBias;
-			this.wrapMode = wrapMode;
+		public CubemapModifier () {
+			anisoLevel = 1;
+			filterMode = FilterMode.Bilinear;
+			mipMapBias = 0;
+			wrapMode = TextureWrapMode.Clamp;
 		}
 
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new CubemapOperator(
-				"UnityEngine.Cubemap",
-				1,
-				FilterMode.Bilinear,
-				0,
-				TextureWrapMode.Clamp
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			var cubemap = asset as Cubemap;
 
 			var changed = false;
@@ -61,28 +39,28 @@ namespace AssetBundleGraph.ModifierOperators {
 			return changed; 
 		}
 
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			var cubemap = asset as Cubemap;
 
 			// cubemap.dimension //<- readonly
 			// cubemap.height //<- readonly
 			// cubemap.width //<- readonly
-			
+
 			cubemap.anisoLevel = this.anisoLevel;
 			cubemap.filterMode = this.filterMode;
 			cubemap.mipMapBias = this.mipMapBias;
 			cubemap.wrapMode = this.wrapMode;
 		}
 
-		public override void DrawInspector (Action changed) {
+		public void OnInspectorGUI (Action onValueChanged) {
 			// anisoLevel
 			using (new GUILayout.HorizontalScope()) {
 				GUILayout.Label("Aniso Level");
-				
+
 				var changedVal = (int)EditorGUILayout.Slider(this.anisoLevel, 0, 16);// actually, max is not defined.
 				if (changedVal != this.anisoLevel) {
 					this.anisoLevel = changedVal;
-					changed();
+					onValueChanged();
 				}
 			}
 
@@ -90,22 +68,27 @@ namespace AssetBundleGraph.ModifierOperators {
 			var newFilterMode = (UnityEngine.FilterMode)EditorGUILayout.Popup("Filter Mode", (int)this.filterMode, Enum.GetNames(typeof(UnityEngine.FilterMode)), new GUILayoutOption[0]);
 			if (newFilterMode != this.filterMode) {
 				this.filterMode = newFilterMode;
-				changed();
+				onValueChanged();
 			}
 
 			// mipMapBias
 			var newMipMapBias = EditorGUILayout.TextField("MipMap Bias", this.mipMapBias.ToString());
 			if (newMipMapBias != this.mipMapBias.ToString()) {
 				this.mipMapBias = float.Parse(newMipMapBias, CultureInfo.InvariantCulture.NumberFormat);
-				changed();
+				onValueChanged();
 			}
 
 			// wrapMode
 			var newWrapMode = (UnityEngine.TextureWrapMode)EditorGUILayout.Popup("Wrap Mode", (int)this.wrapMode, Enum.GetNames(typeof(UnityEngine.TextureWrapMode)), new GUILayoutOption[0]);
 			if (newWrapMode != this.wrapMode) {
 				this.wrapMode = newWrapMode;
-				changed();
+				onValueChanged();
 			}
+		}
+
+		public string Serialize() {
+			//TODO: implement this
+			return null;
 		}
 	}
 

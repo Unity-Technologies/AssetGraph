@@ -235,12 +235,6 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_MODIFIER_OPERATOR_DATAS)] public static void DeleteModifierSetting () {
-			FileUtility.RemakeDirectory(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE);
-
-			AssetDatabase.Refresh();
-		}
-
 		public BuildTarget ActiveBuildTarget {
 			get {
 				return selectedTarget;
@@ -1262,8 +1256,8 @@ namespace AssetBundleGraph {
 			if (typeof(PrefabBuilder).IsAssignableFrom(type)) {
 				return typeof(PrefabBuilder);
 			}
-			if (typeof(Modifier).IsAssignableFrom(type)) {
-				return typeof(Modifier);
+			if (typeof(IModifier).IsAssignableFrom(type)) {
+				return typeof(IModifier);
 			}
 
 			return null;
@@ -1272,7 +1266,7 @@ namespace AssetBundleGraph {
 		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
 			NodeGUI newNode = null;
 
-			if (scriptBaseType == typeof(Modifier)) {
+			if (scriptBaseType == typeof(IModifier)) {
 				Debug.LogError("Modifierに対してown class定義でModifierノードを追加。");
 			}
 			if (scriptBaseType == typeof(PrefabBuilder)) {

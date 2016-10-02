@@ -106,6 +106,16 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		void Load (BuildTarget target, 
+			NodeData node, 
+			ConnectionPointData inputPoint,
+			ConnectionData connectionToOutput, 
+			Dictionary<string, List<Asset>> inputGroupAssets, 
+			List<string> alreadyCached, 
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+		{
+		}
+
 		public static void ValidateLoadPath (string currentLoadPath, string combinedPath, Action NullOrEmpty, Action NotExist) {
 			if (string.IsNullOrEmpty(currentLoadPath)) NullOrEmpty();
 			if (!Directory.Exists(combinedPath)) NotExist();

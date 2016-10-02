@@ -18,18 +18,18 @@ namespace AssetBundleGraph {
 			BuildTargetUtility.DefaultTarget;
 
 		/*
-			・NonSerializedをセットしないと、ModifierOperators.OperatorBase型に戻ってしまう。
-			・SerializeFieldにする or なにもつけないと、もれなくModifierOperators.OperatorBase型にもどる
-			・Undo/Redoを行うためには、ModifierOperators.OperatorBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
-			・ModifierOperators.OperatorBase意外に晒していい型がない
+			・NonSerializedをセットしないと、IModifier.ModifierBase型に戻ってしまう。
+			・SerializeFieldにする or なにもつけないと、もれなくModifier.ModifierBase型にもどる
+			・Undo/Redoを行うためには、IModifier.ModifierBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
+			・IModifier.ModifierBase意外に晒していい型がない
 
 			という無茶苦茶な難題があります。
-			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
+			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifier.ModifierBase型にする、
 			っていうのが相反するようです。うーんどうしよう。
 
 			TODO:
 		*/
-		[NonSerialized] private Modifier m_modifierOperatorInstance;
+		[NonSerialized] private IModifier m_modifierModifierInstance;
 
 		public override bool RequiresConstantRepaint() {
 			return true;
@@ -64,18 +64,6 @@ namespace AssetBundleGraph {
 						SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH,
 						node.Data.LoaderLoadPath[currentEditingGroup]
 					);
-					var loaderNodePath = FileUtility.GetPathWithAssetsPath(newLoadPath);
-					IntegratedGUILoader.ValidateLoadPath(
-						newLoadPath,
-						loaderNodePath,
-						() => {
-							//EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
-						},
-						() => {
-							//EditorGUILayout.HelpBox("Directory not found:" + loaderNodePath, MessageType.Error);
-						}
-					);
-
 					if (newLoadPath !=	node.Data.LoaderLoadPath[currentEditingGroup]) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							node.Data.LoaderLoadPath[currentEditingGroup] = newLoadPath;
@@ -207,18 +195,6 @@ namespace AssetBundleGraph {
 			GUILayout.Space(10f);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				// show incoming type of Assets and reset interface.
-//				IntegratedGUIModifier.ValidateModifiyOperationData(
-//					node.Data,
-//					BuildTargetUtility.GroupToTarget(currentEditingGroup),
-//					() => {
-//						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
-//					}
-//				);
-				
-//				if (!IntegratedGUIModifier.HasModifierDataFor(node.Data, currentEditingGroup, true)) {
-//					return;
-//				}
 
 				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
 				if(incomingType == null) {
@@ -226,53 +202,28 @@ namespace AssetBundleGraph {
 					return;
 				}
 
-				/*
-					reset whole platform's data for this modifier.
-				*/
-				if (GUILayout.Button("Reset Modifier")) {
-					using(new RecordUndoScope("Reset Modifier", node, true)){
-						var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.Id);
-						FileUtility.RemakeDirectory(modifierFolderPath);
-						m_modifierOperatorInstance = null;
-					}
-					return;
+				string currentModifierName = string.Empty;
+
+				if(m_modifierModifierInstance != null) {
+					currentModifierName = ModifierUtility.GetModifierGUIName(m_modifierModifierInstance);
 				}
 
-				GUILayout.Space(10f);
-
-				var scriptMode = !string.IsNullOrEmpty(node.Data.ScriptClassName);
-
-				var map = Modifier.GetAttributeClassNameMap(incomingType);
+				var map = ModifierUtility.GetAttributeClassNameMap(incomingType);
 				if(map.Count > 0) {
-					var newScriptMode = EditorGUILayout.ToggleLeft("Use Script", scriptMode);
-
-					if (newScriptMode != scriptMode) {
-						using(new RecordUndoScope("Modify Modifier Use Script", node, true)) {
-							node.Data.ScriptClassName = (newScriptMode)? map.Keys.First() : string.Empty;
-							m_modifierOperatorInstance = null;
-						}
-					}
-
-					if(newScriptMode) {
-						if (GUILayout.Button(node.Data.ScriptClassName, "Popup")) {
+					using(new GUILayout.HorizontalScope()) {
+						GUILayout.Label("Modifier");
+						if (GUILayout.Button(currentModifierName, "Popup", GUILayout.MinWidth(150f))) {
 							var builders = map.Keys.ToList();
 
 							if(builders.Count > 0) {
-								NodeGUI.ShowTypeNamesMenu(node.Data.ScriptClassName, builders, (string selectedClassName) => 
+								NodeGUI.ShowTypeNamesMenu(currentModifierName, builders, (string selectedClassName) => 
 									{
-										using(new RecordUndoScope("Modify Modifier class", node, true)) {
-											node.Data.ScriptClassName = selectedClassName;
-											m_modifierOperatorInstance = null;
+										using(new RecordUndoScope("Change Modifier class", node, true)) {
+											m_modifierModifierInstance = ModifierUtility.CreateModifier(selectedClassName, incomingType);
 										}
 									}  
 								);
 							}
-						}
-					}
-
-					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
-						if(!map.ContainsKey(node.Data.ScriptClassName)) {
-							EditorGUILayout.HelpBox(node.Data.ScriptClassName + " not found. Did you delete Modifier script or changed name?", MessageType.Warning);
 						}
 					}
 
@@ -290,48 +241,37 @@ namespace AssetBundleGraph {
 				GUILayout.Space(10f);
 
 				/*
-					if platform tab is changed, renew modifierOperatorInstance for that tab.
+					if platform tab is changed, renew modifierModifierInstance for that tab.
 				*/
 				if(DrawPlatformSelector(node)) {
-					m_modifierOperatorInstance = null;
-				};
+					m_modifierModifierInstance = null;
+				}
 				using (new EditorGUILayout.VerticalScope()) {
-					var disabledScope = DrawOverrideTargetToggle(node, IntegratedGUIModifier.HasModifierDataFor(node.Data, currentEditingGroup), (bool enabled) => {
+					var disabledScope = DrawOverrideTargetToggle(node, node.Data.ModifierData.ContainsValueOf(currentEditingGroup), (bool enabled) => {
 						if(enabled) {
-							// do nothing
+							node.Data.ModifierData[currentEditingGroup] = node.Data.ModifierData.DefaultValue;
 						} else {
-							IntegratedGUIModifier.DeletePlatformData(node.Data, currentEditingGroup);
+							node.Data.ModifierData.Remove(currentEditingGroup);
 						}
-						// reset modifier operator when state change
-						m_modifierOperatorInstance = null;						
+						// reset modifier when state changes
+						// TODO: recreate?
+						m_modifierModifierInstance = null;						
 					});
 
 					using (disabledScope) {
-						//reload modifierOperator instance from saved modifierOperator data.
-						if (m_modifierOperatorInstance == null) {
-							if(scriptMode) {
-								m_modifierOperatorInstance = SystemDataUtility.CreateModifierOperatorInstance<Modifier>(node.Data.ScriptClassName, node.Data, incomingType);
-							} else {
-								// CreateModifierOperator will create default modifier operator if no target specific settings are present
-								m_modifierOperatorInstance = IntegratedGUIModifier.CreateModifierOperator(node.Data, currentEditingGroup);
-							}
+						//reload modifierModifier instance from saved modifierModifier data.
+						if (m_modifierModifierInstance == null) {
+							m_modifierModifierInstance = ModifierUtility.CreateModifier(node.Data, currentEditingGroup);
 						}
 
-						//Show ModifierOperator Inspector
-						if (m_modifierOperatorInstance != null) {
+						if (m_modifierModifierInstance != null) {
 							Action onChangedAction = () => {
-								IntegratedGUIModifier.SaveModifierOperatorToDisk(
-									node.Id, currentEditingGroup, m_modifierOperatorInstance);
-
-								// reflect change of data.
-								AssetDatabase.Refresh();
-
-								m_modifierOperatorInstance = null;
+								using(new RecordUndoScope("Change Modifier Setting", node, true)) {
+									node.Data.ModifierData[currentEditingGroup] = m_modifierModifierInstance.Serialize();
+								}
 							};
 
-							GUILayout.Space(10f);
-
-							m_modifierOperatorInstance.DrawInspector(onChangedAction);
+							m_modifierModifierInstance.OnInspectorGUI(onChangedAction);
 						}
 					}
 				}
@@ -708,26 +648,11 @@ namespace AssetBundleGraph {
 		}
 
 		private Type FindIncomingAssetType(ConnectionPointData inputPoint) {
-
 			var assetGroups = AssetBundleGraphEditorWindow.GetIncomingAssetGroups(inputPoint);
-
 			if(assetGroups == null) {
 				return null;
 			}
-
-			var assets = assetGroups.SelectMany(v => v.Value);
-			if(assets.Any()) {				
-				Type expectedType = TypeUtility.FindTypeOfAsset(assets.First().importFrom);
-//				foreach(var a  in assets) {
-//					Type assetType = TypeUtility.FindTypeOfAsset(a.importFrom);
-//					if(assetType != expectedType) {
-//						return null;
-//					}
-//				}
-				return expectedType;
-			}
-
-			return null;
+			return IntegratedGUIModifier.FindIncomingAssetType(assetGroups.SelectMany(v => v.Value).ToList());
 		}
 
 		private void UpdateNodeName (NodeGUI node) {
@@ -755,7 +680,7 @@ namespace AssetBundleGraph {
 		 */ 
 		private bool DrawPlatformSelector (NodeGUI node) {
 			BuildTargetGroup g = currentEditingGroup;
-
+			bool editGroupChanged = false;
 
 			EditorGUI.BeginChangeCheck();
 			using (new EditorGUILayout.HorizontalScope()) {
@@ -786,10 +711,11 @@ namespace AssetBundleGraph {
 
 			if (g != currentEditingGroup) {
 				currentEditingGroup = g;
+				editGroupChanged = true;
 				GUI.FocusControl(string.Empty);
 			}
 
-			return g != currentEditingGroup;
+			return editGroupChanged;
 		}
 
 		private EditorGUI.DisabledScope DrawOverrideTargetToggle(NodeGUI node, bool status, Action<bool> onStatusChange) {

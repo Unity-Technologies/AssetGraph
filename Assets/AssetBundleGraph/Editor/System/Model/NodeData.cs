@@ -123,6 +123,9 @@ namespace AssetBundleGraph {
 		//group settings
 		private const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 
+		//mofidier settings
+		private const string NODE_MODIFIER_DATA = "modifierData";
+
 		//bundleconfig settings
 		private const string NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
 		private const string NODE_BUNDLECONFIG_VARIANTS 		 = "variants";
@@ -140,11 +143,12 @@ namespace AssetBundleGraph {
 		[SerializeField] private string m_scriptClassName;
 		[SerializeField] private List<FilterEntry> m_filter;
 		[SerializeField] private List<ConnectionPointData> 	m_inputPoints; 
-		[SerializeField] private List<ConnectionPointData> 	m_outputPoints; 
+		[SerializeField] private List<ConnectionPointData> 	m_outputPoints;
 		[SerializeField] private SerializableMultiTargetString m_loaderLoadPath;
 		[SerializeField] private SerializableMultiTargetString m_exporterExportPath;
 		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
 		[SerializeField] private SerializableMultiTargetString m_bundleConfigBundleNameTemplate;
+		[SerializeField] private SerializableMultiTargetString m_modifierData;
 		[SerializeField] private List<Variant> m_variants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 
@@ -176,15 +180,13 @@ namespace AssetBundleGraph {
 		public string ScriptClassName {
 			get {
 				ValidateAccess(
-					NodeKind.PREFABBUILDER_GUI,
-					NodeKind.MODIFIER_GUI
+					NodeKind.PREFABBUILDER_GUI
 				);
 				return m_scriptClassName;
 			}
 			set {
 				ValidateAccess(
-					NodeKind.PREFABBUILDER_GUI,
-					NodeKind.MODIFIER_GUI
+					NodeKind.PREFABBUILDER_GUI
 				);
 				m_scriptClassName = value;
 			}
@@ -256,6 +258,15 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public SerializableMultiTargetString ModifierData {
+			get {
+				ValidateAccess(
+					NodeKind.MODIFIER_GUI
+				);
+				return m_modifierData;
+			}
+		}
+
 		public List<Variant> Variants {
 			get {
 				ValidateAccess(
@@ -296,8 +307,6 @@ namespace AssetBundleGraph {
 			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
 			m_y = (float)Convert.ToDouble(pos[NODE_POS_Y]);
 
-//			m_rect = new Rect(x, y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
-
 			var inputs  = jsonData[NODE_INPUTPOINTS] as List<object>;
 			var outputs = jsonData[NODE_OUTPUTPOINTS] as List<object>;
 			m_inputPoints  = new List<ConnectionPointData>();
@@ -318,10 +327,16 @@ namespace AssetBundleGraph {
 				// nothing to do
 				break;
 			case NodeKind.PREFABBUILDER_GUI:
-			case NodeKind.MODIFIER_GUI:
 				{
 					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
 						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
+					}
+				}
+				break;
+			case NodeKind.MODIFIER_GUI:
+				{
+					if(jsonData.ContainsKey(NODE_MODIFIER_DATA)) {
+						m_modifierData = new SerializableMultiTargetString(jsonData[NODE_MODIFIER_DATA] as Dictionary<string, object>);
 					}
 				}
 				break;
@@ -418,10 +433,14 @@ namespace AssetBundleGraph {
 
 			switch(m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
+				m_scriptClassName 	= String.Empty;
+				break;
+			
 			case NodeKind.IMPORTSETTING_GUI:
 				break;
+
 			case NodeKind.MODIFIER_GUI:
-				m_scriptClassName 	= String.Empty;
+				m_modifierData = new SerializableMultiTargetString();
 				break;
 
 			case NodeKind.FILTER_GUI:
@@ -466,7 +485,7 @@ namespace AssetBundleGraph {
 			case NodeKind.PREFABBUILDER_GUI:
 				break;
 			case NodeKind.MODIFIER_GUI:
-				newData.m_scriptClassName 	= m_scriptClassName;
+				newData.m_modifierData 		= new SerializableMultiTargetString(m_modifierData);
 				break;
 
 			case NodeKind.FILTER_GUI:
@@ -660,12 +679,17 @@ namespace AssetBundleGraph {
 				
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
-			case NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
 				break;
+
+			case NodeKind.MODIFIER_GUI:
+				nodeDict[NODE_MODIFIER_DATA] = m_modifierData.ToJsonDictionary();
+				break;
+
 			case NodeKind.LOADER_GUI:
 				nodeDict[NODE_LOADER_LOAD_PATH] = m_loaderLoadPath.ToJsonDictionary();
 				break;
+
 			case NodeKind.FILTER_GUI:
 				var filterDict = new List<Dictionary<string, object>>();
 				foreach(var f in m_filter) {
@@ -677,9 +701,11 @@ namespace AssetBundleGraph {
 				}
 				nodeDict[NODE_FILTER] = filterDict;
 				break;
+
 			case NodeKind.GROUPING_GUI:
 				nodeDict[NODE_GROUPING_KEYWORD] = m_groupingKeyword.ToJsonDictionary();
 				break;
+
 			case NodeKind.BUNDLECONFIG_GUI:
 				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();
 				var variantsDict = new List<Dictionary<string, object>>();
@@ -691,15 +717,19 @@ namespace AssetBundleGraph {
 				}
 				nodeDict[NODE_BUNDLECONFIG_VARIANTS] = variantsDict;
 				break;
+
 			case NodeKind.BUNDLEBUILDER_GUI:
 				nodeDict[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] = m_bundleBuilderEnabledBundleOptions.ToJsonDictionary();
 				break;
+
 			case NodeKind.EXPORTER_GUI:
 				nodeDict[NODE_EXPORTER_EXPORT_PATH] = m_exporterExportPath.ToJsonDictionary();
 				break;
+
 			case NodeKind.IMPORTSETTING_GUI:
 				// nothing to do
 				break;
+
 			default:
 				throw new ArgumentOutOfRangeException ();
 			}

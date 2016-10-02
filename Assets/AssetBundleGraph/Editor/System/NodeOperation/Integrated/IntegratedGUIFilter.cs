@@ -22,7 +22,6 @@ namespace AssetBundleGraph {
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
 			node.ValidateOverlappingFilterCondition(true);
-
 			Filter(node, inputGroupAssets, Output);
 		}
 		
@@ -34,7 +33,6 @@ namespace AssetBundleGraph {
 			List<string> alreadyCached, 
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
 		{
-			node.ValidateOverlappingFilterCondition(true);
 			Filter(node, inputGroupAssets, Output);
 		}
 

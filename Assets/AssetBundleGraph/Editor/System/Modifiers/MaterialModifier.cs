@@ -2,13 +2,12 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(UnityEngine.Material))]
-	public class MaterialOperator : Modifier {
-		[SerializeField] public Shader shader;
-		
+	[CustomModifier("Default Modifier", typeof(UnityEngine.Material))]
+	public class MaterialModifier : IModifier {
+
 		public enum BlendMode {
 			Opaque,
 			Cutout,
@@ -16,37 +15,19 @@ namespace AssetBundleGraph.ModifierOperators {
 			Transparent
 		}
 
+		[SerializeField] public Shader shader;
 		[SerializeField] public BlendMode blendMode;
 
-		public MaterialOperator () {}
-
-		private MaterialOperator (
-			string operatorType,
-			Shader shader,
-			BlendMode blendMode
-		) {
-			this.operatorType = operatorType;
-			
-			this.shader = shader;
-			this.blendMode = blendMode;
+		public MaterialModifier () {
+			shader = Shader.Find("Standard");
+			blendMode = BlendMode.Opaque;
 		}
 
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new MaterialOperator(
-				"UnityEngine.Material",
-				Shader.Find("Standard"),
-				BlendMode.Opaque
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			var mat = asset as Material;
 
 			var changed = false;
-			
+
 			if ((int)mat.GetFloat("_Mode") != (int)this.blendMode) {
 				changed = true;
 			}
@@ -54,26 +35,17 @@ namespace AssetBundleGraph.ModifierOperators {
 			return changed; 
 		}
 
-		private Material GenerateSettingMaterial () {
-			var mat = new Material(this.shader);
-			mat.SetFloat("_Mode", (int)this.blendMode); 
-			
-			// Debug.LogError("GenerateSettingMaterial いろいろ指定する。");
-
-			return mat;
-		}
-
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			var targetMat = asset as Material;
 			var currentMaterial = GenerateSettingMaterial();
-			
+
 			// set blend mode.
 			targetMat.SetFloat("_Mode", (int)currentMaterial.GetFloat("_Mode"));
 		}
 
-		public override void DrawInspector (Action changed) {
+		public void OnInspectorGUI (Action onValueChanged) {
 			//var currentMaterial = GenerateSettingMaterial();
-			
+
 			// <- all items from here is not completed because they cannot call all functions.
 			// var newShader = ShaderPopup();
 			// if (newShader != this.material.shader) {
@@ -85,11 +57,11 @@ namespace AssetBundleGraph.ModifierOperators {
 			var newBlendMode = (BlendMode)EditorGUILayout.Popup("Rendering Mode", (int)blendMode, Enum.GetNames(typeof(BlendMode)), new GUILayoutOption[0]);
 			if (newBlendMode != blendMode) {
 				this.blendMode = newBlendMode;
-				changed();
+				onValueChanged();
 			}
 
 			// GUILayout.Label("Main Maps", EditorStyles.boldLabel);
-			
+
 			// DoAlbedoArea(currentMaterial);// <- tested but faied to implement.
 			// this.DoSpecularMetallicArea();
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.normalMapText, this.bumpMap, (!(this.bumpMap.textureValue != null)) ? null : this.bumpScale);
@@ -97,23 +69,37 @@ namespace AssetBundleGraph.ModifierOperators {
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.occlusionText, this.occlusionMap, (!(this.occlusionMap.textureValue != null)) ? null : this.occlusionStrength);
 			// this.DoEmissionArea(material);
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.detailMaskText, this.detailMask);
-			
+
 			// // EditorGUI.BeginChangeCheck();
-			
+
 			// this.m_MaterialEditor.TextureScaleOffsetProperty(this.albedoMap);
-			
+
 			// if (EditorGUI.EndChangeCheck()) {
 			// 	this.emissionMap.textureScaleAndOffset = this.albedoMap.textureScaleAndOffset;
 			// }
 
 			// EditorGUILayout.Space();
-			
+
 			// GUILayout.Label("Secondary Maps", EditorStyles.boldLabel);
-			
+
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.detailAlbedoText, this.detailAlbedoMap);
 			// this.m_MaterialEditor.TexturePropertySingleLine(StandardShaderGUI.Styles.detailNormalMapText, this.detailNormalMap, this.detailNormalMapScale);
 			// this.m_MaterialEditor.TextureScaleOffsetProperty(this.detailAlbedoMap);
 			// this.m_MaterialEditor.ShaderProperty(this.uvSetSecondary, StandardShaderGUI.Styles.uvSetLabel.text);
+		}
+
+		public string Serialize() {
+			//TODO: implement this
+			return null;
+		}
+
+		private Material GenerateSettingMaterial () {
+			var mat = new Material(this.shader);
+			mat.SetFloat("_Mode", (int)this.blendMode); 
+			
+			// Debug.LogError("GenerateSettingMaterial いろいろ指定する。");
+
+			return mat;
 		}
 
 		/**

@@ -3,32 +3,18 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(Animation))]
-	public class AnimationOperator : Modifier {
+	[CustomModifier("Default Modifier", typeof(Animation))]
+	public class AnimationModifier : IModifier {
 		
-		public AnimationOperator () {}
+		public AnimationModifier () {}
 
-		private AnimationOperator (
-			string operatorType
-		) {
-			this.operatorType = operatorType;
-		}
-
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new AnimationOperator(
-				"UnityEngine.Animation"
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			//var animation = asset as Animation;
 
+			//TODO: implement this
 			var changed = false;
 
 			/*
@@ -47,14 +33,19 @@ wrapMode	How should time beyond the playback range of the clip be treated?
 			return changed; 
 		}
 
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			//var flare = asset as Shader;
-			
+			//TODO: implement this
 		}
 		
-		public override void DrawInspector (Action changed) {
-			GUILayout.Label("AnimationOperator inspector.");
+		public void OnInspectorGUI (Action onValueChanged) {
+			//TODO: implement this
+			GUILayout.Label("AnimationModifier inspector.");
+		}
+
+		public string Serialize() {
+			//TODO: implement this
+			return null;
 		}
 	}
-
 }

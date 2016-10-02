@@ -3,11 +3,11 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(Font))]
-	public class FontOperator : Modifier {
+	[CustomModifier("Default Modifier", typeof(Font))]
+	public class FontModifier : IModifier {
 		
 		/*
 		CharacterInfo:
@@ -32,24 +32,10 @@ namespace AssetBundleGraph.ModifierOperators {
 		[SerializeField] public CharacterInfo[] characterInfo;
 		[SerializeField] public Material material;
 
-		public FontOperator () {}
-
-		private FontOperator (
-			string operatorType
-		) {
-			this.operatorType = operatorType;
+		public FontModifier () {
 		}
 
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new FontOperator(
-				"UnityEngine.Font"
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			var font = asset as Font;
 
 			var changed = false;
@@ -62,11 +48,11 @@ namespace AssetBundleGraph.ModifierOperators {
 			// font.fontSize = this.fontSize;// cannot assign.
 			// font.lineHeight = this.lineHeight;// cannot assign.
 			if (font.material != this.material) changed = true;
-			
+
 			return changed; 
 		}
 
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			var font = asset as Font;
 			// font.ascent = this.ascent;// cannot assign.
 			font.characterInfo = this.characterInfo;
@@ -76,10 +62,17 @@ namespace AssetBundleGraph.ModifierOperators {
 			font.material = this.material;
 		}
 
-		public override void DrawInspector (Action changed) {
-			GUILayout.Label("FontOperator inspector. フォントのInspectorと同じ設定項目が公開API経由で設定できない要素しかなかったので、公開APIに準じた値を変更可能な値として表示している。つまりFontのInspectorとは別物。");
+		public void OnInspectorGUI (Action onValueChanged) {
+			//TODO: implement this
+			GUILayout.Label("TODO: inspector.");
+			GUILayout.Label("FontModifier inspector. フォントのInspectorと同じ設定項目が公開API経由で設定できない要素しかなかったので、公開APIに準じた値を変更可能な値として表示している。つまりFontのInspectorとは別物。");
 			GUILayout.Label("CharacterInfoに関しては公開APIでセット可能っぽいのでセット可能にすることは可能っちゃ可能。自由なパラメータになる。");
 			GUILayout.Label("Materialは参照を持ってしまう。");
+		}
+
+		public string Serialize() {
+			//TODO: implement this
+			return null;
 		}
 	}
 

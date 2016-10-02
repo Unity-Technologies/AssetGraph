@@ -93,7 +93,7 @@ namespace AssetBundleGraph {
 			output[key] = new List<Asset>();
 
 
-			var generatedFiles = FileUtility.GetFilePathsInFolder(bundleOutputDir);
+			var generatedFiles = FileUtility.GetAllFilePathsInFolder(bundleOutputDir);
 			// add manifest file
 			bundleNames.Add( SystemDataUtility.GetPathSafeTargetName(target) );
 			foreach (var path in generatedFiles) {

@@ -3,36 +3,18 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace AssetBundleGraph.ModifierOperators {
+namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Editor", typeof(Shader))]
-	public class ShaderOperator : Modifier {
+	[CustomModifier("Default Modifier", typeof(Shader))]
+	public class ShaderModifier : IModifier {
 		[SerializeField] int maximumLOD;
 
-		public ShaderOperator () {}
-		
-		private ShaderOperator (
-			string operatorType,
-			int maximumLOD
-		) {
-			this.operatorType = operatorType;
-			this.maximumLOD = maximumLOD;
-		}
+		public ShaderModifier () {}
 
-		/*
-			constructor for default data setting.
-		*/
-		public override Modifier DefaultSetting () {
-			return new ShaderOperator(
-				"UnityEngine.Shader",
-				200// based on default shader LOD from shader's inspector.
-			);
-		}
-
-		public override bool IsChanged<T> (T asset) {
+		public bool IsModified (object asset) {
 			var shader = asset as Shader;
-			
+
 			var changed = false;
 
 			if (shader.maximumLOD != this.maximumLOD) changed = true; 
@@ -42,24 +24,29 @@ namespace AssetBundleGraph.ModifierOperators {
 			return changed; 
 		}
 
-		public override void Modify<T> (T asset) {
+		public void Modify (object asset) {
 			var shader = asset as Shader;
 
 			shader.maximumLOD = this.maximumLOD;
 			// shader.isSupported // <- readonly
 			// shader.renderQueue // <- readonly
 		}
-		
-		public override void DrawInspector (Action changed) {
+
+		public void OnInspectorGUI (Action onValueChanged) {
 			using (new GUILayout.HorizontalScope()) {
 				GUILayout.Label("Maximum LOD");
-				
+
 				var changedVal = (int)EditorGUILayout.Slider(this.maximumLOD, 0, 1000);
 				if (changedVal != this.maximumLOD) {
 					this.maximumLOD = changedVal;
-					changed();
+					onValueChanged();
 				}
 			}
+		}
+
+		public string Serialize() {
+			//TODO: implement this
+			return null;
 		}
 	}
 	
