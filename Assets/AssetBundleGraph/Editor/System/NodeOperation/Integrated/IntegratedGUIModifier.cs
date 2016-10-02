@@ -32,7 +32,7 @@ namespace AssetBundleGraph {
 				},
 				(Type expected, Type incoming) => {
 					throw new NodeException(string.Format("{0} :Incoming asset type is does not match with this Modifier (Expected type:{1}, Incoming type:{2}).",
-						node.Name, expected.FullName, incoming.FullName), node.Id);
+						node.Name, (expected != null)?expected.FullName:"null", (incoming != null)?incoming.FullName:"null"), node.Id);
 				}
 			);
 
@@ -101,7 +101,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if(string.IsNullOrEmpty(node.ModifierData[target])) {
+			if(string.IsNullOrEmpty(node.InstanceData[target])) {
 				noModiferData();
 			}
 
@@ -111,9 +111,13 @@ namespace AssetBundleGraph {
 				failedToCreateModifier();
 			}
 
-			var targetType = ModifierUtility.GetModifierTargetType(modifier);
-			if( targetType != expectedType ) {
-				incomingTypeMismatch(targetType, expectedType);
+			// if there is no incoming assets, there is no way to check if 
+			// right type of asset is coming in - so we'll just skip the test
+			if(incomingAssets.Any()) {
+				var targetType = ModifierUtility.GetModifierTargetType(modifier);
+				if( targetType != expectedType ) {
+					incomingTypeMismatch(targetType, expectedType);
+				}
 			}
 		}			
 	}

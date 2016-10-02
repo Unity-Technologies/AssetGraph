@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(PhysicsMaterial2D))]
+	[CustomModifier("Default Modifier(PhysicsMaterial2D)", typeof(PhysicsMaterial2D))]
 	public class PhysicsMaterial2DModifier : IModifier {
 		
 		[SerializeField] public float friction;
@@ -41,8 +41,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 

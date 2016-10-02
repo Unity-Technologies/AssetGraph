@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(Font))]
+	[CustomModifier("Default Modifier(Font)", typeof(Font))]
 	public class FontModifier : IModifier {
 		
 		/*
@@ -65,14 +65,10 @@ namespace AssetBundleGraph.Modifiers {
 		public void OnInspectorGUI (Action onValueChanged) {
 			//TODO: implement this
 			GUILayout.Label("TODO: inspector.");
-			GUILayout.Label("FontModifier inspector. フォントのInspectorと同じ設定項目が公開API経由で設定できない要素しかなかったので、公開APIに準じた値を変更可能な値として表示している。つまりFontのInspectorとは別物。");
-			GUILayout.Label("CharacterInfoに関しては公開APIでセット可能っぽいのでセット可能にすることは可能っちゃ可能。自由なパラメータになる。");
-			GUILayout.Label("Materialは参照を持ってしまう。");
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 

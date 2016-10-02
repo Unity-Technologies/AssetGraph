@@ -17,19 +17,7 @@ namespace AssetBundleGraph {
 		public static BuildTargetGroup currentEditingGroup = 
 			BuildTargetUtility.DefaultTarget;
 
-		/*
-			・NonSerializedをセットしないと、IModifier.ModifierBase型に戻ってしまう。
-			・SerializeFieldにする or なにもつけないと、もれなくModifier.ModifierBase型にもどる
-			・Undo/Redoを行うためには、IModifier.ModifierBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
-			・IModifier.ModifierBase意外に晒していい型がない
-
-			という無茶苦茶な難題があります。
-			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifier.ModifierBase型にする、
-			っていうのが相反するようです。うーんどうしよう。
-
-			TODO:
-		*/
-		[NonSerialized] private IModifier m_modifierModifierInstance;
+		[NonSerialized] private IModifier m_modifier;
 
 		public override bool RequiresConstantRepaint() {
 			return true;
@@ -197,29 +185,35 @@ namespace AssetBundleGraph {
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
 				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+
 				if(incomingType == null) {
-					EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
-					return;
-				}
+					// if there is no asset input to determine incomingType,
+					// retrieve from assigned Modifier.
+					incomingType = ModifierUtility.GetModifierTargetType(node.Data.ScriptClassName);
 
-				string currentModifierName = string.Empty;
-
-				if(m_modifierModifierInstance != null) {
-					currentModifierName = ModifierUtility.GetModifierGUIName(m_modifierModifierInstance);
+					if(incomingType == null) {
+						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
+						return;
+					}
 				}
 
 				var map = ModifierUtility.GetAttributeClassNameMap(incomingType);
 				if(map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
 						GUILayout.Label("Modifier");
-						if (GUILayout.Button(currentModifierName, "Popup", GUILayout.MinWidth(150f))) {
+						var guiName = ModifierUtility.GetModifierGUIName(node.Data.ScriptClassName);
+						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
 							var builders = map.Keys.ToList();
 
 							if(builders.Count > 0) {
-								NodeGUI.ShowTypeNamesMenu(currentModifierName, builders, (string selectedClassName) => 
+								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
 									{
 										using(new RecordUndoScope("Change Modifier class", node, true)) {
-											m_modifierModifierInstance = ModifierUtility.CreateModifier(selectedClassName, incomingType);
+											m_modifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
+											if(m_modifier != null) {
+												node.Data.ScriptClassName = ModifierUtility.GUINameToClassName(selectedGUIName, incomingType);
+												node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+											}
 										}
 									}  
 								);
@@ -240,38 +234,39 @@ namespace AssetBundleGraph {
 
 				GUILayout.Space(10f);
 
-				/*
-					if platform tab is changed, renew modifierModifierInstance for that tab.
-				*/
 				if(DrawPlatformSelector(node)) {
-					m_modifierModifierInstance = null;
+					// if platform tab is changed, renew modifierModifierInstance for that tab.
+					m_modifier = null;
 				}
 				using (new EditorGUILayout.VerticalScope()) {
-					var disabledScope = DrawOverrideTargetToggle(node, node.Data.ModifierData.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					var disabledScope = DrawOverrideTargetToggle(node, node.Data.InstanceData.ContainsValueOf(currentEditingGroup), (bool enabled) => {
 						if(enabled) {
-							node.Data.ModifierData[currentEditingGroup] = node.Data.ModifierData.DefaultValue;
+							node.Data.InstanceData[currentEditingGroup] = node.Data.InstanceData.DefaultValue;
 						} else {
-							node.Data.ModifierData.Remove(currentEditingGroup);
+							node.Data.InstanceData.Remove(currentEditingGroup);
 						}
-						// reset modifier when state changes
-						// TODO: recreate?
-						m_modifierModifierInstance = null;						
+						m_modifier = null;						
 					});
 
 					using (disabledScope) {
 						//reload modifierModifier instance from saved modifierModifier data.
-						if (m_modifierModifierInstance == null) {
-							m_modifierModifierInstance = ModifierUtility.CreateModifier(node.Data, currentEditingGroup);
+						if (m_modifier == null) {
+							m_modifier = ModifierUtility.CreateModifier(node.Data, currentEditingGroup);
+							if(m_modifier != null) {
+								node.Data.ScriptClassName = m_modifier.GetType().FullName;
+								node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+							}
 						}
 
-						if (m_modifierModifierInstance != null) {
+						if (m_modifier != null) {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change Modifier Setting", node, true)) {
-									node.Data.ModifierData[currentEditingGroup] = m_modifierModifierInstance.Serialize();
+									node.Data.ScriptClassName = m_modifier.GetType().FullName;
+									node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
 								}
 							};
 
-							m_modifierModifierInstance.OnInspectorGUI(onChangedAction);
+							m_modifier.OnInspectorGUI(onChangedAction);
 						}
 					}
 				}

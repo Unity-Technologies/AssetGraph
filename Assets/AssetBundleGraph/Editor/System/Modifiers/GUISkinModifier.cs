@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 	
-	[Serializable] public class GUISkinModifier : IModifier {
+	[Serializable] 
+	[CustomModifier("Default Modifier(GUISkin)", typeof(GUISkin))]
+	public class GUISkinModifier : IModifier {
 		
 		public GUISkinModifier () {}
 
@@ -51,12 +53,10 @@ window	Style used by default for Window controls (SA GUI.Window).
 		public void OnInspectorGUI (Action onValueChanged) {
 			//TODO: implement this
 			GUILayout.Label("GUISkinModifier inspector.");
-			GUILayout.Label("要素が膨大で引いてる");
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 }

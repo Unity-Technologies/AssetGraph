@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 	
-	[Serializable] public class AvatarMaskModifier : IModifier {
+	[Serializable] 
+	[CustomModifier("Default Modifier(AvatarMask)", typeof(AvatarMask))]
+	public class AvatarMaskModifier : IModifier {
 		
 		public AvatarMaskModifier () {}
 
@@ -27,8 +29,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 }

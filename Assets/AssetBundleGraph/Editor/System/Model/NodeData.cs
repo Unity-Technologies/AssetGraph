@@ -100,7 +100,6 @@ namespace AssetBundleGraph {
 		private const string NODE_NAME = "name";
 		private const string NODE_ID = "id";
 		private const string NODE_KIND = "kind";
-		private const string NODE_SCRIPT_CLASSNAME = "scriptClassName";
 		private const string NODE_POS = "pos";
 		private const string NODE_POS_X = "x";
 		private const string NODE_POS_Y = "y";
@@ -123,8 +122,9 @@ namespace AssetBundleGraph {
 		//group settings
 		private const string NODE_GROUPING_KEYWORD = "groupingKeyword";
 
-		//mofidier settings
-		private const string NODE_MODIFIER_DATA = "modifierData";
+		//mofidier/prefabBuilder settings
+		private const string NODE_SCRIPT_CLASSNAME 		= "scriptClassName";
+		private const string NODE_SCRIPT_INSTANCE_DATA  = "scriptInstanceData";
 
 		//bundleconfig settings
 		private const string NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE = "bundleNameTemplate";
@@ -148,7 +148,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private SerializableMultiTargetString m_exporterExportPath;
 		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
 		[SerializeField] private SerializableMultiTargetString m_bundleConfigBundleNameTemplate;
-		[SerializeField] private SerializableMultiTargetString m_modifierData;
+		[SerializeField] private SerializableMultiTargetString m_scriptInstanceData;
 		[SerializeField] private List<Variant> m_variants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 
@@ -180,13 +180,15 @@ namespace AssetBundleGraph {
 		public string ScriptClassName {
 			get {
 				ValidateAccess(
-					NodeKind.PREFABBUILDER_GUI
+					NodeKind.PREFABBUILDER_GUI,
+					NodeKind.MODIFIER_GUI
 				);
 				return m_scriptClassName;
 			}
 			set {
 				ValidateAccess(
-					NodeKind.PREFABBUILDER_GUI
+					NodeKind.PREFABBUILDER_GUI,
+					NodeKind.MODIFIER_GUI
 				);
 				m_scriptClassName = value;
 			}
@@ -258,12 +260,13 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public SerializableMultiTargetString ModifierData {
+		public SerializableMultiTargetString InstanceData {
 			get {
 				ValidateAccess(
+					NodeKind.PREFABBUILDER_GUI,
 					NodeKind.MODIFIER_GUI
 				);
-				return m_modifierData;
+				return m_scriptInstanceData;
 			}
 		}
 
@@ -327,16 +330,13 @@ namespace AssetBundleGraph {
 				// nothing to do
 				break;
 			case NodeKind.PREFABBUILDER_GUI:
+			case NodeKind.MODIFIER_GUI:
 				{
 					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
 						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
 					}
-				}
-				break;
-			case NodeKind.MODIFIER_GUI:
-				{
-					if(jsonData.ContainsKey(NODE_MODIFIER_DATA)) {
-						m_modifierData = new SerializableMultiTargetString(jsonData[NODE_MODIFIER_DATA] as Dictionary<string, object>);
+					if(jsonData.ContainsKey(NODE_SCRIPT_INSTANCE_DATA)) {
+						m_scriptInstanceData = new SerializableMultiTargetString(jsonData[NODE_SCRIPT_INSTANCE_DATA] as Dictionary<string, object>);
 					}
 				}
 				break;
@@ -433,14 +433,12 @@ namespace AssetBundleGraph {
 
 			switch(m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
+			case NodeKind.MODIFIER_GUI:
 				m_scriptClassName 	= String.Empty;
+				m_scriptInstanceData = new SerializableMultiTargetString();
 				break;
 			
 			case NodeKind.IMPORTSETTING_GUI:
-				break;
-
-			case NodeKind.MODIFIER_GUI:
-				m_modifierData = new SerializableMultiTargetString();
 				break;
 
 			case NodeKind.FILTER_GUI:
@@ -482,10 +480,11 @@ namespace AssetBundleGraph {
 
 			switch(m_kind) {
 			case NodeKind.IMPORTSETTING_GUI:
-			case NodeKind.PREFABBUILDER_GUI:
 				break;
+			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
-				newData.m_modifierData 		= new SerializableMultiTargetString(m_modifierData);
+				newData.m_scriptClassName = m_scriptClassName;
+				newData.m_scriptInstanceData = new SerializableMultiTargetString(m_scriptInstanceData);
 				break;
 
 			case NodeKind.FILTER_GUI:
@@ -679,11 +678,9 @@ namespace AssetBundleGraph {
 				
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
-				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
-				break;
-
 			case NodeKind.MODIFIER_GUI:
-				nodeDict[NODE_MODIFIER_DATA] = m_modifierData.ToJsonDictionary();
+				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
+				nodeDict[NODE_SCRIPT_INSTANCE_DATA] = m_scriptInstanceData.ToJsonDictionary();
 				break;
 
 			case NodeKind.LOADER_GUI:

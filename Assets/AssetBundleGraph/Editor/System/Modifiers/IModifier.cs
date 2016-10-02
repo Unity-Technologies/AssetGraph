@@ -117,11 +117,45 @@ namespace AssetBundleGraph {
 			return attr.Name;
 		}
 
+		public static string GUINameToClassName(string guiName, Type targetType) {
+			var map = GetAttributeClassNameMap(targetType);
+
+			if(map.ContainsKey(guiName)) {
+				return map[guiName];
+			}
+
+			return null;
+		}
+
+		public static string GetModifierGUIName(string className) {
+			var type = Type.GetType(className);
+			if(type != null) {
+				CustomModifier attr = 
+					Type.GetType(className).GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+				if(attr != null) {
+					return attr.Name;
+				}
+			}
+			return string.Empty;
+		}
+
 		public static Type GetModifierTargetType(IModifier m) {
 			CustomModifier attr = 
 				m.GetType().GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
 			UnityEngine.Assertions.Assert.IsNotNull(attr);
 			return attr.For;
+		}
+
+		public static Type GetModifierTargetType(string className) {
+			var type = Type.GetType(className);
+			if(type != null) {
+				CustomModifier attr = 
+					Type.GetType(className).GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+				if(attr != null) {
+					return attr.For;
+				}
+			}
+			return null;
 		}
 
 		public static IModifier CreateModifier(NodeData node, BuildTarget target) {
@@ -130,24 +164,26 @@ namespace AssetBundleGraph {
 
 		public static IModifier CreateModifier(NodeData node, BuildTargetGroup targetGroup) {
 
-			var data  = node.ModifierData[targetGroup];
+			var data  = node.InstanceData[targetGroup];
+			var className = node.ScriptClassName;
+			Type dataType = null;
 
-			if(data != null) {
-				//TODO: create from JSON
-				return JsonUtility.FromJson<IModifier>(data);
+			if(!string.IsNullOrEmpty(className)) {
+				dataType = Type.GetType(className);
+			}
+
+			if(data != null && dataType != null) {
+				return JsonUtility.FromJson(data, dataType) as IModifier;
 			}
 
 			return null;
 		}
 
 		public static IModifier CreateModifier(string guiName, Type targetType) {
-
-			var map = GetAttributeClassNameMap(targetType);
-
-			if(map.ContainsKey(guiName)) {
-				return (IModifier) Assembly.GetExecutingAssembly().CreateInstance(map[guiName]);
+			var className = GUINameToClassName(guiName, targetType);
+			if(className != null) {
+				return (IModifier) Assembly.GetExecutingAssembly().CreateInstance(className);
 			}
-
 			return null;
 		}
 	}

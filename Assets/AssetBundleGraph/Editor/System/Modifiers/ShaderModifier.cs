@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(Shader))]
+	[CustomModifier("Default Modifier(Shader)", typeof(Shader))]
 	public class ShaderModifier : IModifier {
 		[SerializeField] int maximumLOD;
 
@@ -45,8 +45,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 	

@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 	
-	[Serializable] public class FlareModifier : IModifier {
+	[Serializable] 
+	[CustomModifier("Default Modifier(Flare)", typeof(Flare))]
+	public class FlareModifier : IModifier {
 		
 		public FlareModifier () {}
 
@@ -26,8 +28,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 }

@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 	
-	[Serializable] public class AnimatorModifier : IModifier {
+	[Serializable] 
+	[CustomModifier("Default Modifier(Animator)", typeof(Animator))]
+	public class AnimatorModifier : IModifier {
 		
 		public AnimatorModifier () {}
 
@@ -26,8 +28,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 }

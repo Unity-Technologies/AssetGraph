@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(Animation))]
+	[CustomModifier("Default Modifier(Animation)", typeof(Animation))]
 	public class AnimationModifier : IModifier {
 		
 		public AnimationModifier () {}
@@ -44,8 +44,7 @@ wrapMode	How should time beyond the playback range of the clip be treated?
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(UnityEngine.SceneManagement.Scene))]
+	[CustomModifier("Default Modifier(Scene)", typeof(UnityEngine.SceneManagement.Scene))]
 	public class SceneModifier : IModifier {
 		
 		public SceneModifier () {}
@@ -28,12 +28,10 @@ namespace AssetBundleGraph.Modifiers {
 		public void OnInspectorGUI (Action onValueChanged) {
 			//TODO: implement this
 			GUILayout.Label("SceneModifier inspector.");
-			GUILayout.Label("公開されているAPIから変更できる要素が無い。");
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}	
 }

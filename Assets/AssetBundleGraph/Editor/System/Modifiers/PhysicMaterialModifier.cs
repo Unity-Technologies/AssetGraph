@@ -6,7 +6,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(PhysicMaterial))]
+	[CustomModifier("Default Modifier(PhysicMaterial)", typeof(PhysicMaterial))]
 	public class PhysicMaterialModifier : IModifier {
 		
 		public PhysicMaterialModifier () {}
@@ -31,8 +31,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 

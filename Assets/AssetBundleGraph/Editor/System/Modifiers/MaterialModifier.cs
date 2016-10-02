@@ -5,7 +5,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(UnityEngine.Material))]
+	[CustomModifier("Default Modifier(Material)", typeof(UnityEngine.Material))]
 	public class MaterialModifier : IModifier {
 
 		public enum BlendMode {
@@ -89,8 +89,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 
 		private Material GenerateSettingMaterial () {

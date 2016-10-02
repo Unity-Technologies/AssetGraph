@@ -7,7 +7,7 @@ using UnityEngine;
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier", typeof(Cubemap))]
+	[CustomModifier("Default Modifier(Cubemap)", typeof(Cubemap))]
 	public class CubemapModifier : IModifier {
 		
 		[SerializeField] public int anisoLevel;// limit to 16.
@@ -87,8 +87,7 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public string Serialize() {
-			//TODO: implement this
-			return null;
+			return JsonUtility.ToJson(this);
 		}
 	}
 
