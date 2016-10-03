@@ -68,6 +68,56 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		//returns the same value defined in AssetBundleManager
+		public static string TargetToAssetBundlePlatformName(BuildTarget t)
+		{
+			switch(t) {
+			case BuildTarget.Android:
+			return "Android";
+			case BuildTarget.iOS:
+			return "iOS";
+			case BuildTarget.Nintendo3DS:
+			return "N3DS";
+			case BuildTarget.PS3:
+			return "PS3";
+			case BuildTarget.PS4:
+			return "PS4";
+			case BuildTarget.PSM:
+			return "PSM";
+			case BuildTarget.PSP2:
+			return "PSVita";
+			case BuildTarget.SamsungTV:
+			return "SamsungTV";
+			case BuildTarget.StandaloneLinux:
+			case BuildTarget.StandaloneLinux64:
+			case BuildTarget.StandaloneLinuxUniversal:
+			return "Linux";
+			case BuildTarget.StandaloneOSXIntel:
+			case BuildTarget.StandaloneOSXIntel64:
+			case BuildTarget.StandaloneOSXUniversal:
+			return "OSX";
+			case BuildTarget.StandaloneWindows:
+			case BuildTarget.StandaloneWindows64:
+			return "Windows";
+			case BuildTarget.Tizen:
+			return "Tizen";
+			case BuildTarget.tvOS:
+			return "tvOS";
+			case BuildTarget.WebGL:
+			return "WebGL";
+			case BuildTarget.WiiU:
+			return "WiiU";
+			case BuildTarget.WSAPlayer:
+			return "WindowsStoreApps";
+			case BuildTarget.XBOX360:
+			return "Xbox360";
+			case BuildTarget.XboxOne:
+			return "XboxOne";
+			default:
+			return t.ToString() + "(deprecated)";
+			}
+		}
+
 		/**
 		 *  from build target group to human friendly string for display purpose.
 		 */ 

@@ -54,10 +54,10 @@ namespace AssetBundleGraph {
 					for (var i = 0; i < assets.Count; i++) {
 						var sourceStr = assets[i].path;
 						var isBundled = assets[i].isBundled;
+						var variantName = assets[i].variantName;
 
-						if (isBundled) {
-							EditorGUILayout.LabelField(sourceStr + "[in AssetBundle]", redColor); 
-						}
+						if(!string.IsNullOrEmpty(variantName))
+							EditorGUILayout.LabelField(string.Format("{0}[{1}]", sourceStr, variantName));
 						else {
 							EditorGUILayout.LabelField(sourceStr);
 						}

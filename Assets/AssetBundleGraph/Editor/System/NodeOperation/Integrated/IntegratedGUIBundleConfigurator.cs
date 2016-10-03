@@ -125,7 +125,7 @@ namespace AssetBundleGraph {
 
 			bundleName = bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
 			if(variantName != null) {
-				bundleName = bundleName + "." + variantName;
+				bundleName = bundleName;
 			}
 
 			return bundleName;

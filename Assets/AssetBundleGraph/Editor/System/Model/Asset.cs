@@ -112,7 +112,8 @@ namespace AssetBundleGraph {
 				exportTo:asset.exportTo,
 				assetType:asset.assetType,
 				isNew:asset.isNew,
-				isBundled:asset.isBundled
+				isBundled:asset.isBundled,
+				variantName:asset.variantName
 			);
 		}
 
@@ -128,7 +129,8 @@ namespace AssetBundleGraph {
 				exportTo:asset.exportTo,
 				assetType:newAssetType,
 				isNew:asset.isNew,
-				isBundled:asset.isBundled
+				isBundled:asset.isBundled,
+				variantName:asset.variantName
 			);
 		}
 
@@ -142,7 +144,7 @@ namespace AssetBundleGraph {
 				assetType:asset.assetType,
 				isNew:asset.isNew,
 				isBundled:asset.isBundled,
-				variantName:asset.variantName
+				variantName:variantName
 			);
 		}
 
@@ -158,7 +160,8 @@ namespace AssetBundleGraph {
 				exportTo:asset.exportTo,
 				assetType:asset.assetType,
 				isNew:isNew,
-				isBundled:isBundled
+				isBundled:isBundled,
+				variantName:asset.variantName
 			);
 		}
 

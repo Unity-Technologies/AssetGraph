@@ -156,7 +156,7 @@ namespace AssetBundleGraph {
 
 
 		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, NodeData node, bool remake = false) {
-			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, node.Id, BuildTargetUtility.TargetToAssetBundlePlatformName(t));
 
 			if (!Directory.Exists(cacheDir)) {
 				Directory.CreateDirectory(cacheDir);
