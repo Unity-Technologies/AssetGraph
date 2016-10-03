@@ -1,0 +1,65 @@
+
+AssetBundle Manager and AssetBundle Samples
+
+This Project and its Assets are designed to work with the AssetBundle Manager lesson, which can be found on the official Unity "Learn" site here:
+http://http://unity3d.com/learn/tutorials/modules/intermediate/editor/assetbundles
+
+The intent of the AssetBundle Manager is to provide a High-Level API and a set of Editor Utilities to build, test and use AssetBundles in a refined workflow, rather than using Unity's Low-Level AssetBundle API directly.
+
+Dependencies between AssetBundles are tracked in a single "Manifest" AssetBundle. This Manifest holds information about all of the AssetBundles built for a particular target platform and allows access to all their content and dependencies at runtime. Using the AssetBundle Manager will make it possible to download all the Asset Bundles with Asset dependencies automatically from a base url or simulated location.
+
+The AssetBundle Manager provides a High-Level API for working with AssetBundles. The AssetBundle Manager will take care of loading AssetBundles and their associated Asset Dependencies.
+	Initialize()
+		Initializes the AssetBundle manifest object.
+	LoadAssetAsync()
+		Loads a given asset from a given AssetBundle and handles all the dependencies.
+	LoadLevelAsync()
+		Loads a given scene from a given AssetBundle and handles all the dependencies.
+	LoadDependencies()
+		Loads all the dependent AssetBundles for a given AssetBundle.
+	BaseDownloadingURL
+		Sets the base downloading url which is used for automatic downloading dependencies.
+	SimulateAssetBundleInEditor
+		Sets Simulation Mode in the Editor.
+	Variants
+		Sets the active variant.
+	RemapVariantName()
+		Resolves the correct AssetBundle according to the active variant.
+
+The AssetBundle Manager provides a set of Editor Utilities to help build, test and use AssetBundles.
+	"Simulation Mode" is used to control AssetBundle simulation in the Editor.
+		When Simulation Mode is enabled AssetBundles are simulated based on the current build target.
+		When Simulation Mode is enabled the Editor is in play mode, AssetBundles can be "used" as if built and deployed without actually building them.
+		Please Note: AssetBundle Variants are not compatible with Simulation Mode.
+	"Build AssetBundles" builds the currently Assigned AssetBundles for the current target platform.
+		AssetBundles are optimized for each target platform.
+		Build AssetBundles will build the currently Assigned AssetBundles for the current target platform and place them in a default directory.
+		The current default directory will be the "AssetBundles" folder on the root level of the project.
+		AssetBundles will be sorted within this default folder by build target.
+		(See BuildScript.BuildAssetBundles() for more information.)
+	"Local AssetBundle Server" will create a local server allowing access to AssetBundles built and stored in a default directory from local test applications and the Editor.
+		Build AssetBundles will build the currently Assigned AssetBundles for the current target platform and place them in a default directory. (see above)
+		When Local AssetBundle Server is enabled, projects running in the Editor or applications that can access the Editor on the local network, can access AssetBundles stored in the default folder through the Local AssetBundle Server.
+		With the Local AssetBundle Server it is possible to test the AssetBundle workflow of a project without having to deploy built AssetBundles before testing.
+
+There are three basic scenes in the "AssetBundleSample/Scenes" folder:
+	"AssetLoader" demonstrates how to load a normal asset from AssetBundles.
+		This scene is driven by the LoadAssets.cs script.
+	"SceneLoader" demonstrates how to load a scene from AssetBundles.
+		This scene is driven by the LoadScenes.cs script.
+	"VariantLoader" demonstrates how to load AssetBundle Variants.
+		This scene is driven by the LoadVariants.cs script.
+		AssetBundle Variants are used to remap for different dependent Assets to objects as required.
+		AssetBundle Variants use the same AssetBundle Name and are identified by their AssetBundle Variant name.
+		This will create AssetBundles with the same name but with a variant extension; e.g.: myassets.hd and myassets.sd.
+		In the demo, the AssetBundles will be built using the AssetBundle Name and Variant Name.
+			"MyAssets-HD" folder into "variant/myassets.hd" AssetBundle.
+			"MyAssets-SD" folder into "variant/myassets.sd" AssetBundle.
+		For AssetBundle Variants to work, the hierarchy structure and content names of the AssetBundle Variants must be identical.
+		The Assets in "MyAssets-HD" and "MyAssets-SD" will have the exactly same internal IDs, so they can be switched out arbitrarily with each other as required.
+		Here the file extension "hd" and "sd" are what we call variants. You can change the active variant which is on LoadVariants.cs.
+		Please also refer to AssetBundleManager.RemapVariantName() to see how to resolve the correct AssetBundle according to the active variant.
+		In this demo, we also build:
+			"Variant-Scene" into "variants/variant-scene" AssetBundle which depends on variant AssetBundle.
+		Reminder: AssetBundle variant is not compatible with the Editor simulation.
+
