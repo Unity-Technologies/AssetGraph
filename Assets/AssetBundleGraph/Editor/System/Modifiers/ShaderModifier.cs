@@ -4,7 +4,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
-	
+
+	/*
+	 * Code template for Shader modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
+
 	[Serializable] 
 	[CustomModifier("Default Modifier(Shader)", typeof(Shader))]
 	public class ShaderModifier : IModifier {
@@ -17,9 +22,9 @@ namespace AssetBundleGraph.Modifiers {
 
 			var changed = false;
 
-			if (shader.maximumLOD != this.maximumLOD) changed = true; 
-			// shader.isSupported // <- readonly
-			// shader.renderQueue // <- readonly
+			if (shader.maximumLOD != this.maximumLOD) {
+				changed = true; 
+			}
 
 			return changed; 
 		}
@@ -28,8 +33,6 @@ namespace AssetBundleGraph.Modifiers {
 			var shader = asset as Shader;
 
 			shader.maximumLOD = this.maximumLOD;
-			// shader.isSupported // <- readonly
-			// shader.renderQueue // <- readonly
 		}
 
 		public void OnInspectorGUI (Action onValueChanged) {

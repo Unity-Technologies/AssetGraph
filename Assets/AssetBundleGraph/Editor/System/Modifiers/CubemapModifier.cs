@@ -5,7 +5,11 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
-	
+
+	/*
+	 * Code template for Cubemap modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
 	[Serializable] 
 	[CustomModifier("Default Modifier(Cubemap)", typeof(Cubemap))]
 	public class CubemapModifier : IModifier {
@@ -27,10 +31,6 @@ namespace AssetBundleGraph.Modifiers {
 
 			var changed = false;
 
-			// cubemap.dimension //<- readonly
-			// cubemap.height //<- readonly
-			// cubemap.width //<- readonly
-
 			if (cubemap.anisoLevel != this.anisoLevel) changed = true; 
 			if (cubemap.filterMode != this.filterMode) changed = true;
 			if (cubemap.mipMapBias != this.mipMapBias) changed = true;
@@ -41,10 +41,6 @@ namespace AssetBundleGraph.Modifiers {
 
 		public void Modify (object asset) {
 			var cubemap = asset as Cubemap;
-
-			// cubemap.dimension //<- readonly
-			// cubemap.height //<- readonly
-			// cubemap.width //<- readonly
 
 			cubemap.anisoLevel = this.anisoLevel;
 			cubemap.filterMode = this.filterMode;

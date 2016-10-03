@@ -4,7 +4,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
-	
+
+	/*
+	 * Code template for Flare modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
+
 	[Serializable] 
 	[CustomModifier("Default Modifier(Flare)", typeof(Flare))]
 	public class FlareModifier : IModifier {
@@ -12,19 +17,22 @@ namespace AssetBundleGraph.Modifiers {
 		public FlareModifier () {}
 
 		public bool IsModified (object asset) {
-			//TODO: implement this
+			//var anim = asset as Flare;
+
+			// Do your work here
+
 			var changed = false;
 			return changed; 
 		}
 
 		public void Modify (object asset) {
-			//var flare = asset as Shader;
-			//TODO: implement this
+			//var anim = asset as Flare;
+
+			// Do your work here
 		}
 
 		public void OnInspectorGUI (Action onValueChanged) {
-			//TODO: implement this
-			GUILayout.Label("TODO: inspector.");
+			GUILayout.Label("Implement your modifier for this type.");
 		}
 
 		public string Serialize() {

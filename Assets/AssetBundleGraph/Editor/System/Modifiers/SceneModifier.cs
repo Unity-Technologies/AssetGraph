@@ -5,6 +5,11 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 	
+	/*
+	 * Code template for Scene modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
+
 	[Serializable] 
 	[CustomModifier("Default Modifier(Scene)", typeof(UnityEngine.SceneManagement.Scene))]
 	public class SceneModifier : IModifier {
@@ -12,22 +17,22 @@ namespace AssetBundleGraph.Modifiers {
 		public SceneModifier () {}
 
 		public bool IsModified (object asset) {
-			//var animation = asset as Animation;
+			//var anim = asset as UnityEngine.SceneManagement.Scene;
 
-			//TODO: implement this
+			// Do your work here
+
 			var changed = false;
-
 			return changed; 
 		}
 
 		public void Modify (object asset) {
-			//var flare = asset as Shader;
-			//TODO: implement this
+			//var anim = asset as UnityEngine.SceneManagement.Scene;
+
+			// Do your work here
 		}
 
 		public void OnInspectorGUI (Action onValueChanged) {
-			//TODO: implement this
-			GUILayout.Label("SceneModifier inspector.");
+			GUILayout.Label("Implement your modifier for this type.");
 		}
 
 		public string Serialize() {
