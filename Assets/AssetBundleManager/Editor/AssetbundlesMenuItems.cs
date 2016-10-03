@@ -8,6 +8,7 @@ namespace AssetBundles
 	{
 		const string kCleanCache = "Assets/AssetBundles/Clean Cache On Play";
 		const string kSimulationMode = "Assets/AssetBundles/Simulation Mode";
+		const string kUseGraphToolBundle = "Assets/AssetBundles/Use Graph Tool Bundle";
 
 		[MenuItem(kCleanCache)]
 		public static void ToggleCleanCache ()
@@ -34,6 +35,20 @@ namespace AssetBundles
 			Menu.SetChecked(kSimulationMode, AssetBundleManager.SimulateAssetBundleInEditor);
 			return true;
 		}
+
+		[MenuItem(kUseGraphToolBundle)]
+		public static void UseGraphToolBundle ()
+		{
+			AssetBundleManager.UseGraphToolBundle = !AssetBundleManager.UseGraphToolBundle;
+		}
+
+		[MenuItem(kUseGraphToolBundle, true)]
+		public static bool UseGraphToolBundleValidate ()
+		{
+			Menu.SetChecked(kUseGraphToolBundle, AssetBundleManager.UseGraphToolBundle);
+			return true;
+		}
+
 		
 		[MenuItem ("Assets/AssetBundles/Build AssetBundles")]
 		static public void BuildAssetBundles ()

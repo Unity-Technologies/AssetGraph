@@ -77,11 +77,19 @@ namespace AssetBundles
 			KillRunningAssetBundleServer();
 			
 			BuildScript.WriteServerURL();
+
+			string bundleFolder = AssetBundleManager.UseGraphToolBundle ? "GraphToolBundles" : "AssetBundles";
 			
-			string args = Path.Combine (pathToApp, "AssetBundles");
+			string args = Path.Combine (pathToApp, bundleFolder);
+
+			if(!Directory.Exists(args)) {
+				UnityEngine.Debug.LogError("Directory does not exist. Build asset bundles first and create directory to run local server:" + args);
+				return;
+			}
+
 			args = string.Format("\"{0}\" {1}", args, Process.GetCurrentProcess().Id);
 			ProcessStartInfo startInfo = ExecuteInternalMono.GetProfileStartInfoForMono(MonoInstallationFinder.GetMonoInstallation("MonoBleedingEdge"), "4.0", pathToAssetServer, args, true);
-			startInfo.WorkingDirectory = Path.Combine(System.Environment.CurrentDirectory, "AssetBundles");
+			startInfo.WorkingDirectory = Path.Combine(System.Environment.CurrentDirectory, bundleFolder);
 			startInfo.UseShellExecute = false;
 			Process launchProcess = Process.Start(startInfo);
 			if (launchProcess == null || launchProcess.HasExited == true || launchProcess.Id == 0)
@@ -91,6 +99,7 @@ namespace AssetBundles
 			}
 			else
 			{
+				UnityEngine.Debug.LogFormat("Local Server started with arg:{0}", args);
 				//We seem to have launched, let's save the PID
 				instance.m_ServerPID = launchProcess.Id;
 			}

@@ -47,8 +47,10 @@ namespace AssetBundles
 	#if UNITY_EDITOR	
 		static int m_SimulateAssetBundleInEditor = -1;
 		static int m_ClearCacheOnPlay = -1;
+		static int m_UseGraphTool = -1;
 		const string kSimulateAssetBundles = "SimulateAssetBundles";
 		const string kClearCacheOnPlay = "ClearCacheOnPlay";
+		const string kUseGraphTool = "UseGraphTool";
 	#endif
 	
 		static Dictionary<string, LoadedAssetBundle> m_LoadedAssetBundles = new Dictionary<string, LoadedAssetBundle> ();
@@ -131,6 +133,27 @@ namespace AssetBundles
 			}
 		}
 	
+		// Flag to indicate if we want to use asset bundle built from AssetBundleGraphTool.
+		public static bool UseGraphToolBundle 
+		{
+			get
+			{
+				if (m_UseGraphTool == -1)
+					m_UseGraphTool = EditorPrefs.GetBool(kUseGraphTool, true) ? 1 : 0;
+
+				return m_UseGraphTool != 0;
+			}
+			set
+			{
+				int newValue = value ? 1 : 0;
+				if (newValue != m_UseGraphTool)
+				{
+					m_UseGraphTool = newValue;
+					EditorPrefs.SetBool(kUseGraphTool, value);
+				}
+			}
+		}
+
 		#endif
 	
 		private static string GetStreamingAssetsPath()
