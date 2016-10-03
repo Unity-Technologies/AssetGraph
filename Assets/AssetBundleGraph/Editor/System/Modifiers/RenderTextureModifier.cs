@@ -5,32 +5,22 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 
+	/*
+	 * Code template for RenderTexture modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
+
 	[Serializable] 
 	[CustomModifier("Default Modifier(RenderTexture)", typeof(RenderTexture))]
 	public class RenderTextureModifier : IModifier {
-		// [SerializeField] public Int32 width, height;
-
-		// public enum AntiAliasing : int {
-		// 	None = 1,
-		// 	_2_Samples = 2,
-		// 	_4_Samples = 4,
-		// 	_8_Samples = 8
-		// }
-		// [SerializeField] public AntiAliasing antiAliasing;// 1, 2, 4, 8. 4type.
-		
-		// [SerializeField] public UnityEngine.RenderTextureFormat colorFormat;
 
 		public enum DepthBuffer : int {
 			NoDepthBuffer = 0,
 			_16bitDepth = 16,
 			_24bitDepth = 24
 		}
-		// [SerializeField] public DepthBuffer depthBuffer;// 0, 16, 24. 3type.
-
 		[SerializeField] public UnityEngine.TextureWrapMode wrapMode;
-
 		[SerializeField] public UnityEngine.FilterMode filterMode;
-
 		[SerializeField] public int anisoLevel;// limit to 16.
 
 
@@ -93,7 +83,7 @@ namespace AssetBundleGraph.Modifiers {
 					onValueChanged();
 				}
 			}
-			EditorGUILayout.HelpBox("Aniso Level can be set if target Asset(RenderTexture)'s Depth Buffer setting is set to 'No depth buffer'. ", MessageType.Info);
+			EditorGUILayout.HelpBox("Aniso Level can be set only when RenderTexture does not have depth buffer.", MessageType.Info);
 		}
 
 		public string Serialize() {
