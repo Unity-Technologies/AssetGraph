@@ -53,7 +53,6 @@ namespace AssetBundleGraph {
 					EditorGUI.indentLevel = 1;
 					for (var i = 0; i < assets.Count; i++) {
 						var sourceStr = assets[i].path;
-						var isBundled = assets[i].isBundled;
 						var variantName = assets[i].variantName;
 
 						if(!string.IsNullOrEmpty(variantName))
