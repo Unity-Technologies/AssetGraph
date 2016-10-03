@@ -127,30 +127,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		/**
-			build from commandline.
-		*/
-		public static void BuildFromCommandline () {
-			var argumentSources = new List<string>(System.Environment.GetCommandLineArgs());
-
-			var argumentStartIndex = argumentSources.FindIndex(arg => arg == "AssetBundleGraph.AssetBundleGraphEditorWindow.BuildFromCommandline") + 1;
-			var currentParams = argumentSources.GetRange(argumentStartIndex, argumentSources.Count - argumentStartIndex).ToList();
-
-			if (0 < currentParams.Count) {
-				BuildTarget target = BuildTargetUtility.BuildTargetFromString(currentParams[0]);
-
-				if(!BuildTargetUtility.IsBuildTargetSupported(target)) {
-					throw new AssetBundleGraphException(target + " is not supported to build with this Unity. Please install platform support with installer(s).");
-				}
-
-				EditorUserBuildSettings.SwitchActiveBuildTarget(target);
-			}
-
-			//TODO: Commandline Run should not go through Editor
-			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run(window.ActiveBuildTarget);
-		}
-
 		public static void GenerateScript (ScriptType scriptType) {
 			var destinationBasePath = AssetBundleGraphSettings.USERSPACE_PATH;
 			var destinationPath = string.Empty;
@@ -442,12 +418,16 @@ namespace AssetBundleGraph {
 				// update static all node names.
 				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
+				Action<NodeException> errorHandler = (NodeException e) => {
+					AssetBundleGraphEditorWindow.AddNodeException(e);
+				};
+
+				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
 
 				RefreshInspector(s_assetStreamMap);
 				ShowErrorOnNodes();
 
-				Postprocess(nodes, connections, s_assetStreamMap, false);
+				AssetBundleGraphController.Postprocess(saveData, s_assetStreamMap, false);
 			} catch(Exception e) {
 				Debug.LogError(e);
 			} finally {
@@ -491,18 +471,22 @@ namespace AssetBundleGraph {
 					EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
 				};
 
+				Action<NodeException> errorHandler = (NodeException e) => {
+					AssetBundleGraphEditorWindow.AddNodeException(e);
+				};
+
 				// perform setup. Fails if any exception raises.
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false);
+				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
 
 				// if there is not error reported, then run
 				if(s_nodeExceptionPool.Count == 0) {
 					// run datas.
-					s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, updateHandler);
+					s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, errorHandler, updateHandler);
 				}
 				RefreshInspector(s_assetStreamMap);
 				AssetDatabase.Refresh();
 				ShowErrorOnNodes();
-				Postprocess(currentNodes, currentConnections, s_assetStreamMap, true);
+				AssetBundleGraphController.Postprocess(saveData, s_assetStreamMap, true);
 			} catch(Exception e) {
 				Debug.LogError(e);
 			} finally {
@@ -537,86 +521,7 @@ namespace AssetBundleGraph {
 				}
 			}
 		}
-
-		public static void Postprocess (
-			List<NodeGUI> currentNodes,
-			List<ConnectionGUI> currentConnections,
-			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> result, 
-			bool isRun
-		) {
-			var nodeResult = CollectNodeGroupAndAssets(currentNodes, currentConnections, result);
-
-			var postprocessType = typeof(IPostprocess);
-			var ppTypes = Assembly.GetExecutingAssembly().GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
-			foreach (var t in ppTypes) {
-				var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(t.Name);
-				if (postprocessScriptInstance == null) {
-					throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
-				}
-				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
-
-				postprocessInstance.Run(nodeResult, isRun);
-			}
-		}
-
-		
-		/**
-			collect node's result with node name.
-			structure is:
-
-			nodeNames
-				groups
-					resources
-		*/
-		private static Dictionary<NodeData, Dictionary<string, List<Asset>>> CollectNodeGroupAndAssets (
-			List<NodeGUI> currentNodes,
-			List<ConnectionGUI> currentConnections,
-			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> result
-		) {
-			var nodeDatas = new Dictionary<NodeData, Dictionary<string, List<Asset>>>();
-
-			foreach (var c in result.Keys) {
-				// get endpoint node result.
-//				if (nodeIds.Contains(nodeOrConnectionId)) {
-//					var targetNodeName = currentNodes.Where(node => node.Id == nodeOrConnectionId).Select(node => node.Name).FirstOrDefault();
-//					
-//					var nodeThroughput = result[nodeOrConnectionId];
-//
-//					if (!nodeDatas.ContainsKey(targetNodeName)) {
-//						nodeDatas[targetNodeName] = new Dictionary<string, List<string>>();
-//					}
-//					foreach (var groupKey in nodeThroughput.Keys) {
-//						if (!nodeDatas[targetNodeName].ContainsKey(groupKey)) {
-//							nodeDatas[targetNodeName][groupKey] = new List<string>();
-//						}
-//						var assetPaths = nodeThroughput[groupKey].Select(asset => asset.path).ToList();
-//						nodeDatas[targetNodeName][groupKey].AddRange(assetPaths);
-//					}
-//				}
-
-				// get connection result.
-//				if (connectionIds.Contains(nodeOrConnectionId)) {
-
-				var targetConnection = currentConnections.Find(con => con.Id == c.Id);
-				var targetNode = currentNodes.Find(node => node.Id == targetConnection.OutputNodeId);
-				
-				var groupDict = result[c];
-				
-				if (!nodeDatas.ContainsKey(targetNode.Data)) {
-					nodeDatas[targetNode.Data] = new Dictionary<string, List<Asset>>();
-				}
-				foreach (var groupKey in groupDict.Keys) {
-					if (!nodeDatas[targetNode.Data].ContainsKey(groupKey)) {
-						nodeDatas[targetNode.Data][groupKey] = new List<Asset>();
-					}
-					nodeDatas[targetNode.Data][groupKey].AddRange(groupDict[groupKey]);
-				}
-//				}
-			}
-
-			return nodeDatas;
-		}
-
+			
 		public static Dictionary<string, List<Asset>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
 			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
 			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
