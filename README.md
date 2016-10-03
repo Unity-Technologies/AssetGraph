@@ -106,7 +106,7 @@ BundleBuilder create actual AssetBundle files from given list of bundle configur
 Exporter saves given assets into given directory.  You can also select directory outside /Assets/. 
 - IN: list of assets (or AssetBundle files)
 
-![SS](/Doc/900.png)
+![SS](/Doc/images/readme/900.png)
 
 
 #License
