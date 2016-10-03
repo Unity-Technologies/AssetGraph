@@ -36,7 +36,6 @@ namespace AssetBundleGraph {
 		/**
 		 * Build from commandline - entrypoint.
 		 */ 
-		[MenuItem("Window/AssetBundleGraph/Debug/CUI Build")]
 		public static void BuildFromCommandline(){
 			try {
 				var arguments = new List<string>(System.Environment.GetCommandLineArgs());
