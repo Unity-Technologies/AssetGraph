@@ -3,7 +3,6 @@ Assets/SublimeSocketAsset/*
 Library/*
 Temp/*
 
-
 TestExportPlace/*
 
 Assets/AssetGraph/Temp/*
@@ -108,3 +107,5 @@ Assets/TestResourceAssets.meta
 
 Assets/ModifierTestResources/*
 Assets/ModifierTestResources.meta
+
+AssetBundleServerURL.bytes
