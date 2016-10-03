@@ -4,7 +4,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
-	
+
+	/*
+	 * Code template for PhysicsMaterial2D modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
+
 	[Serializable] 
 	[CustomModifier("Default Modifier(PhysicsMaterial2D)", typeof(PhysicsMaterial2D))]
 	public class PhysicsMaterial2DModifier : IModifier {
@@ -35,9 +40,18 @@ namespace AssetBundleGraph.Modifiers {
 		}
 
 		public void OnInspectorGUI (Action onValueChanged) {
-			//TODO: implement this
-			GUILayout.Label(""+ friction);
-			GUILayout.Label("bounciness");
+			var newFriction = EditorGUILayout.FloatField("Friction", friction);
+			var newBounciness = EditorGUILayout.FloatField("Bounciness", bounciness);
+
+			if(newFriction != friction) {
+				friction = newFriction;
+				onValueChanged();
+			}
+
+			if(newBounciness != bounciness) {
+				bounciness = newBounciness;
+				onValueChanged();
+			}
 		}
 
 		public string Serialize() {

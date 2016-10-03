@@ -4,7 +4,12 @@ using UnityEditor;
 using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
-	
+
+	/*
+	 * Code template for PhysicMaterial modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
+
 	[Serializable] 
 	[CustomModifier("Default Modifier(PhysicMaterial)", typeof(PhysicMaterial))]
 	public class PhysicMaterialModifier : IModifier {
@@ -12,22 +17,22 @@ namespace AssetBundleGraph.Modifiers {
 		public PhysicMaterialModifier () {}
 
 		public bool IsModified (object asset) {
-			//var animation = asset as Animation;
+			//var anim = asset as PhysicMaterial;
 
-			//TODO: implement this
+			// Do your work here
+
 			var changed = false;
-
 			return changed; 
 		}
 
 		public void Modify (object asset) {
-			//var flare = asset as Shader;
-			//TODO: implement this
+			//var anim = asset as PhysicMaterial;
+
+			// Do your work here
 		}
 
 		public void OnInspectorGUI (Action onValueChanged) {
-			//TODO: implement this
-			GUILayout.Label("AnimationModifier inspector.");
+			GUILayout.Label("Implement your modifier for this type.");
 		}
 
 		public string Serialize() {
