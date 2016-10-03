@@ -24,7 +24,7 @@ By selecting a node, you can configure settings for your AssetBundle building ru
 ###4.Build It!
 By pressing Build button on AssetBundleGraphTool window, AssetBundles are built respect to rules you created.
 Visual editor lets you build AssetBunldes in the way you want to while keeping everything easy, repeatable and scalable.
-![SS](/Doc/4.png)
+![SS](/Doc/images/readme/4.png)
 
 ###5.Born with multiplatform
 AssetBundleGraphTool can configure all Asset Bundle build settings ready for multiplatform. You can choose platform to build and overwrite settings where you want to customize per platforms.
