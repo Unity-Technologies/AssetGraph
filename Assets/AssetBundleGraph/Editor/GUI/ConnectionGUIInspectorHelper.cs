@@ -6,22 +6,24 @@ namespace AssetBundleGraph {
 	 * ScriptableObject helper object to let ConnectionGUI edit from Inspector
 	 */
 	public class ConnectionGUIInspectorHelper : ScriptableObject {
-		public ConnectionGUI con;
-		public Dictionary<string, List<DepreacatedThroughputAsset>> throughputListDict;
+		public ConnectionGUI connectionGUI;
+		public Dictionary<string, List<Asset>> assetGroups;
 		public List<bool> foldouts;
 
-		public void UpdateCon (ConnectionGUI con, Dictionary<string, List<DepreacatedThroughputAsset>> throughputListDict) {
-			this.con = con;
-			this.throughputListDict = throughputListDict;
+		public void UpdateInspector (ConnectionGUI con, Dictionary<string, List<Asset>> assetGroups) {
+			this.connectionGUI = con;
+			this.assetGroups = assetGroups;
 
 			this.foldouts = new List<bool>();
-			for (var i = 0; i < this.throughputListDict.Count; i++) {
-				foldouts.Add(true);
+			if(assetGroups != null) {
+				for (var i = 0; i < this.assetGroups.Count; i++) {
+					foldouts.Add(true);
+				}
 			}
 		}
 
-        public void UpdateThroughputs(Dictionary<string, List<DepreacatedThroughputAsset>> throughputListDict) {
-            this.throughputListDict = throughputListDict;
+		public void UpdateAssetGroups(Dictionary<string, List<Asset>> assetGroups) {
+			this.assetGroups = assetGroups;
         }
     }
 }

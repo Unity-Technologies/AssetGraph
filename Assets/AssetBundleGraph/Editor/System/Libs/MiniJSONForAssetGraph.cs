@@ -32,7 +32,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace MiniJSONForAssetBundleGraph {
+namespace AssetBundleGraph {
     // Example usage:
     //
     //  using UnityEngine;
@@ -543,5 +543,41 @@ namespace MiniJSONForAssetBundleGraph {
                 }
             }
         }
-    }
+
+		public static string Prettify (string sourceJson) {
+			var lines = sourceJson
+				.Replace("{", "{\n").Replace("}", "\n}")
+				.Replace("[", "[\n").Replace("]", "\n]")
+				.Replace(",", ",\n")
+				.Split('\n');
+
+			Func<string, int, string> indents = (string baseLine, int indentDepth) => {
+				var indentsStr = string.Empty;
+				for (var i = 0; i < indentDepth; i++) indentsStr += "\t";
+				return indentsStr + baseLine;
+			};
+
+			var indent = 0;
+			for (var i = 0; i < lines.Length; i++) {
+				var line = lines[i];
+
+				// reduce indent for "}"
+				if (line.Contains("}") || line.Contains("]")) {
+					indent--;
+				}
+
+				/*
+					adopt indent.
+				*/
+				lines[i] = indents(lines[i], indent);
+
+				// indent continued all line after "{" 
+				if (line.Contains("{") || line.Contains("[")) {
+					indent++;
+					continue;
+				}
+			}
+			return string.Join("\n", lines);
+		}
+	}
 }

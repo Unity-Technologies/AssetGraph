@@ -62,124 +62,24 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static List<string> CreateCustomFilterInstanceForScript (string scriptClassName) {
-			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(scriptClassName);
-			if (nodeScriptInstance == null) {
-				Debug.LogError("Failed to create instance for " + scriptClassName + ". No such class found in assembly.");
-				return new List<string>();
-			}
-
-			var labels = new List<string>();
-			Action<string, string, Dictionary<string, List<Asset>>, List<string>> Output = (string dataSourceNodeId, string connectionLabel, Dictionary<string, List<Asset>> source, List<string> usedCache) => {
-				labels.Add(connectionLabel);
-			};
-
-			((FilterBase)nodeScriptInstance).Setup(
-				"GetLabelsFromSetupFilter_dummy_nodeName",
-				"GetLabelsFromSetupFilter_dummy_nodeId", 
-				string.Empty,
-				new Dictionary<string, List<Asset>>{
-					{"0", new List<Asset>()}
-				},
-				new List<string>(),
-				Output
-			);
-			return labels;
-
-		}
-
-		public static T CreateNodeOperationInstance<T> (string typeStr, string nodeId) where T : INodeOperationBase {
+		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperation {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
-				throw new NodeException("failed to generate class information of class:" + typeStr + " which is based on Type:" + typeof(T), nodeId);
+				throw new NodeException(node.Name + ": Failed to create instance:" + typeStr + " derived from:" + typeof(T), node.Id);
 			}
 			return ((T)nodeScriptInstance);
 		}
 
-		public static string GetPlatformValue (Dictionary<string, string> packageDict, string platform) {
-			var key = CreateKeyNameFromString(platform);
-			if (packageDict.ContainsKey(key)) {
-				return packageDict[key];
-			}
-
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-
-			throw new AssetBundleGraphException("Default setting not found.");
+		public static string GetPathSafeDefaultTargetName () {
+			return GetPathSafeTargetGroupName(BuildTargetUtility.DefaultTarget);
 		}
 
-		public static List<string> GetPlatformValue (Dictionary<string, List<string>> packageDict, string platform) {
-			var key = CreateKeyNameFromString(platform);
-			if (packageDict.ContainsKey(key)) {
-				return packageDict[key];
-			}
-
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-
-			throw new AssetBundleGraphException("Default setting not found.");
+		public static string GetPathSafeTargetName (BuildTarget t) {
+			return t.ToString();
 		}
 
-		public static List<string> GetCurrentPlatformValue (Dictionary<string, List<string>> packageDict) {
-			var platformPackageKeyCandidate = GetCurrentPlatformKey();
-			
-			if (packageDict.ContainsKey(platformPackageKeyCandidate)) {
-				return packageDict[platformPackageKeyCandidate];
-			}
-			
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-
-			throw new AssetBundleGraphException("Default setting not found.");
-		}
-
-		public static string GetCurrentPlatformValue (Dictionary<string, string> packageDict) {
-			var platformPackageKeyCandidate = GetCurrentPlatformKey();
-			/*
-				check best match for platform + pacakge.
-			*/
-			if (packageDict.ContainsKey(platformPackageKeyCandidate)) {
-				return packageDict[platformPackageKeyCandidate];
-			}
-			
-			/*
-				check next match for defaultPlatform + package.
-			*/
-			var defaultPlatformAndCurrentPackageCandidate = GetDefaultPlatformKey();
-			if (packageDict.ContainsKey(defaultPlatformAndCurrentPackageCandidate)) {
-				return packageDict[defaultPlatformAndCurrentPackageCandidate];
-			}
-
-			/*
-				check default platform.
-			*/
-			if (packageDict.ContainsKey(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME)) {
-				return packageDict[AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME];
-			}
-			
-			throw new AssetBundleGraphException("Default setting not found.");
-		}
-
-		public static string GetCurrentPlatformShortName () {
-			var currentPlatformCandidate = EditorUserBuildSettings.activeBuildTarget.ToString();
-			return currentPlatformCandidate;
-		}
-
-		public static string GetCurrentPlatformKey () {
-			var currentPlatformCandidate = GetCurrentPlatformShortName();
-
-			return CreateKeyNameFromString(currentPlatformCandidate);
-		}
-
-		public static string GetDefaultPlatformKey () {
-			return CreateKeyNameFromString(AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME);
-		}
-
-		public static string CreateKeyNameFromString (string keyname) {
-			return keyname.Replace(" ", "_");
+		public static string GetPathSafeTargetGroupName (BuildTargetGroup g) {
+			return g.ToString();
 		}
 
 		public static string GetProjectName () {
@@ -191,3 +91,4 @@ namespace AssetBundleGraph {
 
 	}
 }
+

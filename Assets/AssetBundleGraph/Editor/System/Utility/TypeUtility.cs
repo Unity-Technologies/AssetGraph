@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,7 +21,7 @@ namespace AssetBundleGraph {
 			// others(Assets)
 			typeof(Animation).ToString(),
 			typeof(Animator).ToString(),
-			typeof(Avatar).ToString(),
+			typeof(AvatarMask).ToString(),
 			typeof(Cubemap).ToString(),
 			typeof(Flare).ToString(),
 			typeof(Font).ToString(),
@@ -31,7 +33,6 @@ namespace AssetBundleGraph {
 			typeof(RenderTexture).ToString(),
 			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
-			typeof(Sprite).ToString(),
 			typeof(Scene).ToString(),
 		};
 		
@@ -39,7 +40,7 @@ namespace AssetBundleGraph {
 			// others(Assets)
 			{".anim", typeof(Animation)},
 			{".controller", typeof(Animator)},
-			{".mask", typeof(Avatar)},
+			{".mask", typeof(AvatarMask)},
 			{".cubemap", typeof(Cubemap)},
 			{".flare", typeof(Flare)},
 			{".fontsettings", typeof(Font)},
@@ -52,6 +53,7 @@ namespace AssetBundleGraph {
 			// typeof(SceneAsset).ToString(),
 			{".shader", typeof(Shader)},
 			{".unity", typeof(Scene)},
+			{".prefab", typeof(UnityEngine.Object)}
 
 			// {"", typeof(Sprite)},
 		};
@@ -118,13 +120,16 @@ namespace AssetBundleGraph {
 			// unhandled.
 			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'object'.");
 			return typeof(object);
+		}			
+
+		public static Type FindIncomingAssetType(List<Asset> assets) {
+
+			if(assets.Any()) {
+				Type expectedType = FindTypeOfAsset(assets.First().importFrom);
+				return expectedType;
+			}
+
+			return null;
 		}
-			
-		/**
-		 * ModifierOperator map vs supported type
-		*/
-		public static Dictionary<string, Type> SupportedModifierOperatorDefinition = new Dictionary<string, Type> {
-			{"UnityEngine.RenderTexture", typeof(ModifierOperators.RenderTextureOperator)}
-		};
 	}
 }

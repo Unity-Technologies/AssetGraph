@@ -106,6 +106,5 @@ Assets/sss.renderTexture.meta
 
 Assets/TestResourceAssets.meta
 
-Assets/scr1.png
-
-Assets/scr1.png.meta
+Assets/ModifierTestResources/*
+Assets/ModifierTestResources.meta

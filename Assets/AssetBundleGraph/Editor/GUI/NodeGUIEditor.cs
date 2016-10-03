@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AssetBundleGraph {
 	/**
@@ -13,77 +14,51 @@ namespace AssetBundleGraph {
 	[CustomEditor(typeof(NodeGUIInspectorHelper))]
 	public class NodeGUIEditor : Editor {
 
-		private List<Action> messageActions;
+		public static BuildTargetGroup currentEditingGroup = 
+			BuildTargetUtility.DefaultTarget;
 
-		private bool packageEditMode = false;
+		[NonSerialized] private IModifier m_modifier;
+		[NonSerialized] private IPrefabBuilder m_prefabBuilder;
 
 		public override bool RequiresConstantRepaint() {
 			return true;
 		}
 
 		private void DoInspectorLoaderGUI (NodeGUI node) {
-			if (node.loadPath == null) return;
+			if (node.Data.LoaderLoadPath == null) {
+				return;
+			}
 
 			EditorGUILayout.HelpBox("Loader: Load assets in given directory path.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-			/*
-				platform & package
-			*/
-			if (packageEditMode) EditorGUI.BeginDisabledGroup(true);
-
-			// update platform & package.
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				EditorGUILayout.LabelField("Load Path:");
-				var newLoadPath = EditorGUILayout.TextField(
-					SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH, 
-					SystemDataUtility.GetPlatformValue(
-						node.loadPath.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
-				);
-				var loaderNodePath = FileUtility.GetPathWithAssetsPath(newLoadPath);
-				IntegratedGUILoader.ValidateLoadPath(
-					newLoadPath,
-					loaderNodePath,
-					() => {
-						//EditorGUILayout.HelpBox("load path is empty.", MessageType.Error);
-					},
-					() => {
-						//EditorGUILayout.HelpBox("Directory not found:" + loaderNodePath, MessageType.Error);
+				var disabledScope = DrawOverrideTargetToggle(node, node.Data.LoaderLoadPath.ContainsValueOf(currentEditingGroup), (bool b) => {
+					using(new RecordUndoScope("Remove Target Load Path Settings", node, true)) {
+						if(b) {
+							node.Data.LoaderLoadPath[currentEditingGroup] = node.Data.LoaderLoadPath.DefaultValue;
+						} else {
+							node.Data.LoaderLoadPath.Remove(currentEditingGroup);
+						}
 					}
-				);
+				});
 
-				if (newLoadPath !=	SystemDataUtility.GetPlatformValue(
-					node.loadPath.ReadonlyDict(),
-					node.currentPlatform
-				).ToString()
-				) {
-					node.BeforeSave();
-					node.loadPath.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), newLoadPath);
-					node.Save();
+				using (disabledScope) {
+					EditorGUILayout.LabelField("Load Path:");
+					var newLoadPath = EditorGUILayout.TextField(
+						SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH,
+						node.Data.LoaderLoadPath[currentEditingGroup]
+					);
+					if (newLoadPath !=	node.Data.LoaderLoadPath[currentEditingGroup]) {
+						using(new RecordUndoScope("Load Path Changed", node, true)){
+							node.Data.LoaderLoadPath[currentEditingGroup] = newLoadPath;
+						}
+					}
 				}
-			}
-
-			if (packageEditMode) EditorGUI.EndDisabledGroup();
-			UpdateDeleteSetting(node);
-		}
-
-		private void DoInspectorFilterScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Filter(Script): Filter given assets by script.", MessageType.Info);
-			UpdateNodeName(node);
-
-			EditorGUILayout.LabelField("Script Path", node.scriptPath);
-
-			var outputPointLabels = node.OutputPointLabels();
-			EditorGUILayout.LabelField("connectionPoints Count", outputPointLabels.Count.ToString());
-
-			foreach (var label in outputPointLabels) {
-				EditorGUILayout.LabelField("label", label);
 			}
 		}
 
@@ -93,70 +68,42 @@ namespace AssetBundleGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				GUILayout.Label("Filter Settings:");
-				for (int i = 0; i < node.filterContainsKeywords.Count; i++) {
+				FilterEntry removing = null;
+				for (int i= 0; i < node.Data.FilterConditions.Count; ++i) {
+					var cond = node.Data.FilterConditions[i];
 
 					Action messageAction = null;
 
 					using (new GUILayout.HorizontalScope()) {
 						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							node.BeforeSave();
-							node.filterContainsKeywords.RemoveAt(i);
-							node.filterContainsKeytypes.RemoveAt(i);
-							node.DeleteFilterOutputPoint(i);
+							removing = cond;
 						}
 						else {
-							var newContainsKeyword = node.filterContainsKeywords[i];
-
-							/*
-												generate keyword + keytype string for compare exists setting vs new modifying setting at once.
-											*/
-							var currentKeywordsSource = new List<string>(node.filterContainsKeywords);
-							var currentKeytypesSource = new List<string>(node.filterContainsKeytypes);
-
-							var currentKeytype = currentKeytypesSource[i];
-
-							for (var j = 0; j < currentKeywordsSource.Count; j++) {
-								currentKeywordsSource[j] = currentKeywordsSource[j] + currentKeytypesSource[j];
-							}
-
-							// remove current choosing one from compare target.
-							currentKeywordsSource.RemoveAt(i);
-							var currentKeywords = new List<string>(currentKeywordsSource);
+							var newContainsKeyword = cond.FilterKeyword;
 
 							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
 
-							IntegratedGUIFilter.ValidateFilter(
-								newContainsKeyword + currentKeytype,
-								currentKeywords,
-								() => {
-									s.fontStyle = FontStyle.Bold;
-									s.fontSize = 12;
-								},
-								() => {
-									s.fontStyle = FontStyle.Bold;
-									s.fontSize = 12;
-								}
-							);
-
 							using (new EditorGUILayout.HorizontalScope()) {
-								newContainsKeyword = EditorGUILayout.TextField(node.filterContainsKeywords[i], s, GUILayout.Width(120));
-								var currentIndex = i;
-								if (GUILayout.Button(node.filterContainsKeytypes[i], "Popup")) {
+								newContainsKeyword = EditorGUILayout.TextField(cond.FilterKeyword, s, GUILayout.Width(120));
+								if (GUILayout.Button(cond.FilterKeytype , "Popup")) {
+									var ind = i;// need this because of closure locality bug in unity C#
 									NodeGUI.ShowFilterKeyTypeMenu(
-										node.filterContainsKeytypes[currentIndex],
+										cond.FilterKeytype,
 										(string selectedTypeStr) => {
-											node.BeforeSave();
-											node.filterContainsKeytypes[currentIndex] = selectedTypeStr;
-											node.Save();
+											using(new RecordUndoScope("Modify Filter Type", node, true)){
+												node.Data.FilterConditions[ind].FilterKeytype = selectedTypeStr;
+											}
 										} 
 									);
 								}
 							}
 
-							if (newContainsKeyword != node.filterContainsKeywords[i]) {
-								node.BeforeSave();
-								node.filterContainsKeywords[i] = newContainsKeyword;
-								node.RenameFilterOutputPointLabel(i, node.filterContainsKeywords[i]);
+							if (newContainsKeyword != cond.FilterKeyword) {
+								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
+									cond.FilterKeyword = newContainsKeyword;
+									// event must raise to propagate change to connection associated with point
+									NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
+								}
 							}
 						}
 					}
@@ -170,14 +117,19 @@ namespace AssetBundleGraph {
 
 				// add contains keyword interface.
 				if (GUILayout.Button("+")) {
-					node.BeforeSave();
-					var addingIndex = node.filterContainsKeywords.Count;
-					var newKeyword = AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD;
+					using(new RecordUndoScope("Add Filter Condition", node)){
+						node.Data.AddFilterCondition(
+							AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD, 
+							AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE);
+					}
+				}
 
-					node.filterContainsKeywords.Add(newKeyword);
-					node.filterContainsKeytypes.Add(AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE);
-
-					node.AddFilterOutputPoint(addingIndex, AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD);
+				if(removing != null) {
+					using(new RecordUndoScope("Remove Filter Condition", node, true)){
+						// event must raise to remove connection associated with point
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+						node.Data.RemoveFilterCondition(removing);
+					}
 				}
 			}
 		}
@@ -188,500 +140,492 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
-			if (packageEditMode) {
-				EditorGUI.BeginDisabledGroup(true);
-			}
-			
 			/*
-							importer node has no platform key. 
-							platform key is contained by Unity's importer inspector itself.
-						*/
+				importer node has no platform key. 
+				platform key is contained by Unity's importer inspector itself.
+			*/
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var nodeId = node.nodeId;
+				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+				IntegratedGUIImportSetting.ConfigStatus status = 
+					IntegratedGUIImportSetting.GetConfigStatus(node.Data);
 
-				var samplingPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, nodeId);
-
-				IntegratedGUIImportSetting.ValidateImportSample(samplingPath,
-					(string noFolderFound) => {
-						EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
-					},
-					(string noFilesFound) => {
-						EditorGUILayout.LabelField("Sampling Asset", "No sample asset found. please Reload first.");
-					},
-					(string samplingAssetPath) => {
-						EditorGUILayout.LabelField("Sampling Asset Path", samplingAssetPath);
-						if (GUILayout.Button("Setup Import Setting")) {
-							var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(samplingAssetPath);
-							Selection.activeObject = obj;
-						}
-						if (GUILayout.Button("Reset Import Setting")) {
-							// delete all import setting files.
-							FileUtility.RemakeDirectory(samplingPath);
-							node.Save();
-						}
-					},
-					(string tooManyFilesFoundMessage) => {
-						if (GUILayout.Button("Reset Import Setting")) {
-							// delete all import setting files.
-							FileUtility.RemakeDirectory(samplingPath);
-							node.Save();
-						}
+				if(incomingType == null) {
+					// try to retrieve incoming type from configuration
+					if(status == IntegratedGUIImportSetting.ConfigStatus.GoodSampleFound) {
+						incomingType = IntegratedGUIImportSetting.GetReferenceAssetImporter(node.Data).GetType();
+					} else {
+						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
+						return;
 					}
-				);
-			}
+				}
 
-			if (packageEditMode) {
-				EditorGUI.EndDisabledGroup();
+				switch(status) {
+				case IntegratedGUIImportSetting.ConfigStatus.NoSampleFound:
+					// IntegratedGUIImportSetting.Setup() must run to grab another sample to configure.
+					EditorGUILayout.HelpBox("Press Refresh to configure.", MessageType.Info);
+					break;
+				case IntegratedGUIImportSetting.ConfigStatus.GoodSampleFound:
+					if (GUILayout.Button("Configure Import Setting")) {
+						Selection.activeObject = IntegratedGUIImportSetting.GetReferenceAssetImporter(node.Data);
+					}
+					if (GUILayout.Button("Reset Import Setting")) {
+						IntegratedGUIImportSetting.ResetConfig(node.Data);
+					}
+					break;
+				case IntegratedGUIImportSetting.ConfigStatus.TooManySamplesFound:
+					if (GUILayout.Button("Reset Import Setting")) {
+						IntegratedGUIImportSetting.ResetConfig(node.Data);
+					}
+					break;
+				}
 			}
-			UpdateDeleteSetting(node);
 		}
 
 		private void DoInspectorModifierGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Modifier: Force apply asset settings to given assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-			var currentModifierTargetType = IntegratedGUIModifier.ModifierOperationTargetTypeName(node.nodeId);
-
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var isOperationDataExist = false;
-				IntegratedGUIModifier.ValidateModifiyOperationData(
-					node.nodeId,
-					node.currentPlatform,
-					() => {
-						GUILayout.Label("No modifier data found, please Reload first.");
-					},
-					() => {
-						isOperationDataExist = true;
+
+				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+
+				if(incomingType == null) {
+					// if there is no asset input to determine incomingType,
+					// retrieve from assigned Modifier.
+					incomingType = ModifierUtility.GetModifierTargetType(node.Data.ScriptClassName);
+
+					if(incomingType == null) {
+						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
+						return;
 					}
-				);
-				
-				if (!isOperationDataExist) {
-					return;
-				}
-				
-				using (new EditorGUILayout.HorizontalScope()) {
-					GUILayout.Label("Target Type:");
-					GUILayout.Label(currentModifierTargetType);
 				}
 
-				/*
-					reset whole platform's data for this modifier.
-				*/
-				if (GUILayout.Button("Reset Modifier")) {
-					var modifierFolderPath = FileUtility.PathCombine(AssetBundleGraphSettings.MODIFIER_OPERATOR_DATAS_PLACE, node.nodeId);
-					FileUtility.RemakeDirectory(modifierFolderPath);
-					node.Save();
-					modifierOperatorInstance = null;
-					return;
-				}
-			}
-			
-			var currentPlatform = node.currentPlatform;
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
+				var map = ModifierUtility.GetAttributeClassNameMap(incomingType);
+				if(map.Count > 0) {
+					using(new GUILayout.HorizontalScope()) {
+						GUILayout.Label("Modifier");
+						var guiName = ModifierUtility.GetModifierGUIName(node.Data.ScriptClassName);
+						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
+							var builders = map.Keys.ToList();
 
-			/*
-				if platform tab is changed, renew modifierOperatorInstance for that tab.
-			*/
-			if (currentPlatform != node.currentPlatform) {
-				modifierOperatorInstance = null;
-			}
-
-			/*
-				reload modifierOperator instance from saved modifierOperator data.
-			*/
-			if (modifierOperatorInstance == null) {
-				var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
-
-				// choose default modifierOperatorData if platform specified file is not exist.
-				if (!File.Exists(modifierOperatorDataPath)) {
-					modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForDefaultPlatform(node.nodeId);
-				}
-				
-				var loadedModifierOperatorDataStr = string.Empty;
-				using (var sr = new StreamReader(modifierOperatorDataPath)) {
-					loadedModifierOperatorDataStr = sr.ReadToEnd();
-				} 
-
-				var modifierOperatorType = TypeUtility.SupportedModifierOperatorDefinition[currentModifierTargetType];
-
-				/*
-					create instance from saved modifierOperator data.
-				*/
-				modifierOperatorInstance = typeof(NodeGUIEditor)
-					.GetMethod("FromJson")
-					.MakeGenericMethod(modifierOperatorType)// set desired generic type here.
-					.Invoke(this, new object[] { loadedModifierOperatorDataStr }) as ModifierOperators.OperatorBase;
-			}
-
-			/*
-				Show ModifierOperator Inspector.
-			*/
-			if (modifierOperatorInstance != null) {
-				Action changed = () => {
-					var data = JsonUtility.ToJson(modifierOperatorInstance);
-					var prettified = AssetBundleGraphEditorWindow.PrettifyJson(data);
-
-					var modifierOperatorDataPath = IntegratedGUIModifier.ModifierDataPathForeachPlatform(node.nodeId, node.currentPlatform);
-
-					using (var sw = new StreamWriter(modifierOperatorDataPath)) {
-						sw.Write(prettified);
+							if(builders.Count > 0) {
+								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
+									{
+										using(new RecordUndoScope("Change Modifier class", node, true)) {
+											m_modifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
+											if(m_modifier != null) {
+												node.Data.ScriptClassName = ModifierUtility.GUINameToClassName(selectedGUIName, incomingType);
+												node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+											}
+										}
+									}  
+								);
+							}
+						}
 					}
 
-					// reflect change of data.
-					AssetDatabase.Refresh();
-					
-					modifierOperatorInstance = null;
-				};
+				} else {
+					string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_MODIFIER.Split('/');
+					EditorGUILayout.HelpBox(
+						string.Format(
+							"No CustomModifier found for {3} type. \n" +
+							"You need to create at least one Modifier script to select script for Modifier. " +
+							"To start, select {0}>{1}>{2} menu and create a new script.",
+							menuNames[1],menuNames[2], menuNames[3], incomingType.FullName
+						), MessageType.Info);
+				}
 
 				GUILayout.Space(10f);
 
-				modifierOperatorInstance.DrawInspector(changed);
-			}
+				if(DrawPlatformSelector(node)) {
+					// if platform tab is changed, renew modifierModifierInstance for that tab.
+					m_modifier = null;
+				}
+				using (new EditorGUILayout.VerticalScope()) {
+					var disabledScope = DrawOverrideTargetToggle(node, node.Data.InstanceData.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+						if(enabled) {
+							node.Data.InstanceData[currentEditingGroup] = node.Data.InstanceData.DefaultValue;
+						} else {
+							node.Data.InstanceData.Remove(currentEditingGroup);
+						}
+						m_modifier = null;						
+					});
 
-			var deleted = UpdateDeleteSetting(node);
-			if (deleted) {
-				// source platform depended data is deleted. reload instance for reloading instance from data.
-				modifierOperatorInstance = null;
+					using (disabledScope) {
+						//reload modifierModifier instance from saved modifierModifier data.
+						if (m_modifier == null) {
+							m_modifier = ModifierUtility.CreateModifier(node.Data, currentEditingGroup);
+							if(m_modifier != null) {
+								node.Data.ScriptClassName = m_modifier.GetType().FullName;
+								if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+									node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+								}
+							}
+						}
+
+						if (m_modifier != null) {
+							Action onChangedAction = () => {
+								using(new RecordUndoScope("Change Modifier Setting", node)) {
+									node.Data.ScriptClassName = m_modifier.GetType().FullName;
+									if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+										node.Data.InstanceData[currentEditingGroup] = m_modifier.Serialize();
+									}
+								}
+							};
+
+							m_modifier.OnInspectorGUI(onChangedAction);
+						}
+					}
+				}
 			}
 		}
 
-		public T FromJson<T> (string source) {
-			return JsonUtility.FromJson<T>(source);
-		}  
-
-		/*
-			・NonSerializedをセットしないと、ModifierOperators.OperatorBase型に戻ってしまう。
-			・SerializeFieldにする or なにもつけないと、もれなくModifierOperators.OperatorBase型にもどる
-			・Undo/Redoを行うためには、ModifierOperators.OperatorBaseを拡張した型のメンバーをUndo/Redo対象にしなければいけない
-			・ModifierOperators.OperatorBase意外に晒していい型がない
-
-			という無茶苦茶な難題があります。
-			Undo/Redo時にオリジナルの型に戻ってしまう、という仕様と、追加を楽にするために型定義をModifierOperators.OperatorBase型にする、
-			っていうのが相反するようです。うーんどうしよう。
-		*/
-		[NonSerialized] private ModifierOperators.OperatorBase modifierOperatorInstance;
-
 		private void DoInspectorGroupingGUI (NodeGUI node) {
-			if (node.groupingKeyword == null) return;
+			if (node.Data.GroupingKeywords == null) {
+				return;
+			}
 
 			EditorGUILayout.HelpBox("Grouping: Create group of assets.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var newGroupingKeyword = EditorGUILayout.TextField(
-					"Grouping Keyword",
-					SystemDataUtility.GetPlatformValue(
-						node.groupingKeyword.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
-				);
-				EditorGUILayout.HelpBox("Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", MessageType.Info);
-
-
-				IntegratedGUIGrouping.ValidateGroupingKeyword(
-					newGroupingKeyword,
-					() => {
-//						EditorGUILayout.HelpBox("groupingKeyword is empty.", MessageType.Error);
-					},
-					() => {
-//						EditorGUILayout.HelpBox("grouping keyword does not contain " + AssetBundleGraphSettings.KEYWORD_WILDCARD + " groupingKeyword:" + newGroupingKeyword, MessageType.Error);
+				var disabledScope = DrawOverrideTargetToggle(node, node.Data.GroupingKeywords.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					using(new RecordUndoScope("Remove Target Grouping Keyword Settings", node, true)){
+						if(enabled) {
+							node.Data.GroupingKeywords[currentEditingGroup] = node.Data.GroupingKeywords.DefaultValue;
+						} else {
+							node.Data.GroupingKeywords.Remove(currentEditingGroup);
+						}
 					}
-				);
+				});
 
-				if (newGroupingKeyword != SystemDataUtility.GetPlatformValue(
-					node.groupingKeyword.ReadonlyDict(), 
-					node.currentPlatform
-				).ToString()
-				) {
-					node.BeforeSave();
-					node.groupingKeyword.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), newGroupingKeyword);
-					node.Save();
+				using (disabledScope) {
+					var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",node.Data.GroupingKeywords[currentEditingGroup]);
+					EditorGUILayout.HelpBox(
+						"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
+						MessageType.Info);
+
+					if (newGroupingKeyword != node.Data.GroupingKeywords[currentEditingGroup]) {
+						using(new RecordUndoScope("Change Grouping Keywords", node, true)){
+							node.Data.GroupingKeywords[currentEditingGroup] = newGroupingKeyword;
+						}
+					}
 				}
 			}
-
-			UpdateDeleteSetting(node);
 		}
 
-		private void DoInspectorPrefabricatorScriptGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
-			UpdateNodeName(node);
-
-			EditorGUILayout.LabelField("Script Path", node.scriptPath);
-		}
-
-		private void DoInspectorPrefabricatorGUI (NodeGUI node) {
-			EditorGUILayout.HelpBox("Prefabricator: Create prefab with given assets and script.", MessageType.Info);
+		private void DoInspectorPrefabBuilderGUI (NodeGUI node) {
+			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				GUIStyle s = new GUIStyle("TextFieldDropDownText");
+				var map = PrefabBuilderUtility.GetAttributeClassNameMap();
+				if(map.Count > 0) {
+					using(new GUILayout.HorizontalScope()) {
+						GUILayout.Label("PrefabBuilder");
+						var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(node.Data.ScriptClassName);
 
-				/*
-					check prefabricator script-type string.
-				*/
-				if (string.IsNullOrEmpty(node.scriptClassName)) {
-					s.fontStyle = FontStyle.Bold;
-					s.fontSize  = 12;
+						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
+							var builders = map.Keys.ToList();
+
+							if(builders.Count > 0) {
+								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
+									{
+										using(new RecordUndoScope("Change PrefabBuilder class", node, true)) {
+											m_prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(selectedGUIName);
+											if(m_prefabBuilder != null) {
+												node.Data.ScriptClassName = PrefabBuilderUtility.GUINameToClassName(selectedGUIName);
+												node.Data.InstanceData.DefaultValue = m_prefabBuilder.Serialize();
+											}
+										}
+									} 
+								);
+							}
+						}
+					}
 				} else {
-					var loadedType = System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(node.scriptClassName);
-
-					if (loadedType == null) {
-						s.fontStyle = FontStyle.Bold;
-						s.fontSize  = 12;
+					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
+						EditorGUILayout.HelpBox(
+							string.Format(
+								"Your PrefabBuilder script {0} is missing from assembly. Did you delete script?", node.Data.ScriptClassName), MessageType.Info);
+					} else {
+						string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
+						EditorGUILayout.HelpBox(
+							string.Format(
+								"You need to create at least one PrefabBuilder script to use PrefabBuilder node. To start, select {0}>{1}>{2} menu and create new script from template.",
+								menuNames[1],menuNames[2], menuNames[3]
+							), MessageType.Info);
 					}
 				}
 
+				GUILayout.Space(10f);
 
-				var newScriptClass = EditorGUILayout.TextField("Classname", node.scriptClassName, s);
+				if(DrawPlatformSelector(node)) {
+					// if platform tab is changed, renew prefabBuilder for that tab.
+					m_prefabBuilder = null;
+				}
+				using (new EditorGUILayout.VerticalScope()) {
+					var disabledScope = DrawOverrideTargetToggle(node, node.Data.InstanceData.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+						if(enabled) {
+							node.Data.InstanceData[currentEditingGroup] = node.Data.InstanceData.DefaultValue;
+						} else {
+							node.Data.InstanceData.Remove(currentEditingGroup);
+						}
+						m_prefabBuilder = null;
+					});
 
-				if (newScriptClass != node.scriptClassName) {
-					node.BeforeSave();
-					node.scriptClassName = newScriptClass;
-					node.Save();
+					using (disabledScope) {
+						//reload prefabBuilder instance from saved instance data.
+						if (m_prefabBuilder == null) {
+							m_prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(node.Data, currentEditingGroup);
+							if(m_prefabBuilder != null) {
+								node.Data.ScriptClassName = m_prefabBuilder.GetType().FullName;
+								if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+									node.Data.InstanceData[currentEditingGroup] = m_prefabBuilder.Serialize();
+								}
+							}
+						}
+
+						if (m_prefabBuilder != null) {
+							Action onChangedAction = () => {
+								using(new RecordUndoScope("Change PrefabBuilder Setting", node)) {
+									node.Data.ScriptClassName = m_prefabBuilder.GetType().FullName;
+									if(node.Data.InstanceData.ContainsValueOf(currentEditingGroup)) {
+										node.Data.InstanceData[currentEditingGroup] = m_prefabBuilder.Serialize();
+									}
+								}
+							};
+
+							m_prefabBuilder.OnInspectorGUI(onChangedAction);
+						}
+					}
 				}
 			}
 		}
 		
-		private void DoInspectorBundlizerGUI (NodeGUI node) {
-			if (node.bundleNameTemplate == null) return;
+		private void DoInspectorBundleConfiguratorGUI (NodeGUI node) {
+			if (node.Data.BundleNameTemplate == null) return;
 
-			EditorGUILayout.HelpBox("Bundlizer: Create asset bundle settings with given group of assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("BundleConfigurator: Create asset bundle settings with given group of assets.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var bundleNameTemplate = EditorGUILayout.TextField(
-					"Bundle Name Template", 
-					SystemDataUtility.GetPlatformValue(
-						node.bundleNameTemplate.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
-				).ToLower();
-
-				IntegratedGUIBundlizer.ValidateBundleNameTemplate(
-					bundleNameTemplate,
-					() => {
-//						EditorGUILayout.HelpBox("No Bundle Name Template set.", MessageType.Error);
+				var disabledScope = DrawOverrideTargetToggle(node, node.Data.BundleNameTemplate.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					using(new RecordUndoScope("Remove Target Bundle Name Template Setting", node, true)){
+						if(enabled) {
+							node.Data.BundleNameTemplate[currentEditingGroup] = node.Data.BundleNameTemplate.DefaultValue;
+						} else {
+							node.Data.BundleNameTemplate.Remove(currentEditingGroup);
+						}
 					}
-				);
+				});
 
-				if (bundleNameTemplate != SystemDataUtility.GetPlatformValue(
-					node.bundleNameTemplate.ReadonlyDict(), 
-					node.currentPlatform
-				).ToString()
-				) {
-					node.BeforeSave();
-					node.bundleNameTemplate.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), bundleNameTemplate);
-					node.Save();
-				}
+				using (disabledScope) {
+					var bundleNameTemplate = EditorGUILayout.TextField("Bundle Name Template", node.Data.BundleNameTemplate[currentEditingGroup]).ToLower();
 
-				var isUseOutputResoruces = SystemDataUtility.GetPlatformValue(
-					node.bundleUseOutput.ReadonlyDict(), 
-					node.currentPlatform
-				).ToString().ToLower();
-
-				var useOrNot = false;
-				switch (isUseOutputResoruces) {
-				case "true": {
-						useOrNot = true;
-						break;
+					if (bundleNameTemplate != node.Data.BundleNameTemplate[currentEditingGroup]) {
+						using(new RecordUndoScope("Change Bundle Name Template", node, true)){
+							node.Data.BundleNameTemplate[currentEditingGroup] = bundleNameTemplate;
+						}
 					}
 				}
-				
-				var result = EditorGUILayout.ToggleLeft("Asset Output for Dependency", useOrNot);
-
-				if (result != useOrNot) {
-					node.BeforeSave();
-
-					if (result) node.AddBundlizerDependencyOutput();
-					else node.RemoveBundlizerDependencyOutput(); 
-
-					node.bundleUseOutput.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), result.ToString());
-					node.Save();
-				}
-
-				EditorGUILayout.HelpBox("Check this to enable asset output slot to create asset bundle which has dependency to asset bundle of this node.", MessageType.Info);
 			}
 
-			UpdateDeleteSetting(node);
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				GUILayout.Label("Variants:");
+				var variantNames = node.Data.Variants.Select(v => v.Name).ToList();
+				Variant removing = null;
+				foreach (var v in node.Data.Variants) {
+					using (new GUILayout.HorizontalScope()) {
+						if (GUILayout.Button("-", GUILayout.Width(30))) {
+							removing = v;
+						}
+						else {
+							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+							Action makeStyleBold = () => {
+								s.fontStyle = FontStyle.Bold;
+								s.fontSize = 12;
+							};
+
+							IntegratedGUIBundleConfigurator.ValidateVariantName(v.Name, variantNames, 
+								makeStyleBold,
+								makeStyleBold,
+								makeStyleBold);
+
+							var variantName = EditorGUILayout.TextField(v.Name, s);
+
+							if (variantName != v.Name) {
+								using(new RecordUndoScope("Change Variant Name", node, true)){
+									v.Name = variantName;
+								}
+							}
+						}
+					}
+				}
+				if (GUILayout.Button("+")) {
+					using(new RecordUndoScope("Add Variant", node, true)){
+						node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
+					}
+				}
+				if(removing != null) {
+					using(new RecordUndoScope("Remove Variant", node, true)){
+						// event must raise to remove connection associated with point
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+						node.Data.RemoveVariant(removing);
+					}
+				}
+			}
 		}
 
 		private void DoInspectorBundleBuilderGUI (NodeGUI node) {
-			if (node.enabledBundleOptions == null) return;
+			if (node.Data.BundleBuilderBundleOptions == null) {
+				return;
+			}
 
 			EditorGUILayout.HelpBox("BundleBuilder: Build asset bundles with given asset bundle settings.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var bundleOptions = SystemDataUtility.GetPlatformValue(
-					node.enabledBundleOptions.ReadonlyDict(),
-					node.currentPlatform
-				);
+				var disabledScope = DrawOverrideTargetToggle(node, node.Data.BundleBuilderBundleOptions.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					using(new RecordUndoScope("Remove Target Bundle Options", node, true)){
+						if(enabled) {
+							node.Data.BundleBuilderBundleOptions[currentEditingGroup] = node.Data.BundleBuilderBundleOptions.DefaultValue;
+						}  else {
+							node.Data.BundleBuilderBundleOptions.Remove(currentEditingGroup);
+						}
+					}
+				} );
 
-				var plartform_pakcage_key = SystemDataUtility.CreateKeyNameFromString(node.currentPlatform);
+				using (disabledScope) {
+					int bundleOptions = node.Data.BundleBuilderBundleOptions[currentEditingGroup];
 
-				for (var i = 0; i < AssetBundleGraphSettings.DefaultBundleOptionSettings.Count; i++) {
-					var enablablekey = AssetBundleGraphSettings.DefaultBundleOptionSettings[i];
+					bool isDisableWriteTypeTreeEnabled  = 0 < (bundleOptions & (int)BuildAssetBundleOptions.DisableWriteTypeTree);
+					bool isIgnoreTypeTreeChangesEnabled = 0 < (bundleOptions & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
 
-					// contains keyword == enabled. if not, disabled.
-					var isEnabled = bundleOptions.Contains(enablablekey);
+					// buildOptions are validated during loading. Two flags should not be true at the same time.
+					UnityEngine.Assertions.Assert.IsFalse(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled);
 
-					var result = EditorGUILayout.ToggleLeft(enablablekey, isEnabled);
-					if (result != isEnabled) {
-						node.BeforeSave();
+					bool isSomethingDisabled = isDisableWriteTypeTreeEnabled || isIgnoreTypeTreeChangesEnabled;
 
-						var resultsDict = node.enabledBundleOptions.ReadonlyDict();
-						var resultList = new List<string>();
-						if (resultsDict.ContainsKey(plartform_pakcage_key)) resultList = resultsDict[plartform_pakcage_key];
+					foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
 
-						if (result) {
-							if (!resultList.Contains(enablablekey)) {
-								var currentEnableds = new List<string>();
-								if (resultsDict.ContainsKey(plartform_pakcage_key)) currentEnableds = resultsDict[plartform_pakcage_key];
-								currentEnableds.Add(enablablekey);
+						// contains keyword == enabled. if not, disabled.
+						bool isEnabled = (bundleOptions & (int)option.option) != 0;
 
-								node.enabledBundleOptions.Add(
-									SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-									currentEnableds
-								);
+						bool isToggleDisabled = 
+							(option.option == BuildAssetBundleOptions.DisableWriteTypeTree  && isIgnoreTypeTreeChangesEnabled) ||
+							(option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges && isDisableWriteTypeTreeEnabled);
+
+						using(new EditorGUI.DisabledScope(isToggleDisabled)) {
+							var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
+							if (result != isEnabled) {
+								using(new RecordUndoScope("Change Bundle Options", node, true)){
+									bundleOptions = (result) ? 
+										((int)option.option | bundleOptions) : 
+										(((~(int)option.option)) & bundleOptions);
+									node.Data.BundleBuilderBundleOptions[currentEditingGroup] = bundleOptions;
+								}
 							}
 						}
-
-						if (!result) {
-							if (resultList.Contains(enablablekey)) {
-								var currentEnableds = new List<string>();
-								if (resultsDict.ContainsKey(plartform_pakcage_key)) currentEnableds = resultsDict[plartform_pakcage_key];
-								currentEnableds.Remove(enablablekey);
-
-								node.enabledBundleOptions.Add(
-									SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-									currentEnableds
-								);
-							}
-						}
-
-						/*
-										Cannot use options DisableWriteTypeTree and IgnoreTypeTreeChanges at the same time.
-									*/
-						if (enablablekey == "Disable Write TypeTree" && result &&
-							node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)].Contains("Ignore TypeTree Changes")) {
-
-							var newEnableds = node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)];
-							newEnableds.Remove("Ignore TypeTree Changes");
-
-							node.enabledBundleOptions.Add(
-								SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-								newEnableds
-							);
-						}
-
-						if (enablablekey == "Ignore TypeTree Changes" && result &&
-							node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)].Contains("Disable Write TypeTree")) {
-
-							var newEnableds = node.enabledBundleOptions.ReadonlyDict()[SystemDataUtility.CreateKeyNameFromString(node.currentPlatform)];
-							newEnableds.Remove("Disable Write TypeTree");
-
-							node.enabledBundleOptions.Add(
-								SystemDataUtility.CreateKeyNameFromString(node.currentPlatform),
-								newEnableds
-							);
-						}
-
-						node.Save();
-						return;
+					}
+					if(isSomethingDisabled) {
+						EditorGUILayout.HelpBox("'Disable Write Type Tree' and 'Ignore Type Tree Changes' can not be used together.", MessageType.Info);
 					}
 				}
 			}
-
-			UpdateDeleteSetting(node);
-
 		}
 
 
 		private void DoInspectorExporterGUI (NodeGUI node) {
-			if (node.exportTo == null) return;
+			if (node.Data.ExporterExportPath == null) {
+				return;
+			}
 
 			EditorGUILayout.HelpBox("Exporter: Export given files to output directory.", MessageType.Info);
 			UpdateNodeName(node);
 
 			GUILayout.Space(10f);
 
-			node.currentPlatform = UpdateCurrentPlatform(node.currentPlatform);
-
+			//Show target configuration tab
+			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				EditorGUILayout.LabelField("Export Path:");
-				var newExportPath = EditorGUILayout.TextField(
-					SystemDataUtility.GetProjectName(), 
-					SystemDataUtility.GetPlatformValue(
-						node.exportTo.ReadonlyDict(), 
-						node.currentPlatform
-					).ToString()
-				);
+				var disabledScope = DrawOverrideTargetToggle(node, node.Data.ExporterExportPath.ContainsValueOf(currentEditingGroup), (bool enabled) => {
+					using(new RecordUndoScope("Remove Target Export Settings", node, true)){
+						if(enabled) {
+							node.Data.ExporterExportPath[currentEditingGroup] = node.Data.ExporterExportPath.DefaultValue;
+						}  else {
+							node.Data.ExporterExportPath.Remove(currentEditingGroup);
+						}
+					}
+				} );
 
-				var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
-				if(IntegratedGUIExporter.ValidateExportPath(
-					newExportPath,
-					exporterrNodePath,
-					() => {
-						// TODO Make text field bold
-					},
-					() => {
-						using (new EditorGUILayout.HorizontalScope()) {
-							EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
-							if(GUILayout.Button("Create directory")) {
-								Directory.CreateDirectory(exporterrNodePath);
-								node.Save();
+				using (disabledScope) {
+					EditorGUILayout.LabelField("Export Path:");
+					var newExportPath = EditorGUILayout.TextField(
+						SystemDataUtility.GetProjectName(), 
+						node.Data.ExporterExportPath[currentEditingGroup]
+					);
+
+					var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
+					if(IntegratedGUIExporter.ValidateExportPath(
+						newExportPath,
+						exporterrNodePath,
+						() => {
+							// TODO Make text field bold
+						},
+						() => {
+							using (new EditorGUILayout.HorizontalScope()) {
+								EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
+								if(GUILayout.Button("Create directory")) {
+									using(new SaveScope(node)) {
+										Directory.CreateDirectory(exporterrNodePath);
+									}
+								}
+							}
+							EditorGUILayout.Space();
+
+							EditorGUILayout.LabelField("Available Directories:");
+							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
+							foreach(string s in dirs) {
+								EditorGUILayout.LabelField(s);
 							}
 						}
-						EditorGUILayout.Space();
-
-						EditorGUILayout.LabelField("Available Directories:");
-						string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
-						foreach(string s in dirs) {
-							EditorGUILayout.LabelField(s);
+					)) {
+						using (new EditorGUILayout.HorizontalScope()) {
+							GUILayout.FlexibleSpace();
+							#if UNITY_EDITOR_OSX
+							string buttonName = "Reveal in Finder";
+							#else
+							string buttonName = "Show in Explorer";
+							#endif 
+							if(GUILayout.Button(buttonName)) {
+								EditorUtility.RevealInFinder(exporterrNodePath);
+							}
 						}
 					}
-				)) {
-					using (new EditorGUILayout.HorizontalScope()) {
-						GUILayout.FlexibleSpace();
-						#if UNITY_EDITOR_OSX
-						string buttonName = "Reveal in Finder";
-						#else
-						string buttonName = "Show in Explorer";
-						#endif 
-						if(GUILayout.Button(buttonName)) {
-							EditorUtility.RevealInFinder(exporterrNodePath);
+						
+					if (newExportPath != node.Data.ExporterExportPath[currentEditingGroup]) {
+						using(new RecordUndoScope("Change Export Path", node, true)){
+							node.Data.ExporterExportPath[currentEditingGroup] = newExportPath;
 						}
 					}
-				}
-
-
-				if (newExportPath != SystemDataUtility.GetPlatformValue(
-					node.exportTo.ReadonlyDict(),
-					node.currentPlatform
-				).ToString()
-				) {
-					node.BeforeSave();
-					node.exportTo.Add(SystemDataUtility.CreateKeyNameFromString(node.currentPlatform), newExportPath);
-					node.Save();
 				}
 			}
-
-			UpdateDeleteSetting(node);
 		}
 
 
@@ -690,48 +634,36 @@ namespace AssetBundleGraph {
 			var node = currentTarget.node;
 			if (node == null) return;
 
-			if(messageActions == null) {
-				messageActions = new List<Action>();
-			}
-
-			messageActions.Clear();
-
-			switch (node.kind) {
-			case AssetBundleGraphSettings.NodeKind.LOADER_GUI:
+			switch (node.Kind) {
+			case NodeKind.LOADER_GUI:
 				DoInspectorLoaderGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_SCRIPT:
-				DoInspectorFilterScriptGUI(node);
-				break;
-			case AssetBundleGraphSettings.NodeKind.FILTER_GUI:
+			case NodeKind.FILTER_GUI:
 				DoInspectorFilterGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.IMPORTSETTING_GUI :
+			case NodeKind.IMPORTSETTING_GUI :
 				DoInspectorImportSettingGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.MODIFIER_GUI :
+			case NodeKind.MODIFIER_GUI :
 				DoInspectorModifierGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.GROUPING_GUI:
+			case NodeKind.GROUPING_GUI:
 				DoInspectorGroupingGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_SCRIPT:
-				DoInspectorPrefabricatorScriptGUI(node);
+			case NodeKind.PREFABBUILDER_GUI:
+				DoInspectorPrefabBuilderGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.PREFABRICATOR_GUI:
-				DoInspectorPrefabricatorGUI(node);
+			case NodeKind.BUNDLECONFIG_GUI:
+				DoInspectorBundleConfiguratorGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLIZER_GUI:
-				DoInspectorBundlizerGUI(node);
-				break;
-			case AssetBundleGraphSettings.NodeKind.BUNDLEBUILDER_GUI:
+			case NodeKind.BUNDLEBUILDER_GUI:
 				DoInspectorBundleBuilderGUI(node);
 				break;
-			case AssetBundleGraphSettings.NodeKind.EXPORTER_GUI: 
+			case NodeKind.EXPORTER_GUI: 
 				DoInspectorExporterGUI(node);
 				break;
 			default: 
-				Debug.LogError(node.name + " is defined as unknown kind of node. value:" + node.kind);
+				Debug.LogError(node.Name + " is defined as unknown kind of node. value:" + node.Kind);
 				break;
 			}
 
@@ -739,11 +671,6 @@ namespace AssetBundleGraph {
 			if (errors != null && errors.Any()) {
 				foreach (var error in errors) {
 					EditorGUILayout.HelpBox(error, MessageType.Error);
-				}
-			}
-			using (new EditorGUILayout.VerticalScope()) {
-				foreach(Action a in messageActions) {
-					a.Invoke();
 				}
 			}
 		}
@@ -770,8 +697,16 @@ namespace AssetBundleGraph {
 			menu.ShowAsContext();
 		}
 
+		private Type FindIncomingAssetType(ConnectionPointData inputPoint) {
+			var assetGroups = AssetBundleGraphEditorWindow.GetIncomingAssetGroups(inputPoint);
+			if(assetGroups == null) {
+				return null;
+			}
+			return TypeUtility.FindIncomingAssetType(assetGroups.SelectMany(v => v.Value).ToList());
+		}
+
 		private void UpdateNodeName (NodeGUI node) {
-			var newName = EditorGUILayout.TextField("Node Name", node.name);
+			var newName = EditorGUILayout.TextField("Node Name", node.Name);
 
 			if( NodeGUIUtility.allNodeNames != null ) {
 				var overlapping = NodeGUIUtility.allNodeNames.GroupBy(x => x)
@@ -779,40 +714,38 @@ namespace AssetBundleGraph {
 					.Select(group => group.Key);
 				if (overlapping.Any() && overlapping.Contains(newName)) {
 					EditorGUILayout.HelpBox("This node name already exist. Please put other name:" + newName, MessageType.Error);
-					AssetBundleGraphEditorWindow.AddNodeException(new NodeException("Node name " + newName + " already exist.", node.nodeId ));
+					AssetBundleGraphEditorWindow.AddNodeException(new NodeException("Node name " + newName + " already exist.", node.Id ));
 				}
 			}
 
-			if (newName != node.name) {
-				node.BeforeSave();
-				node.name = newName;
-				node.UpdateNodeRect();
-				node.Save();
+			if (newName != node.Name) {
+				using(new RecordUndoScope("Change Node Name", node, true)){
+					node.Name = newName;
+				}
 			}
 		}
 
-		private string UpdateCurrentPlatform (string basePlatfrom) {
-			var newPlatform = basePlatfrom;
+		/*
+		 *  Return true if Platform is changed
+		 */ 
+		private bool DrawPlatformSelector (NodeGUI node) {
+			BuildTargetGroup g = currentEditingGroup;
+			bool editGroupChanged = false;
 
 			EditorGUI.BeginChangeCheck();
 			using (new EditorGUILayout.HorizontalScope()) {
 				var choosenIndex = -1;
-				for (var i = 0; i < NodeGUIUtility.platformButtonTextures.Length; i++) {
-					var onOffBefore = NodeGUIUtility.platformStrings[i] == basePlatfrom;
+				for (var i = 0; i < NodeGUIUtility.platformButtons.Length; i++) {
+					var onOffBefore = NodeGUIUtility.platformButtons[i].targetGroup == currentEditingGroup;
 					var onOffAfter = onOffBefore;
 
-					// index 0 is Default.
-					switch (i) {
-					case 0: {
-							onOffAfter = GUILayout.Toggle(onOffBefore, "Default", "toolbarbutton");
-							break;
-						}
-					default: {
-							// for each platform texture.
-							var platformButtonTexture = NodeGUIUtility.platformButtonTextures[i];
-							onOffAfter = GUILayout.Toggle(onOffBefore, platformButtonTexture, "toolbarbutton");
-							break;
-						}
+					GUIStyle toolbarbutton = new GUIStyle("toolbarbutton");
+
+					if(NodeGUIUtility.platformButtons[i].targetGroup == BuildTargetUtility.DefaultTarget) {
+						onOffAfter = GUILayout.Toggle(onOffBefore, NodeGUIUtility.platformButtons[i].ui, toolbarbutton);
+					} else {
+						var width = Mathf.Max(32f, toolbarbutton.CalcSize(NodeGUIUtility.platformButtons[i].ui).x);
+						onOffAfter = GUILayout.Toggle(onOffBefore, NodeGUIUtility.platformButtons[i].ui, toolbarbutton, GUILayout.Width( width ));
 					}
 
 					if (onOffBefore != onOffAfter) {
@@ -822,32 +755,32 @@ namespace AssetBundleGraph {
 				}
 
 				if (EditorGUI.EndChangeCheck()) {
-					newPlatform = NodeGUIUtility.platformStrings[choosenIndex];
+					g = NodeGUIUtility.platformButtons[choosenIndex].targetGroup;
 				}
 			}
 
-			if (newPlatform != basePlatfrom) GUI.FocusControl(string.Empty);
-			return newPlatform;
+			if (g != currentEditingGroup) {
+				currentEditingGroup = g;
+				editGroupChanged = true;
+				GUI.FocusControl(string.Empty);
+			}
+
+			return editGroupChanged;
 		}
 
+		private EditorGUI.DisabledScope DrawOverrideTargetToggle(NodeGUI node, bool status, Action<bool> onStatusChange) {
 
-		private bool UpdateDeleteSetting (NodeGUI currentNode) {
-			var currentNodePlatformPackageKey = SystemDataUtility.CreateKeyNameFromString(currentNode.currentPlatform);
-
-			if (currentNodePlatformPackageKey == AssetBundleGraphSettings.PLATFORM_DEFAULT_NAME) return false;
-
-			var deleted = false;
-			using (new EditorGUILayout.HorizontalScope()) {
-				GUILayout.FlexibleSpace();
-				if (GUILayout.Button("Use Default Setting", GUILayout.Width(150))) {
-					currentNode.BeforeSave();
-					currentNode.DeleteCurrentPackagePlatformKey(currentNodePlatformPackageKey);
-					GUI.FocusControl(string.Empty);
-					currentNode.Save();
-					deleted = true;
-				}
+			if( currentEditingGroup == BuildTargetUtility.DefaultTarget ) {
+				return new EditorGUI.DisabledScope(false);
 			}
-			return deleted;
+
+			bool newStatus = GUILayout.Toggle(status, 
+				"Override for " + NodeGUIUtility.GetPlatformButtonFor(currentEditingGroup).ui.tooltip);
+			
+			if(newStatus != status && onStatusChange != null) {
+				onStatusChange(newStatus);
+			}
+			return new EditorGUI.DisabledScope(!newStatus);
 		}
 	}
 }
