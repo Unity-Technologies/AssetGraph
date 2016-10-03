@@ -6,6 +6,10 @@ using UnityEngine;
 
 namespace AssetBundleGraph.Modifiers {
 	
+	/*
+	 * Code template for Animation modifier.
+	 * You can copy and create your CustomModifier.
+	 */ 
 	[Serializable] 
 	[CustomModifier("Default Modifier(AvatarMask)", typeof(AvatarMask))]
 	public class AvatarMaskModifier : IModifier {
@@ -13,19 +17,22 @@ namespace AssetBundleGraph.Modifiers {
 		public AvatarMaskModifier () {}
 
 		public bool IsModified (object asset) {
-			//TODO: implement this
+			//var anim = asset as AvatarMask;
+
+			// Do your work here
+
 			var changed = false;
 			return changed; 
 		}
 
 		public void Modify (object asset) {
-			//var flare = asset as Shader;
-			//TODO: implement this
+			//var anim = asset as AvatarMask;
+
+			// Do your work here
 		}
 
 		public void OnInspectorGUI (Action onValueChanged) {
-			//TODO: implement this
-			GUILayout.Label("TODO: inspector.");
+			GUILayout.Label("Implement your modifier for this type.");
 		}
 
 		public string Serialize() {
