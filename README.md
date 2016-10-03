@@ -4,6 +4,7 @@
 
 AssetBundleGraphTool is a visual toolset lets you configure and create Unity's AssetBundles. It is intended to create rule-based configuration in visual form to create and manage efficient workflow around AssetBundle generation. 
 
+[Quick Q&A](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Home)
 
 ##Usage
 ###1.Add Nodes
