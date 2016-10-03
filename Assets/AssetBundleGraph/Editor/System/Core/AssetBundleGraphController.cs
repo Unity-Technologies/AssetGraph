@@ -71,14 +71,15 @@ namespace AssetBundleGraph {
 			SaveData saveData, 
 			BuildTarget target,
 			bool isRun,
-			Action<NodeData, float> updateHandler=null
-		) {
+			Action<NodeException> errorHandler,
+			Action<NodeData, float> updateHandler) 
+		{
 			bool validateFailed = false;
 			try {
 				ValidateNameCollision(saveData);
 				ValidateLoopConnection(saveData);
 			} catch (NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
+				errorHandler(e);
 				validateFailed = true;
 			}
 
@@ -93,60 +94,17 @@ namespace AssetBundleGraph {
 
 				foreach (var leafNode in leaf) {
 					if( leafNode.InputPoints.Count == 0 ) {
-						DoNodeOperation(target, leafNode, null, null, saveData, resultDict, cacheDict, performedIds, isRun, updateHandler);
+						DoNodeOperation(target, leafNode, null, null, saveData, resultDict, cacheDict, performedIds, isRun, errorHandler, updateHandler);
 					} else {
 						foreach(var inputPoint in leafNode.InputPoints) {
-							DoNodeOperation(target, leafNode, inputPoint, null, saveData, resultDict, cacheDict, performedIds, isRun, updateHandler);
+							DoNodeOperation(target, leafNode, inputPoint, null, saveData, resultDict, cacheDict, performedIds, isRun, errorHandler, updateHandler);
 						}
 					}
 				}
 			}
 			return resultDict;
 		}
-
-		/**
-		 *  Collect build result: connectionId : < groupName : List<Asset> >
-		 */
-//		private static Dictionary<ConnectionData, Dictionary<string, List<Asset>>> 
-//		CollectResult (Dictionary<ConnectionData, Dictionary<string, List<Asset>>> buildResult) {
-//
-//			var finalResult = new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
-//
-//			foreach (var connection in buildResult.Keys) {
-//				var groupDict = buildResult[connection];
-//				var finalGroupDict = new Dictionary<string, List<Asset>>();
-//
-//				foreach (var groupKey in groupDict.Keys) {
-//					var assets = groupDict[groupKey];
-//					var finalAssets = new List<Asset>();
-//
-//					foreach (var assetData in assets) {
-//						var bundled = assetData.isBundled;
-//
-//						if (!string.IsNullOrEmpty(assetData.importFrom)) {
-//							finalAssets.Add(new DepreacatedThroughputAsset(assetData.importFrom, bundled));
-//							continue;
-//						} 
-//
-//						if (!string.IsNullOrEmpty(assetData.absoluteAssetPath)) {
-//							var relativeAbsolutePath = assetData.absoluteAssetPath.Replace(FileUtility.ProjectPathWithSlash(), string.Empty);
-//							finalAssets.Add(new DepreacatedThroughputAsset(relativeAbsolutePath, bundled));
-//							continue;
-//						}
-//
-//						if (!string.IsNullOrEmpty(assetData.exportTo)) {
-//							finalAssets.Add(new DepreacatedThroughputAsset(assetData.exportTo, bundled));
-//							continue;
-//						}
-//					}
-//					finalGroupDict[groupKey] = finalAssets;
-//				}
-//				finalResult[connection] = finalGroupDict;
-//			}
-//			return finalResult;
-//		}
-
-
+			
 		/**
 			Perform Run or Setup from parent of given terminal node recursively.
 		*/
@@ -160,7 +118,8 @@ namespace AssetBundleGraph {
 			Dictionary<NodeData, List<string>> cachedDict,
 			List<string> performedIds,
 			bool isActualRun,
-			Action<NodeData, float> updateHandler=null
+			Action<NodeException> errorHandler,
+			Action<NodeData, float> updateHandler
 		) {
 			if (performedIds.Contains(currentNodeData.Id) || (currentInputPoint != null && performedIds.Contains(currentInputPoint.Id))) {
 				return;
@@ -181,12 +140,12 @@ namespace AssetBundleGraph {
 				if( parentNode.InputPoints.Count > 0 ) {
 					// if node has multiple input, node is operated per input
 					foreach(var parentInputPoint in parentNode.InputPoints) {
-						DoNodeOperation(target, parentNode, parentInputPoint, c, saveData, resultDict, cachedDict, performedIds, isActualRun, updateHandler);
+						DoNodeOperation(target, parentNode, parentInputPoint, c, saveData, resultDict, cachedDict, performedIds, isActualRun, errorHandler, updateHandler);
 					}
 				} 
 				// if parent does not have input point, call with inputPoint==null
 				else {
-					DoNodeOperation(target, parentNode, null, c, saveData, resultDict, cachedDict, performedIds, isActualRun, updateHandler);
+					DoNodeOperation(target, parentNode, null, c, saveData, resultDict, cachedDict, performedIds, isActualRun, errorHandler, updateHandler);
 				}
 			}
 
@@ -271,7 +230,7 @@ namespace AssetBundleGraph {
 			};
 
 			try {
-				INodeOperation executor = CreateOperation(saveData, currentNodeData);
+				INodeOperation executor = CreateOperation(saveData, currentNodeData, errorHandler);
 				if(executor != null) {
 					if(isActualRun) {
 						executor.Run(target, currentNodeData, currentInputPoint, connectionToOutput, inputGroupAssets, alreadyCachedPaths, Output);
@@ -282,7 +241,7 @@ namespace AssetBundleGraph {
 				}
 
 			} catch (NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
+				errorHandler(e);
 				// since error occured, this node should stop running for other inputpoints. Adding node id to stop.
 				if(!performedIds.Contains(currentNodeData.Id)) {
 					performedIds.Add(currentNodeData.Id);
@@ -294,7 +253,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static INodeOperation CreateOperation(SaveData saveData, NodeData currentNodeData) {
+		public static INodeOperation CreateOperation(SaveData saveData, NodeData currentNodeData, Action<NodeException> errorHandler) {
 			INodeOperation executor = null;
 
 			try {
@@ -348,9 +307,7 @@ namespace AssetBundleGraph {
 					}
 				} 
 			} catch (NodeException e) {
-				AssetBundleGraphEditorWindow.AddNodeException(e);
-				//Debug.LogError("error occured:\"" + e.reason + "\", please check information on node.");
-				//throw new AssetBundleGraphException(node.Name + ": " + e.reason);
+				errorHandler(e);
 			}
 
 			return executor;
@@ -428,6 +385,46 @@ namespace AssetBundleGraph {
 			return new List<string>();
 		}
 		
+		public static void Postprocess (SaveData saveData, Dictionary<ConnectionData, Dictionary<string, List<Asset>>> result, bool isBuild) 
+		{
+			var nodeResult = CollectNodeGroupAndAssets(saveData, result);
+
+			var postprocessType = typeof(IPostprocess);
+			var ppTypes = Assembly.GetExecutingAssembly().GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
+			foreach (var t in ppTypes) {
+				var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(t.Name);
+				if (postprocessScriptInstance == null) {
+					throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
+				}
+				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
+
+				postprocessInstance.Run(nodeResult, isBuild);
+			}
+		}
+
+		private static Dictionary<NodeData, Dictionary<string, List<Asset>>> CollectNodeGroupAndAssets (
+			SaveData data,
+			Dictionary<ConnectionData, Dictionary<string, List<Asset>>> result
+		) {
+			var nodeDatas = new Dictionary<NodeData, Dictionary<string, List<Asset>>>();
+
+			foreach (var c in result.Keys) {
+				var targetNode = data.Nodes.Find(node => node.Id == c.FromNodeId);
+				var groupDict = result[c];
+
+				if (!nodeDatas.ContainsKey(targetNode)) {
+					nodeDatas[targetNode] = new Dictionary<string, List<Asset>>();
+				}
+				foreach (var groupKey in groupDict.Keys) {
+					if (!nodeDatas[targetNode].ContainsKey(groupKey)) {
+						nodeDatas[targetNode][groupKey] = new List<Asset>();
+					}
+					nodeDatas[targetNode][groupKey].AddRange(groupDict[groupKey]);
+				}
+			}
+
+			return nodeDatas;
+		}
 
 	}
 }
