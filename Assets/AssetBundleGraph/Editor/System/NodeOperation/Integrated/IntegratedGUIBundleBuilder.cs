@@ -110,10 +110,11 @@ namespace AssetBundleGraph {
 
 		// Check if given file is generated Item
 		private bool IsFileIntendedItem(string filename, List<string> bundleNames) {
+			filename = filename.ToLower();
 			foreach(var name in bundleNames) {
 				// related files always start from bundle names, as variants and manifests
 				// are only appended on treail
-				if( filename.IndexOf(name) == 0 ) {
+				if( filename.IndexOf(name.ToLower()) == 0 ) {
 					return true;
 				}
 			}

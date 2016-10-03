@@ -16,13 +16,14 @@ namespace AssetBundleGraph {
 	public interface IPrefabBuilder {
 		/**
 		 * Test if prefab can be created with incoming assets.
-		 */ 
-		bool CanCreatePrefab (string groupKey, List<Asset> assets);
+		 * @result Name of prefab file if prefab can be created. null if not.
+		 */
+		string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects);
 
 		/**
 		 * Create Prefab.
 		 */ 
-		List<Asset> CreatePrefab (string groupKey, List<Asset> assets, string prefabSaveDir, bool isBuild);
+		UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects);
 
 		/**
 		 * Draw Inspector GUI for this PrefabBuilder.

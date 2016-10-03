@@ -53,6 +53,7 @@ namespace AssetBundleGraph {
 			// typeof(SceneAsset).ToString(),
 			{".shader", typeof(Shader)},
 			{".unity", typeof(Scene)},
+			{".prefab", typeof(UnityEngine.Object)}
 
 			// {"", typeof(Sprite)},
 		};

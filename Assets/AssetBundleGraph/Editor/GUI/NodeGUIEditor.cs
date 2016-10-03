@@ -352,11 +352,9 @@ namespace AssetBundleGraph {
 					}
 				} else {
 					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
-						using(new GUILayout.HorizontalScope()) {
-							GUILayout.Label("PrefabBuilder");
-							GUILayout.FlexibleSpace();
-							GUILayout.Label(PrefabBuilderUtility.GetPrefabBuilderGUIName(node.Data.ScriptClassName));
-						}
+						EditorGUILayout.HelpBox(
+							string.Format(
+								"Your PrefabBuilder script {0} is missing from assembly. Did you delete script?", node.Data.ScriptClassName), MessageType.Info);
 					} else {
 						string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
 						EditorGUILayout.HelpBox(
