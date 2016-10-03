@@ -39,8 +39,8 @@ Because AssetBundleGraphTool handles AssetBundle build pipeline by rules, progra
 
 
 
-##Nodes tips
-There are several types of nodes you can use to construct AssetBundle building pipeline.
+##Nodes
+There are several types of nodes you can use in this graph tool.
 
 ###Loader
 Loader is your starting point of building AssetBundles. Loader finds and give list assets to following nodes.  
