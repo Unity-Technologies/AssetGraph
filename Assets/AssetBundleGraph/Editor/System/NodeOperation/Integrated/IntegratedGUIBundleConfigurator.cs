@@ -123,12 +123,7 @@ namespace AssetBundleGraph {
 		public static string GetBundleName(BuildTarget target, NodeData node, string groupKey, string variantName) {
 			var bundleName = node.BundleNameTemplate[target];
 
-			bundleName = bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
-			if(variantName != null) {
-				bundleName = bundleName;
-			}
-
-			return bundleName;
+			return bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
 		}
 	}
 }
