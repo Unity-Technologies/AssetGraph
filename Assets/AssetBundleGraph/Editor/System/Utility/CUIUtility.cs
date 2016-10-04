@@ -12,14 +12,17 @@ namespace AssetBundleGraph {
 		private static readonly string kCommandMethod = "AssetBundleGraph.CUIUtility.BuildFromCommandline";
 
 		private static readonly string kCommandStr = 
-			"{0} -batchmode -quit -projectPath {1} -logFile abbuild.log -executeMethod {2} {3}";
+			"\"{0}\" -batchmode -quit -projectPath \"{1}\" -logFile abbuild.log -executeMethod {2} {3}";
 
 		private static readonly string kCommandName = 
 			"buildassetbundle.{0}";
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_CUITOOL)]
 		private static void CreateCUITool() {
-			var appCmd = string.Format("{0}{1}", EditorApplication.applicationPath, (Application.platform == RuntimePlatform.WindowsEditor)? "" : "/Contents/MacOS/Unity");
+
+            var appPath = EditorApplication.applicationPath.Replace(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR, Path.DirectorySeparatorChar);
+
+            var appCmd = string.Format("{0}{1}", appPath, (Application.platform == RuntimePlatform.WindowsEditor) ? "" : "/Contents/MacOS/Unity");
 			var argPass = (Application.platform == RuntimePlatform.WindowsEditor)? "%1 %2 %3 %4 %5 %6 %7 %8 %9" : "$*";
 			var cmd = string.Format(kCommandStr, appCmd, FileUtility.ProjectPathWithSlash(), kCommandMethod, argPass);
 			var ext = (Application.platform == RuntimePlatform.WindowsEditor)? "bat" : "sh";
