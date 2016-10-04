@@ -100,7 +100,7 @@ namespace AssetBundleGraph {
 
 			this.m_data = data;
 
-			this.m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphGUISettings.NODE_BASE_WIDTH, AssetBundleGraphGUISettings.NODE_BASE_HEIGHT);
+			this.m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT);
 
 			this.m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
 
@@ -356,7 +356,7 @@ namespace AssetBundleGraph {
 					{
 						var region = point.Region;
 						// if point is output node, then label position offset is minus. otherwise plus.
-						var xOffset = (point.IsOutput) ? - m_baseRect.width : AssetBundleGraphGUISettings.INPUT_POINT_WIDTH;
+						var xOffset = (point.IsOutput) ? - m_baseRect.width : AssetBundleGraphSettings.GUI.INPUT_POINT_WIDTH;
 						var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
 						var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
 
@@ -394,10 +394,10 @@ namespace AssetBundleGraph {
 			var nPoints = Mathf.Max(m_data.OutputPoints.Count, m_data.InputPoints.Count);
 			this.m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, 
 				m_baseRect.width, 
-				AssetBundleGraphGUISettings.NODE_BASE_HEIGHT + (AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
+				AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT + (AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
 			);
 
-			var newWidth = Mathf.Max(AssetBundleGraphGUISettings.NODE_BASE_WIDTH, contentLabelWordsLength * 10.0f);
+			var newWidth = Mathf.Max(AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, contentLabelWordsLength * 10.0f);
 			m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, newWidth, m_baseRect.height);
 
 			RefreshConnectionPos();

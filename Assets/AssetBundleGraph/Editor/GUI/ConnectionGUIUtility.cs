@@ -23,7 +23,7 @@ namespace AssetBundleGraph {
 			get {
 				// load shared connection textures
 				if( ConnectionGUISingleton.s.connectionArrowTex == null ) {
-					ConnectionGUISingleton.s.connectionArrowTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_ARROW);
+					ConnectionGUISingleton.s.connectionArrowTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_ARROW);
 				}
 				return ConnectionGUISingleton.s.connectionArrowTex;
 			}

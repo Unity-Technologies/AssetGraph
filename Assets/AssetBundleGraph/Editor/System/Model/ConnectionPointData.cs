@@ -155,24 +155,24 @@ namespace AssetBundleGraph {
 			var parentRegion = node.Region;
 			if(IsInput){
 
-				var initialY = (AssetBundleGraphGUISettings.NODE_BASE_HEIGHT - AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT) / 2f;
-				var marginY  = initialY + AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * (index);
+				var initialY = (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT) / 2f;
+				var marginY  = initialY + AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * (index);
 
 				buttonRect = new Rect(
 					0,
 					marginY, 
-					AssetBundleGraphGUISettings.INPUT_POINT_WIDTH, 
-					AssetBundleGraphGUISettings.INPUT_POINT_HEIGHT);
+					AssetBundleGraphSettings.GUI.INPUT_POINT_WIDTH, 
+					AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT);
 			} else {
 
-				var initialY = (AssetBundleGraphGUISettings.NODE_BASE_HEIGHT - AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT) / 2f;
-				var marginY  = initialY + AssetBundleGraphGUISettings.FILTER_OUTPUT_SPAN * (index);
+				var initialY = (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.OUTPUT_POINT_HEIGHT) / 2f;
+				var marginY  = initialY + AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * (index);
 
 				buttonRect = new Rect(
-					parentRegion.width - AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH + 1f, 
+					parentRegion.width - AssetBundleGraphSettings.GUI.OUTPUT_POINT_WIDTH + 1f, 
 					marginY, 
-					AssetBundleGraphGUISettings.OUTPUT_POINT_WIDTH, 
-					AssetBundleGraphGUISettings.OUTPUT_POINT_HEIGHT);
+					AssetBundleGraphSettings.GUI.OUTPUT_POINT_WIDTH, 
+					AssetBundleGraphSettings.GUI.OUTPUT_POINT_HEIGHT);
 			}
 		}
 
@@ -181,8 +181,8 @@ namespace AssetBundleGraph {
 			return new Rect(
 				baseRect.x + baseRect.width - 8f, 
 				baseRect.y + buttonRect.y + 1f, 
-				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
-				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
+				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE, 
+				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE
 			);
 		}
 
@@ -191,8 +191,8 @@ namespace AssetBundleGraph {
 			return new Rect(
 				baseRect.x - 2f, 
 				baseRect.y + buttonRect.y + 3f, 
-				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE, 
-				AssetBundleGraphGUISettings.CONNECTION_POINT_MARK_SIZE
+				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE, 
+				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE
 			);
 		}
 
