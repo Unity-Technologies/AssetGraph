@@ -112,7 +112,7 @@ namespace AssetBundleGraph {
 		private Texture2D selectionTex {
 			get{
 				if(_selectionTex == null) {
-					_selectionTex = LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_SELECTION);
+					_selectionTex = LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_SELECTION);
 				}
 				return _selectionTex;
 			}
@@ -187,10 +187,10 @@ namespace AssetBundleGraph {
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
 		public static bool BuildFromMenuValidator () {
-			var window = GetWindow<AssetBundleGraphEditorWindow>();
-
-			window.Setup(window.ActiveBuildTarget);
-			return !window.isAnyIssueFound;
+			// Calling GetWindow<>() will force open window
+			// That's not what we want to do in validator function,
+			// so just reference s_nodeExceptionPool directly
+			return (s_nodeExceptionPool != null && s_nodeExceptionPool.Count == 0);
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
@@ -540,10 +540,10 @@ namespace AssetBundleGraph {
 
 		private void DrawGUIToolBar() {
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
-				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
+				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
 					Setup(ActiveBuildTarget);
 				}
-				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 
 				GUILayout.FlexibleSpace();
 
@@ -561,15 +561,15 @@ namespace AssetBundleGraph {
 				GUIStyle tbLabelTarget = new GUIStyle(tbLabel);
 				tbLabelTarget.fontStyle = FontStyle.Bold;
 
-				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
-//				GUILayout.Label(BuildTargetUtility.TargetToHumaneString(ActiveBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+//				GUILayout.Label(BuildTargetUtility.TargetToHumaneString(ActiveBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
 				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == selectedTarget));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
-					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT));
+					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
 					selectedTarget = supportedTargets[newIndex];
@@ -577,7 +577,7 @@ namespace AssetBundleGraph {
 				}
 
 				using(new EditorGUI.DisabledScope(isAnyIssueFound)) {
-					if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphGUISettings.TOOLBAR_HEIGHT))) {
+					if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
 						SaveGraph();
 						Run(ActiveBuildTarget);
 					}

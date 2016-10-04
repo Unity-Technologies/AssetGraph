@@ -32,7 +32,7 @@ namespace AssetBundleGraph {
 		public static Texture2D inputPointTex {
 			get {
 				if(NodeSingleton.s.inputPointTex == null) {
-					NodeSingleton.s.inputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_INPUT_BG);
+					NodeSingleton.s.inputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_INPUT_BG);
 				}
 				return NodeSingleton.s.inputPointTex;
 			}
@@ -41,7 +41,7 @@ namespace AssetBundleGraph {
 		public static Texture2D outputPointTex {
 			get {
 				if(NodeSingleton.s.outputPointTex == null) {
-					NodeSingleton.s.outputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_OUTPUT_BG);
+					NodeSingleton.s.outputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_OUTPUT_BG);
 				}
 				return NodeSingleton.s.outputPointTex;
 			}
@@ -50,7 +50,7 @@ namespace AssetBundleGraph {
 		public static Texture2D enablePointMarkTex {
 			get {
 				if(NodeSingleton.s.enablePointMarkTex == null) {
-					NodeSingleton.s.enablePointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_ENABLE);
+					NodeSingleton.s.enablePointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_ENABLE);
 				}
 				return NodeSingleton.s.enablePointMarkTex;
 			}
@@ -59,7 +59,7 @@ namespace AssetBundleGraph {
 		public static Texture2D inputPointMarkTex {
 			get {
 				if(NodeSingleton.s.inputPointMarkTex == null) {
-					NodeSingleton.s.inputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_INPUT);
+					NodeSingleton.s.inputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_INPUT);
 				}
 				return NodeSingleton.s.inputPointMarkTex;
 			}
@@ -68,7 +68,7 @@ namespace AssetBundleGraph {
 		public static Texture2D outputPointMarkTex {
 			get {
 				if(NodeSingleton.s.outputPointMarkTex == null) {
-					NodeSingleton.s.outputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT);
+					NodeSingleton.s.outputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT);
 				}
 				return NodeSingleton.s.outputPointMarkTex;
 			}
@@ -77,7 +77,7 @@ namespace AssetBundleGraph {
 		public static Texture2D outputPointMarkConnectedTex {
 			get {
 				if(NodeSingleton.s.outputPointMarkConnectedTex == null) {
-					NodeSingleton.s.outputPointMarkConnectedTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphGUISettings.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
+					NodeSingleton.s.outputPointMarkConnectedTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
 				}
 				return NodeSingleton.s.outputPointMarkConnectedTex;
 			}

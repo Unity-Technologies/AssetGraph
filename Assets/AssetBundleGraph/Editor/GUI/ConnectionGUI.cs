@@ -119,7 +119,7 @@ namespace AssetBundleGraph {
 			var centerPointV3 = new Vector3(centerPoint.x, centerPoint.y, 0f);
 
 			var pointDistance = (endPoint.x - startPoint.x) / 3f;
-			if (pointDistance < AssetBundleGraphGUISettings.CONNECTION_CURVE_LENGTH) pointDistance = AssetBundleGraphGUISettings.CONNECTION_CURVE_LENGTH;
+			if (pointDistance < AssetBundleGraphSettings.GUI.CONNECTION_CURVE_LENGTH) pointDistance = AssetBundleGraphSettings.GUI.CONNECTION_CURVE_LENGTH;
 
 			var startTan = new Vector3(startPoint.x + pointDistance, startPoint.y, 0f);
 			var endTan = new Vector3(endPoint.x - pointDistance, endPoint.y, 0f);
