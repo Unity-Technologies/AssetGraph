@@ -24,6 +24,12 @@ namespace AssetBundleGraph {
 		EXPORTER_GUI
 	}
 
+	public enum ExporterExportOption : int {
+		ErrorIfNoExportDirectoryFound,
+		AutomaticallyCreateIfNoExportDirectoryFound,
+		DeleteAndRecreteExportDirectory
+	}
+
 	[Serializable]
 	public class FilterEntry {
 		[SerializeField] private string m_filterKeyword;
@@ -112,6 +118,7 @@ namespace AssetBundleGraph {
 
 		//exporter settings
 		private const string NODE_EXPORTER_EXPORT_PATH = "exportTo";
+		private const string NODE_EXPORTER_EXPORT_OPTION = "exportOption";
 
 		//filter settings
 		private const string NODE_FILTER = "filter";
@@ -151,6 +158,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private SerializableMultiTargetString m_scriptInstanceData;
 		[SerializeField] private List<Variant> m_variants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
+		[SerializeField] private SerializableMultiTargetInt m_exporterExportOption;
 
 		[SerializeField] private bool m_isNodeOperationPerformed;
 
@@ -288,6 +296,15 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public SerializableMultiTargetInt ExporterExportOption {
+			get {
+				ValidateAccess(
+					NodeKind.EXPORTER_GUI 
+				);
+				return m_exporterExportOption;
+			}
+		}
+
 		public List<FilterEntry> FilterConditions {
 			get {
 				ValidateAccess(
@@ -397,6 +414,7 @@ namespace AssetBundleGraph {
 			case NodeKind.EXPORTER_GUI:
 				{
 					m_exporterExportPath = new SerializableMultiTargetString(jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
+					m_exporterExportOption = new SerializableMultiTargetInt(jsonData[NODE_EXPORTER_EXPORT_OPTION] as Dictionary<string, object>);
 				}
 				break;
 			default:
@@ -464,6 +482,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				m_exporterExportPath = new SerializableMultiTargetString();
+				m_exporterExportOption = new SerializableMultiTargetInt();
 				break;
 
 			default:
@@ -513,6 +532,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				newData.m_exporterExportPath = new SerializableMultiTargetString(m_exporterExportPath);
+				newData.m_exporterExportOption = new SerializableMultiTargetInt(m_exporterExportOption);
 				break;
 
 			default:
@@ -721,6 +741,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				nodeDict[NODE_EXPORTER_EXPORT_PATH] = m_exporterExportPath.ToJsonDictionary();
+				nodeDict[NODE_EXPORTER_EXPORT_OPTION] = m_exporterExportOption.ToJsonDictionary();
 				break;
 
 			case NodeKind.IMPORTSETTING_GUI:

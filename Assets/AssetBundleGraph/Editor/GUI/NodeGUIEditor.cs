@@ -575,32 +575,40 @@ namespace AssetBundleGraph {
 				} );
 
 				using (disabledScope) {
+					ExporterExportOption opt = (ExporterExportOption)node.Data.ExporterExportOption[currentEditingGroup];
+					var newOption = (ExporterExportOption)EditorGUILayout.EnumPopup("Export Option", opt);
+					if(newOption != opt) {
+						using(new RecordUndoScope("Change Export Option", node, true)){
+							node.Data.ExporterExportOption[currentEditingGroup] = (int)newOption;
+						}
+					}
+
 					EditorGUILayout.LabelField("Export Path:");
 					var newExportPath = EditorGUILayout.TextField(
 						SystemDataUtility.GetProjectName(), 
 						node.Data.ExporterExportPath[currentEditingGroup]
 					);
 
-					var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
+					var exporterNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
 					if(IntegratedGUIExporter.ValidateExportPath(
 						newExportPath,
-						exporterrNodePath,
+						exporterNodePath,
 						() => {
 							// TODO Make text field bold
 						},
 						() => {
 							using (new EditorGUILayout.HorizontalScope()) {
-								EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
+								EditorGUILayout.LabelField(exporterNodePath + " does not exist.");
 								if(GUILayout.Button("Create directory")) {
 									using(new SaveScope(node)) {
-										Directory.CreateDirectory(exporterrNodePath);
+										Directory.CreateDirectory(exporterNodePath);
 									}
 								}
 							}
 							EditorGUILayout.Space();
 
 							EditorGUILayout.LabelField("Available Directories:");
-							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
+							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterNodePath));
 							foreach(string s in dirs) {
 								EditorGUILayout.LabelField(s);
 							}
@@ -614,7 +622,7 @@ namespace AssetBundleGraph {
 							string buttonName = "Show in Explorer";
 							#endif 
 							if(GUILayout.Button(buttonName)) {
-								EditorUtility.RevealInFinder(exporterrNodePath);
+								EditorUtility.RevealInFinder(exporterNodePath);
 							}
 						}
 					}

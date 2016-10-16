@@ -18,12 +18,14 @@ namespace AssetBundleGraph {
 		{
 			ValidateExportPath(
 				node.ExporterExportPath[target],
-				node.ExporterExportPath[target],
+				FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]),
 				() => {
 					throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
 				},
 				() => {
-					throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target], node.Id);
+					if( node.ExporterExportOption[target] == (int)ExporterExportOption.ErrorIfNoExportDirectoryFound ) {
+						throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + node.ExporterExportPath[target], node.Id);
+					}
 				}
 			);
 
@@ -52,19 +54,29 @@ namespace AssetBundleGraph {
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict["0"] = new List<Asset>();
 
+			var exportPath = FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]);
+
+			if (isRun) {
+				if(node.ExporterExportOption[target] == (int)ExporterExportOption.DeleteAndRecreteExportDirectory) {
+					if (Directory.Exists(exportPath)) {
+						Directory.Delete(exportPath, true);
+					}
+				}
+
+				if(node.ExporterExportOption[target] != (int)ExporterExportOption.ErrorIfNoExportDirectoryFound) {
+					if (!Directory.Exists(exportPath)) {
+						Directory.CreateDirectory(exportPath);
+					}
+				}
+			}
+
 			var failedExports = new List<string>();
 
 			foreach (var groupKey in inputGroupAssets.Keys) {
 				var exportedAssets = new List<Asset>();
 				var inputSources = inputGroupAssets[groupKey];
 
-				foreach (var source in inputSources) {
-					if (isRun) {
-						if (!Directory.Exists(node.ExporterExportPath[target])) {
-							Directory.CreateDirectory(node.ExporterExportPath[target]);
-						}
-					}
-					
+				foreach (var source in inputSources) {					
 					var destinationSourcePath = source.importFrom;
 					
 					// in bundleBulider, use platform-package folder for export destination.
@@ -80,7 +92,7 @@ namespace AssetBundleGraph {
 						destinationSourcePath = fromDepthToEnd;
 					}
 					
-					var destination = FileUtility.PathCombine(node.ExporterExportPath[target], destinationSourcePath);
+					var destination = FileUtility.PathCombine(exportPath, destinationSourcePath);
 					
 					var parentDir = Directory.GetParent(destination).ToString();
 
