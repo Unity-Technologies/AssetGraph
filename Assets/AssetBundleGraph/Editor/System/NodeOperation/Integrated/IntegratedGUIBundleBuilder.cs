@@ -43,7 +43,7 @@ namespace AssetBundleGraph {
 			// add manifest file
 			var manifestName = BuildTargetUtility.TargetToAssetBundlePlatformName(target);
 			bundleNames.Add( manifestName );
-			bundleVariants[manifestName] = new List<string>();
+			bundleVariants[manifestName] = new List<string>() {""};
 
 			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
 
