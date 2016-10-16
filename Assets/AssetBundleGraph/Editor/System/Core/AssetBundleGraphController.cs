@@ -15,22 +15,6 @@ namespace AssetBundleGraph {
 	public class AssetBundleGraphController {
 
 		/*
-		 * Verify node name has no collision
-		 */
-		private static void ValidateNameCollision(SaveData saveData) {
-			var nodeNames = saveData.Nodes.Select(node => node.Name).ToList();
-			var overlappings = nodeNames.GroupBy(x => x)
-				.Where(group => 1 < group.Count())
-				.Select(group => group.Key)
-				.ToList();
-
-			if (overlappings.Any()) {
-				throw new NodeException("Duplicate node name found:" + overlappings[0] + " please rename and avoid name collision.", 
-					saveData.Nodes.Find(n=>n.Name == overlappings[0]).Id);
-			}
-		}
-
-		/*
 		 * Verify nodes does not create cycle
 		 */
 		private static void ValidateLoopConnection(SaveData saveData) {
@@ -76,7 +60,6 @@ namespace AssetBundleGraph {
 		{
 			bool validateFailed = false;
 			try {
-				ValidateNameCollision(saveData);
 				ValidateLoopConnection(saveData);
 			} catch (NodeException e) {
 				errorHandler(e);

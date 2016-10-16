@@ -18,8 +18,13 @@ namespace AssetBundleGraph {
 		{
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
+				node.BundleConfigUseGroupAsVariants,
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
+				},
+				() => {
+					throw new NodeException(node.Name + ":Bundle Name Template can not contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
+						+ "' when group name is used for variants.", node.Id);
 				}
 			);
 
@@ -52,13 +57,25 @@ namespace AssetBundleGraph {
 
 			var output = new Dictionary<string, List<Asset>>();
 
-			var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
-			var variantName = (currentVariant == null) ? null : currentVariant.Name;
+			string variantName = null;
+			if(!node.BundleConfigUseGroupAsVariants) {
+				var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
+				variantName = (currentVariant == null) ? null : currentVariant.Name;
+			}
+
 
 			// set configured assets in bundle name
 			foreach (var groupKey in inputGroupAssets.Keys) {
-				var bundleName = GetBundleName(target, node, groupKey, variantName);
-				output[bundleName] = ConfigureAssetBundleSettings(variantName, inputGroupAssets[groupKey]);
+				if(node.BundleConfigUseGroupAsVariants) {
+					variantName = groupKey;
+				}
+				var bundleName = GetBundleName(target, node, groupKey);
+				var newBundleSetting = ConfigureAssetBundleSettings(variantName, inputGroupAssets[groupKey]);
+				if(output.ContainsKey(bundleName)) {
+					output[bundleName].AddRange(newBundleSetting);
+				} else {
+					output[bundleName] = newBundleSetting;
+				}
 			}
 			
 			Output(connectionToOutput, output, null);
@@ -74,13 +91,25 @@ namespace AssetBundleGraph {
 		{
 			var output = new Dictionary<string, List<Asset>>();
 
-			var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
-			var variantName = (currentVariant == null) ? null : currentVariant.Name;
+			string variantName = null;
+			if(!node.BundleConfigUseGroupAsVariants) {
+				var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
+				variantName = (currentVariant == null) ? null : currentVariant.Name;
+			}
 
 			// set configured assets in bundle name
 			foreach (var groupKey in inputGroupAssets.Keys) {
-				var bundleName = GetBundleName(target, node, groupKey, variantName);
-				output[bundleName] = ConfigureAssetBundleSettings(variantName, inputGroupAssets[groupKey]);
+				if(node.BundleConfigUseGroupAsVariants) {
+					variantName = groupKey;
+				}
+				var bundleName = GetBundleName(target, node, groupKey);
+
+				var newBundleSetting = ConfigureAssetBundleSettings(variantName, inputGroupAssets[groupKey]);
+				if(output.ContainsKey(bundleName)) {
+					output[bundleName].AddRange(newBundleSetting);
+				} else {
+					output[bundleName] = newBundleSetting;
+				}
 			}
 
 			Output(connectionToOutput, output, null);
@@ -91,15 +120,19 @@ namespace AssetBundleGraph {
 			List<Asset> configuredAssets = new List<Asset>();
 
 			foreach(var a in assets) {
-				configuredAssets.Add( Asset.DuplicateAssetWithVariant(a, variantName) );
+				var lowerName = (string.IsNullOrEmpty(variantName))? variantName : variantName.ToLower();
+				configuredAssets.Add( Asset.DuplicateAssetWithVariant(a, lowerName) );
 			}
 
 			return configuredAssets;
 		}
 
-		public static void ValidateBundleNameTemplate (string bundleNameTemplate, Action NullOrEmpty) {
+		public static void ValidateBundleNameTemplate (string bundleNameTemplate, bool useGroupAsVariants, Action NullOrEmpty, Action InvalidBundleNameTemplate) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)){
 				NullOrEmpty();
+			}
+			if(useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) >= 0) {
+				InvalidBundleNameTemplate();
 			}
 		}
 
@@ -120,10 +153,14 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static string GetBundleName(BuildTarget target, NodeData node, string groupKey, string variantName) {
+		public static string GetBundleName(BuildTarget target, NodeData node, string groupKey) {
 			var bundleName = node.BundleNameTemplate[target];
 
-			return bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
+			if(node.BundleConfigUseGroupAsVariants) {
+				return bundleName;
+			} else {
+				return bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
+			}
 		}
 	}
 }

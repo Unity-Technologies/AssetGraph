@@ -24,6 +24,12 @@ namespace AssetBundleGraph {
 		EXPORTER_GUI
 	}
 
+	public enum ExporterExportOption : int {
+		ErrorIfNoExportDirectoryFound,
+		AutomaticallyCreateIfNoExportDirectoryFound,
+		DeleteAndRecreteExportDirectory
+	}
+
 	[Serializable]
 	public class FilterEntry {
 		[SerializeField] private string m_filterKeyword;
@@ -112,6 +118,7 @@ namespace AssetBundleGraph {
 
 		//exporter settings
 		private const string NODE_EXPORTER_EXPORT_PATH = "exportTo";
+		private const string NODE_EXPORTER_EXPORT_OPTION = "exportOption";
 
 		//filter settings
 		private const string NODE_FILTER = "filter";
@@ -131,6 +138,7 @@ namespace AssetBundleGraph {
 		private const string NODE_BUNDLECONFIG_VARIANTS 		 = "variants";
 		private const string NODE_BUNDLECONFIG_VARIANTS_NAME 	 = "name";
 		private const string NODE_BUNDLECONFIG_VARIANTS_POINTID = "pointId";
+		private const string NODE_BUNDLECONFIG_USE_GROUPASVARIANTS = "useGroupAsVariants";
 
 		//bundlebuilder settings
 		private const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
@@ -150,7 +158,9 @@ namespace AssetBundleGraph {
 		[SerializeField] private SerializableMultiTargetString m_bundleConfigBundleNameTemplate;
 		[SerializeField] private SerializableMultiTargetString m_scriptInstanceData;
 		[SerializeField] private List<Variant> m_variants;
+		[SerializeField] private bool m_bundleConfigUseGroupAsVariants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
+		[SerializeField] private SerializableMultiTargetInt m_exporterExportOption;
 
 		[SerializeField] private bool m_isNodeOperationPerformed;
 
@@ -260,6 +270,21 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public bool BundleConfigUseGroupAsVariants {
+			get {
+				ValidateAccess(
+					NodeKind.BUNDLECONFIG_GUI 
+				);
+				return m_bundleConfigUseGroupAsVariants;
+			}
+			set {
+				ValidateAccess(
+					NodeKind.BUNDLECONFIG_GUI 
+				);
+				m_bundleConfigUseGroupAsVariants = value;
+			}
+		}
+
 		public SerializableMultiTargetString InstanceData {
 			get {
 				ValidateAccess(
@@ -288,12 +313,29 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public SerializableMultiTargetInt ExporterExportOption {
+			get {
+				ValidateAccess(
+					NodeKind.EXPORTER_GUI 
+				);
+				return m_exporterExportOption;
+			}
+		}
+
 		public List<FilterEntry> FilterConditions {
 			get {
 				ValidateAccess(
 					NodeKind.FILTER_GUI
 				);
 				return m_filter;
+			}
+		}
+
+		private Dictionary<string, object> _SafeGet(Dictionary<string, object> jsonData, string key) {
+			if(jsonData.ContainsKey(key)) {
+				return jsonData[key] as Dictionary<string, object>;
+			} else {
+				return new Dictionary<string, object>();
 			}
 		}
 
@@ -336,13 +378,13 @@ namespace AssetBundleGraph {
 						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
 					}
 					if(jsonData.ContainsKey(NODE_SCRIPT_INSTANCE_DATA)) {
-						m_scriptInstanceData = new SerializableMultiTargetString(jsonData[NODE_SCRIPT_INSTANCE_DATA] as Dictionary<string, object>);
+						m_scriptInstanceData = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_SCRIPT_INSTANCE_DATA));
 					}
 				}
 				break;
 			case NodeKind.LOADER_GUI:
 				{
-					m_loaderLoadPath = new SerializableMultiTargetString(jsonData[NODE_LOADER_LOAD_PATH] as Dictionary<string, object>);
+					m_loaderLoadPath = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_LOADER_LOAD_PATH));
 				}
 				break;
 			case NodeKind.FILTER_GUI:
@@ -366,12 +408,15 @@ namespace AssetBundleGraph {
 				break;
 			case NodeKind.GROUPING_GUI:
 				{
-					m_groupingKeyword = new SerializableMultiTargetString(jsonData[NODE_GROUPING_KEYWORD] as Dictionary<string, object>);
+					m_groupingKeyword = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_GROUPING_KEYWORD));
 				}
 				break;
 			case NodeKind.BUNDLECONFIG_GUI:
 				{
-					m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(jsonData[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] as Dictionary<string, object>);
+					m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE));
+					if(jsonData.ContainsKey(NODE_BUNDLECONFIG_USE_GROUPASVARIANTS)) {
+						m_bundleConfigUseGroupAsVariants = Convert.ToBoolean(jsonData[NODE_BUNDLECONFIG_USE_GROUPASVARIANTS]);
+					}
 					m_variants = new List<Variant>();
 					if(jsonData.ContainsKey(NODE_BUNDLECONFIG_VARIANTS)){
 						var variants = jsonData[NODE_BUNDLECONFIG_VARIANTS] as List<object>;
@@ -391,12 +436,13 @@ namespace AssetBundleGraph {
 				break;
 			case NodeKind.BUNDLEBUILDER_GUI:
 				{
-					m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt(jsonData[NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS] as Dictionary<string, object>);
+					m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt(_SafeGet(jsonData, NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS));
 				}
 				break;
 			case NodeKind.EXPORTER_GUI:
 				{
-					m_exporterExportPath = new SerializableMultiTargetString(jsonData[NODE_EXPORTER_EXPORT_PATH] as Dictionary<string, object>);
+					m_exporterExportPath = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_EXPORTER_EXPORT_PATH));
+					m_exporterExportOption = new SerializableMultiTargetInt(_SafeGet(jsonData, NODE_EXPORTER_EXPORT_OPTION));
 				}
 				break;
 			default:
@@ -455,6 +501,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.BUNDLECONFIG_GUI:
 				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(AssetBundleGraphSettings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
+				m_bundleConfigUseGroupAsVariants = false;
 				m_variants = new List<Variant>();
 				break;
 
@@ -464,6 +511,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				m_exporterExportPath = new SerializableMultiTargetString();
+				m_exporterExportOption = new SerializableMultiTargetInt();
 				break;
 
 			default:
@@ -502,6 +550,8 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.BUNDLECONFIG_GUI:
+				newData.m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(m_bundleConfigBundleNameTemplate);
+				newData.m_bundleConfigUseGroupAsVariants = m_bundleConfigUseGroupAsVariants;
 				foreach(var v in m_variants) {
 					newData.AddVariant(v.Name);
 				}
@@ -513,6 +563,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				newData.m_exporterExportPath = new SerializableMultiTargetString(m_exporterExportPath);
+				newData.m_exporterExportOption = new SerializableMultiTargetInt(m_exporterExportOption);
 				break;
 
 			default:
@@ -705,6 +756,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.BUNDLECONFIG_GUI:
 				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();
+				nodeDict[NODE_BUNDLECONFIG_USE_GROUPASVARIANTS] = m_bundleConfigUseGroupAsVariants;
 				var variantsDict = new List<Dictionary<string, object>>();
 				foreach(var v in m_variants) {
 					var dv = new Dictionary<string, object>();
@@ -721,6 +773,7 @@ namespace AssetBundleGraph {
 
 			case NodeKind.EXPORTER_GUI:
 				nodeDict[NODE_EXPORTER_EXPORT_PATH] = m_exporterExportPath.ToJsonDictionary();
+				nodeDict[NODE_EXPORTER_EXPORT_OPTION] = m_exporterExportOption.ToJsonDictionary();
 				break;
 
 			case NodeKind.IMPORTSETTING_GUI:

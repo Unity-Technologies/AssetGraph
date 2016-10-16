@@ -81,6 +81,9 @@ Assets/AssetGraph/SavedSettings/ModifierSettings/*
 
 Assets/AssetBundleGraph/Cache/*
 
+Assets/AssetBundleGraph/SettingFiles*
+Assets/AssetBundleGraph/Generated*
+
 obj/*
 
 *.sln
@@ -106,6 +109,7 @@ Assets/TestResourceAssets.meta
 
 Assets/ModifierTestResources/*
 Assets/ModifierTestResources.meta
+
 
 AssetBundleServerURL.bytes
 AssetBundleServerURL.bytes.meta

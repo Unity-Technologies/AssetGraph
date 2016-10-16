@@ -418,6 +418,68 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+
+				var newUseGroupAsVariantValue = GUILayout.Toggle(node.Data.BundleConfigUseGroupAsVariants, "Use input group as variants");
+				if(newUseGroupAsVariantValue != node.Data.BundleConfigUseGroupAsVariants) {
+					using(new RecordUndoScope("Change Bundle Config", node, true)){
+						node.Data.BundleConfigUseGroupAsVariants = newUseGroupAsVariantValue;
+
+						// TODO: preserve variants
+						List<Variant> rv = new List<Variant>(node.Data.Variants);
+						foreach(var v in rv) {
+							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, v.ConnectionPoint));
+							node.Data.RemoveVariant(v);
+						}
+					}
+				}
+
+				using (new EditorGUI.DisabledScope(newUseGroupAsVariantValue)) {
+					GUILayout.Label("Variants:");
+					var variantNames = node.Data.Variants.Select(v => v.Name).ToList();
+					Variant removing = null;
+					foreach (var v in node.Data.Variants) {
+						using (new GUILayout.HorizontalScope()) {
+							if (GUILayout.Button("-", GUILayout.Width(30))) {
+								removing = v;
+							}
+							else {
+								GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+								Action makeStyleBold = () => {
+									s.fontStyle = FontStyle.Bold;
+									s.fontSize = 12;
+								};
+
+								IntegratedGUIBundleConfigurator.ValidateVariantName(v.Name, variantNames, 
+									makeStyleBold,
+									makeStyleBold,
+									makeStyleBold);
+
+								var variantName = EditorGUILayout.TextField(v.Name, s);
+
+								if (variantName != v.Name) {
+									using(new RecordUndoScope("Change Variant Name", node, true)){
+										v.Name = variantName;
+									}
+								}
+							}
+						}
+					}
+					if (GUILayout.Button("+")) {
+						using(new RecordUndoScope("Add Variant", node, true)){
+							node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
+						}
+					}
+					if(removing != null) {
+						using(new RecordUndoScope("Remove Variant", node, true)){
+							// event must raise to remove connection associated with point
+							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+							node.Data.RemoveVariant(removing);
+						}
+					}
+				}
+			}
+
 			//Show target configuration tab
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
@@ -438,51 +500,6 @@ namespace AssetBundleGraph {
 						using(new RecordUndoScope("Change Bundle Name Template", node, true)){
 							node.Data.BundleNameTemplate[currentEditingGroup] = bundleNameTemplate;
 						}
-					}
-				}
-			}
-
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				GUILayout.Label("Variants:");
-				var variantNames = node.Data.Variants.Select(v => v.Name).ToList();
-				Variant removing = null;
-				foreach (var v in node.Data.Variants) {
-					using (new GUILayout.HorizontalScope()) {
-						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							removing = v;
-						}
-						else {
-							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
-							Action makeStyleBold = () => {
-								s.fontStyle = FontStyle.Bold;
-								s.fontSize = 12;
-							};
-
-							IntegratedGUIBundleConfigurator.ValidateVariantName(v.Name, variantNames, 
-								makeStyleBold,
-								makeStyleBold,
-								makeStyleBold);
-
-							var variantName = EditorGUILayout.TextField(v.Name, s);
-
-							if (variantName != v.Name) {
-								using(new RecordUndoScope("Change Variant Name", node, true)){
-									v.Name = variantName;
-								}
-							}
-						}
-					}
-				}
-				if (GUILayout.Button("+")) {
-					using(new RecordUndoScope("Add Variant", node, true)){
-						node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
-					}
-				}
-				if(removing != null) {
-					using(new RecordUndoScope("Remove Variant", node, true)){
-						// event must raise to remove connection associated with point
-						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
-						node.Data.RemoveVariant(removing);
 					}
 				}
 			}
@@ -575,32 +592,40 @@ namespace AssetBundleGraph {
 				} );
 
 				using (disabledScope) {
+					ExporterExportOption opt = (ExporterExportOption)node.Data.ExporterExportOption[currentEditingGroup];
+					var newOption = (ExporterExportOption)EditorGUILayout.EnumPopup("Export Option", opt);
+					if(newOption != opt) {
+						using(new RecordUndoScope("Change Export Option", node, true)){
+							node.Data.ExporterExportOption[currentEditingGroup] = (int)newOption;
+						}
+					}
+
 					EditorGUILayout.LabelField("Export Path:");
 					var newExportPath = EditorGUILayout.TextField(
 						SystemDataUtility.GetProjectName(), 
 						node.Data.ExporterExportPath[currentEditingGroup]
 					);
 
-					var exporterrNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
+					var exporterNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
 					if(IntegratedGUIExporter.ValidateExportPath(
 						newExportPath,
-						exporterrNodePath,
+						exporterNodePath,
 						() => {
 							// TODO Make text field bold
 						},
 						() => {
 							using (new EditorGUILayout.HorizontalScope()) {
-								EditorGUILayout.LabelField(exporterrNodePath + " does not exist.");
+								EditorGUILayout.LabelField(exporterNodePath + " does not exist.");
 								if(GUILayout.Button("Create directory")) {
 									using(new SaveScope(node)) {
-										Directory.CreateDirectory(exporterrNodePath);
+										Directory.CreateDirectory(exporterNodePath);
 									}
 								}
 							}
 							EditorGUILayout.Space();
 
 							EditorGUILayout.LabelField("Available Directories:");
-							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterrNodePath));
+							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterNodePath));
 							foreach(string s in dirs) {
 								EditorGUILayout.LabelField(s);
 							}
@@ -614,7 +639,7 @@ namespace AssetBundleGraph {
 							string buttonName = "Show in Explorer";
 							#endif 
 							if(GUILayout.Button(buttonName)) {
-								EditorUtility.RevealInFinder(exporterrNodePath);
+								EditorUtility.RevealInFinder(exporterNodePath);
 							}
 						}
 					}
@@ -713,7 +738,7 @@ namespace AssetBundleGraph {
 					.Where(group => group.Count() > 1)
 					.Select(group => group.Key);
 				if (overlapping.Any() && overlapping.Contains(newName)) {
-					EditorGUILayout.HelpBox("This node name already exist. Please put other name:" + newName, MessageType.Error);
+					EditorGUILayout.HelpBox("There are node with the same name. You may want to rename to avoid confusion:" + newName, MessageType.Info);
 					AssetBundleGraphEditorWindow.AddNodeException(new NodeException("Node name " + newName + " already exist.", node.Id ));
 				}
 			}
