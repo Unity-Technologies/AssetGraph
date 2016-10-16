@@ -418,6 +418,68 @@ namespace AssetBundleGraph {
 
 			GUILayout.Space(10f);
 
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+
+				var newUseGroupAsVariantValue = GUILayout.Toggle(node.Data.BundleConfigUseGroupAsVariants, "Use input group as variants");
+				if(newUseGroupAsVariantValue != node.Data.BundleConfigUseGroupAsVariants) {
+					using(new RecordUndoScope("Change Bundle Config", node, true)){
+						node.Data.BundleConfigUseGroupAsVariants = newUseGroupAsVariantValue;
+
+						// TODO: preserve variants
+						List<Variant> rv = new List<Variant>(node.Data.Variants);
+						foreach(var v in rv) {
+							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, v.ConnectionPoint));
+							node.Data.RemoveVariant(v);
+						}
+					}
+				}
+
+				using (new EditorGUI.DisabledScope(newUseGroupAsVariantValue)) {
+					GUILayout.Label("Variants:");
+					var variantNames = node.Data.Variants.Select(v => v.Name).ToList();
+					Variant removing = null;
+					foreach (var v in node.Data.Variants) {
+						using (new GUILayout.HorizontalScope()) {
+							if (GUILayout.Button("-", GUILayout.Width(30))) {
+								removing = v;
+							}
+							else {
+								GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+								Action makeStyleBold = () => {
+									s.fontStyle = FontStyle.Bold;
+									s.fontSize = 12;
+								};
+
+								IntegratedGUIBundleConfigurator.ValidateVariantName(v.Name, variantNames, 
+									makeStyleBold,
+									makeStyleBold,
+									makeStyleBold);
+
+								var variantName = EditorGUILayout.TextField(v.Name, s);
+
+								if (variantName != v.Name) {
+									using(new RecordUndoScope("Change Variant Name", node, true)){
+										v.Name = variantName;
+									}
+								}
+							}
+						}
+					}
+					if (GUILayout.Button("+")) {
+						using(new RecordUndoScope("Add Variant", node, true)){
+							node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
+						}
+					}
+					if(removing != null) {
+						using(new RecordUndoScope("Remove Variant", node, true)){
+							// event must raise to remove connection associated with point
+							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+							node.Data.RemoveVariant(removing);
+						}
+					}
+				}
+			}
+
 			//Show target configuration tab
 			DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
@@ -438,51 +500,6 @@ namespace AssetBundleGraph {
 						using(new RecordUndoScope("Change Bundle Name Template", node, true)){
 							node.Data.BundleNameTemplate[currentEditingGroup] = bundleNameTemplate;
 						}
-					}
-				}
-			}
-
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				GUILayout.Label("Variants:");
-				var variantNames = node.Data.Variants.Select(v => v.Name).ToList();
-				Variant removing = null;
-				foreach (var v in node.Data.Variants) {
-					using (new GUILayout.HorizontalScope()) {
-						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							removing = v;
-						}
-						else {
-							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
-							Action makeStyleBold = () => {
-								s.fontStyle = FontStyle.Bold;
-								s.fontSize = 12;
-							};
-
-							IntegratedGUIBundleConfigurator.ValidateVariantName(v.Name, variantNames, 
-								makeStyleBold,
-								makeStyleBold,
-								makeStyleBold);
-
-							var variantName = EditorGUILayout.TextField(v.Name, s);
-
-							if (variantName != v.Name) {
-								using(new RecordUndoScope("Change Variant Name", node, true)){
-									v.Name = variantName;
-								}
-							}
-						}
-					}
-				}
-				if (GUILayout.Button("+")) {
-					using(new RecordUndoScope("Add Variant", node, true)){
-						node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
-					}
-				}
-				if(removing != null) {
-					using(new RecordUndoScope("Remove Variant", node, true)){
-						// event must raise to remove connection associated with point
-						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
-						node.Data.RemoveVariant(removing);
 					}
 				}
 			}
