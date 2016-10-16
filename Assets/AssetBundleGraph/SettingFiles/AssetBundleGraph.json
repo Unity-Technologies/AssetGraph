@@ -1,5 +1,5 @@
 {
-	"lastModified":"10/03/2016 05:03:28",
+	"lastModified":"10/16/2016 06:51:49",
 	"nodes":[
 		{
 			"name":"TrivialSampleAssets",
@@ -91,6 +91,7 @@
 			"bundleNameTemplate":{
 				"Unknown":"cube-bundle"
 			},
+			"useGroupAsVariants":false,
 			"variants":[
 				
 			]
@@ -118,6 +119,7 @@
 			"bundleNameTemplate":{
 				"Unknown":"material-bundle"
 			},
+			"useGroupAsVariants":false,
 			"variants":[
 				
 			]
@@ -139,15 +141,15 @@
 				}
 			],
 			"pos":{
-				"x":1058,
-				"y":301
+				"x":1059,
+				"y":385
 			},
 			"enabledBundleOptions":{
 				"Unknown":0
 			}
 		},
 		{
-			"name":"Exporter0",
+			"name":"GraphToolBundles",
 			"id":"6a9472af-5969-4287-a02e-b069c83b0b76",
 			"kind":"EXPORTER_GUI",
 			"inputPoints":[
@@ -160,11 +162,14 @@
 				
 			],
 			"pos":{
-				"x":1307,
-				"y":363
+				"x":1133,
+				"y":504
 			},
 			"exportTo":{
 				"Unknown":"GraphToolBundles"
+			},
+			"exportOption":{
+				"Unknown":2
 			}
 		},
 		{
@@ -190,6 +195,7 @@
 			"bundleNameTemplate":{
 				"Unknown":"scene-bundle"
 			},
+			"useGroupAsVariants":false,
 			"variants":[
 				
 			]
@@ -216,7 +222,7 @@
 			}
 		},
 		{
-			"name":"Filter1",
+			"name":"SampleAssets",
 			"id":"6315935d-911d-4d4e-90ce-a3b7a24288a7",
 			"kind":"FILTER_GUI",
 			"inputPoints":[
@@ -232,16 +238,12 @@
 				},
 				{
 					"id":"5b2919f4-7572-4b8f-bf4c-16c0448b8025",
-					"label":"HD"
-				},
-				{
-					"id":"ae12b169-c3b0-4d76-8500-76b4a3ba2934",
-					"label":"SD"
+					"label":""
 				}
 			],
 			"pos":{
-				"x":221,
-				"y":405
+				"x":203,
+				"y":403
 			},
 			"filter":[
 				{
@@ -250,14 +252,9 @@
 					"pointId":"44bed9ec-0fad-45b6-b6a4-f485c4446c54"
 				},
 				{
-					"keyword":"HD",
+					"keyword":"",
 					"keytype":"Any",
 					"pointId":"5b2919f4-7572-4b8f-bf4c-16c0448b8025"
-				},
-				{
-					"keyword":"SD",
-					"keytype":"Any",
-					"pointId":"ae12b169-c3b0-4d76-8500-76b4a3ba2934"
 				}
 			]
 		},
@@ -284,26 +281,19 @@
 			"bundleNameTemplate":{
 				"Unknown":"variants/variant-scene"
 			},
+			"useGroupAsVariants":false,
 			"variants":[
 				
 			]
 		},
 		{
-			"name":"MyAssetsVariants",
+			"name":"MyAssets Variants",
 			"id":"7b20ce0a-43a2-428a-afea-d3236744fe25",
 			"kind":"BUNDLECONFIG_GUI",
 			"inputPoints":[
 				{
 					"id":"aaeb2425-679b-47fb-bc92-83315de05002",
 					"label":"-"
-				},
-				{
-					"id":"e3a7dde4-9643-45bb-b59e-0d75bd2be473",
-					"label":"hd"
-				},
-				{
-					"id":"7a814f92-058c-4c55-ba36-41468447cee2",
-					"label":"sd"
 				}
 			],
 			"outputPoints":[
@@ -313,21 +303,15 @@
 				}
 			],
 			"pos":{
-				"x":510,
-				"y":458
+				"x":621,
+				"y":457
 			},
 			"bundleNameTemplate":{
 				"Unknown":"variants/myassets"
 			},
+			"useGroupAsVariants":true,
 			"variants":[
-				{
-					"name":"hd",
-					"pointId":"e3a7dde4-9643-45bb-b59e-0d75bd2be473"
-				},
-				{
-					"name":"sd",
-					"pointId":"7a814f92-058c-4c55-ba36-41468447cee2"
-				}
+				
 			]
 		},
 		{
@@ -352,7 +336,7 @@
 			}
 		},
 		{
-			"name":"Filter2",
+			"name":"TankAssets",
 			"id":"b7690895-865e-4773-bc42-b43bc2914feb",
 			"kind":"FILTER_GUI",
 			"inputPoints":[
@@ -364,27 +348,11 @@
 			"outputPoints":[
 				{
 					"id":"403d4e37-68c7-40da-b32e-937c3071d8e0",
-					"label":"Danish"
-				},
-				{
-					"id":"ae5d6003-4d0d-491c-96f7-5390ffb6e26f",
-					"label":"English"
-				},
-				{
-					"id":"c0e889f6-31e9-44c1-862d-d1edef50b15f",
-					"label":"Desert-HD"
-				},
-				{
-					"id":"56ed1c16-05d2-495d-b25a-e132debcb746",
-					"label":"Desert-SD"
-				},
-				{
-					"id":"9c4999fc-0f34-4cf5-a096-fe2548deb29e",
-					"label":"Normal-HD"
+					"label":"Language"
 				},
 				{
 					"id":"0c10567c-7d35-4127-a514-b204aeccd1da",
-					"label":"Normal-SD"
+					"label":"Skins"
 				},
 				{
 					"id":"cc1ccc9a-d59e-4f8a-8cef-52c77b22681f",
@@ -392,37 +360,17 @@
 				}
 			],
 			"pos":{
-				"x":240,
-				"y":648
+				"x":202,
+				"y":671
 			},
 			"filter":[
 				{
-					"keyword":"Danish",
+					"keyword":"Language",
 					"keytype":"Any",
 					"pointId":"403d4e37-68c7-40da-b32e-937c3071d8e0"
 				},
 				{
-					"keyword":"English",
-					"keytype":"Any",
-					"pointId":"ae5d6003-4d0d-491c-96f7-5390ffb6e26f"
-				},
-				{
-					"keyword":"Desert-HD",
-					"keytype":"Any",
-					"pointId":"c0e889f6-31e9-44c1-862d-d1edef50b15f"
-				},
-				{
-					"keyword":"Desert-SD",
-					"keytype":"Any",
-					"pointId":"56ed1c16-05d2-495d-b25a-e132debcb746"
-				},
-				{
-					"keyword":"Normal-HD",
-					"keytype":"Any",
-					"pointId":"9c4999fc-0f34-4cf5-a096-fe2548deb29e"
-				},
-				{
-					"keyword":"Normal-SD",
+					"keyword":"Skins",
 					"keytype":"Any",
 					"pointId":"0c10567c-7d35-4127-a514-b204aeccd1da"
 				},
@@ -434,29 +382,13 @@
 			]
 		},
 		{
-			"name":"Tanks!!!!!",
+			"name":"TankSkin",
 			"id":"3b4de6de-292f-437f-87d6-edf0ec8411fb",
 			"kind":"BUNDLECONFIG_GUI",
 			"inputPoints":[
 				{
 					"id":"85a29d96-3ba3-4862-a8e7-ed200b326500",
 					"label":"-"
-				},
-				{
-					"id":"f62a4dd4-471a-4f78-8e69-643d49f9c833",
-					"label":"desert-hd"
-				},
-				{
-					"id":"365c930a-9adc-4a74-976e-bb721bb98963",
-					"label":"desert-sd"
-				},
-				{
-					"id":"8291de66-cfe4-44b7-a266-2b64b3f12ec7",
-					"label":"normal-hd"
-				},
-				{
-					"id":"56052f2b-cac5-441c-acdf-d2707f03aadf",
-					"label":"normal-sd"
 				}
 			],
 			"outputPoints":[
@@ -466,29 +398,15 @@
 				}
 			],
 			"pos":{
-				"x":764,
-				"y":658
+				"x":803,
+				"y":638
 			},
 			"bundleNameTemplate":{
 				"Unknown":"tanks-albedo"
 			},
+			"useGroupAsVariants":true,
 			"variants":[
-				{
-					"name":"desert-hd",
-					"pointId":"f62a4dd4-471a-4f78-8e69-643d49f9c833"
-				},
-				{
-					"name":"desert-sd",
-					"pointId":"365c930a-9adc-4a74-976e-bb721bb98963"
-				},
-				{
-					"name":"normal-hd",
-					"pointId":"8291de66-cfe4-44b7-a266-2b64b3f12ec7"
-				},
-				{
-					"name":"normal-sd",
-					"pointId":"56052f2b-cac5-441c-acdf-d2707f03aadf"
-				}
+				
 			]
 		},
 		{
@@ -499,14 +417,6 @@
 				{
 					"id":"640306d0-9967-45c6-a27c-11191ba4e51a",
 					"label":"-"
-				},
-				{
-					"id":"2ac52acf-6a42-4b9c-b0c8-ec8ec4526524",
-					"label":"danish"
-				},
-				{
-					"id":"39fe023c-b6cb-49ab-9c00-06b8af33c42e",
-					"label":"english"
 				}
 			],
 			"outputPoints":[
@@ -516,21 +426,15 @@
 				}
 			],
 			"pos":{
-				"x":771,
-				"y":524
+				"x":793,
+				"y":538
 			},
 			"bundleNameTemplate":{
 				"Unknown":"banner"
 			},
+			"useGroupAsVariants":true,
 			"variants":[
-				{
-					"name":"danish",
-					"pointId":"2ac52acf-6a42-4b9c-b0c8-ec8ec4526524"
-				},
-				{
-					"name":"english",
-					"pointId":"39fe023c-b6cb-49ab-9c00-06b8af33c42e"
-				}
+				
 			]
 		},
 		{
@@ -550,15 +454,88 @@
 				}
 			],
 			"pos":{
-				"x":913,
-				"y":851
+				"x":825,
+				"y":735
 			},
 			"bundleNameTemplate":{
 				"Unknown":"tanks-scene-bundle"
 			},
+			"useGroupAsVariants":false,
 			"variants":[
 				
 			]
+		},
+		{
+			"name":"HD/SD",
+			"id":"73616af7-dbda-4930-8bef-2cf316ae1583",
+			"kind":"GROUPING_GUI",
+			"inputPoints":[
+				{
+					"id":"03dcae6f-b697-4413-86ef-a95fee8c8655",
+					"label":"-"
+				}
+			],
+			"outputPoints":[
+				{
+					"id":"54ff69ea-2c47-4208-a9fd-17a8e83281a8",
+					"label":"+"
+				}
+			],
+			"pos":{
+				"x":393,
+				"y":504
+			},
+			"groupingKeyword":{
+				"Unknown":"/MyAssets-*/"
+			}
+		},
+		{
+			"name":"GUI",
+			"id":"3397ff36-6f59-40b3-b2cb-d79729ab94cd",
+			"kind":"GROUPING_GUI",
+			"inputPoints":[
+				{
+					"id":"9e12e243-8d54-4a51-906e-2169b486fcce",
+					"label":"-"
+				}
+			],
+			"outputPoints":[
+				{
+					"id":"59acc759-d596-45b7-8dc7-4e55cf146dcc",
+					"label":"+"
+				}
+			],
+			"pos":{
+				"x":573,
+				"y":549
+			},
+			"groupingKeyword":{
+				"Unknown":"/Language/*/"
+			}
+		},
+		{
+			"name":"Skins",
+			"id":"d893b70b-d15c-4eba-ad20-b47211c788c3",
+			"kind":"GROUPING_GUI",
+			"inputPoints":[
+				{
+					"id":"b1817cff-b724-4596-a596-ce15ffeb2ab3",
+					"label":"-"
+				}
+			],
+			"outputPoints":[
+				{
+					"id":"fda2bafd-3e9f-4091-a798-a4c142e4f124",
+					"label":"+"
+				}
+			],
+			"pos":{
+				"x":569,
+				"y":646
+			},
+			"groupingKeyword":{
+				"Unknown":"/Skins/*/"
+			}
 		}
 	],
 	"connections":[
@@ -643,22 +620,6 @@
 			"toNodeConPointId":"cd8b3f43-7aab-4a83-844b-4441c5e2271f"
 		},
 		{
-			"id":"e72d90c7-85ee-4586-a942-029b36875eaf",
-			"label":"HD",
-			"fromNode":"6315935d-911d-4d4e-90ce-a3b7a24288a7",
-			"fromNodeConPointId":"5b2919f4-7572-4b8f-bf4c-16c0448b8025",
-			"toNode":"7b20ce0a-43a2-428a-afea-d3236744fe25",
-			"toNodeConPointId":"e3a7dde4-9643-45bb-b59e-0d75bd2be473"
-		},
-		{
-			"id":"0b347db8-58c7-4188-b015-91176e5e1a5a",
-			"label":"SD",
-			"fromNode":"6315935d-911d-4d4e-90ce-a3b7a24288a7",
-			"fromNodeConPointId":"ae12b169-c3b0-4d76-8500-76b4a3ba2934",
-			"toNode":"7b20ce0a-43a2-428a-afea-d3236744fe25",
-			"toNodeConPointId":"7a814f92-058c-4c55-ba36-41468447cee2"
-		},
-		{
 			"id":"4a41d12b-0891-4ce1-bbea-64235a14e180",
 			"label":"+",
 			"fromNode":"5142b302-d8ec-4a34-bc5e-9138c8268ed9",
@@ -681,54 +642,6 @@
 			"fromNodeConPointId":"59653b9c-447e-4c8c-9ecc-7772d5f9ae6e",
 			"toNode":"b7690895-865e-4773-bc42-b43bc2914feb",
 			"toNodeConPointId":"264951da-992e-4bbf-8e66-d4ace06b8def"
-		},
-		{
-			"id":"f9a946a7-ef77-4931-9e3a-1e9486a0a6a7",
-			"label":"Danish",
-			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
-			"fromNodeConPointId":"403d4e37-68c7-40da-b32e-937c3071d8e0",
-			"toNode":"588461f7-1c48-44d2-b0e2-f2e04b856481",
-			"toNodeConPointId":"2ac52acf-6a42-4b9c-b0c8-ec8ec4526524"
-		},
-		{
-			"id":"96ae4981-b0c9-4124-bf04-e1df19266b90",
-			"label":"English",
-			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
-			"fromNodeConPointId":"ae5d6003-4d0d-491c-96f7-5390ffb6e26f",
-			"toNode":"588461f7-1c48-44d2-b0e2-f2e04b856481",
-			"toNodeConPointId":"39fe023c-b6cb-49ab-9c00-06b8af33c42e"
-		},
-		{
-			"id":"ed6db540-cf7d-40ba-a04e-d26acd19f1e4",
-			"label":"Desert-HD",
-			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
-			"fromNodeConPointId":"c0e889f6-31e9-44c1-862d-d1edef50b15f",
-			"toNode":"3b4de6de-292f-437f-87d6-edf0ec8411fb",
-			"toNodeConPointId":"f62a4dd4-471a-4f78-8e69-643d49f9c833"
-		},
-		{
-			"id":"f957abeb-ae2f-4d6f-9a05-2e9d033c4480",
-			"label":"Desert-SD",
-			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
-			"fromNodeConPointId":"56ed1c16-05d2-495d-b25a-e132debcb746",
-			"toNode":"3b4de6de-292f-437f-87d6-edf0ec8411fb",
-			"toNodeConPointId":"365c930a-9adc-4a74-976e-bb721bb98963"
-		},
-		{
-			"id":"e3790e0e-5a42-4ef8-acb6-37b29fc1e8b0",
-			"label":"Normal-HD",
-			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
-			"fromNodeConPointId":"9c4999fc-0f34-4cf5-a096-fe2548deb29e",
-			"toNode":"3b4de6de-292f-437f-87d6-edf0ec8411fb",
-			"toNodeConPointId":"8291de66-cfe4-44b7-a266-2b64b3f12ec7"
-		},
-		{
-			"id":"b284a040-66a7-4ebf-afd5-4e7afd9ca27d",
-			"label":"Normal-SD",
-			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
-			"fromNodeConPointId":"0c10567c-7d35-4127-a514-b204aeccd1da",
-			"toNode":"3b4de6de-292f-437f-87d6-edf0ec8411fb",
-			"toNodeConPointId":"56052f2b-cac5-441c-acdf-d2707f03aadf"
 		},
 		{
 			"id":"f8adfb63-4a14-4235-8357-17c7a8020def",
@@ -761,6 +674,54 @@
 			"fromNodeConPointId":"51369a9c-f263-46a8-a8e8-04a6f3e37b0e",
 			"toNode":"b00b9bb5-7459-436d-8fcc-d751f97b713b",
 			"toNodeConPointId":"671436ce-cb34-4c4d-8e32-abfba56be0b8"
+		},
+		{
+			"id":"ea08f183-7a83-4a47-a419-5bbad229d927",
+			"label":"",
+			"fromNode":"6315935d-911d-4d4e-90ce-a3b7a24288a7",
+			"fromNodeConPointId":"5b2919f4-7572-4b8f-bf4c-16c0448b8025",
+			"toNode":"73616af7-dbda-4930-8bef-2cf316ae1583",
+			"toNodeConPointId":"03dcae6f-b697-4413-86ef-a95fee8c8655"
+		},
+		{
+			"id":"23bb653d-4c4f-4a1b-9b8e-92012590813a",
+			"label":"+",
+			"fromNode":"73616af7-dbda-4930-8bef-2cf316ae1583",
+			"fromNodeConPointId":"54ff69ea-2c47-4208-a9fd-17a8e83281a8",
+			"toNode":"7b20ce0a-43a2-428a-afea-d3236744fe25",
+			"toNodeConPointId":"aaeb2425-679b-47fb-bc92-83315de05002"
+		},
+		{
+			"id":"03dc1e82-e622-4a4b-8ef3-1819df2de739",
+			"label":"Language",
+			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
+			"fromNodeConPointId":"403d4e37-68c7-40da-b32e-937c3071d8e0",
+			"toNode":"3397ff36-6f59-40b3-b2cb-d79729ab94cd",
+			"toNodeConPointId":"9e12e243-8d54-4a51-906e-2169b486fcce"
+		},
+		{
+			"id":"c24bd3a6-64f4-44ea-85de-77f3219fc734",
+			"label":"+",
+			"fromNode":"3397ff36-6f59-40b3-b2cb-d79729ab94cd",
+			"fromNodeConPointId":"59acc759-d596-45b7-8dc7-4e55cf146dcc",
+			"toNode":"588461f7-1c48-44d2-b0e2-f2e04b856481",
+			"toNodeConPointId":"640306d0-9967-45c6-a27c-11191ba4e51a"
+		},
+		{
+			"id":"1cdd5305-6609-4216-83e5-c2794c15a711",
+			"label":"Skins",
+			"fromNode":"b7690895-865e-4773-bc42-b43bc2914feb",
+			"fromNodeConPointId":"0c10567c-7d35-4127-a514-b204aeccd1da",
+			"toNode":"d893b70b-d15c-4eba-ad20-b47211c788c3",
+			"toNodeConPointId":"b1817cff-b724-4596-a596-ce15ffeb2ab3"
+		},
+		{
+			"id":"ef1b0ee9-181e-4fdd-be36-c64a7c48e5eb",
+			"label":"+",
+			"fromNode":"d893b70b-d15c-4eba-ad20-b47211c788c3",
+			"fromNodeConPointId":"fda2bafd-3e9f-4091-a798-a4c142e4f124",
+			"toNode":"3b4de6de-292f-437f-87d6-edf0ec8411fb",
+			"toNodeConPointId":"85a29d96-3ba3-4862-a8e7-ed200b326500"
 		}
 	]
 }
