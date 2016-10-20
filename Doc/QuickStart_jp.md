@@ -9,6 +9,7 @@ AssetBundle Graph ToolはUnityのAssetBundleを作るためのGUIツールです
 
 ###1.ノードを作成する
 WindowメニューのAssetBundleGraphから「Open Graph Editor」を選択して、AssetBundleウインドウを表示します。次にウィンドウ内で右クリックすると、作成したいノードを選ぶことが出来ます。まずはLoaderを作成してみましょう。Loaderは、AssetBundle Graph Tool内へとUnityプロジェクト内部のアセットを読み込むノードです。
+
 ![SS](/Doc/images/guide/1.png)
 
 Loaderノードを作ったら、次に同じ要領でFilterノードを作ってみましょう。Filterは入力されたファイルをフィルタリングするノードです。
