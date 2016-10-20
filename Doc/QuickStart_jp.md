@@ -82,7 +82,7 @@ ImportSettingノードを使うことで、ノードを通るアセットのイ�
 ##アセットからPrefabを自動的に作成したい
 アーティストの追加したモデルデータ等を使って、スクリプトを追加して敵キャラクター等のPrefabを作成したい、ということがあります。PrefabBuilderを使うことで、Prefabを作ることができます。Prefab化をするためにはスクリプトを書く必要があります。スクリプトは以下のようなものです：
 
-```C#
+```
 public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
 	GameObject go = new GameObject(string.Format("MyPrefab{0}", groupKey));
 	GUITexture t = go.AddComponent<GUITexture>();
@@ -95,6 +95,7 @@ public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Ob
 	return go;
 }
 ```
+
 メニュー>AssetBundleGraph>Create Node Script>PrefabBuilder Scriptを選択してスクリプトを生成し、こんな感じのシンプルな関数を実装してGameObjectを返すと、Prefabとして保存してくれます。
 
 ![SS](/Doc/images/guide/h4.gif)
@@ -105,7 +106,7 @@ List<UnityEngine.Object> に渡されるオブジェクト群は、Groupingで�
 AssetBundle Graph Toolはコマンドラインから実行することもできます。
 メニュー>AssetBundleGraph>Create CUI Toolを選択すると、お使いのプラットフォームで有効なCUI用スクリプトを生成します。これを使うと、以下のようにコマンドラインから指定のプラットフォームのアセットバンドルをビルド出来ます。
 
-```shellscript
+```
 $> sh -e buildassetbundle.sh -target WebGL
 ```
 
@@ -151,7 +152,7 @@ Loader pathに指定したフォルダに入っているAssetをすべて読み�
 メニュー>AssetBundleGraph>Create Node Script>Modifier Script を選択することで、Modifier用のスクリプトを作成できます。
 自分でModifierを定義するときには、AssetBundleGraph.CustomModifier アトリビュートを使ってどの型の変更を行うかを指定します。
 
-```C#
+```
 [AssetBundleGraph.CustomModifier("MyModifier", typeof(RenderTexture))]
 public class MyModifier : AssetBundleGraph.IModifier {
 
@@ -207,7 +208,7 @@ Inspectorでグループ分けに使用するパターンを指定すると、�
 PrefabBuilderを使うには、簡単なスクリプトを作る必要があります。
 メニュー>AssetBundleGraph>Create Node Script>PrefabBuilder Script を選択することで、Modifier用のスクリプトを作成できます。スクリプトの見た目はこんな感じです。
 
-```C#
+```
 [AssetBundleGraph.CustomPrefabBuilder("MyBuilder")]
 public class MyPrefabBuilder : IPrefabBuilder {
 
@@ -283,7 +284,7 @@ BundleConfiguratorを経由する必要があります。
 #ポストプロセス
 ビルド処理が終わった時に追加で何かしたい場合は、Postprocessスクリプトを生成することで行えます。Postprocessを使った簡単なビルドレポートを生成するスクリプトは以下のようなものです。
 
-```C#
+```
 public class MyPostprocess : AssetBundleGraph.IPostprocess {
 	public void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
 
@@ -316,6 +317,7 @@ public class MyPostprocess : AssetBundleGraph.IPostprocess {
 
 ##ノードの接続
 ノード同士は、繋がるものもあれば繋がらないものもあります。
+
 ![SS](/Doc/images/guide/nodeconnectivity.png)
 
 
