@@ -98,8 +98,6 @@ public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Ob
 
 メニュー>AssetBundleGraph>Create Node Script>PrefabBuilder Scriptを選択してスクリプトを生成し、こんな感じのシンプルな関数を実装してGameObjectを返すと、Prefabとして保存してくれます。
 
-![SS](/Doc/images/guide/h4.gif)
-
 List<UnityEngine.Object> に渡されるオブジェクト群は、Groupingでグループ化したものが渡されてきます。PrefabBuilderは１つのグループに対して１つのGameObjectを返す事を前提にしています。
 
 ##コマンドラインから実行したい
