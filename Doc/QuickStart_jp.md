@@ -53,7 +53,7 @@ Assets以下にあるアセットをAssetBundle Graph Toolに読み込んでア�
 1. BundleBuilderに繋いでアセットバンドルを出力する
 1. Exporterで生成したアセットバンドルを所定の位置にコピーする
 
-![SS](/Doc/images/guide/h1.gif)
+![SS](/Doc/images/guide/h1.png)
 
 
 ##複数のアセットから、それぞれを別のアセットバンドルにする
@@ -65,7 +65,7 @@ Groupingノードを使うことで、アセットを複数のグループに分
 1. BundleBuilderに繋いでアセットバンドルを出力する
 1. Exporterで生成したアセットバンドルを所定の位置にコピーする
 
-![SS](/Doc/images/guide/h2.gif)
+![SS](/Doc/images/guide/h2.png)
 
 
 ##アセットのインポート設定を自動的に変更したい
@@ -73,7 +73,7 @@ ImportSettingノードを使うことで、ノードを通るアセットのイ�
 
 1. 他のノードからのアセットの出力をImportSettingを繋いで、インスペクタのModify Import Setting ボタンを押してインポート設定を調整する
 
-![SS](/Doc/images/guide/h3.gif)
+![SS](/Doc/images/guide/h3.png)
 
 これだけで、ImportSettingノードを通過したアセットすべてに設定を反映することができます。
 
