@@ -1,477 +1,320 @@
-#AssetBundleGraph Document
-document version 0.8.0
+#QuickStart Guide
+AssetBundle Graph Tool release 1.0
 
-##TOC
-* 使い方
-* AssetBundleGraphが便利なワケ
-* 逆引きAssetBundleGraph(how to)
-* Nodeの詳細
-* HookPoint tips
+#AssetBundle Graph Toolとは
+AssetBundle Graph ToolはUnityのAssetBundleを作るためのGUIツールです。
+アセットへと設定や変更点を反映させるフローを作成し、AssetBundleの作成や、アセットバンドルに含めたいアセットの生成や調整などの処理を、だいたいコードを書かずに行うことができます。
 
+ま、とりあえず使い方を簡単に見てみましょうか。こんな感じで使っていきます。
 
-#使い方
-AssetBundleGraphはUnityのAssetBundleを作るためのGUIツールです。
-アセットへと設定や変更点を反映させるフローを作成し、AssetBundleの作成やその他のアセット生成/調整などあらゆる処理をだいたいコード無しで行うことができます。
+###1.ノードを作成する
+WindowメニューのAssetBundleGraphから「Open Graph Editor」を選択して、AssetBundleウインドウを表示します。次にウィンドウ内で右クリックすると、作成したいノードを選ぶことが出来ます。まずはLoaderを作成してみましょう。Loaderは、AssetBundle Graph Tool内へとUnityプロジェクト内部のアセットを読み込むノードです。
+![SS](/Doc/images/guide/1.png)
 
-###1.ノードを作成
-AssetBundleGraphのウィンドウ内で右クリックして、ノードを追加します。
-いろんなノードが作れるのですが、まずはLoaderを作成してみましょう。
-Loaderは、AssetBundleGraph内へとUnityプロジェクト内部のアセットを読み込むノードです。
-![SS](/Doc/images/1.png)
+Loaderノードを作ったら、次に同じ要領でFilterノードを作ってみましょう。Filterは入力されたファイルをフィルタリングするノードです。
 
-###2.繋ごう
-２つ以上のノードを作ったら、それらを繋いでいきます。
-ノードの左右両端にある丸い部分を、他のノードの丸い部分にドラッグ＆ドロップすると繋がります。
+###2.ノードを接続する
+２つ以上のノードを作成したら、ノードを繋いでいきます。ノードの左右両端にある丸い部分をクリックして、他のノードの丸い部分にドラッグ＆ドロップすると繋がります。
 
-繋ぐとどうなるか？ 左のLoaderノードから、右のFilterノードへと素材が流れるようになります。
-接続線の真ん中にある数字が流れる素材の個数です。数値が出ている部分を押すと、流れている素材一覧がInspectorに表示されます。
+ノードを繋ぐと、左のLoaderノードから、右のFilterノードへとアセットが流れるようになります。接続線の真ん中にある数字が流れるアセットの数です。数値が出ている部分を押すと流れているアセット一覧がInspectorに表示されます。
 
-![SS](/Doc/images/2.png)
+![SS](/Doc/images/guide/2.png)
 
 ###3.ノードの設定を変更する
-ノードを左クリックすると、Inspectorに細かいセッティングが表示されます。
-ノードの種類ごとにいろいろな項目が設定できます。
-例えばFilterノードでは、流れる素材を名前ごとに複数の流れに分ける、といったことができます。ImportSettingノードでは、アセットのインポート時のセッティングを自在にセットすることができます。
+ノードを左クリックすると、Inspectorでノードの設定が出来ます。ノードの種類ごとに設定できることは異なります。
+例えばFilterノードでは、流れるアセットを名前ごとに分ける、といったことができます。ImportSettingノードでは、入力されるアセットのインポート時の設定を変更することができます。
 
-ノードの設定を変更すると、その設定はノードを通過するすべてのアセットに自動的にセットされます。
+![SS](/Doc/images/guide/3.png)
 
-![SS](/Doc/images/3.png)
+###4.ビルドする
+AssetBundle Graph Toolウィンドウ内のBuildボタンを押すと、繋がっているノードに素材が流れ処理が行われます。
 
-###4.ビルドしよう
-AssetBundleGraphウィンドウ内のBuildボタンを押すと、繋がっているノードに素材が流れ処理が行われます。
+BundleConfigノードとBundleBuilderノードを作ってアセットを流し込むことでアセットバンドル化することが出来ます。BundleConfigではアセットバンドルの設定を、BundleBuilderでは実際のアセットバンドルのビルド処理を行います。
 
-BundlizerノードとBundleBuildノードがあれば、それらのノードに流れ込んだアセットがAssetBundleになります。
+![SS](/Doc/images/guide/4.png)  
+![SS](/Doc/images/guide/5.png)    
 
-![SS](/Doc/images/4.png)  
-![SS](/Doc/images/5.png)    
-![SS](/Doc/images/6.png)
+##AssetBundle Graph Toolの開発背景
+AssetBundle Graph Toolは、アセットの調整や設定をビジュアルに設定・確認できるようにすることで、アセットバンドルを誰でも使えるものにする事を目指して開発されました。
+また、ファイル名などのルールから自動的に分類してアセットバンドルを作れるようにすることで、アーティストやゲームデザイナーがアセットバンドルの事に開発中に気を配らなくても、沢山のアセットバンドルを自動的に作れるようにするためのツールとして設計されています。
 
-もちろんキャッシュが効くため、２度目以降は差分の素材を処理する時間しかかかりません。
+ゲームを作っていく過程でアセットが増えるのは避けられないことですが、AssetBundle Graph Toolを使うことで、テクスチャのサイズやマテリアルのプロパティなど、さまざまな設定をあらかじめ決めたフローで自動的に処理させた上でアセットバンドル化することができます。
 
-GUIでノードの設定を変更するだけで、どんな量でも、どんな面倒な処理でも、何度でも実行することができます。
+また、フローの中で渡されたアセットからPrefabを作ったり、ビルド後のポストプロセスなどもスクリプトで書くことができるので、ビルドのフローの中で行いたいちょっとした特別な処理を簡単に含めることもできます。
 
-ね、簡単でしょう？
+#よくある使い方
 
+## 複数のアセットから一つのアセットバンドルを作る
+Assets以下にあるアセットをAssetBundle Graph Toolに読み込んでアセットバンドルにするには、以下のようにします。
 
+1. Loaderでアセットを読み込みたいディレクトリを指定する
+1. BundleConfigに繋いでアセットバンドルの名前を決めるImportSetting
+1. BundleBuilderに繋いでアセットバンドルを出力する
+1. Exporterで生成したアセットバンドルを所定の位置にコピーする
 
-
-#AssetBundleGraphが便利な理由
-AssetBundleGraphでは、素材の調整や設定がコードを一切書かずに実現できるため、プログラマーの助けになるだけではなく、アーティストやゲームデザイナーにもグッとくるものになっているハズです。特にAssetBundle周りについて、一切コードを書かなくても作れるようになるというのは素晴らしいことです。
-
-ゲームを作っていく過程で素材が増えるのは避けられないことですが、それらの素材を手で調整しないでも、AssetBundleGraphで素材の調整を自動化してしまえば大丈夫。
-新規に追加された素材も、いままで通りのフローに乗って処理されるため、余計な手間がいりません。追加した同じような素材100個を一つずつ手で、、みたいな地獄とはサヨナラできます。
-
-おまけにAssetBundleGraphでは、AssetBundle以外にも、自分で作った圧縮/暗号化、Prefab作成(コードが必須)、インポートしたものをアセットのままどこかに出す、というようなことまでできるようになります。
-
-
-#逆引きAssetBundleGraph(how to)
+![SS](/Doc/images/guide/h1.gif)
 
 
-##複数の素材を一つのAssetBundleにする
-一切コードを書かずに、フォルダに入っている素材をAssetBundleGraphに読み込み、一つのAssetBundleにすることができます。
+##複数のアセットから、それぞれを別のアセットバンドルにする
+Groupingノードを使うことで、アセットを複数のグループに分けて、それぞれアセットバンドルに出来ます。
 
-1. Loaderで素材の入ったフォルダを指定
-1. Importerで素材をインポート
-1. Bundlizerで素材のAssetBundle化
-1. BundleBuilderでAssetBundleの設定、生成
-1. ExporterでAssetBundleの吐き出し
+1. Loaderでアセットを読み込みたいディレクトリを指定する
+1. Groupingに繋いで、パターンを指定することでパス名からグループを作成する
+1. BundleConfigに繋いでアセットバンドルの名前を決める
+1. BundleBuilderに繋いでアセットバンドルを出力する
+1. Exporterで生成したアセットバンドルを所定の位置にコピーする
 
-![SS](/Doc/images/howto_0.gif)
-
-
-##複数の素材を複数のAssetBundleにする
-Groupingノードを使って素材を複数のグループに分けることができます。
-
-PrefabricatorやBundlizerは、PrefabやAssetBundleを作成する際に、グループ単位で作成を行うことが簡単にできるようになっています。
-
-次のようなフローで、グループ単位でAssetBundleを作成することができます。
-
-1. Loaderで素材の入ったフォルダを指定
-1. Importerで素材をインポート
-1. Groupimgで素材をグループ分け
-1. Bundlizerでグループ分けされた素材をAssetBundle化
-1. BundleBuilderでAssetBundleの設定、生成
-1. ExporterでAssetBundleの吐き出し
-
-![SS](/Doc/images/howto_1.gif)
-
-ポイントは3,4で、Groupingで複数の素材からグループを作成、BundlizerでそのグループごとにAssetBundleを作成しています。
+![SS](/Doc/images/guide/h2.gif)
 
 
-##一気に大量の素材のインポート設定を変更したい
-プロジェクトへとインポートしたい素材をAssetBundleGraphのプロジェクトフォルダに置き、そのパスをLoaderで指定、Importerへと繋ぐと一気に素材のインポート処理ができます。
+##アセットのインポート設定を自動的に変更したい
+ImportSettingノードを使うことで、ノードを通るアセットのインポート設定を変更することが出来ます。
 
-1. Loaderで素材の入ったフォルダを指定
-1. Importerを繋いで、ImporterのインスペクタのModify Import Setting ボタンから、インポート設定をセットする
+1. 他のノードからのアセットの出力をImportSettingを繋いで、インスペクタのModify Import Setting ボタンを押してインポート設定を調整する
 
-![SS](/Doc/images/howto_2.gif)
+![SS](/Doc/images/guide/h3.gif)
 
-これだけで、ImportSettingノードを通過した素材すべてに変更した設定を反映することができます。
+これだけで、ImportSettingノードを通過したアセットすべてに設定を反映することができます。
 
-複数の種類の素材(e.g. imageとmodelなど)が含まれている場合、Filterを使って素材の種類ごとにImporterを用意すると設定が楽でいいでしょう。
+複数の種類のアセット(たとえばテクスチャやモデル)が含まれている場合、Filterを使ってアセットを種類ごとに分類し、それぞれ別のImportSettingノードに繋ぎます。インポーターの存在しないMaterialやRender Textureなどのアセットの場合は、Modifierノードを代わりに使うことが出来ます。
 
-1. Loaderで素材が置いてあるパスを指定
-1. Filterで、素材名やパスから、素材を仕分け
-1. Importerを繋いで、ImporterのModify Import Setting ボタンから、インポート設定をセット
-
-![SS](/Doc/images/howto_3.gif)
-
-##素材を複数のグループに分ける
-たとえばゲームのキャラクターが複数いて、それらがテクスチャ + モデルで構成されている時、
-
-Groupingノードを使うと、複数の素材を、キャラ1の素材の集まり(テクスチャ + モデル)、 キャラ2の素材の集まり(テクスチャ + モデル)　などのようにグループ分けすることができます。
-
-![SS](/Doc/images/howto_4.gif)
-
-[Grouping](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Doc/Document.md#grouping)
-
-##素材からPrefabを作成する
-AssetBundleGraphでは、素材を読み込んでPrefabをつくることができます。
-ただし、Assetを指定したりインスタンス化する必要があるため、それらの操作をC#のスクリプトとして記述する必要があります。
-スクリプトは次のようなものです。
+##アセットからPrefabを自動的に作成したい
+アーティストの追加したモデルデータ等を使って、スクリプトを追加して敵キャラクター等のPrefabを作成したい、ということがあります。PrefabBuilderを使うことで、Prefabを作ることができます。Prefab化をするためにはスクリプトを書く必要があります。スクリプトは以下のようなものです：
 
 ```C#
-using UnityEngine;
-using UnityEditor;
+public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
+	GameObject go = new GameObject(string.Format("MyPrefab{0}", groupKey));
+	GUITexture t = go.AddComponent<GUITexture>();
 
-using System;
-using System.IO;
-using System.Collections.Generic;
+	Texture2D tex = (Texture2D)objects.Find(o => o.GetType() == typeof(UnityEngine.Texture2D));
 
-public class MyPrefabricator : AssetBundleGraph.PrefabricatorBase {
-	public override void In (string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate) {
-		// let's generate Prefab with "Prefabricate" method.
-	}
+	t.texture = tex;
+	t.color = color;
+
+	return go;
 }
 ```
+メニュー>AssetBundleGraph>Create Node Script>PrefabBuilder Scriptを選択してスクリプトを生成し、こんな感じのシンプルな関数を実装してGameObjectを返すと、Prefabとして保存してくれます。
 
-AssetBundleGraph.PrefabricatorBase クラスを継承し、In メソッドを持つScriptです。
-このScriptは、Window > AssetBundleGraph > Generate Script For Node > Prefabricator Script で自動的にひな形を作成できます。
+![SS](/Doc/images/guide/h4.gif)
 
-スクリプトを作成したら、その型名をAssetBundleGraph内のPrefabricatorノードにセットすることで、ノードに流れてきたAssetが自動的にスクリプトを通過するようになります。
+List<UnityEngine.Object> に渡されるオブジェクト群は、Groupingでグループ化したものが渡されてきます。PrefabBuilderは１つのグループに対して１つのGameObjectを返す事を前提にしています。
 
-![SS](/Doc/images/howto_5.gif)
-
-
-PrefabricatorノードにどんなAssetがどのようなグループ名、順番で入ってくるかは、PrefabricatorノードにつながっているConnectionから想定することができます。
-
-![SS](/Doc/images/howto_6.png)
-
-この場合、groupKey "0"で、dummy.png, kiosk001.mat, sample.fbx の3つが順にsourceに入った状態で、Prefabricatorを拡張したInメソッドが呼ばれます。
-
-![SS](/Doc/images/howto_7.png)
-
-Prefabの作成にPrefabricateメソッドを使うと、キャッシュが効いて便利です。
-
-サンプルコードはこちら。
-[SamplePrefabricator](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Assets/AssetBundleGraph/UserSpace/Examples/Editor/SamplePrefabricator.cs)
-
-
-##素材のグループからPrefabを作成する
-Groupingノードで複数のグループを作り出しPrefabricatorノードにつなぐと、複数のグルーピングされた素材をPrefab作成に使うことができます。
-複数のグループは、PrefabricatorBaseを拡張したスクリプトの中で、groupKeyの値として使用できます。
-
-
-##コマンドラインから実行する
-AssetBundleGraphはコマンドラインから実行することができます。
-UnityEditorにセットされているプラットフォームを使う場合、次のようなshellScript/batchで実行するといいでしょう。
+##コマンドラインから実行したい
+AssetBundle Graph Toolはコマンドラインから実行することもできます。
+メニュー>AssetBundleGraph>Create CUI Toolを選択すると、お使いのプラットフォームで有効なCUI用スクリプトを生成します。これを使うと、以下のようにコマンドラインから指定のプラットフォームのアセットバンドルをビルド出来ます。
 
 ```shellscript
-/Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
-	-projectPath $(pwd)\
-	-executeMethod AssetBundleGraph.AssetBundleGraph.Build
+$> sh -e buildassetbundle.sh -target WebGL
 ```
 
-また、次のようなshellScript/batchで、プラットフォームを指定してAssetBundleGraphを実行することができます。
+##ビルド実行後に処理を行いたい
+Postprocessスクリプトを作成することで、ビルド完了時にスクリプトの処理を行うことが出来ます。
+メニュー>AssetBundleGraph>Create Node Script>Postprocess Script を選択してポストプロセス用のスクリプトを作成しましょう。
 
-```shellscript
-/Applications/Unity/Unity.app/Contents/MacOS/Unity -batchmode -quit\ 
-	-projectPath $(pwd)\
-	-executeMethod AssetBundleGraph.AssetBundleGraph.Build iOS
-```
-
-サンプルのshellScriptはこちら。
-[build.sh](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Assets/AssetBundleGraph/UserSpace/build.sh)
-
-##インポートしたファイルや、作成したPrefab、AssetBundleをAssets/外に吐き出したい
-Exporterノードでは、インポート済みのファイルやPrefab、AssetBundleを出力することができます。
-
-
-##ビルド実行後に処理をしたい
-AssetBundleGraphでは、Finallyというフックポイントがビルド完了時に起動するFinallyという機構があります。
-
-[Finally](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Doc/Document.md#hookpoint-finally-tips)
-
-
-##作成したAssetBundleのcrcやサイズ情報を簡単に扱いたい
-Unity5から、AssetBundleの情報は.manifestファイルで吐き出されるようになりました。Finally機構を利用してその情報を読み取る方法を紹介します。
-
-[Finally](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Doc/Document.md#assetbundleのmanifestからjsonでリストを作り出す)
-
-
-##キャッシュを消したい
-AssetBundleGraphでは、一度実行したインポート処理やPrefab作成処理、AssetBundle作成処理をキャッシュし、同じ内容であればキャッシュを使うことで無駄な時間を削減しています。キャッシュの実態ファイルはAssets/AssetBundleGraph/Cache フォルダにあります。
-
-UnityのメニューからClear Cacheを選択することで、AssetBundleGraph内にあるすべてのファイルのキャッシュを消すことができます。
-
-Unity > Window > AssetBundleGraph > Clear Cache
-
-
-##グラフのデータを消したい
-AssetBundleGraphのウインドウを開くとハングするようになってしまうなど、読み込もうとしたファイルによって具合が悪くなってしまった場合、Assets/AssetBundleGraph/SettingFiles/AssetBundleGraph.json ファイルを削除すると、グラフのデータを消すことができます。
-
-
-#Nodeの詳細
+#Node説明
 ##Loader
-- OUT: 指定したフォルダに含まれているすべての素材
+- OUT: 指定したフォルダに含まれているすべてのアセット（１グループ）
 
 Loader pathに指定したフォルダに入っているAssetをすべて読み込む。
 
-![SS](/Doc/images/7_loader.png)
-
-loadPathはProjectフォルダのパスから下を指定することができる。
-ProjectフォルダにAssetBundleGraph用の素材を置くフォルダを作成するのがオススメ。
-
-Assets/パスを使って、すでにプロジェクト内で使っているAssetを使用することもできる。
-
+![SS](/Doc/images/guide/n_loader.png)
 
 ##Filter
-- IN: 複数のAsset
-- OUT: keywordにマッチした複数のAsset
+- IN: アセット
+- OUT: keywordにマッチしたアセット
 
-パスにkeywordを含む素材を、複数の出力に振り分けることができます。
+フィルタ条件にマッチするアセットを抽出します。複数のフィルタを設定して、複数の出力を持たせることも出来ます。
 
-![SS](/Doc/images/7_filter.png)
-
-keywordは複数設定することができます。
+![SS](/Doc/images/guide/n_filter.png)
 
 
 ##ImportSetting
-- IN: 複数のAsset
-- OUT: 複数のAsset
+- IN: アセットのグループ
+- OUT: INから入ったアセットのグループ
 
-一つ~複数のファイルの設定を変更します。
+テクスチャ、モデル、オーディオの3つのアセットについて、アセットのインポート設定を変更します。
 
-TextureImporter, ModelImporter, AudioImporterのいずれかのタイプのファイルを扱うことができます。
+![SS](/Doc/images/guide/n_importsetting.png)
 
-Inspectorからインポート設定を調整することができます。
-
-![SS](/Doc/images/7_importer.png)
-
-1つのImportSettingで設定ができるのは、画像/モデル/音声から１種類のみです。
-例えば画像とモデルをまとめてこのノードに送り込むと、どちらかだけにしてくれ、という旨のエラーが出ます。
-
+1つのImportSettingで設定ができるのは１種類のアセットのみです。入力されたアセットに複数の種類がある場合、あるいは前に設定されたアセットとタイプが異なる場合はエラーになります。
 
 ##Modifier
-- IN: 複数のAsset
-- OUT: グループ分けされた複数のAsset
+- IN: アセットのグループ
+- OUT: INから入ったアセットのグループ
 
-一つ~複数のファイルの設定を変更します。
+インポーターのないアセットの設定を直接変更します。テクスチャ、モデル、オーディオ以外のRenderTextureやMaterialといったアセットの設定を変更することが出来ます。Modifierで行う変更はプロジェクトの要件によって多岐に渡るので、Modifierを使う場合は基本的にModifier Scriptを自分で書いて対応します。
 
-TextureImporter, ModelImporter, AudioImporter以外のタイプのファイルを扱うことができます。
+![SS](/Doc/images/guide/n_modifier.png)
 
-Inspectorからインポート設定を調整することができます。今後。多分。
+メニュー>AssetBundleGraph>Create Node Script>Modifier Script を選択することで、Modifier用のスクリプトを作成できます。
+自分でModifierを定義するときには、AssetBundleGraph.CustomModifier アトリビュートを使ってどの型の変更を行うかを指定します。
 
+```C#
+[AssetBundleGraph.CustomModifier("MyModifier", typeof(RenderTexture))]
+public class MyModifier : AssetBundleGraph.IModifier {
+
+	[SerializeField] private bool doSomething;
+
+	// Test if asset is different from intended configuration 
+	public bool IsModified (object asset) {
+		return false;
+	}
+
+	// Actually change asset configurations. 
+	public void Modify (object asset) {
+	}
+
+	// Draw inspector gui 
+	public void OnInspectorGUI (Action onValueChanged) {
+		GUILayout.Label("MyModifier!");
+
+		var newValue = GUILayout.Toggle(doSomething, "Do Something");
+		if(newValue != doSomething) {
+			doSomething = newValue;
+			onValueChanged();
+		}
+	}
+
+	// serialize this class to JSON 
+	public string Serialize() {
+		return JsonUtility.ToJson(this);
+	}
+}
+```
 
 
 ##Grouping
-- IN: 複数のAsset
-- OUT: グループ分けされた複数のAsset
+- IN: アセットのグループ
+- OUT: 設定によって分けられたアセットのグループのグループ
 
-キーワードを使って、素材を複数のグループに分けることができます。
+キーワードを使って、アセットを複数のグループに分けます。
 
-![SS](/Doc/images/7_grouping_0.png)
-![SS](/Doc/images/7_grouping_1.png)
-![SS](/Doc/images/7_grouping_2.png)
+![SS](/Doc/images/guide/n_grouping.png)
 
-Inspectorで、group Key に「グループ分けに使用するキーワード」を指定すると、素材のパスから複数のグループが作られます。
+Inspectorでグループ分けに使用するパターンを指定すると、アセットのパスから複数のグループが作られます。*でマッチした部分がグループ名として使用されます。たとえば"Menu/English/GUI.prefab", "Menu/Danish/GUI.prefab" の２つのアセットが入力にある時に、"Menu/*/"をパターンとして指定すると、EnglishとDanishの２つのグループが作られます。
 
-group Keyでは、\* 記号をワイルドカードとして使用することができます。
-
-たとえばフォルダ名に /ID_mainChara/、/ID_enemy/ などがついている場合、
-group Key に /ID_\*/ とセットすると、"mainChara", "enemy"の2つのグループが作成されます。
-
-すでにグループ分けされたAssetをGroupingノードに通すと、一度グループ分けが解除され、再度グループ分けされます。
-
-##Prefabricator
+##PrefabBuilder
 - IN: Prefabの素材にしたいAssetのグループ
 - OUT: 作成されたPrefabを含むAssetのグループ
 
-入力されたAssetから、スクリプトを介してPrefabを作成することができます。
-出力されるAssetは、入力されたAssetと作成されたPrefabを合わせたものになります。
+入力されたアセットから指定のスクリプトでPrefabを作成することができます。
+出力されるアセットには、入力されたアセットに加えて新しくPrefabが追加されます。
 
-![SS](/Doc/images/7_prefabricator.png)
+![SS](/Doc/images/guide/n_prefabbuilder.png)
 
-PrefabricatorBaseを拡張したスクリプトを書き、セットして使用します。
-残念ながら、スクリプト無しでこのノードを使用することはできません。
-
-Prefabricatorノードには、２通りの作成方法があります。
-
-1. GUIで作成したものにスクリプトの型名を入力する
-1. スクリプトをAssetBundleGraphウィンドウにD&Dする
-
-スクリプトはAssetBundleGraph.PrefabricatorBaseクラスを拡張し、public override void In (string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate)メソッドをオーバーライドしている必要があります。
-
-サンプルスクリプト[CreateCharaPrefab.cs](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Assets/AssetBundleGraph/UserSpace/Examples/Editor/CreateCharaPrefab.cs)
-
-
-
-##Bundlizer
-- In: AssetBundleの素材にしたいAssetのグループ
-- Out: グループごとに生成されたAssetBundle
-
-入力されたAssetから、AssetBundleを作成することができます。  
-生成されるAssetBundleの名前は、BundleNameTemplateパラメータで指定することができます。
-
-![SS](/Doc/images/7_bundlizer_0.png)
-![SS](/Doc/images/7_bundlizer_1.png)
-![SS](/Doc/images/7_bundlizer_2.png)
-
-この際、BundleNameTemplateに\*が含まれていると、そこにはグループIDが自動的にセットされます。
-
-\*が含まれていない場合、AssetBundleにはBundleNameTemplate通りの名前がつきます。
-
-この機能は、例えばキャラクターのAssetBundleをそのキャラクターのIDを含んだ名前で作りたい、といった場合に、グループID = キャラクターIDとなるようなフローを組んでおくことで自動的にAssetBundleが命名されることになるので、とても効果的です。
-
-また、このノードから出力されるAssetは、作成されたAssetBundleのみになります。このノードから接続できるノードは１種類、BundleBuilderノードのみです。
-
-Bundlizerノードには、２通りの作成方法があります。
-
-1. GUIで作成したものにAssetBundleの名前のテンプレートを入力する
-1. BundlizerBaseを拡張したスクリプトをAssetBundleGraphウィンドウにD&Dする
-
-2の方法では、自分で用意したスクリプトを実行することができます。
-スクリプトはAssetBundleGraph.PrefabricatorBaseクラスを拡張し、public override void In (string groupKey, List<AssetBundleGraph.AssetInfo> source, string recommendedPrefabOutputDir, Func<GameObject, string, bool, string> Prefabricate)メソッドをオーバーライドしている必要があります。
-
-サンプルスクリプト[CreateCharaBundle.cs](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Assets/AssetBundleGraph/UserSpace/Examples/Editor/CreateCharaBundle.cs)
-
-この方法では、AssetBundleを作成するコードをこと細かく書いて実行できるほか、自分で考えた圧縮や暗号化などを行うこともできます。
-
-ただし、BundlizerからはBundleBuilderノード以外に接続できないため、自分でAssetBundleを作成するコードを書いた場合であってもBundleBuilderへと繋ぐ必要があります。
-
-
-##BundleBuilder
-- In: AssetBundleなどのグループ
-- Out: 実際に生成されたAssetBundleなどのグループ
-
-Bundlizerで設定したAssetBundleを実際に生成します。様々なオプションをセットすることができます。
-
-![SS](/Doc/images/7_bundlebuilder.png)
-
-Bundlizer以外から接続することができません。
-コードなしのBundlizerでAssetBundleの作成をした場合のみ、このノードでAssetBundleの設定を行うことができます。
-
-##Exporter
-- In: インポート済み or AssetBundleGraph内で作成したアセットのグループ
-
-指定したパスにファイルを出力することができます。
-
-![SS](/Doc/images/7_exporter.png)
-
-指定できるパスは、プロジェクトのフォルダ以下であれば自由に指定できます。
-ただし、指定したフォルダは実行前に作成しておかないといけません。
-
-
-#HookPoint: Finally tips
-AssetBundleGraphのビルド処理・リロード処理が終わったタイミングで実行する処理を、スクリプトで記述することができます。
-
-##FinallyBase クラスをextendsする
-FinallyBase クラスを拡張したコードは、ビルド処理・リロード処理が終わったタイミングで自動的に呼ばれます。
-
-public override void Run (Dictionary\<string, Dictionary\<string, List<string>>> throughputs, bool isBuild) メソッドで、すべてのNode、すべてのグループの実行結果を受け取ることができます。
-
-Dictionary\<string, Dictionary\<string, List\<string>>> throughputs
-NodeName, groupKey, AssetPath が格納されています。
-
-bool isBuild
-ビルド処理時はtrue、それ以外ではfalse
-
-
-##すべてのノードの生成物のパスをUnityのログに出すサンプル
-Finallyのサンプルとして、ウィンドウ内にあるすべてのノードの生成物のファイルパスをログにだす、というものを作ってみましょう。
+PrefabBuilderを使うには、簡単なスクリプトを作る必要があります。
+メニュー>AssetBundleGraph>Create Node Script>PrefabBuilder Script を選択することで、Modifier用のスクリプトを作成できます。スクリプトの見た目はこんな感じです。
 
 ```C#
-using UnityEngine;
-using UnityEditor;
+[AssetBundleGraph.CustomPrefabBuilder("MyBuilder")]
+public class MyPrefabBuilder : IPrefabBuilder {
 
-using System;
-using System.IO;
-using System.Collections.Generic;
+	[SerializeField] private Color color;
 
-/**
-	sample class for finally hookPoint.
+	public string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
+		var tex = objects.Find(o => o.GetType() == typeof(UnityEngine.Texture2D));
 
-	show results of all nodes.
-*/
-public class SampleFinally : AssetBundleGraph.FinallyBase {
-	public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
-		Debug.Log("flnally. isBuild:" + isBuild);
+		if(tex != null) {
+			return string.Format("MyPrefab{0}", groupKey);
+		}
 
-		if (!isBuild) return;
-		
-		foreach (var nodeName in throughputs.Keys) {
-			Debug.Log("nodeName:" + nodeName);
+		return null;
+	}
 
-			foreach (var groupKey in throughputs[nodeName].Keys) {
-				Debug.Log("	groupKey:" + groupKey);
+	public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
+		GameObject go = new GameObject(string.Format("MyPrefab{0}", groupKey));
+		GUITexture t = go.AddComponent<GUITexture>();
+		Texture2D tex = (Texture2D)objects.Find(o => o.GetType() == typeof(UnityEngine.Texture2D));
+		t.texture = tex;
+		t.color = color;
 
-				foreach (var result in throughputs[nodeName][groupKey]) {
-					Debug.Log("		result:" + result);
+		return go;
+	}
+
+	public void OnInspectorGUI (Action onValueChanged) {
+		var newValue = EditorGUILayout.ColorField("Texture Color", color);
+		if(newValue != color) {
+			color = newValue;
+			onValueChanged();
+		}
+	}
+
+	public string Serialize() {
+		return JsonUtility.ToJson(this);
+	}
+}
+```
+
+スクリプトを作成したら、インスペクターから使用したいPrefaBuilderを選んで設定します。
+
+
+##BundleConfigurator
+- In: アセットバンドルにしたいアセットのグループ
+- Out: アセットバンドル化のための設定がなされたアセットのグループ
+
+入力されたアセットのグループにアセットバンドル化のための設定を行います。
+作成されるアセットバンドルの名前は、Bundle Name Templateで指定します。テンプレート名の"*"には、グループ名が入ります。
+
+![SS](/Doc/images/guide/n_bundleconfig.png)
+
+BundleConfiguratorを使うことで、バリアントの設定を行うことも出来ます。また、グループの入力をバリアントとして扱うことも出来ます。
+
+##BundleBuilder
+- In: アセットバンドル化のための設定がなされたアセットのグループ
+- Out: 実際に生成されたアセットバンドルファイルとmanifest（１グループ）
+
+BundleConfiguratorで設定したアセットバンドルをビルドします。アセットバンドルを圧縮するかどうかなど、ビルド時のオプションを設定できます。
+
+![SS](/Doc/images/guide/n_bundlebuilder.png)
+
+BundleBuilderはBundleConfigurator以外の入力を受け付けていません。BundleBuilderを使うためには、必ず
+BundleConfiguratorを経由する必要があります。
+
+##Exporter
+- In: 出力したいアセットのグループ
+
+指定したパスにファイルを出力することができます。出力先フォルダがないとエラーにするか、自動的に生成するかなどの出力オプションを設定できます。
+
+![SS](/Doc/images/guide/n_exporter.png)
+
+
+#ポストプロセス
+ビルド処理が終わった時に追加で何かしたい場合は、Postprocessスクリプトを生成することで行えます。Postprocessを使った簡単なビルドレポートを生成するスクリプトは以下のようなものです。
+
+```C#
+public class MyPostprocess : AssetBundleGraph.IPostprocess {
+	public void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
+
+		if (!isRun) {
+			return;
+		}
+
+		Debug.Log("BUILD REPORT:");
+
+		foreach (var node in assetGroups.Keys) {
+			var result = assetGroups[node];
+
+			StringBuilder sb = new StringBuilder();
+
+			foreach (var groupKey in result.Keys) {
+				var assets = result[groupKey];
+
+				sb.AppendFormat("In {0}:\n", groupKey);
+
+				foreach (var a in assets) {
+					sb.AppendFormat("\t {0} {1}\n", a.path, (a.isBundled)?"[in AssetBundle]":"");
 				}
 			}
+
+			Debug.LogFormat("Node:{0}\n---\n{1}", node.Name, sb.ToString());
 		}
 	}
 }
 ```
-[SampleFinally](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Assets/AssetBundleGraph/UserSpace/Examples/Editor/SampleFinally.cs)
 
-##AssetBundleのmanifestからjsonでリストを作り出す
-Finallyの例のその２として、AssetBundle生成時に作られた.manifestファイルからAssetBundleの情報を読み出してjsonにしてみましょう。
-
-Bundlizer、BundleBuilderでAssetBundleを作り、ExporterでAssetBundleをアウトプットしており、そのAssetBundleの内容をjson形式のリストにしたい、という前提です。
-
-Finallyに書くべきコード(抜粋)は下記のようなものになります。
-
-```C#
-	public override void Run (Dictionary<string, Dictionary<string, List<string>>> throughputs, bool isBuild) {
-		
-		// run only build time.
-		if (!isBuild) return;
-
-		var bundleInfos = new List<Dictionary<string, object>>();
-
-		// get exported .manifest files from "Exporter" node.
-
-		string targetNodeName = "Exporter0";
-		foreach (var groupKey in throughputs[targetNodeName].Keys) {
-			foreach (var result in throughputs[targetNodeName][groupKey]) {
-				// ignore SOMETHING.ASSET
-				if (!result.EndsWith(".manifest")) continue;
-
-				// ignore PLATFORM.manifest file.
-				if (result.EndsWith(EditorUserBuildSettings.activeBuildTarget.ToString() + ".manifest")) continue;
-
-				// get bundle info from .manifest file.
-				var bundleInfo = GetBundleInfo(result);
-				bundleInfos.Add(bundleInfo);
-			}
-		}
-
-		var bundleListJson = Json.Serialize(bundleInfos);
-
-		Debug.Log(bundleListJson);
-```
-
-Exporterノードの名前を指定することで、特にExporter0という名前のノードの結果だけに注目し、.manifestファイルからAssetBundleのデータを取り出しています。
-
-最終的にはそれらを List\<Dictionary\<string, object>> bundleInfos に入れ、Json形式のstringにしています。
-
-Jsonにすることで取り回しが楽になるケースなどで役にたつと思います。
-
-サンプルコード全体はこちら[SampleFinally2](https://github.com/unity3d-jp/AssetBundleGraph/blob/master/Assets/AssetBundleGraph/UserSpace/Examples/Editor/SampleFinally2.cs)
-
-
-
-
+##ノードの接続
+ノード同士は、繋がるものもあれば繋がらないものもあります。
+![SS](/Doc/images/guide/nodeconnectivity.png)
 
 
