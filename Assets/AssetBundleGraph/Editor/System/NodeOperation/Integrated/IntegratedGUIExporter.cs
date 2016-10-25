@@ -8,13 +8,13 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperation {
-		public void Setup (BuildTarget target, 
-			NodeData node, 
+		public void Setup (BuildTarget target,
+			NodeData node,
 			ConnectionPointData inputPoint,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			ConnectionData connectionToOutput,
+			Dictionary<string, List<Asset>> inputGroupAssets,
+			List<string> alreadyCached,
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output)
 		{
 			ValidateExportPath(
 				node.ExporterExportPath[target],
@@ -31,25 +31,25 @@ namespace AssetBundleGraph {
 
 			Export(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output, false);
 		}
-		
-		public void Run (BuildTarget target, 
-			NodeData node, 
+
+		public void Run (BuildTarget target,
+			NodeData node,
 			ConnectionPointData inputPoint,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			ConnectionData connectionToOutput,
+			Dictionary<string, List<Asset>> inputGroupAssets,
+			List<string> alreadyCached,
+			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output)
 		{
 			Export(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output, true);
 		}
 
-		private void Export (BuildTarget target, 
-			NodeData node, 
+		private void Export (BuildTarget target,
+			NodeData node,
 			ConnectionPointData inputPoint,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
+			ConnectionData connectionToOutput,
+			Dictionary<string, List<Asset>> inputGroupAssets,
 			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,
-			bool isRun) 
+			bool isRun)
 		{
 			var outputDict = new Dictionary<string, List<Asset>>();
 			outputDict["0"] = new List<Asset>();
@@ -57,7 +57,7 @@ namespace AssetBundleGraph {
 			var exportPath = FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]);
 
 			if (isRun) {
-				if(node.ExporterExportOption[target] == (int)ExporterExportOption.DeleteAndRecreteExportDirectory) {
+				if(node.ExporterExportOption[target] == (int)ExporterExportOption.DeleteAndRecreateExportDirectory) {
 					if (Directory.Exists(exportPath)) {
 						Directory.Delete(exportPath, true);
 					}
@@ -76,24 +76,24 @@ namespace AssetBundleGraph {
 				var exportedAssets = new List<Asset>();
 				var inputSources = inputGroupAssets[groupKey];
 
-				foreach (var source in inputSources) {					
+				foreach (var source in inputSources) {
 					var destinationSourcePath = source.importFrom;
-					
+
 					// in bundleBulider, use platform-package folder for export destination.
 					if (destinationSourcePath.StartsWith(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE)) {
 						var depth = AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;
-						
+
 						var splitted = destinationSourcePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
 						var reducedArray = new string[splitted.Length - depth];
-						
+
 						Array.Copy(splitted, depth, reducedArray, 0, reducedArray.Length);
 						var fromDepthToEnd = string.Join(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
-						
+
 						destinationSourcePath = fromDepthToEnd;
 					}
-					
+
 					var destination = FileUtility.PathCombine(exportPath, destinationSourcePath);
-					
+
 					var parentDir = Directory.GetParent(destination).ToString();
 
 					if (isRun) {
