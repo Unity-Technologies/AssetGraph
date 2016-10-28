@@ -2,64 +2,64 @@
 
 ![SS](/Doc/images/readme/graph.png)
 
-AssetBundleGraphTool is a visual toolset lets you configure and create Unity's AssetBundles. It is intended to create rule-based configuration in visual form to create and manage efficient workflow around AssetBundle generation. 
+AssetBundleGraphTool is a visual toolset that lets you configure and create Unity's AssetBundles. It is intended to create visual, rule-based configuration and manage efficient workflow around AssetBundle generation.
 
 [Quick Q&A](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Home)
 
 ##Usage
 ###1.Add Nodes
-Right click AssetBundleGraphTool canvas gives you list of nodes you can create. Select one of them and create nodes. To start, create Loader node to identify which assets should go into AssetBundles.
+Right-clicking the AssetBundleGraphTool canvas will give you a list of nodes you can create. Select one of them to create nodes. First, create a Loader node to identify which assets should go into the AssetBundle.
 ![SS](/Doc/images/readme/1.png)
 
 ###2.Connect Them
-When you create more than two nodes, let's connect them. Simply click the dot on created node, drag and drop to the dot of other node you wish to connect, then you will have link. 
+When you create more than two nodes, connect them. Simply click the dot on a created node, drag and drop it to the dot of another node to connect them.
 
-AssetBundleGraphTool gives you live update preview of asset list that will be passed through the link. By clicking link you will see the full list of assets.
+AssetBundleGraphTool gives you a live update preview of the asset list that will be passed through the link. By clicking links you will see the full list of assets.
 
 ![SS](/Doc/images/readme/2.png)
 
 ###3.Configure Settings
-By selecting a node, you can configure settings for your AssetBundle building rules. I.e. Filter node let you configure filtering rules, Importer node let you configure different importing setting you wish to apply onto assets go through that node. 
+By selecting a node, you can configure settings for your AssetBundle building rules. I.e. Filter node lets you configure filtering rules, Importer node lets you configure different import settings you wish to apply to assets that go through that node. 
 ![SS](/Doc/images/readme/3.png)
 
 ###4.Build It!
-By pressing Build button on AssetBundleGraphTool window, AssetBundles are built respect to rules you created.
-Visual editor lets you build AssetBunldes in the way you want to while keeping everything easy, repeatable and scalable.
+By clicking Build on the AssetBundleGraphTool window, AssetBundles are built according to rules you have created.
+Visual editor lets you build AssetBundles in the way you want while keeping everything easy, repeatable and scalable.
 ![SS](/Doc/images/readme/4.png)
 
-###5.Born with multiplatform
-AssetBundleGraphTool can configure all Asset Bundle build settings ready for multiplatform. You can choose platform to build and overwrite settings where you want to customize per platforms.
+###5.Born with multi-platform
+AssetBundleGraphTool can configure all AssetBundle build settings ready for multi-platform. You can choose the platform to build, and overwrite settings where you want to customize per platform.
 
 ![SS](/Doc/images/readme/5.png)
 ![SS](/Doc/images/readme/6.png)
 
 
-##Why Rule Based?
-Because AssetBundleGraphTool handles AssetBundle build pipeline by rules, programmers can safely build simple workflow with artists or game designers without making them worry about AssetBundle configuration. When they add new assets into project, AssetBundleGraphTool automatically takes care of them and build necessary AssetBundles by your rule(s). 
+##Why Rule-based?
+AssetBundleGraphTool handles AssetBundle build pipelines by rules, which enables programmers to safely build simple workflows with artists or game designers without making them worry about AssetBundle configuration. When they add new assets into a project, AssetBundleGraphTool automatically takes care of them and builds necessary AssetBundles using the rule(s) that you have made. 
 
 
 
 
 ##Nodes
-There are several types of nodes you can use in this graph tool.
+There are several types of node you can use in this graph tool.
 
 ###Loader
-Loader is your starting point of building AssetBundles. Loader finds and give list assets to following nodes.  
+Loader is your starting point of building AssetBundles. Loader finds and gives asset lists to following nodes.  
 - OUT: list of assets under given directory
 
 ![SS](/Doc/images/readme/1000.png)
 
 ###Filter
-Filter creates sub-list of assets coming from previous node. You can add multiple filtering rules to create multiple sub-list.
+Filter creates sub-list of assets coming from the previous node. You can add multiple filtering rules to create multiple sub-lists.
 - IN: list of assets
 - OUT: list of assets which matches given filter setting
 
 ![SS](/Doc/images/readme/600.png)  
 
 ###ImportSetting
-ImportSetting overwrites import settings of assets passed by previous node.
+ImportSetting overwrites import settings of assets passed by the previous node.
 - IN: list of assets
-- OUT: list of assets with given importer settings applied
+- OUT: list of assets with given import settings applied
 
 ![SS](/Doc/images/readme/500.png)  
 
@@ -72,22 +72,22 @@ Modifier modifies asset configuration directly. You can also create your own mod
 
 
 ###Grouping
-Grouping makes a group of resources from list of assets by configured pattern.
-"Group" is very useful approach to build AssetBundle.
+Grouping makes a group of resources from a list of assets using the configured pattern.
+"Group" is very a useful approach in building AssetBundles.
 - IN: list of assets
 - OUT: list of group of assets
 
 ![SS](/Doc/images/readme/400.png)  
 
 ###PrefabBuilder
-PrefabBuilder is a node let you create Prefab in the form you need in your game. 
+PrefabBuilder is a node that lets you create Prefabs according to your needs.
 - IN: list of group of assets
 - OUT: list of group of assets with your prefab
 
 ![SS](/Doc/images/readme/700.png)  
 
 ###BundleConfig
-BundleConfig create catalog of AssetBundle's contents from given group of assets. "*" will be replaced to the grouping identifier. You can also create variants with BundleConfig.
+BundleConfig creates a catalog of the AssetBundle's content from a given group of assets.  Asterisks (*) in the template name will be replaced by the group identifier.  You can also create variants with BundleConfig.
 - IN: list of group of assets
 - OUT: list of group of assets in AssetBundle name.
 
@@ -95,7 +95,7 @@ BundleConfig create catalog of AssetBundle's contents from given group of assets
 
 
 ###BundleBuilder
-BundleBuilder create actual AssetBundle files from given list of bundle configurations. By using BundleConfig and BundleBuilder(s), you can simultaneously create AssetBundles with different AssetBundle configuration (i.e. compressed & uncompressed)
+BundleBuilder creates actual AssetBundle files from a given list of bundle configurations. By using BundleConfig and BundleBuilder(s), you can simultaneously create AssetBundles with different AssetBundle configuration (i.e. compressed & uncompressed)
 
 - IN: list of bundles
 - OUT: list of generated AssetBundle files (including manifests)
@@ -104,7 +104,7 @@ BundleBuilder create actual AssetBundle files from given list of bundle configur
 
 
 ###Exporter
-Exporter saves given assets into given directory.  You can also select directory outside /Assets/. 
+Exporter saves the given assets into the given directory.  You can also select a directory outside /Assets/. 
 - IN: list of assets (or AssetBundle files)
 
 ![SS](/Doc/images/readme/900.png)
