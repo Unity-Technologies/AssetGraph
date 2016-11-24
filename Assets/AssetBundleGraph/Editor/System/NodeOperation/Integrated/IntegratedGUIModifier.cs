@@ -11,16 +11,16 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIModifier.Setup");
 			var incomingAssets = inputGroupAssets.SelectMany(v => v.Value).ToList();
 
 			ValidateModifier(node, target, incomingAssets,
-				(Type expectedType, Type foundType, Asset foundAsset) => {
+				(Type expectedType, Type foundType, AssetReference foundAsset) => {
 					throw new NodeException(string.Format("{3} :Modifier expect {0}, but different type of incoming asset is found({1} {2})", 
 						expectedType.FullName, foundType.FullName, foundAsset.fileNameAndExtension, node.Name), node.Id);
 				},
@@ -37,18 +37,19 @@ namespace AssetBundleGraph {
 			);
 
 			// Modifier does not add, filter or change structure of group, so just pass given group of assets
-			Output(connectionToOutput, inputGroupAssets, null);
+			Output(inputGroupAssets);
+			Profiler.EndSample();
 		}
 
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIModifier.Run");
 			var incomingAssets = inputGroupAssets.SelectMany(v => v.Value).ToList();
 
 			var modifier = ModifierUtility.CreateModifier(node, target);
@@ -56,9 +57,9 @@ namespace AssetBundleGraph {
 			bool isAnyAssetModified = false;
 
 			foreach(var asset in incomingAssets) {
-				var loadedAsset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(asset.importFrom);
-				if(modifier.IsModified(loadedAsset)) {
-					modifier.Modify(loadedAsset);
+				if(modifier.IsModified(asset.data)) {
+					modifier.Modify(asset.data);
+					asset.ReleaseData();
 					isAnyAssetModified = true;
 				}
 			}
@@ -69,14 +70,15 @@ namespace AssetBundleGraph {
 			}
 
 			// Modifier does not add, filter or change structure of group, so just pass given group of assets
-			Output(connectionToOutput, inputGroupAssets, null);
+			Output(inputGroupAssets);
+			Profiler.EndSample();
 		}
 			
 		public static void ValidateModifier (
 			NodeData node,
 			BuildTarget target,
-			List<Asset> incomingAssets,
-			Action<Type, Type, Asset> multipleAssetTypeFound,
+			List<AssetReference> incomingAssets,
+			Action<Type, Type, AssetReference> multipleAssetTypeFound,
 			Action noModiferData,
 			Action failedToCreateModifier,
 			Action<Type, Type> incomingTypeMismatch
@@ -84,7 +86,7 @@ namespace AssetBundleGraph {
 			Type expectedType = TypeUtility.FindIncomingAssetType(incomingAssets);
 			if(expectedType != null) {
 				foreach(var a  in incomingAssets) {
-					Type assetType = TypeUtility.FindTypeOfAsset(a.importFrom);
+					Type assetType = a.filterType;
 					if(assetType != expectedType) {
 						multipleAssetTypeFound(expectedType, assetType, a);
 					}

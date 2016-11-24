@@ -88,8 +88,6 @@ namespace AssetBundleGraph {
 		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 
-		[SerializeField] private BuildTarget selectedTarget;
-
 		private bool showErrors;
 		private NodeEvent currentEventSource;
 		private Texture2D _selectionTex;
@@ -104,10 +102,10 @@ namespace AssetBundleGraph {
 		private AssetBundleGraphSelection selection;
 		private ScalePoint scalePoint;
 		private GraphBackground background = new GraphBackground();
+		private AssetBundleGraphController controller = new AssetBundleGraphController();
 
-		private static Dictionary<ConnectionData,Dictionary<string, List<Asset>>> s_assetStreamMap = 
-			new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
-		private static List<NodeException> s_nodeExceptionPool = new List<NodeException>();
+		private static AssetBundleGraphController s_currentController;
+		private static BuildTarget s_selectedTarget;
 
 		private Texture2D selectionTex {
 			get{
@@ -189,14 +187,14 @@ namespace AssetBundleGraph {
 		public static bool BuildFromMenuValidator () {
 			// Calling GetWindow<>() will force open window
 			// That's not what we want to do in validator function,
-			// so just reference s_nodeExceptionPool directly
-			return (s_nodeExceptionPool != null && s_nodeExceptionPool.Count == 0);
+			// so just reference s_currentController directly
+			return (s_currentController != null && !s_currentController.IsAnyIssueFound);
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run(window.ActiveBuildTarget);
+			window.Run(ActiveBuildTarget);
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
@@ -211,9 +209,9 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
-		public BuildTarget ActiveBuildTarget {
+		public static BuildTarget ActiveBuildTarget {
 			get {
-				return selectedTarget;
+				return s_selectedTarget;
 			}
 		}
 
@@ -240,8 +238,11 @@ namespace AssetBundleGraph {
 		}
 
 		private void Init() {
+
+			s_currentController = this.controller;
+			s_selectedTarget    = EditorUserBuildSettings.activeBuildTarget;
+
 			this.titleContent = new GUIContent("AssetBundle");
-			this.selectedTarget = EditorUserBuildSettings.activeBuildTarget;
 
 			Undo.undoRedoPerformed += () => {
 				SaveGraphWithReload();
@@ -260,24 +261,10 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static void AddNodeException (NodeException nodeEx) {
-			s_nodeExceptionPool.Add(nodeEx);
-		}
-
-		private static void ResetNodeExceptionPool () {
-			s_nodeExceptionPool.Clear();
-		}
-
-		private bool isAnyIssueFound {
-			get {
-				return s_nodeExceptionPool.Count > 0;
-			}
-		}
-
 		private void ShowErrorOnNodes () {
 			foreach (var node in nodes) {
 				node.ResetErrorStatus();
-				var errorsForeachNode = s_nodeExceptionPool.Where(e => e.Id == node.Id).Select(e => e.reason).ToList();
+				var errorsForeachNode = controller.Issues.Where(e => e.Id == node.Id).Select(e => e.reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}
@@ -400,8 +387,6 @@ namespace AssetBundleGraph {
 			EditorUtility.ClearProgressBar();
 
 			try {
-				ResetNodeExceptionPool();
-
 				if (!SaveData.IsSaveDataAvailableAtDisk()) {
 					SaveData.RecreateDataOnDisk();
 					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
@@ -418,16 +403,10 @@ namespace AssetBundleGraph {
 				// update static all node names.
 				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-				Action<NodeException> errorHandler = (NodeException e) => {
-					AssetBundleGraphEditorWindow.AddNodeException(e);
-				};
+				controller.Perform(saveData, target, false, true, null);
 
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
-
-				RefreshInspector(s_assetStreamMap);
+				RefreshInspector(controller.StreamManager);
 				ShowErrorOnNodes();
-
-				AssetBundleGraphController.Postprocess(saveData, s_assetStreamMap, false);
 			} catch(Exception e) {
 				Debug.LogError(e);
 			} finally {
@@ -441,8 +420,6 @@ namespace AssetBundleGraph {
 		private void Run (BuildTarget target) {
 
 			try {
-				ResetNodeExceptionPool();
-
 				if (!SaveData.IsSaveDataAvailableAtDisk()) {
 					SaveData.RecreateDataOnDisk();
 					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
@@ -471,22 +448,16 @@ namespace AssetBundleGraph {
 					EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
 				};
 
-				Action<NodeException> errorHandler = (NodeException e) => {
-					AssetBundleGraphEditorWindow.AddNodeException(e);
-				};
-
 				// perform setup. Fails if any exception raises.
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
+				controller.Perform(saveData, target, false, false,  null);
 
 				// if there is not error reported, then run
-				if(s_nodeExceptionPool.Count == 0) {
-					// run datas.
-					s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, errorHandler, updateHandler);
+				if(!controller.IsAnyIssueFound) {
+					controller.Perform(saveData, target, true, true, updateHandler);
 				}
-				RefreshInspector(s_assetStreamMap);
+				RefreshInspector(controller.StreamManager);
 				AssetDatabase.Refresh();
 				ShowErrorOnNodes();
-				AssetBundleGraphController.Postprocess(saveData, s_assetStreamMap, true);
 			} catch(Exception e) {
 				Debug.LogError(e);
 			} finally {
@@ -494,7 +465,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private static void RefreshInspector (Dictionary<ConnectionData,Dictionary<string, List<Asset>>> currentResult) {
+		private static void RefreshInspector (AssetReferenceStreamManager streamManager) {
 			if (Selection.activeObject == null) {
 				return;
 			}
@@ -508,11 +479,7 @@ namespace AssetBundleGraph {
 						return; 
 					}
 
-					ConnectionData c = currentResult.Keys.ToList().Find(v => v.Id == con.Id);
-
-					if (c != null) {
-						((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateAssetGroups(currentResult[c]);
-					}
+					((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateAssetGroups(streamManager.FindAssetGroup(con.Id));
 					break;
 				}
 				default: {
@@ -522,20 +489,17 @@ namespace AssetBundleGraph {
 			}
 		}
 			
-		public static Dictionary<string, List<Asset>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
-			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
-			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
-
-			if(s_assetStreamMap == null) {
-				return null;
+		public static Dictionary<string, List<AssetReference>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
+			if(s_currentController != null) {
+				return s_currentController.StreamManager.GetIncomingAssetGroups(inputPoint);
 			}
-
-			var keyEnum = s_assetStreamMap.Keys.Where(c => c.ToNodeConnectionPointId == inputPoint.Id);
-			if (keyEnum.Any()) { 
-				return s_assetStreamMap[keyEnum.First()];
-			}
-
 			return null;
+		}
+
+		public static void OnAssetsReimported(string[] assetPaths) {
+			if(s_currentController != null) {
+				s_currentController.OnAssetsReimported(assetPaths, s_selectedTarget);
+			}
 		}
 
 		private void DrawGUIToolBar() {
@@ -547,7 +511,7 @@ namespace AssetBundleGraph {
 
 				GUILayout.FlexibleSpace();
 
-				if(isAnyIssueFound) {
+				if(controller.IsAnyIssueFound) {
 					GUIStyle errorStyle = new GUIStyle("ErrorLabel");
 					errorStyle.alignment = TextAnchor.MiddleCenter;
 					GUILayout.Label("All errors needs to be fixed before building", errorStyle);
@@ -566,17 +530,17 @@ namespace AssetBundleGraph {
 
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
-				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == selectedTarget));
+				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == s_selectedTarget));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
 					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
-					selectedTarget = supportedTargets[newIndex];
+					s_selectedTarget = supportedTargets[newIndex];
 					Setup(ActiveBuildTarget);
 				}
 
-				using(new EditorGUI.DisabledScope(isAnyIssueFound)) {
+				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
 					if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
 						SaveGraph();
 						Run(ActiveBuildTarget);
@@ -590,7 +554,7 @@ namespace AssetBundleGraph {
 			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
 			{
 				using (new EditorGUILayout.VerticalScope()) {
-					foreach(NodeException e in s_nodeExceptionPool) {
+					foreach(NodeException e in controller.Issues) {
 						EditorGUILayout.HelpBox(e.reason, MessageType.Error);
 						if( GUILayout.Button("Go to Node") ) {
 							SelectNode(e.Id);
@@ -624,13 +588,7 @@ namespace AssetBundleGraph {
 
 				// draw connections.
 				foreach (var con in connections) {
-					var keyEnum = s_assetStreamMap.Keys.Where(c => c.Id == con.Id);
-					if (keyEnum.Any()) { 
-						var assets = s_assetStreamMap[keyEnum.First()];
-						con.DrawConnection(nodes, assets);
-					} else {
-						con.DrawConnection(nodes, new Dictionary<string, List<Asset>>());
-					}
+					con.DrawConnection(nodes, controller.StreamManager.FindAssetGroup(con.Id));
 				}
 					
 				// draw connection output point marks.

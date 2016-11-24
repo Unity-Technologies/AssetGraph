@@ -66,7 +66,7 @@ namespace AssetBundleGraph {
 					}
 				}
 
-				Debug.Log("Asset bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
+				Debug.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
 				if (!SaveData.IsSaveDataAvailableAtDisk()) {
 					Debug.Log("AssetBundleGraph save data not found. Aborting...");
@@ -75,20 +75,15 @@ namespace AssetBundleGraph {
 
 				// load data from file.
 				SaveData saveData = SaveData.LoadFromDisk();
-				List<NodeException> errors = new List<NodeException>();
-				Dictionary<ConnectionData,Dictionary<string, List<Asset>>> result = null;
-
-				Action<NodeException> errorHandler = (NodeException e) => {
-					errors.Add(e);
-				};
+				AssetBundleGraphController c = new AssetBundleGraphController();
 
 				// perform setup. Fails if any exception raises.
-				AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
+				c.Perform(saveData, target, false, false, null);
 
 				// if there is error reported, then run
-				if(errors.Count > 0) {
+				if(c.IsAnyIssueFound) {
 					Debug.Log("Build terminated because following error found during Setup phase. Please fix issues by opening editor before building.");
-					errors.ForEach(e => Debug.LogError(e));
+					c.Issues.ForEach(e => Debug.LogError(e));
 
 					return;
 				}
@@ -113,10 +108,9 @@ namespace AssetBundleGraph {
 				};
 
 				// run datas.
-				result = AssetBundleGraphController.Perform(saveData, target, true, errorHandler, updateHandler);
+				c.Perform(saveData, target, true, true, updateHandler);
 
 				AssetDatabase.Refresh();
-				AssetBundleGraphController.Postprocess(saveData, result, true);
 
 			} catch(Exception e) {
 				Debug.LogError(e);

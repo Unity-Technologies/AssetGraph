@@ -14,15 +14,15 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIBundleBuilder.Setup");
 
-			var outputDict = new Dictionary<string, List<Asset>>();
-			outputDict[key] = new List<Asset>();
+			var outputDict = new Dictionary<string, List<AssetReference>>();
+			outputDict[key] = new List<AssetReference>();
 
 			var bundleNames = inputGroupAssets.Keys.ToList();
 
@@ -50,25 +50,27 @@ namespace AssetBundleGraph {
 			foreach (var name in bundleNames) {
 				foreach(var v in bundleVariants[name]) {
 					string bundleName = (string.IsNullOrEmpty(v))? name : name + "." + v;
-					Asset bundle = Asset.CreateAssetWithImportPath( FileUtility.PathCombine(bundleOutputDir, bundleName) );
-					Asset manifest = Asset.CreateAssetWithImportPath( FileUtility.PathCombine(bundleOutputDir, bundleName + AssetBundleGraphSettings.MANIFEST_FOOTER) );
+					AssetReference bundle = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName) );
+					AssetReference manifest = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName + AssetBundleGraphSettings.MANIFEST_FOOTER) );
 					outputDict[key].Add(bundle);
 					outputDict[key].Add(manifest);
 				}
 			}
 
-			Output(connectionToOutput, outputDict, new List<string>());
+			Output(outputDict);
+
+			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
-			
+			Profiler.BeginSample("AssetBundleGraph.GUIBundleBuilder.Run");
+
 			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
 
 			var bundleNames = inputGroupAssets.Keys.ToList();
@@ -118,8 +120,8 @@ namespace AssetBundleGraph {
 			BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
 
 
-			var output = new Dictionary<string, List<Asset>>();
-			output[key] = new List<Asset>();
+			var output = new Dictionary<string, List<AssetReference>>();
+			output[key] = new List<AssetReference>();
 
 			var generatedFiles = FileUtility.GetAllFilePathsInFolder(bundleOutputDir);
 			// add manifest file
@@ -127,13 +129,14 @@ namespace AssetBundleGraph {
 			foreach (var path in generatedFiles) {
 				var fileName = Path.GetFileName(path);
 				if( IsFileIntendedItem(fileName, bundleNames) ) {
-					output[key].Add( Asset.CreateAssetWithImportPath(path) );
+					output[key].Add( AssetReferenceDatabase.GetAssetBundleReference(path) );
 				} else {
 					Debug.LogWarning(node.Name + ":Irrelevant file found in assetbundle cache folder:" + fileName);
 				}
 			}
 
-			Output(connectionToOutput, output, alreadyCached);
+			Output(output);
+			Profiler.EndSample();
 		}
 
 		// Check if given file is generated Item

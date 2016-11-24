@@ -10,7 +10,7 @@ using System.Reflection;
 namespace AssetBundleGraph {
 
 	/**
-	 * IPrefabBuilder is an interface to create Prefab Asset from incoming asset group.
+	 * IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.
 	 * Subclass of IPrefabBuilder must have CUstomPrefabBuilder attribute.
 	 */
 	public interface IPrefabBuilder {

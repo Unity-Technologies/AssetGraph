@@ -7,10 +7,10 @@ namespace AssetBundleGraph {
 	 */
 	public class ConnectionGUIInspectorHelper : ScriptableObject {
 		public ConnectionGUI connectionGUI;
-		public Dictionary<string, List<Asset>> assetGroups;
+		public Dictionary<string, List<AssetReference>> assetGroups;
 		public List<bool> foldouts;
 
-		public void UpdateInspector (ConnectionGUI con, Dictionary<string, List<Asset>> assetGroups) {
+		public void UpdateInspector (ConnectionGUI con, Dictionary<string, List<AssetReference>> assetGroups) {
 			this.connectionGUI = con;
 			this.assetGroups = assetGroups;
 
@@ -22,7 +22,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public void UpdateAssetGroups(Dictionary<string, List<Asset>> assetGroups) {
+		public void UpdateAssetGroups(Dictionary<string, List<AssetReference>> assetGroups) {
 			this.assetGroups = assetGroups;
         }
     }

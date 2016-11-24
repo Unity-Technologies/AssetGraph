@@ -739,7 +739,6 @@ namespace AssetBundleGraph {
 					.Select(group => group.Key);
 				if (overlapping.Any() && overlapping.Contains(newName)) {
 					EditorGUILayout.HelpBox("There are node with the same name. You may want to rename to avoid confusion:" + newName, MessageType.Info);
-					AssetBundleGraphEditorWindow.AddNodeException(new NodeException("Node name " + newName + " already exist.", node.Id ));
 				}
 			}
 

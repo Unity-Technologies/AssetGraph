@@ -39,25 +39,34 @@ namespace AssetBundleGraph {
 		public const string LASTMODIFIED 	= "lastModified";
 		public const string NODES 			= "nodes";
 		public const string CONNECTIONS 	= "connections";
+		public const string VERSION 		= "version";
+
+		/*
+		 * Important: 
+		 * ABG_FILE_VERSION must be increased by one when any structure change(s) happen
+		 */ 
+		public const int ABG_FILE_VERSION = 1;
 
 		private Dictionary<string, object> m_jsonData;
 
 		private List<NodeData> m_allNodes;
 		private List<ConnectionData> m_allConnections;
 		private DateTime m_lastModified;
+		private int m_version;
 
 		public SaveData() {
 			m_lastModified = DateTime.UtcNow;
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
+			m_version = ABG_FILE_VERSION;
 		}
 
 		public SaveData(Dictionary<string, object> jsonData) {
 			m_jsonData = jsonData;
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
-
 			m_lastModified = Convert.ToDateTime(m_jsonData[LASTMODIFIED] as string);
+			m_version = ABG_FILE_VERSION;
 
 			var nodeList = m_jsonData[NODES] as List<object>;
 			var connList = m_jsonData[CONNECTIONS] as List<object>;
@@ -77,6 +86,7 @@ namespace AssetBundleGraph {
 			m_lastModified = DateTime.UtcNow;
 			m_allNodes = nodes.Select(n => n.Data).ToList();
 			m_allConnections = new List<ConnectionData>();
+			m_version = ABG_FILE_VERSION;
 
 			foreach(var cgui in connections) {
 				m_allConnections.Add(new ConnectionData(cgui));
@@ -86,6 +96,12 @@ namespace AssetBundleGraph {
 		public DateTime LastModified {
 			get {
 				return m_lastModified;
+			}
+		}
+
+		public int Version {
+			get {
+				return m_version;
 			}
 		}
 
@@ -115,6 +131,7 @@ namespace AssetBundleGraph {
 			}
 
 			return new Dictionary<string, object>{
+				{VERSION, m_version},
 				{LASTMODIFIED, m_lastModified.ToString()},
 				{NODES, nodeList},
 				{CONNECTIONS, connList}
@@ -156,6 +173,7 @@ namespace AssetBundleGraph {
 			}
 
 			m_lastModified = DateTime.UtcNow;
+			m_version = ABG_FILE_VERSION;
 
 			var dataStr = Json.Serialize(ToJsonDictionary());
 			var prettified = Json.Prettify(dataStr);

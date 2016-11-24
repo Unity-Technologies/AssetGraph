@@ -23,7 +23,8 @@ namespace AssetBundleGraph {
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
-		
+		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
+
 		public const string ASSETS_PATH = "Assets/";
 		public const string ASSETBUNDLEGRAPH_PATH = ASSETS_PATH + "AssetBundleGraph/";
 		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETBUNDLEGRAPH_PATH + "Cache/";

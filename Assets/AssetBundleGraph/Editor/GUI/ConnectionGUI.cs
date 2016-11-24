@@ -97,7 +97,7 @@ namespace AssetBundleGraph {
 			return buttonRect;
 		}
 		
-		public void DrawConnection (List<NodeGUI> nodes, Dictionary<string, List<Asset>> assetGroups) {
+		public void DrawConnection (List<NodeGUI> nodes, Dictionary<string, List<AssetReference>> assetGroups) {
 
 			var startNode = nodes.Find(node => node.Id == OutputNodeId);
 			if (startNode == null) {

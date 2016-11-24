@@ -10,12 +10,12 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperation {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Setup");
 			ValidateExportPath(
 				node.ExporterExportPath[target],
 				FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]),
@@ -29,30 +29,32 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output, false);
+			Export(target, node, connectionFromInput, connectionToOutput, inputGroupAssets, Output, false);
+			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
-			Export(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output, true);
+			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Run");
+			Export(target, node, connectionFromInput, connectionToOutput, inputGroupAssets, Output, true);
+			Profiler.EndSample();
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output,
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output,
 			bool isRun) 
 		{
-			var outputDict = new Dictionary<string, List<Asset>>();
-			outputDict["0"] = new List<Asset>();
+			var outputDict = new Dictionary<string, List<AssetReference>>();
+			outputDict["0"] = new List<AssetReference>();
 
 			var exportPath = FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]);
 
@@ -73,7 +75,7 @@ namespace AssetBundleGraph {
 			var failedExports = new List<string>();
 
 			foreach (var groupKey in inputGroupAssets.Keys) {
-				var exportedAssets = new List<Asset>();
+				var exportedAssets = new List<AssetReference>();
 				var inputSources = inputGroupAssets[groupKey];
 
 				foreach (var source in inputSources) {					
@@ -104,7 +106,7 @@ namespace AssetBundleGraph {
 							File.Delete(destination);
 						}
 						if (string.IsNullOrEmpty(source.importFrom)) {
-							failedExports.Add(source.absoluteAssetPath);
+							failedExports.Add(source.absolutePath);
 							continue;
 						}
 						try {
@@ -115,8 +117,8 @@ namespace AssetBundleGraph {
 						}
 					}
 
-					var exportedAsset = Asset.CreateAssetWithExportPath(destination);
-					exportedAssets.Add(exportedAsset);
+					source.exportTo = destination;
+					exportedAssets.Add(source);
 				}
 				outputDict["0"].AddRange(exportedAssets);
 			}
@@ -125,7 +127,7 @@ namespace AssetBundleGraph {
 				Debug.LogError(node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
-			Output(connectionToOutput, outputDict, null);
+			Output(outputDict);
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {

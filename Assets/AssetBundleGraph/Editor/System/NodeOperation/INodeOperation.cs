@@ -13,21 +13,19 @@ namespace AssetBundleGraph {
 		*/
 		void Setup (BuildTarget target, 
 			NodeData nodeData, 
-			ConnectionPointData inputPoint, 
+			ConnectionData connectionFromInput, 
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output outputFunc);
 
 		/**
 			Run is the method which actualy performs the build. It is always called after Setup() is performed.
 		*/
 		void Run (BuildTarget target, 
 			NodeData nodeData, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput, 
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output);
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output outputFunc);
 	}
 }
