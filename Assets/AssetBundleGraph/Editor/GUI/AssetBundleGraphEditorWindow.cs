@@ -414,6 +414,26 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		private void Validate (BuildTarget target, NodeGUI node) {
+
+			EditorUtility.ClearProgressBar();
+
+
+			try {
+				node.ResetErrorStatus();
+				node.HideProgress();
+
+				controller.Validate(node, target);
+
+				RefreshInspector(controller.StreamManager);
+				ShowErrorOnNodes();
+			} catch(Exception e) {
+				Debug.LogError(e);
+			} finally {
+				EditorUtility.ClearProgressBar();
+			}
+		}
+
 		/**
 		 * Execute the build.
 		 */
@@ -1178,287 +1198,290 @@ namespace AssetBundleGraph {
 		*/
 		private void HandleNodeEvent (NodeEvent e) {
 			switch (modifyMode) {
-				case ModifyMode.CONNECTING: {
-					switch (e.eventType) {
-						/*
-							handling
-						*/
-						case NodeEvent.EventType.EVENT_NODE_MOVING: {
-							// do nothing.
-							break;
-						}
-
-						/*
-							connection drop detected from toward node.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED: {
-							// finish connecting mode.
-							modifyMode = ModifyMode.NONE;
-							
-							if (currentEventSource == null) {
-								break;
-							}
-
-							var sourceNode = currentEventSource.eventSourceNode;
-							var sourceConnectionPoint = currentEventSource.point;
-							
-							var targetNode = e.eventSourceNode;
-							var targetConnectionPoint = e.point;
-
-							if (sourceNode.Id == targetNode.Id) {
-								break;
-							}
-
-							if (!IsConnectablePointFromTo(sourceConnectionPoint, targetConnectionPoint)) {
-								break;
-							}
-
-							var startNode = sourceNode;
-							var startConnectionPoint = sourceConnectionPoint;
-							var endNode = targetNode;
-							var endConnectionPoint = targetConnectionPoint;
-
-							// reverse if connected from input to output.
-							if (sourceConnectionPoint.IsInput) {
-								startNode = targetNode;
-								startConnectionPoint = targetConnectionPoint;
-								endNode = sourceNode;
-								endConnectionPoint = sourceConnectionPoint;
-							}
-
-							var outputPoint = startConnectionPoint;
-							var inputPoint = endConnectionPoint;							
-							var label = startConnectionPoint.Label;
-
-							// if two nodes are not supposed to connect, dismiss
-							if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
-								break;
-							}
-
-							AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-							SaveGraphWithReload();
-							break;
-						}
-
-						/*
-							connection drop detected by started node.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
-							// finish connecting mode.
-							modifyMode = ModifyMode.NONE;
-							
-							/*
-								connect when dropped target is connectable from start connectionPoint.
-							*/
-							var node = FindNodeByPosition(e.globalMousePosition);
-							if (node == null) {
-								break;
-							}
-						
-							// ignore if target node is source itself.
-							if (node == e.eventSourceNode) {
-								break;
-							}
-
-							var pointAtPosition = node.FindConnectionPointByPosition(e.globalMousePosition);
-							if (pointAtPosition == null) {
-								break;
-							}
-
-							var sourcePoint = currentEventSource.point;
-							
-							// limit by connectable or not.
-							if(!IsConnectablePointFromTo(sourcePoint, pointAtPosition)) {
-								break;
-							}
-
-							var isInput = currentEventSource.point.IsInput;
-							var startNode = (isInput)? node : e.eventSourceNode;
-							var endNode   = (isInput)? e.eventSourceNode: node;
-							var startConnectionPoint = (isInput)? pointAtPosition : currentEventSource.point;
-							var endConnectionPoint   = (isInput)? currentEventSource.point: pointAtPosition;
-							var outputPoint = startConnectionPoint;
-							var inputPoint = endConnectionPoint;							
-							var label = startConnectionPoint.Label;
-
-							// if two nodes are not supposed to connect, dismiss
-							if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
-								break;
-							}
-
-							AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-							SaveGraphWithReload();
-							break;
-						}
-
-						default: {
-							modifyMode = ModifyMode.NONE;
-							break;
-						}
+			case ModifyMode.CONNECTING: {
+				switch (e.eventType) {
+					/*
+						handling
+					*/
+					case NodeEvent.EventType.EVENT_NODE_MOVING: {
+						// do nothing.
+						break;
 					}
-					break;
+
+					/*
+						connection drop detected from toward node.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED: {
+						// finish connecting mode.
+						modifyMode = ModifyMode.NONE;
+						
+						if (currentEventSource == null) {
+							break;
+						}
+
+						var sourceNode = currentEventSource.eventSourceNode;
+						var sourceConnectionPoint = currentEventSource.point;
+						
+						var targetNode = e.eventSourceNode;
+						var targetConnectionPoint = e.point;
+
+						if (sourceNode.Id == targetNode.Id) {
+							break;
+						}
+
+						if (!IsConnectablePointFromTo(sourceConnectionPoint, targetConnectionPoint)) {
+							break;
+						}
+
+						var startNode = sourceNode;
+						var startConnectionPoint = sourceConnectionPoint;
+						var endNode = targetNode;
+						var endConnectionPoint = targetConnectionPoint;
+
+						// reverse if connected from input to output.
+						if (sourceConnectionPoint.IsInput) {
+							startNode = targetNode;
+							startConnectionPoint = targetConnectionPoint;
+							endNode = sourceNode;
+							endConnectionPoint = sourceConnectionPoint;
+						}
+
+						var outputPoint = startConnectionPoint;
+						var inputPoint = endConnectionPoint;							
+						var label = startConnectionPoint.Label;
+
+						// if two nodes are not supposed to connect, dismiss
+						if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+							break;
+						}
+
+						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
+						SaveGraphWithReload();
+						break;
+					}
+
+					/*
+						connection drop detected by started node.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
+						// finish connecting mode.
+						modifyMode = ModifyMode.NONE;
+						
+						/*
+							connect when dropped target is connectable from start connectionPoint.
+						*/
+						var node = FindNodeByPosition(e.globalMousePosition);
+						if (node == null) {
+							break;
+						}
+					
+						// ignore if target node is source itself.
+						if (node == e.eventSourceNode) {
+							break;
+						}
+
+						var pointAtPosition = node.FindConnectionPointByPosition(e.globalMousePosition);
+						if (pointAtPosition == null) {
+							break;
+						}
+
+						var sourcePoint = currentEventSource.point;
+						
+						// limit by connectable or not.
+						if(!IsConnectablePointFromTo(sourcePoint, pointAtPosition)) {
+							break;
+						}
+
+						var isInput = currentEventSource.point.IsInput;
+						var startNode = (isInput)? node : e.eventSourceNode;
+						var endNode   = (isInput)? e.eventSourceNode: node;
+						var startConnectionPoint = (isInput)? pointAtPosition : currentEventSource.point;
+						var endConnectionPoint   = (isInput)? currentEventSource.point: pointAtPosition;
+						var outputPoint = startConnectionPoint;
+						var inputPoint = endConnectionPoint;							
+						var label = startConnectionPoint.Label;
+
+						// if two nodes are not supposed to connect, dismiss
+						if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+							break;
+						}
+
+						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
+						SaveGraphWithReload();
+						break;
+					}
+
+					default: {
+						modifyMode = ModifyMode.NONE;
+						break;
+					}
 				}
-				case ModifyMode.NONE: {
-					switch (e.eventType) {
-						/*
-							node move detected.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_MOVING: {
-							var tappedNode = e.eventSourceNode;
-							var tappedNodeId = tappedNode.Id;
+				break;
+			}
+			case ModifyMode.NONE: {
+				switch (e.eventType) {
+					/*
+						node move detected.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_MOVING: {
+						var tappedNode = e.eventSourceNode;
+						var tappedNodeId = tappedNode.Id;
+						
+						if (activeObject.idPosDict.ContainsKey(tappedNodeId)) {
+							// already active, do nothing for this node.
+							var distancePos = tappedNode.GetPos() - activeObject.idPosDict.ReadonlyDict()[tappedNodeId];
+
+							foreach (var node in nodes) {
+								if (node.Id == tappedNodeId) continue;
+								if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
+								var relativePos = activeObject.idPosDict.ReadonlyDict()[node.Id] + distancePos;
+								node.SetPos(relativePos);
+							}
+							break;
+						}
+
+						if (Event.current.shift) {
+							Undo.RecordObject(this, "Select Objects");
+
+							var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+
+							additiveIds.Add(tappedNodeId);
 							
-							if (activeObject.idPosDict.ContainsKey(tappedNodeId)) {
-								// already active, do nothing for this node.
-								var distancePos = tappedNode.GetPos() - activeObject.idPosDict.ReadonlyDict()[tappedNodeId];
+							activeObject = RenewActiveObject(additiveIds);
 
-								foreach (var node in nodes) {
-									if (node.Id == tappedNodeId) continue;
-									if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
-									var relativePos = activeObject.idPosDict.ReadonlyDict()[node.Id] + distancePos;
-									node.SetPos(relativePos);
-								}
-								break;
-							}
-
-							if (Event.current.shift) {
-								Undo.RecordObject(this, "Select Objects");
-
-								var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-
-								additiveIds.Add(tappedNodeId);
-								
-								activeObject = RenewActiveObject(additiveIds);
-
-								UpdateActivationOfObjects(activeObject);
-								UpdateSpacerRect();
-								break;
-							}
-
-							Undo.RecordObject(this, "Select " + tappedNode.Name);
-							activeObject = RenewActiveObject(new List<string>{tappedNodeId});
 							UpdateActivationOfObjects(activeObject);
+							UpdateSpacerRect();
 							break;
 						}
 
-						/*
-							start connection handling.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
-							modifyMode = ModifyMode.CONNECTING;
-							currentEventSource = e;
-							break;
-						}
+						Undo.RecordObject(this, "Select " + tappedNode.Name);
+						activeObject = RenewActiveObject(new List<string>{tappedNodeId});
+						UpdateActivationOfObjects(activeObject);
+						break;
+					}
 
-						case NodeEvent.EventType.EVENT_CLOSE_TAPPED: {
-							
-							Undo.RecordObject(this, "Delete Node");
-							
-							var deletingNodeId = e.eventSourceNode.Id;
-							DeleteNode(deletingNodeId);
+					/*
+						start connection handling.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
+						modifyMode = ModifyMode.CONNECTING;
+						currentEventSource = e;
+						break;
+					}
 
-							SaveGraphWithReload();
-							InitializeGraph();
-							break;
-						}
+					case NodeEvent.EventType.EVENT_CLOSE_TAPPED: {
+						
+						Undo.RecordObject(this, "Delete Node");
+						
+						var deletingNodeId = e.eventSourceNode.Id;
+						DeleteNode(deletingNodeId);
 
-						/*
-							releasse detected.
-								node move over.
-								node tapped.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_TOUCHED: {
-							var movedNode = e.eventSourceNode;
-							var movedNodeId = movedNode.Id;
+						SaveGraphWithReload();
+						InitializeGraph();
+						break;
+					}
 
-							// already active, node(s) are just tapped or moved.
-							if (activeObject.idPosDict.ContainsKey(movedNodeId)) {
+					/*
+						releasse detected.
+							node move over.
+							node tapped.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_TOUCHED: {
+						var movedNode = e.eventSourceNode;
+						var movedNodeId = movedNode.Id;
 
-								/*
-									active nodes(contains tap released node) are possibly moved.
-								*/
-								var movedIdPosDict = new Dictionary<string, Vector2>();
-								foreach (var node in nodes) {
-									if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
+						// already active, node(s) are just tapped or moved.
+						if (activeObject.idPosDict.ContainsKey(movedNodeId)) {
 
-									var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
-									if (node.GetPos() != startPos) {
-										// moved.
-										movedIdPosDict[node.Id] = node.GetPos();
-									}
+							/*
+								active nodes(contains tap released node) are possibly moved.
+							*/
+							var movedIdPosDict = new Dictionary<string, Vector2>();
+							foreach (var node in nodes) {
+								if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
+
+								var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
+								if (node.GetPos() != startPos) {
+									// moved.
+									movedIdPosDict[node.Id] = node.GetPos();
 								}
-
-								if (movedIdPosDict.Any()) {
-									
-									foreach (var node in nodes) {
-										if (activeObject.idPosDict.ReadonlyDict().Keys.Contains(node.Id)) {
-											var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
-											node.SetPos(startPos);
-										}
-									}
-
-									Undo.RecordObject(this, "Move " + movedNode.Name);
-
-									foreach (var node in nodes) {
-										if (movedIdPosDict.Keys.Contains(node.Id)) {
-											var endPos = movedIdPosDict[node.Id];
-											node.SetPos(endPos);
-										}
-									}
-
-									var activeObjectIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-									activeObject = RenewActiveObject(activeObjectIds);
-								} else {
-									// nothing moved, should cancel selecting this node.
-									var cancelledActivatedIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-									cancelledActivatedIds.Remove(movedNodeId);
-
-									Undo.RecordObject(this, "Select Objects");
-
-									activeObject = RenewActiveObject(cancelledActivatedIds);
-								}
-								
-								UpdateActivationOfObjects(activeObject);
-
-								UpdateSpacerRect();
-								SaveGraph();
-								break;
 							}
 
-							if (Event.current.shift) {
+							if (movedIdPosDict.Any()) {
+								
+								foreach (var node in nodes) {
+									if (activeObject.idPosDict.ReadonlyDict().Keys.Contains(node.Id)) {
+										var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
+										node.SetPos(startPos);
+									}
+								}
+
+								Undo.RecordObject(this, "Move " + movedNode.Name);
+
+								foreach (var node in nodes) {
+									if (movedIdPosDict.Keys.Contains(node.Id)) {
+										var endPos = movedIdPosDict[node.Id];
+										node.SetPos(endPos);
+									}
+								}
+
+								var activeObjectIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
+								activeObject = RenewActiveObject(activeObjectIds);
+							} else {
+								// nothing moved, should cancel selecting this node.
+								var cancelledActivatedIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+								cancelledActivatedIds.Remove(movedNodeId);
+
 								Undo.RecordObject(this, "Select Objects");
 
-								var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-
-								// already contained, cancel.
-								if (additiveIds.Contains(movedNodeId)) {
-									additiveIds.Remove(movedNodeId);
-								} else {
-									additiveIds.Add(movedNodeId);
-								}
-
-								activeObject = RenewActiveObject(additiveIds);
-								UpdateActivationOfObjects(activeObject);
-
-								UpdateSpacerRect();
-								SaveGraph();
-								break;
+								activeObject = RenewActiveObject(cancelledActivatedIds);
 							}
 							
-							Undo.RecordObject(this, "Select " + movedNode.Name);
-
-							activeObject = RenewActiveObject(new List<string>{movedNodeId});
 							UpdateActivationOfObjects(activeObject);
 
 							UpdateSpacerRect();
-							SaveGraph();
+							//SaveGraph();
 							break;
 						}
 
-						default: {
+						if (Event.current.shift) {
+							Undo.RecordObject(this, "Select Objects");
+
+							var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+
+							// already contained, cancel.
+							if (additiveIds.Contains(movedNodeId)) {
+								additiveIds.Remove(movedNodeId);
+							} else {
+								additiveIds.Add(movedNodeId);
+							}
+
+							activeObject = RenewActiveObject(additiveIds);
+							UpdateActivationOfObjects(activeObject);
+
+							UpdateSpacerRect();
+							//SaveGraph();
 							break;
 						}
+						
+						Undo.RecordObject(this, "Select " + movedNode.Name);
+
+						activeObject = RenewActiveObject(new List<string>{movedNodeId});
+						UpdateActivationOfObjects(activeObject);
+
+						UpdateSpacerRect();
+						//SaveGraph();
+						break;
 					}
-					break;
+					case NodeEvent.EventType.EVENT_NODE_UPDATED: {
+						break;
+					}
+
+					default: {
+						break;
+					}
+				}
+				break;
 				}
 			}
 
@@ -1476,6 +1499,11 @@ namespace AssetBundleGraph {
 					Repaint();
 					break;
 				}
+				case NodeEvent.EventType.EVENT_NODE_UPDATED: {
+					Validate(ActiveBuildTarget, e.eventSourceNode);
+					break;
+				}
+
 				case NodeEvent.EventType.EVENT_RECORDUNDO: {
 					Undo.RecordObject(this, e.message);
 					break;

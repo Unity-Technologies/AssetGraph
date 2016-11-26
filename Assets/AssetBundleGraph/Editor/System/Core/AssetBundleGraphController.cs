@@ -88,7 +88,25 @@ namespace AssetBundleGraph {
 			}
 			Profiler.EndSample();
 		}
-			
+
+		public void Validate (
+			NodeGUI node, 
+			BuildTarget target) 
+		{
+			m_nodeExceptions.RemoveAll(e => e.Id == node.Data.Id);
+
+			try {
+				Debug.LogFormat("[validate] {0} validate", node.Name);
+				DoNodeOperation(target, node.Data, null, null, new Dictionary<string, List<AssetReference>>(), 
+					(Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
+					false, null);
+				
+			} catch (NodeException e) {
+				m_nodeExceptions.Add(e);
+			}
+			Profiler.EndSample();
+		}
+
 		/**
 			Perform Run or Setup from parent of given terminal node recursively.
 		*/
