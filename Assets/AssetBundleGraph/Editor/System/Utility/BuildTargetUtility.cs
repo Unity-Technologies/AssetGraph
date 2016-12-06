@@ -13,7 +13,7 @@ namespace AssetBundleGraph {
 
 		/**
 		 *  from build target to human friendly string for display purpose.
-		 */ 
+		 */
 		public static string TargetToHumaneString(UnityEditor.BuildTarget t) {
 
 			switch(t) {
@@ -21,10 +21,10 @@ namespace AssetBundleGraph {
 				return "Android";
 			case BuildTarget.iOS:
 				return "iOS";
-			case BuildTarget.Nintendo3DS:
-				return "Nintendo 3DS";
-			case BuildTarget.PS3:
-				return "PlayStation 3";
+			// case BuildTarget.Nintendo3DS:
+			// 	return "Nintendo 3DS";
+			// case BuildTarget.PS3:
+			// 	return "PlayStation 3";
 			case BuildTarget.PS4:
 				return "PlayStation 4";
 			case BuildTarget.PSM:
@@ -59,8 +59,8 @@ namespace AssetBundleGraph {
 				return "Wii U";
 			case BuildTarget.WSAPlayer:
 				return "Windows Store Apps";
-			case BuildTarget.XBOX360:
-				return "Xbox 360";
+			// case BuildTarget.XBOX360:
+			// 	return "Xbox 360";
 			case BuildTarget.XboxOne:
 				return "Xbox One";
 			default:
@@ -76,10 +76,10 @@ namespace AssetBundleGraph {
 			return "Android";
 			case BuildTarget.iOS:
 			return "iOS";
-			case BuildTarget.Nintendo3DS:
-			return "N3DS";
-			case BuildTarget.PS3:
-			return "PS3";
+			// case BuildTarget.Nintendo3DS:
+			// return "N3DS";
+			// case BuildTarget.PS3:
+			// return "PS3";
 			case BuildTarget.PS4:
 			return "PS4";
 			case BuildTarget.PSM:
@@ -109,8 +109,8 @@ namespace AssetBundleGraph {
 			return "WiiU";
 			case BuildTarget.WSAPlayer:
 			return "WindowsStoreApps";
-			case BuildTarget.XBOX360:
-			return "Xbox360";
+			// case BuildTarget.XBOX360:
+			// return "Xbox360";
 			case BuildTarget.XboxOne:
 			return "XboxOne";
 			default:
@@ -120,7 +120,7 @@ namespace AssetBundleGraph {
 
 		/**
 		 *  from build target group to human friendly string for display purpose.
-		 */ 
+		 */
 		public static string GroupToHumaneString(UnityEditor.BuildTargetGroup g) {
 
 			switch(g) {
@@ -128,10 +128,10 @@ namespace AssetBundleGraph {
 				return "Android";
 			case BuildTargetGroup.iOS:
 				return "iOS";
-			case BuildTargetGroup.Nintendo3DS:
-				return "Nintendo 3DS";
-			case BuildTargetGroup.PS3:
-				return "PlayStation 3";
+			// case BuildTargetGroup.Nintendo3DS:
+			// 	return "Nintendo 3DS";
+			// case BuildTargetGroup.PS3:
+			// 	return "PlayStation 3";
 			case BuildTargetGroup.PS4:
 				return "PlayStation 4";
 			case BuildTargetGroup.PSM:
@@ -152,8 +152,8 @@ namespace AssetBundleGraph {
 				return "Wii U";
 			case BuildTargetGroup.WSA:
 				return "Windows Store Apps";
-			case BuildTargetGroup.XBOX360:
-				return "Xbox 360";
+			// case BuildTargetGroup.XBOX360:
+			// 	return "Xbox 360";
 			case BuildTargetGroup.XboxOne:
 				return "Xbox One";
 			case BuildTargetGroup.Unknown:
@@ -175,10 +175,10 @@ namespace AssetBundleGraph {
 				return BuildTargetGroup.Android;
 			case BuildTarget.iOS:
 				return BuildTargetGroup.iOS;
-			case BuildTarget.Nintendo3DS:
-				return BuildTargetGroup.Nintendo3DS;
-			case BuildTarget.PS3:
-				return BuildTargetGroup.PS3;
+			// case BuildTarget.Nintendo3DS:
+			// 	return BuildTargetGroup.Nintendo3DS;
+			// case BuildTarget.PS3:
+			// 	return BuildTargetGroup.PS3;
 			case BuildTarget.PS4:
 				return BuildTargetGroup.PS4;
 			case BuildTarget.PSM:
@@ -206,8 +206,8 @@ namespace AssetBundleGraph {
 				return BuildTargetGroup.WiiU;
 			case BuildTarget.WSAPlayer:
 				return BuildTargetGroup.WSA;
-			case BuildTarget.XBOX360:
-				return BuildTargetGroup.XBOX360;
+			// case BuildTarget.XBOX360:
+			// 	return BuildTargetGroup.XBOX360;
 			case BuildTarget.XboxOne:
 				return BuildTargetGroup.XboxOne;
 			default:
@@ -222,10 +222,10 @@ namespace AssetBundleGraph {
 				return BuildTarget.Android;
 			case BuildTargetGroup.iOS:
 				return BuildTarget.iOS;
-			case BuildTargetGroup.Nintendo3DS:
-				return BuildTarget.Nintendo3DS;
-			case BuildTargetGroup.PS3:
-				return BuildTarget.PS3;
+			// case BuildTargetGroup.Nintendo3DS:
+			// 	return BuildTarget.Nintendo3DS;
+			// case BuildTargetGroup.PS3:
+			// 	return BuildTarget.PS3;
 			case BuildTargetGroup.PS4:
 				return BuildTarget.PS4;
 			case BuildTargetGroup.PSM:
@@ -246,8 +246,8 @@ namespace AssetBundleGraph {
 				return BuildTarget.WiiU;
 			case BuildTargetGroup.WSA:
 				return BuildTarget.WSAPlayer;
-			case BuildTargetGroup.XBOX360:
-				return BuildTarget.XBOX360;
+			// case BuildTargetGroup.XBOX360:
+			// 	return BuildTarget.XBOX360;
 			case BuildTargetGroup.XboxOne:
 				return BuildTarget.XboxOne;
 			default:
