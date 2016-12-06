@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace AssetBundleGraph {
 	public class BuildTargetUtility {
@@ -266,11 +267,12 @@ namespace AssetBundleGraph {
 			//[MethodImpl (MethodImplOptions.InternalCall)]
 			//internal static extern bool IsBuildTargetSupported (BuildTarget target);
 
-			var objType = Types.GetType ("UnityEditor.BuildPipeline", "UnityEditor.dll");
+      var objType = typeof(UnityEditor.BuildPipeline);
+      // Types.GetType is obsolete
+			// var objType = Types.GetType ("UnityEditor.BuildPipeline", "UnityEditor.dll");
+
 			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-
 			var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), t)});
-
 			return Convert.ToBoolean(retval);
 		}
 	}
