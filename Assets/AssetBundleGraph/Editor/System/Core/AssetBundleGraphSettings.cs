@@ -63,8 +63,11 @@ namespace AssetBundleGraph {
 			new BuildAssetBundleOption("Append Hash To AssetBundle Name", BuildAssetBundleOptions.AppendHashToAssetBundleName),
 			new BuildAssetBundleOption("ChunkBased Compression", BuildAssetBundleOptions.ChunkBasedCompression),
 			new BuildAssetBundleOption("Strict Mode", BuildAssetBundleOptions.StrictMode)
-      // UnityEditor.BuildAssetBundleOptions does no longer have OmitClassVersions available
-			// new BuildAssetBundleOption("Omit Class Versions", BuildAssetBundleOptions.OmitClassVersions)
+			#if !UNITY_5_5_OR_NEWER
+			,
+      		// UnityEditor.BuildAssetBundleOptions does no longer have OmitClassVersions available
+			new BuildAssetBundleOption("Omit Class Versions", BuildAssetBundleOptions.OmitClassVersions)
+			#endif
 		};
 
 		//public const string PLATFORM_DEFAULT_NAME = "Default";

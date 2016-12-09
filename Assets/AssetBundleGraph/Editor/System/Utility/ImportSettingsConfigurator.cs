@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public class ImportSettingsConfigurator {
-
+		
 		private readonly AssetImporter referenceImporter;
 
 		public ImportSettingsConfigurator (AssetImporter referenceImporter) {
@@ -64,42 +64,46 @@ namespace AssetBundleGraph {
 			importer.fadeout = reference.fadeout;
 			importer.filterMode = reference.filterMode;
 			importer.generateCubemap = reference.generateCubemap;
-      // UnityEditor.TextureImporter.generateMipsInLinearSpace is obsolete
-			// importer.generateMipsInLinearSpace = reference.generateMipsInLinearSpace;
-      // UnityEditor.TextureImporter.grayscaleToAlpha is obsolute, using alphaSource
-			// importer.grayscaleToAlpha = reference.grayscaleToAlpha;
-      importer.alphaSource = reference.alphaSource;
+
 			importer.heightmapScale = reference.heightmapScale;
 
 			importer.isReadable = reference.isReadable;
-      // UnityEditor.TextureImporter.lightmap is obsolete
-			// importer.lightmap = reference.lightmap;
-      // UnityEditor.TextureImporter.linearTexture is obsolete, using sRGBTexture
-			// importer.linearTexture = reference.linearTexture;
-      importer.sRGBTexture = reference.sRGBTexture;
 			importer.maxTextureSize = reference.maxTextureSize;
 			importer.mipMapBias = reference.mipMapBias;
 			importer.mipmapEnabled = reference.mipmapEnabled;
 			importer.mipmapFadeDistanceEnd = reference.mipmapFadeDistanceEnd;
 			importer.mipmapFadeDistanceStart = reference.mipmapFadeDistanceStart;
 			importer.mipmapFilter = reference.mipmapFilter;
-      // UnityEditor.TextureImporter.normalmap: obsolete
-			// importer.normalmap = reference.normalmap;
 
 			importer.normalmapFilter = reference.normalmapFilter;
 			importer.npotScale = reference.npotScale;
-			// importer.qualifiesForSpritePacking is read only
 			importer.spriteBorder = reference.spriteBorder;
 			importer.spriteImportMode = reference.spriteImportMode;
 			importer.spritePackingTag = reference.spritePackingTag;
 			importer.spritePivot = reference.spritePivot;
 			importer.spritePixelsPerUnit = reference.spritePixelsPerUnit;
 			importer.spritesheet = reference.spritesheet;
-      // UnityEditor.TextureImporter.textureFormat: obsolete
-			// importer.textureFormat = reference.textureFormat;
 
 			importer.textureType = reference.textureType;
 			importer.wrapMode = reference.wrapMode;
+
+			/* read only */
+			// importer.qualifiesForSpritePacking
+
+			#if !UNITY_5_5_OR_NEWER
+			// obsolete features
+			importer.generateMipsInLinearSpace = reference.generateMipsInLinearSpace;
+			importer.grayscaleToAlpha = reference.grayscaleToAlpha;
+			importer.lightmap = reference.lightmap;
+			importer.linearTexture = reference.linearTexture;
+			importer.normalmap = reference.normalmap;
+			importer.textureFormat = reference.textureFormat;
+			#endif
+
+			#if UNITY_5_5_OR_NEWER
+			importer.alphaSource = reference.alphaSource;
+			importer.sRGBTexture = reference.sRGBTexture;
+			#endif
 		}
 
 		private bool IsEqual (TextureImporter target) {
@@ -113,34 +117,39 @@ namespace AssetBundleGraph {
 			if (target.fadeout != reference.fadeout) return false;
 			if (target.filterMode != reference.filterMode) return false;
 			if (target.generateCubemap != reference.generateCubemap) return false;
-      // UnityEditor.TextureImporter.generateMipsInLinearSpace' is obsolete
-			// if (target.generateMipsInLinearSpace != reference.generateMipsInLinearSpace) return false;
-      // UnityEditor.TextureImporter.grayscaleToAlpha' is obsolete, using UnityEditor.TextureImporter.alphaSource
-			// if (target.grayscaleToAlpha != reference.grayscaleToAlpha) return false;
-      if (target.alphaSource != reference.alphaSource) return false;
 			if (target.heightmapScale != reference.heightmapScale) return false;
 			if (target.isReadable != reference.isReadable) return false;
-      // UnityEditor.TextureImporter.lightmap' is obsolete
-			// if (target.lightmap != reference.lightmap) return false;
-      // UnityEditor.TextureImporter.linearTexture' is obsolete, using sRGBTexture
-			// if (target.linearTexture != reference.linearTexture) return false;
-      if (target.sRGBTexture != reference.sRGBTexture) return false;
 			if (target.maxTextureSize != reference.maxTextureSize) return false;
 			if (target.mipMapBias != reference.mipMapBias) return false;
 			if (target.mipmapEnabled != reference.mipmapEnabled) return false;
 			if (target.mipmapFadeDistanceEnd != reference.mipmapFadeDistanceEnd) return false;
 			if (target.mipmapFadeDistanceStart != reference.mipmapFadeDistanceStart) return false;
 			if (target.mipmapFilter != reference.mipmapFilter) return false;
-      // UnityEditor.TextureImporter.normalmap' is obsolete
-      // if (target.normalmap != reference.normalmap) return false;
 			if (target.normalmapFilter != reference.normalmapFilter) return false;
 			if (target.npotScale != reference.npotScale) return false;
-			// target.qualifiesForSpritePacking is read only
 			if (target.spriteBorder != reference.spriteBorder) return false;
 			if (target.spriteImportMode != reference.spriteImportMode) return false;
 			if (target.spritePackingTag != reference.spritePackingTag) return false;
 			if (target.spritePivot != reference.spritePivot) return false;
 			if (target.spritePixelsPerUnit != reference.spritePixelsPerUnit) return false;
+
+			/* read only properties */
+			// target.qualifiesForSpritePacking
+
+			#if !UNITY_5_5_OR_NEWER
+			// obsolete features
+			if (target.normalmap != reference.normalmap) return false;
+			if (target.linearTexture != reference.linearTexture) return false;
+			if (target.lightmap != reference.lightmap) return false;
+			if (target.grayscaleToAlpha != reference.grayscaleToAlpha) return false;
+			if (target.generateMipsInLinearSpace != reference.generateMipsInLinearSpace) return false;
+			if (target.textureFormat != reference.textureFormat) return false;
+			#endif
+
+			#if UNITY_5_5_OR_NEWER
+			if (target.alphaSource != reference.alphaSource) return false;
+			if (target.sRGBTexture != reference.sRGBTexture) return false;
+			#endif
 
 			// spritesheet
 			{
@@ -154,8 +163,8 @@ namespace AssetBundleGraph {
 				}
 			}
 
-      // UnityEditor.TextureImporter.textureFormat' is obsolete: `textureFormat is not longer accessible at the TextureImporter level
-			// if (target.textureFormat != reference.textureFormat) return false;
+      		// UnityEditor.TextureImporter.textureFormat' is obsolete: 
+			// `textureFormat is not longer accessible at the TextureImporter level
 			if (target.textureType != reference.textureType) return false;
 			if (target.wrapMode != reference.wrapMode) return false;
 			return true;
@@ -202,34 +211,20 @@ namespace AssetBundleGraph {
 			importer.animationWrapMode = reference.animationWrapMode;
 			importer.bakeIK = reference.bakeIK;
 			importer.clipAnimations = reference.clipAnimations;
-			// importer.defaultClipAnimations = reference.defaultClipAnimations;
 
 			importer.extraExposedTransformPaths = reference.extraExposedTransformPaths;
-			// importer.fileScale = reference.fileScale;
 			importer.generateAnimations = reference.generateAnimations;
 			importer.generateSecondaryUV = reference.generateSecondaryUV;
 			importer.globalScale = reference.globalScale;
 			importer.humanDescription = reference.humanDescription;
-			importer.importAnimation = reference.importAnimation;
 			importer.importBlendShapes = reference.importBlendShapes;
-			// importer.importedTakeInfos = reference.importedTakeInfos;
-			importer.importMaterials = reference.importMaterials;
 
-			// importer.isBakeIKSupported = reference.isBakeIKSupported;
-			// importer.isFileScaleUsed = reference.isFileScaleUsed;
 			importer.isReadable = reference.isReadable;
-			// importer.isTangentImportSupported = reference.isTangentImportSupported;
-			// importer.isUseFileUnitsSupported = reference.isUseFileUnitsSupported;
 			importer.materialName = reference.materialName;
 			importer.materialSearch = reference.materialSearch;
-			importer.meshCompression = reference.meshCompression;
-			importer.motionNodeName = reference.motionNodeName;
-			importer.importNormals = reference.importNormals;
 
 			importer.normalSmoothingAngle = reference.normalSmoothingAngle;
-			importer.optimizeGameObjects = reference.optimizeGameObjects;
 			importer.optimizeMesh = reference.optimizeMesh;
-			// importer.referencedClips = reference.referencedClips;
 			importer.secondaryUVAngleDistortion = reference.secondaryUVAngleDistortion;
 			importer.secondaryUVAreaDistortion = reference.secondaryUVAreaDistortion;
 			importer.secondaryUVHardAngle = reference.secondaryUVHardAngle;
@@ -238,8 +233,28 @@ namespace AssetBundleGraph {
 			importer.swapUVChannels = reference.swapUVChannels;
 
 			importer.importTangents = reference.importTangents;
-			// importer.transformPaths = reference.transformPaths;
-			importer.useFileUnits = reference.useFileUnits;
+
+			/* read only */
+			/* 
+			importer.importedTakeInfos
+			importer.defaultClipAnimations
+			importer.importAnimation
+			importer.isTangentImportSupported
+			importer.meshCompression
+			importer.importNormals
+			importer.optimizeGameObjects
+			importer.referencedClips
+			importer.fileScale
+			importer.importMaterials
+			importer.isUseFileUnitsSupported
+			importer.motionNodeName
+			importer.isBakeIKSupported
+			importer.isFileScaleUsed
+			importer.useFileUnits
+			importer.transformPaths
+			*/
+
+			/* Obsolete */
 		}
 
 		public bool IsEqual (ModelImporter target) {
@@ -286,7 +301,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			// if (target.defaultClipAnimations != reference.defaultClipAnimations) return false;
+			if (target.defaultClipAnimations != reference.defaultClipAnimations) return false;
 
 			// extraExposedTransformPaths
 			{
@@ -296,7 +311,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			// if (target.fileScale != reference.fileScale) return false;
+			if (target.fileScale != reference.fileScale) return false;
 			if (target.generateAnimations != reference.generateAnimations) return false;
 			if (target.generateSecondaryUV != reference.generateSecondaryUV) return false;
 			if (target.globalScale != reference.globalScale) return false;
@@ -343,13 +358,13 @@ namespace AssetBundleGraph {
 
 			if (target.importAnimation != reference.importAnimation) return false;
 			if (target.importBlendShapes != reference.importBlendShapes) return false;
-			// if (target.importedTakeInfos != reference.importedTakeInfos) return false;
+			if (target.importedTakeInfos != reference.importedTakeInfos) return false;
 			if (target.importMaterials != reference.importMaterials) return false;
-			// if (target.isBakeIKSupported != reference.isBakeIKSupported) return false;
-			// if (target.isFileScaleUsed != reference.isFileScaleUsed) return false;
+			if (target.isBakeIKSupported != reference.isBakeIKSupported) return false;
+			if (target.isFileScaleUsed != reference.isFileScaleUsed) return false;
 			if (target.isReadable != reference.isReadable) return false;
-			// if (target.isTangentImportSupported != reference.isTangentImportSupported) return false;
-			// if (target.isUseFileUnitsSupported != reference.isUseFileUnitsSupported) return false;
+			if (target.isTangentImportSupported != reference.isTangentImportSupported) return false;
+			if (target.isUseFileUnitsSupported != reference.isUseFileUnitsSupported) return false;
 			if (target.materialName != reference.materialName) return false;
 			if (target.materialSearch != reference.materialSearch) return false;
 			if (target.meshCompression != reference.meshCompression) return false;
@@ -359,7 +374,7 @@ namespace AssetBundleGraph {
 			if (target.optimizeGameObjects != reference.optimizeGameObjects) return false;
 			if (target.optimizeMesh != reference.optimizeMesh) return false;
 
-			// if (target.referencedClips != reference.referencedClips) return false;
+			if (target.referencedClips != reference.referencedClips) return false;
 			if (target.secondaryUVAngleDistortion != reference.secondaryUVAngleDistortion) return false;
 			if (target.secondaryUVAreaDistortion != reference.secondaryUVAreaDistortion) return false;
 			if (target.secondaryUVHardAngle != reference.secondaryUVHardAngle) return false;
@@ -367,7 +382,7 @@ namespace AssetBundleGraph {
 			if (target.sourceAvatar != reference.sourceAvatar) return false;
 			if (target.swapUVChannels != reference.swapUVChannels) return false;
 			if (target.importTangents != reference.importTangents) return false;
-			// if (target.transformPaths != reference.transformPaths) return false;
+			if (target.transformPaths != reference.transformPaths) return false;
 			if (target.useFileUnits != reference.useFileUnits) return false;
 
 			return true;
