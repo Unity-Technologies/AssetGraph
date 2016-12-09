@@ -217,8 +217,6 @@ namespace AssetBundleGraph {
 				Dictionary<BuildTargetGroup, string> icons = new Dictionary<BuildTargetGroup, string> {
 					{BuildTargetGroup.Android, 		"BuildSettings.Android.Small"},
 					{BuildTargetGroup.iOS, 			"BuildSettings.iPhone.Small"},
-					{BuildTargetGroup.Nintendo3DS, 	"BuildSettings.N3DS.Small"},
-					{BuildTargetGroup.PS3,			"BuildSettings.PS3.Small"},
 					{BuildTargetGroup.PS4, 			"BuildSettings.PS4.Small"},
 					{BuildTargetGroup.PSM, 			"BuildSettings.PSM.Small"},
 					{BuildTargetGroup.PSP2, 		"BuildSettings.PSP2.Small"},
@@ -230,8 +228,13 @@ namespace AssetBundleGraph {
 					{BuildTargetGroup.WebGL, 		"BuildSettings.WebGL.Small"},
 					{BuildTargetGroup.WiiU, 		"BuildSettings.WiiU.Small"},
 					{BuildTargetGroup.WSA, 			"BuildSettings.WP8.Small"},
-					{BuildTargetGroup.XBOX360, 		"BuildSettings.Xbox360.Small"},
 					{BuildTargetGroup.XboxOne, 		"BuildSettings.XboxOne.Small"}
+					#if !UNITY_5_5_OR_NEWER
+					,
+					{BuildTargetGroup.XBOX360, 		"BuildSettings.Xbox360.Small"},
+					{BuildTargetGroup.Nintendo3DS, 	"BuildSettings.N3DS.Small"},
+					{BuildTargetGroup.PS3,			"BuildSettings.PS3.Small"}
+					#endif
 				};
 
 				buttons.Add(new PlatformButton(new GUIContent("Default", "Default settings"), BuildTargetGroup.Unknown));

@@ -27,7 +27,7 @@ namespace AssetBundleGraph {
 	public enum ExporterExportOption : int {
 		ErrorIfNoExportDirectoryFound,
 		AutomaticallyCreateIfNoExportDirectoryFound,
-		DeleteAndRecreteExportDirectory
+		DeleteAndRecreateExportDirectory
 	}
 
 	[Serializable]
@@ -53,7 +53,7 @@ namespace AssetBundleGraph {
 		}
 		public string FilterKeytype {
 			get {
-				return m_filterKeytype; 
+				return m_filterKeytype;
 			}
 			set {
 				m_filterKeytype = value;
@@ -61,7 +61,7 @@ namespace AssetBundleGraph {
 		}
 		public ConnectionPointData ConnectionPoint {
 			get {
-				return m_point; 
+				return m_point;
 			}
 		}
 		public string Hash {
@@ -92,7 +92,7 @@ namespace AssetBundleGraph {
 		}
 		public ConnectionPointData ConnectionPoint {
 			get {
-				return m_point; 
+				return m_point;
 			}
 		}
 	}
@@ -150,7 +150,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private float m_y;
 		[SerializeField] private string m_scriptClassName;
 		[SerializeField] private List<FilterEntry> m_filter;
-		[SerializeField] private List<ConnectionPointData> 	m_inputPoints; 
+		[SerializeField] private List<ConnectionPointData> 	m_inputPoints;
 		[SerializeField] private List<ConnectionPointData> 	m_outputPoints;
 		[SerializeField] private SerializableMultiTargetString m_loaderLoadPath;
 		[SerializeField] private SerializableMultiTargetString m_exporterExportPath;
@@ -167,7 +167,7 @@ namespace AssetBundleGraph {
 
 		/*
 		 * Properties
-		 */ 
+		 */
 
 		public string Name {
 			get {
@@ -237,7 +237,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString LoaderLoadPath {
 			get {
 				ValidateAccess(
-					NodeKind.LOADER_GUI 
+					NodeKind.LOADER_GUI
 				);
 				return m_loaderLoadPath;
 			}
@@ -246,7 +246,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString ExporterExportPath {
 			get {
 				ValidateAccess(
-					NodeKind.EXPORTER_GUI 
+					NodeKind.EXPORTER_GUI
 				);
 				return m_exporterExportPath;
 			}
@@ -255,7 +255,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString GroupingKeywords {
 			get {
 				ValidateAccess(
-					NodeKind.GROUPING_GUI 
+					NodeKind.GROUPING_GUI
 				);
 				return m_groupingKeyword;
 			}
@@ -264,7 +264,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString BundleNameTemplate {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI 
+					NodeKind.BUNDLECONFIG_GUI
 				);
 				return m_bundleConfigBundleNameTemplate;
 			}
@@ -273,13 +273,13 @@ namespace AssetBundleGraph {
 		public bool BundleConfigUseGroupAsVariants {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI 
+					NodeKind.BUNDLECONFIG_GUI
 				);
 				return m_bundleConfigUseGroupAsVariants;
 			}
 			set {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI 
+					NodeKind.BUNDLECONFIG_GUI
 				);
 				m_bundleConfigUseGroupAsVariants = value;
 			}
@@ -298,7 +298,7 @@ namespace AssetBundleGraph {
 		public List<Variant> Variants {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI 
+					NodeKind.BUNDLECONFIG_GUI
 				);
 				return m_variants;
 			}
@@ -307,7 +307,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetInt BundleBuilderBundleOptions {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLEBUILDER_GUI 
+					NodeKind.BUNDLEBUILDER_GUI
 				);
 				return m_bundleBuilderEnabledBundleOptions;
 			}
@@ -316,7 +316,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetInt ExporterExportOption {
 			get {
 				ValidateAccess(
-					NodeKind.EXPORTER_GUI 
+					NodeKind.EXPORTER_GUI
 				);
 				return m_exporterExportOption;
 			}
@@ -341,7 +341,7 @@ namespace AssetBundleGraph {
 
 		/*
 		 *  Create NodeData from JSON
-		 */ 
+		 */
 		public NodeData(Dictionary<string, object> jsonData) {
 
 			m_name = jsonData[NODE_NAME] as string;
@@ -452,7 +452,7 @@ namespace AssetBundleGraph {
 
 		/*
 		 * Constructor used to create new node from GUI
-		 */ 
+		 */
 		public NodeData(string name, NodeKind kind, float x, float y) {
 
 			m_id = Guid.NewGuid().ToString();
@@ -483,7 +483,7 @@ namespace AssetBundleGraph {
 				m_scriptClassName 	= String.Empty;
 				m_scriptInstanceData = new SerializableMultiTargetString();
 				break;
-			
+
 			case NodeKind.IMPORTSETTING_GUI:
 				break;
 
@@ -521,7 +521,7 @@ namespace AssetBundleGraph {
 
 		/**
 		 * Duplicate this node with new guid.
-		 */ 
+		 */
 		public NodeData Duplicate () {
 
 			var newData = new NodeData(m_name, m_kind, m_x, m_y);
@@ -700,7 +700,7 @@ namespace AssetBundleGraph {
 
 		/**
 		 * Serialize to JSON dictionary
-		 */ 
+		 */
 		public Dictionary<string, object> ToJsonDictionary() {
 			var nodeDict = new Dictionary<string, object>();
 
@@ -726,7 +726,7 @@ namespace AssetBundleGraph {
 				{NODE_POS_X, m_x},
 				{NODE_POS_Y, m_y}
 			};
-				
+
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
@@ -789,7 +789,7 @@ namespace AssetBundleGraph {
 
 		/**
 		 * Serialize to JSON string
-		 */ 
+		 */
 		public string ToJsonString() {
 			return AssetBundleGraph.Json.Serialize(ToJsonDictionary());
 		}
