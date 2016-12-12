@@ -75,19 +75,25 @@ namespace AssetBundleGraph {
 		public static Type GetTypeOfAsset (string assetPath) {
 			Profiler.BeginSample("AssetBundleGraph.GetTypeOfAsset");
 
-			UnityEngine.Object asset = null;
-
 			if (assetPath.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION)) {
 				return typeof(string);
 			}
 
 			Type t = null;
-			asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+			#if (UNITY_5_4_OR_NEWER && !UNITY_5_4_0 && !UNITY_5_4_1)
+
+			t = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+
+			#else
+
+			UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
 
 			if (asset != null) {
 				t = asset.GetType();
 				Resources.UnloadAsset(asset);
 			}
+			#endif
+
 			Profiler.EndSample();
 			return t;
 		}
