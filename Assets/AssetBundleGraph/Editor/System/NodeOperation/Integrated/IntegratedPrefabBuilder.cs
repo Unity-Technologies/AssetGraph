@@ -41,10 +41,14 @@ namespace AssetBundleGraph {
 			Dictionary<string, List<AssetReference>> output = new Dictionary<string, List<AssetReference>>();
 
 			foreach(var key in inputGroupAssets.Keys) {
-				var prefabFileName = builder.CanCreatePrefab(key, LoadAllAssets(inputGroupAssets[key]));
-				output[key] = new List<AssetReference> () {
-					AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
-				};
+				List<UnityEngine.Object> allAssets = LoadAllAssets(inputGroupAssets[key]);
+				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
+				if(prefabFileName != null) {
+					output[key] = new List<AssetReference> () {
+						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
+					};
+				}
+				allAssets.ForEach(o => Resources.UnloadAsset(o));
 			}
 
 			Output(output);
@@ -88,6 +92,7 @@ namespace AssetBundleGraph {
 					AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
 				};
 				GameObject.DestroyImmediate(obj);
+				allAssets.ForEach(o => Resources.UnloadAsset(o));
 			}
 
 			Output(output);
@@ -126,9 +131,11 @@ namespace AssetBundleGraph {
 						}
 						if(isAllGoodAssets) {
 							// do not call LoadAllAssets() unless all assets have importFrom
-							if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, LoadAllAssets(assets)))) {
+							List<UnityEngine.Object> allAssets = LoadAllAssets(inputGroupAssets[key]);
+							if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets))) {
 								canNotCreatePrefab(key);
 							}
+							allAssets.ForEach(o => Resources.UnloadAsset(o));
 						}
 					}
 				}
