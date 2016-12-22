@@ -80,7 +80,8 @@ namespace AssetBundleGraph {
 
 			public void AddNewOutput(Dictionary<string, List<AssetReference>> o) {
 				if(output == null) {
-					output = new Dictionary<string, List<AssetReference>>();
+					output = o;
+					return;
 				}
 
 				foreach(var v in o) {
@@ -255,6 +256,9 @@ namespace AssetBundleGraph {
 			var deletedStreams = old.m_streams.Except(m_streams);
 			if(deletedStreams.Any()) {
 				foreach(var deleted in deletedStreams) {
+
+					m_streamManager.RemoveAssetGroup(deleted.connection);
+
 					var receiver = m_nodes.Find( n => n.data.Id == deleted.nodeTo.data.Id );
 					if(receiver != null) {
 						Debug.LogFormat("{0} input is removed. making it dirty...", receiver.data.Name);

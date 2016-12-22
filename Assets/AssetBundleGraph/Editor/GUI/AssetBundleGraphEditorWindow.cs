@@ -226,6 +226,10 @@ namespace AssetBundleGraph {
 			modifyMode = ModifyMode.NONE;
 		}
 
+		public void OnProjectChange() {
+			Repaint();
+		}
+
 		public void SelectNode(string nodeId) {
 			var selectObject = nodes.Find(node => node.Id == nodeId);
 			// set deactive for all nodes.
@@ -431,6 +435,7 @@ namespace AssetBundleGraph {
 				Debug.LogError(e);
 			} finally {
 				EditorUtility.ClearProgressBar();
+				Repaint();
 			}
 		}
 
@@ -469,7 +474,7 @@ namespace AssetBundleGraph {
 				};
 
 				// perform setup. Fails if any exception raises.
-				controller.Perform(saveData, target, false, false,  null);
+				controller.Perform(saveData, target, false, false,  null);				 
 
 				// if there is not error reported, then run
 				if(!controller.IsAnyIssueFound) {
@@ -516,9 +521,9 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
-		public static void OnAssetsReimported(string[] assetPaths) {
+		public static void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 			if(s_currentController != null) {
-				s_currentController.OnAssetsReimported(assetPaths, s_selectedTarget);
+				s_currentController.OnAssetsReimported(s_selectedTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 			}
 		}
 

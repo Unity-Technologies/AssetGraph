@@ -353,11 +353,14 @@ namespace AssetBundleGraph {
 		 *  Create NodeData from JSON
 		 */ 
 		public NodeData(Dictionary<string, object> jsonData) {
+			FromJsonDictionary(jsonData);
+		}
 
+		public void FromJsonDictionary(Dictionary<string, object> jsonData) {
 			m_name = jsonData[NODE_NAME] as string;
 			m_id = jsonData[NODE_ID]as string;
 			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
-			m_nodeNeedsRevisit = false;
+			m_nodeNeedsRevisit = true;
 
 			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
 			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
@@ -471,7 +474,7 @@ namespace AssetBundleGraph {
 			m_x = x;
 			m_y = y;
 			m_kind = kind;
-			m_nodeNeedsRevisit = false;
+			m_nodeNeedsRevisit = true;
 
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
@@ -537,7 +540,7 @@ namespace AssetBundleGraph {
 		public NodeData Duplicate () {
 
 			var newData = new NodeData(m_name, m_kind, m_x, m_y);
-			newData.m_nodeNeedsRevisit = false;
+			newData.m_nodeNeedsRevisit = true;
 
 			switch(m_kind) {
 			case NodeKind.IMPORTSETTING_GUI:
@@ -866,7 +869,7 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.FILTER_GUI:
-				var filterDict = new List<Dictionary<string, object>>();
+				var filterDict = new List<object>();
 				foreach(var f in m_filter) {
 					var df = new Dictionary<string, object>();
 					df[NODE_FILTER_KEYWORD] = f.FilterKeyword;
@@ -884,7 +887,7 @@ namespace AssetBundleGraph {
 			case NodeKind.BUNDLECONFIG_GUI:
 				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();
 				nodeDict[NODE_BUNDLECONFIG_USE_GROUPASVARIANTS] = m_bundleConfigUseGroupAsVariants;
-				var variantsDict = new List<Dictionary<string, object>>();
+				var variantsDict = new List<object>();
 				foreach(var v in m_variants) {
 					var dv = new Dictionary<string, object>();
 					dv[NODE_BUNDLECONFIG_VARIANTS_NAME] 	= v.Name;

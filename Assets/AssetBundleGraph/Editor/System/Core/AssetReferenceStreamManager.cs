@@ -12,98 +12,112 @@ namespace AssetBundleGraph {
 
 	public class AssetReferenceStreamManager {
 
-		private Dictionary<ConnectionData, Dictionary<string, List<AssetReference>>> m_connectionStreamMap;
-		private Dictionary<NodeData, Dictionary<string, List<AssetReference>>> m_leafnodeOutput;
-		private Dictionary<NodeData, Dictionary<string, List<AssetReference>>> m_nodeStreamCache;
+		// key: connectiondata id
+		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_connectionStreamMap;
+
+		// key: nodedata id
+		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_leafnodeOutput;
+
+		// key: nodedata id
+		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_nodeStreamCache;
 
 		public AssetReferenceStreamManager() {
-			m_connectionStreamMap = new Dictionary<ConnectionData, Dictionary<string, List<AssetReference>>>();
-			m_nodeStreamCache = new Dictionary<NodeData, Dictionary<string, List<AssetReference>>>();
-			m_leafnodeOutput = new Dictionary<NodeData, Dictionary<string, List<AssetReference>>>();
+			m_connectionStreamMap = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
+			m_nodeStreamCache = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
+			m_leafnodeOutput = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 		}
 
 		public Dictionary<string, List<AssetReference>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
 			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
 			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
 
-			var keyEnum = m_connectionStreamMap.Keys.Where(c => c.ToNodeConnectionPointId == inputPoint.Id);
-			if (keyEnum.Any()) { 
-				return m_connectionStreamMap[keyEnum.First()];
-			}
+			// TODO: do incoming
+			// TODO: check what happens to multiple incomings
+
+//			var keyEnum = m_connectionStreamMap.Keys.Where(c => c.ToNodeConnectionPointId == inputPoint.Id);
+//			if (keyEnum.Any()) { 
+//				return m_connectionStreamMap[keyEnum.First()];
+//			}
 			return null;
 		}
 
 		public Dictionary<string, List<AssetReference>> FindAssetGroup(string connectionId) {
 
-			var keyEnum = m_connectionStreamMap.Keys.Where(c => c.Id == connectionId);
-			if (keyEnum.Any()) { 
-				return m_connectionStreamMap[keyEnum.First()];
-			} else {
-				return new Dictionary<string, List<AssetReference>>();
+			if (!m_connectionStreamMap.ContainsKey(connectionId)) {
+				m_connectionStreamMap[connectionId] = new Dictionary<string, List<AssetReference>>();
 			}
+
+			return m_connectionStreamMap[connectionId];
 		}
 
 		public Dictionary<string, List<AssetReference>> FindAssetGroup(ConnectionData connection) {
-			if(!m_connectionStreamMap.ContainsKey(connection)) {
-				m_connectionStreamMap[connection] = new Dictionary<string, List<AssetReference>>();
+			if (!m_connectionStreamMap.ContainsKey(connection.Id)) {
+				m_connectionStreamMap[connection.Id] = new Dictionary<string, List<AssetReference>>();
 			}
-			return m_connectionStreamMap[connection];
+
+			return m_connectionStreamMap[connection.Id];
 		}
 
 		public void AssignAssetGroup(ConnectionData connection, Dictionary<string, List<AssetReference>> groups) {
-			m_connectionStreamMap[connection] = groups;
+			m_connectionStreamMap[connection.Id] = groups;
+		}
+
+		public void RemoveAssetGroup(ConnectionData connection) {
+			if (m_connectionStreamMap.ContainsKey(connection.Id)) { 
+				m_connectionStreamMap.Remove(connection.Id);
+			}
 		}
 
 		public void ClearLeafAssetGroupOutout(NodeData node) {
-			if(m_leafnodeOutput.ContainsKey(node)) {
-				m_leafnodeOutput[node].Clear();
+			if( m_leafnodeOutput.ContainsKey(node.Id) ) {
+				m_leafnodeOutput[node.Id].Clear();
 			}
 		}
 
 		public void AppendLeafnodeAssetGroupOutout(NodeData node, Dictionary<string, List<AssetReference>> groups) {
 
-			if(!m_leafnodeOutput.ContainsKey(node)) {
-				m_leafnodeOutput[node] = new Dictionary<string, List<AssetReference>>();
+			if(!m_leafnodeOutput.ContainsKey(node.Id)) {
+				m_leafnodeOutput[node.Id] = new Dictionary<string, List<AssetReference>>();
 			}
 
-			var g = m_leafnodeOutput[node];
+			var g = m_leafnodeOutput[node.Id];
 
 			foreach(var k in groups.Keys) {
 				g[k].AddRange(groups[k]);
 			}
 		}
 
-		public Dictionary<string, List<AssetReference>> FindAssetGroup(NodeData node) {
-
-			if(!m_nodeStreamCache.ContainsKey(node)) {
-				m_nodeStreamCache[node] = new Dictionary<string, List<AssetReference>>();
-			}
-			// TODO fix this
-			//return m_connectionStreamMap[node];
-
-
-			return m_nodeStreamCache[node];
-
-//			Dictionary<string, List<AssetReference>> group = new Dictionary<string, List<AssetReference>>();
-
-//			foreach (var c in m_connectionStreamMap.Keys) {
-//				if(c.FromNodeId != node.Id) {
-//					continue;
-//				}
-//				var targetNode = data.Nodes.Find(node => node.Id == c.FromNodeId);
-//				var groupDict = result[c];
+//		public Dictionary<string, List<AssetReference>> FindAssetGroup(NodeData node) {
 //
-//				if (!nodeDatas.ContainsKey(targetNode)) {
-//					nodeDatas[targetNode] = new Dictionary<string, List<AssetReference>>();
-//				}
-//				foreach (var groupKey in groupDict.Keys) {
-//					if (!nodeDatas[targetNode].ContainsKey(groupKey)) {
-//						nodeDatas[targetNode][groupKey] = new List<AssetReference>();
-//					}
-//					nodeDatas[targetNode][groupKey].AddRange(groupDict[groupKey]);
-//				}
+//			if(!m_nodeStreamCache.ContainsKey(node.Id)) {
+//				m_nodeStreamCache[node.Id] = new Dictionary<string, List<AssetReference>>();
 //			}
-		}
+//
+//			// TODO: fix this
+//			//return m_connectionStreamMap[node];
+//
+//			return m_nodeStreamCache[node.Id];
+//
+////			Dictionary<string, List<AssetReference>> group = new Dictionary<string, List<AssetReference>>();
+//
+////			foreach (var c in m_connectionStreamMap.Keys) {
+////				if(c.FromNodeId != node.Id) {
+////					continue;
+////				}
+////				var targetNode = data.Nodes.Find(node => node.Id == c.FromNodeId);
+////				var groupDict = result[c];
+////
+////				if (!nodeDatas.ContainsKey(targetNode)) {
+////					nodeDatas[targetNode] = new Dictionary<string, List<AssetReference>>();
+////				}
+////				foreach (var groupKey in groupDict.Keys) {
+////					if (!nodeDatas[targetNode].ContainsKey(groupKey)) {
+////						nodeDatas[targetNode][groupKey] = new List<AssetReference>();
+////					}
+////					nodeDatas[targetNode][groupKey].AddRange(groupDict[groupKey]);
+////				}
+////			}
+//		}
 
 	}
 }

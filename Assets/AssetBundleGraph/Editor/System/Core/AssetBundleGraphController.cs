@@ -20,6 +20,8 @@ namespace AssetBundleGraph {
 		private PerformGraph[] m_performGraph;
 		private int gIndex;
 
+		private BuildTarget m_lastTarget;
+
 		public bool IsAnyIssueFound {
 			get {
 				return m_nodeExceptions.Count > 0;
@@ -60,6 +62,7 @@ namespace AssetBundleGraph {
 		{
 			m_nodeExceptions.Clear();
 			m_saveData = saveData;
+			m_lastTarget = target;
 
 			try {
 				PerformGraph oldGraph = m_performGraph[gIndex];
@@ -100,7 +103,14 @@ namespace AssetBundleGraph {
 				DoNodeOperation(target, node.Data, null, null, new Dictionary<string, List<AssetReference>>(), 
 					(Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
-				
+
+				Debug.LogFormat("[Perform] {0} ", node.Name);
+
+				var v = m_saveData.Nodes.Find(n => n.Id == node.Data.Id);
+				v.FromJsonDictionary(node.Data.ToJsonDictionary());
+
+				Perform(m_saveData, target, false, false, null);
+
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
 			}
@@ -213,11 +223,14 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public void OnAssetsReimported(string[] assetPaths, BuildTarget target) {
+		public void OnAssetsReimported(BuildTarget target, string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+
 
 			if(m_saveData == null || m_saveData.Nodes == null) {
 				return;
 			}
+
+			bool isAnyNodeAffected = false;
 
 			foreach(var node in m_saveData.Nodes) {
 				if(node.Kind == NodeKind.LOADER_GUI) {
@@ -225,15 +238,45 @@ namespace AssetBundleGraph {
 					if(string.IsNullOrEmpty(loadPath)) {
 						Debug.LogFormat("{0} is marked to revisit", node.Name);
 						node.NeedsRevisit = true;
+						isAnyNodeAffected = true;
 					}
-					foreach(var path in assetPaths) {
-						if(path.StartsWith(node.LoaderLoadPath[target])) {
+					foreach(var path in importedAssets) {
+						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
 							Debug.LogFormat("{0} is marked to revisit", node.Name);
 							node.NeedsRevisit = true;
+							isAnyNodeAffected = true;
+							break;
+						}
+					}
+					foreach(var path in deletedAssets) {
+						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
+							Debug.LogFormat("{0} is marked to revisit", node.Name);
+							node.NeedsRevisit = true;
+							isAnyNodeAffected = true;
+							break;
+						}
+					}
+					foreach(var path in movedAssets) {
+						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
+							Debug.LogFormat("{0} is marked to revisit", node.Name);
+							node.NeedsRevisit = true;
+							isAnyNodeAffected = true;
+							break;
+						}
+					}
+					foreach(var path in movedFromAssetPaths) {
+						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
+							Debug.LogFormat("{0} is marked to revisit", node.Name);
+							node.NeedsRevisit = true;
+							isAnyNodeAffected = true;
 							break;
 						}
 					}
 				}
+			}
+
+			if(isAnyNodeAffected) {
+				Perform(m_saveData, m_lastTarget, false, false, null);
 			}
 		}
 	}

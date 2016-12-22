@@ -49,53 +49,48 @@ namespace AssetBundleGraph {
 			Dictionary<string, List<AssetReference>> inputGroupAssets, 
 			PerformGraph.Output Output) 
 		{
+			var output = new Dictionary<string, List<AssetReference>>();
 
-			//TODO:
+			foreach(var groupKey in inputGroupAssets.Keys) {
 
-//			foreach(var connToChild in connectionsToChild) {
-//
-//				var filter = node.FilterConditions.Find(fc => fc.ConnectionPoint.Id == connToChild.FromNodeConnectionPointId);
-//				UnityEngine.Assertions.Assert.IsNotNull(filter);
-//
-//				var output = new Dictionary<string, List<AssetReference>>();
-//
-//				foreach(var groupKey in inputGroupAssets.Keys) {
-//					var assets = inputGroupAssets[groupKey];
-//					var filteringAssets = new List<FilterableAsset>();
-//					assets.ForEach(a => filteringAssets.Add(new FilterableAsset(a)));
-//
-//
-//					// filter by keyword first
-//					List<FilterableAsset> keywordContainsAssets = filteringAssets.Where(
-//						assetData => 
-//						!assetData.isFiltered && 
-//						Regex.IsMatch(assetData.asset.importFrom, filter.FilterKeyword, RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace)
-//					).ToList();
-//
-//					List<FilterableAsset> finalFilteredAsset = new List<FilterableAsset>();
-//
-//					// then, filter by type
-//					foreach (var a in keywordContainsAssets) {
-//						if (filter.FilterKeytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
-//							var assumedType = a.asset.filterType;
-//							if (assumedType == null || filter.FilterKeytype != assumedType.ToString()) {
-//								continue;
-//							}
-//						}
-//						finalFilteredAsset.Add(a);
-//					}
-//
-//					// mark assets as exhausted.
-//					foreach (var a in finalFilteredAsset) {
-//						a.isFiltered = true;
-//					}
-//
-//					output[groupKey] = finalFilteredAsset.Select(v => v.asset).ToList();
-//				}
+				var assets = new List<FilterableAsset>();
+				inputGroupAssets[groupKey].ForEach(a => assets.Add(new FilterableAsset(a)));
 
+				foreach(var a in assets) {
+					foreach(var filter in node.FilterConditions) {
+						if(a.isFiltered) {
+							continue;
+						}
+						bool isTargetFilter = false;
+						if(connectionToOutput != null) {
+							isTargetFilter = connectionToOutput.FromNodeConnectionPointId == filter.ConnectionPoint.Id;
+						}
 
-//				Output(connToChild, output, null);
-//			}
+						bool keywordMatch = Regex.IsMatch(a.asset.importFrom, filter.FilterKeyword, 
+							RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+
+						bool match = keywordMatch;
+
+						if(keywordMatch && filter.FilterKeytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) 
+						{
+							var assumedType = a.asset.filterType;
+							match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
+						}
+
+						if(match) {
+							a.isFiltered = true;
+							if(isTargetFilter) {
+								if(!output.ContainsKey(groupKey)) {
+									output[groupKey] = new List<AssetReference>();
+								}
+								output[groupKey].Add(a.asset);
+							}
+						}
+					}
+				}
+			}
+
+			Output(output);
 		}
 	}
 }
