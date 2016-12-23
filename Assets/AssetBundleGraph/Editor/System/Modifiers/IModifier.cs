@@ -102,7 +102,7 @@ namespace AssetBundleGraph {
 						if (!map.ContainsKey(attr.Name)) {
 							map[attr.Name] = type.FullName;
 						} else {
-							Debug.LogWarning("Multiple CustomModifier class with the same name/type found. Ignoring " + type.Name);
+							LogUtility.Logger.LogWarning(LogUtility.kTag, "Multiple CustomModifier class with the same name/type found. Ignoring " + type.Name);
 						}
 					}
 				}

@@ -131,7 +131,7 @@ namespace AssetBundleGraph {
 				if( IsFileIntendedItem(fileName, bundleNames) ) {
 					output[key].Add( AssetReferenceDatabase.GetAssetBundleReference(path) );
 				} else {
-					Debug.LogWarning(node.Name + ":Irrelevant file found in assetbundle cache folder:" + fileName);
+					LogUtility.Logger.LogWarning(LogUtility.kTag, node.Name + ":Irrelevant file found in assetbundle cache folder:" + fileName);
 				}
 			}
 

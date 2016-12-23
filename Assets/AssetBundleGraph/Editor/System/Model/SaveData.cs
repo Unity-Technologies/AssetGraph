@@ -54,14 +54,16 @@ namespace AssetBundleGraph {
 		private DateTime m_lastModified;
 		private int m_version;
 
-		public SaveData() {
+		private static SaveData s_saveData;
+
+		private SaveData() {
 			m_lastModified = DateTime.UtcNow;
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
 			m_version = ABG_FILE_VERSION;
 		}
 
-		public SaveData(Dictionary<string, object> jsonData) {
+		private SaveData(Dictionary<string, object> jsonData) {
 			m_jsonData = jsonData;
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
@@ -80,17 +82,13 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public SaveData(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
+		private SaveData(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
 			m_jsonData = null;
 
 			m_lastModified = DateTime.UtcNow;
 			m_allNodes = nodes.Select(n => n.Data).ToList();
-			m_allConnections = new List<ConnectionData>();
+			m_allConnections = connections.Select(c => c.Data).ToList();
 			m_version = ABG_FILE_VERSION;
-
-			foreach(var cgui in connections) {
-				m_allConnections.Add(new ConnectionData(cgui));
-			}
 		}
 
 		public DateTime LastModified {
@@ -166,7 +164,19 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public static SaveData Data {
+			get {
+				if(s_saveData == null) {
+					s_saveData = LoadFromDisk();
+				}
+				return s_saveData;
+			}
+		}
+
 		public void Save () {
+
+			LogUtility.Logger.Log("[SaveData] Saved to Disk.");
+
 			var dir = SaveDataDirectoryPath;
 			if (!Directory.Exists(dir)) {
 				Directory.CreateDirectory(dir);
@@ -185,6 +195,22 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
+		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
+
+			LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
+
+			m_jsonData = null;
+
+			m_allNodes = nodes.Select(n => n.Data).ToList();
+			m_allConnections = connections.Select(c => c.Data).ToList();
+			m_version = ABG_FILE_VERSION;
+		}
+
+//		public static SaveData Reload() {
+//			s_saveData = LoadFromDisk();
+//			return s_saveData;
+//		}
+			
 		public static bool IsSaveDataAvailableAtDisk() {
 			return File.Exists(SaveDataPath);
 		}
@@ -198,13 +224,13 @@ namespace AssetBundleGraph {
 			return new SaveData(deserialized);
 		}
 
-		public static SaveData RecreateDataOnDisk () {
-			SaveData newSaveData = new SaveData();
-			newSaveData.Save();
-			return newSaveData;
+		private static SaveData RecreateDataOnDisk () {
+			s_saveData = new SaveData();
+			s_saveData.Save();
+			return s_saveData;
 		}
 			
-		public static SaveData LoadFromDisk() {
+		private static SaveData LoadFromDisk() {
 
 			if(!IsSaveDataAvailableAtDisk()) {
 				return RecreateDataOnDisk ();
@@ -222,7 +248,7 @@ namespace AssetBundleGraph {
 					return saveData;
 				}
 			} catch (Exception e) {
-				Debug.LogError("Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + SaveDataPath);
+				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + SaveDataPath);
 			}
 
 			return new SaveData();
@@ -232,7 +258,7 @@ namespace AssetBundleGraph {
 		 * Checks deserialized SaveData, and make some changes if necessary
 		 * return false if any changes are perfomed.
 		 */
-		public bool Validate () {
+		private bool Validate () {
 			var changed = false;
 
 			List<NodeData> removingNodes = new List<NodeData>();

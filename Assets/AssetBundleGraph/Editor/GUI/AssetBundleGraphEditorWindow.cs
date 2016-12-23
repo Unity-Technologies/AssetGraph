@@ -89,6 +89,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 
 		private bool showErrors;
+		private bool showVerboseLog;
 		private NodeEvent currentEventSource;
 		private Texture2D _selectionTex;
 		private GUIContent _reloadButtonTexture;
@@ -148,7 +149,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 			default: {
-					Debug.LogError("Unknown script type found:" + scriptType);
+					LogUtility.Logger.LogError(LogUtility.kTag, "Unknown script type found:" + scriptType);
 					break;
 				}
 			}
@@ -246,10 +247,12 @@ namespace AssetBundleGraph {
 			s_currentController = this.controller;
 			s_selectedTarget    = EditorUserBuildSettings.activeBuildTarget;
 
+			LogUtility.Logger.filterLogType = LogType.Warning;
+
 			this.titleContent = new GUIContent("AssetBundle");
 
 			Undo.undoRedoPerformed += () => {
-				SaveGraphWithReload();
+				SaveGraphAndRefresh();
 				Repaint();
 			};
 
@@ -298,16 +301,14 @@ namespace AssetBundleGraph {
 		*/
 		public void InitializeGraph () {
 
-			SaveData saveData = SaveData.LoadFromDisk();
-
 			/*
 				do nothing if json does not modified after first load.
 			*/
-			if (saveData.LastModified == lastLoaded) {
+			if (SaveData.Data.LastModified == lastLoaded) {
 				return;
 			}
 				
-			lastLoaded = saveData.LastModified;
+			lastLoaded = SaveData.Data.LastModified;
 
 			minSize = new Vector2(600f, 300f);
 			
@@ -318,7 +319,7 @@ namespace AssetBundleGraph {
 			/*
 				load graph data from deserialized data.
 			*/
-			ConstructGraphFromSaveData(saveData, out this.nodes, out this.connections);
+			ConstructGraphFromSaveData(out this.nodes, out this.connections);
 		}
 
 		/**
@@ -338,7 +339,8 @@ namespace AssetBundleGraph {
 		/**
 		 * Creates Graph structure with NodeGUI and ConnectionGUI from SaveData
 		 */ 
-		private static void ConstructGraphFromSaveData (SaveData saveData, out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
+		private static void ConstructGraphFromSaveData (out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
+			var saveData = SaveData.Data;
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
@@ -362,7 +364,7 @@ namespace AssetBundleGraph {
 				var startPoint = startNode.Data.FindConnectionPoint (c.FromNodeConnectionPointId);
 				var endPoint = endNode.Data.FindConnectionPoint (c.ToNodeConnectionPointId);
 
-				currentConnections.Add(ConnectionGUI.LoadConnection(c.Label, c.Id, startPoint, endPoint));
+				currentConnections.Add(ConnectionGUI.LoadConnection(c, startPoint, endPoint));
 			}
 
 			nodes = currentNodes;
@@ -370,17 +372,16 @@ namespace AssetBundleGraph {
 		}
 
 		private void SaveGraph () {
-			SaveData newSaveData = new SaveData(nodes, connections);
-			newSaveData.Save();
+			SaveData.Data.ApplyGraph(nodes, connections);
 		}
 
-		private void SaveGraphWithReload (bool silent = false) {
+		private void SaveGraphAndRefresh (bool silent = false) {
 			SaveGraph();
 			try {
 				Setup(ActiveBuildTarget);
 			} catch (Exception e) {
 				if(!silent){
-					Debug.LogError("Error occured during reload:" + e);
+					LogUtility.Logger.LogError(LogUtility.kTag, "Error occured during reload:" + e);
 				}
 			}
 		}
@@ -391,28 +392,21 @@ namespace AssetBundleGraph {
 			EditorUtility.ClearProgressBar();
 
 			try {
-				if (!SaveData.IsSaveDataAvailableAtDisk()) {
-					SaveData.RecreateDataOnDisk();
-					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
-					return;
-				}
-
 				foreach (var node in nodes) {
 					node.HideProgress();
 				}
 
-				// reload data from file.
-				SaveData saveData = SaveData.LoadFromDisk();
+				SaveGraph();
 
 				// update static all node names.
 				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-				controller.Perform(saveData, target, false, true, null);
+				controller.Perform(target, false, true, null);
 
 				RefreshInspector(controller.StreamManager);
 				ShowErrorOnNodes();
 			} catch(Exception e) {
-				Debug.LogError(e);
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
 			} finally {
 				EditorUtility.ClearProgressBar();
 			}
@@ -432,7 +426,7 @@ namespace AssetBundleGraph {
 				RefreshInspector(controller.StreamManager);
 				ShowErrorOnNodes();
 			} catch(Exception e) {
-				Debug.LogError(e);
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
 			} finally {
 				EditorUtility.ClearProgressBar();
 				Repaint();
@@ -445,19 +439,12 @@ namespace AssetBundleGraph {
 		private void Run (BuildTarget target) {
 
 			try {
-				if (!SaveData.IsSaveDataAvailableAtDisk()) {
-					SaveData.RecreateDataOnDisk();
-					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
-					return;
-				}
-
-				// load data from file.
-				SaveData saveData = SaveData.LoadFromDisk();
+				SaveData.Data.Save();
 
 				List<NodeGUI> currentNodes = null;
 				List<ConnectionGUI> currentConnections = null;
 
-				ConstructGraphFromSaveData(saveData, out currentNodes, out currentConnections);
+				ConstructGraphFromSaveData(out currentNodes, out currentConnections);
 
 				var currentCount = 0.00f;
 				var totalCount = currentNodes.Count * 1f;
@@ -474,17 +461,17 @@ namespace AssetBundleGraph {
 				};
 
 				// perform setup. Fails if any exception raises.
-				controller.Perform(saveData, target, false, false,  null);				 
+				controller.Perform(target, false, false,  null);				 
 
 				// if there is not error reported, then run
 				if(!controller.IsAnyIssueFound) {
-					controller.Perform(saveData, target, true, true, updateHandler);
+					controller.Perform(target, true, true, updateHandler);
 				}
 				RefreshInspector(controller.StreamManager);
 				AssetDatabase.Refresh();
 				ShowErrorOnNodes();
 			} catch(Exception e) {
-				Debug.LogError(e);
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
 			} finally {
 				EditorUtility.ClearProgressBar();
 			}
@@ -533,6 +520,14 @@ namespace AssetBundleGraph {
 					Setup(ActiveBuildTarget);
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+
+				GUILayout.Space(4);
+
+				bool b = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+				if(b != showVerboseLog) {
+					showVerboseLog = b;
+					LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
+				}
 
 				GUILayout.FlexibleSpace();
 
@@ -799,6 +794,16 @@ namespace AssetBundleGraph {
 			Init();
 		}
 
+//		public void OnDestroy() {
+//			LogUtility.Logger.Log("OnDestroy");
+//			SaveData.Data.Save();
+//		}
+
+		public void OnDisable() {
+			LogUtility.Logger.Log("OnDisable");
+			SaveData.Data.Save();
+		}
+
 		public void OnGUI () {
 			DrawGUIToolBar();
 
@@ -862,7 +867,7 @@ namespace AssetBundleGraph {
 					}
 
 					if (shouldSave) {
-						SaveGraphWithReload();
+						SaveGraphAndRefresh();
 					}
 					break;
 				}
@@ -878,7 +883,7 @@ namespace AssetBundleGraph {
 							false, 
 							() => {
 								AddNodeFromGUI(kind, rightClickPos.x, rightClickPos.y);
-								SaveGraphWithReload();
+								SaveGraphAndRefresh();
 								Repaint();
 							}
 						);
@@ -1005,7 +1010,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 
 							activeObject = RenewActiveObject(new List<string>());
 							UpdateActivationOfObjects(activeObject);
@@ -1044,7 +1049,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 							InitializeGraph();
 
 							activeObject = RenewActiveObject(new List<string>());
@@ -1102,7 +1107,7 @@ namespace AssetBundleGraph {
 								DuplicateNode(newNode);
 							}
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 							InitializeGraph();
 
 							Event.current.Use();
@@ -1172,7 +1177,7 @@ namespace AssetBundleGraph {
 			}
 
 			if (newNode == null) {
-				Debug.LogError("Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
+				LogUtility.Logger.LogError(LogUtility.kTag, "Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
 					") is not supported to create from code.");
 				return;
 			}
@@ -1261,7 +1266,7 @@ namespace AssetBundleGraph {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						SaveGraphWithReload();
+						SaveGraphAndRefresh();
 						break;
 					}
 
@@ -1312,7 +1317,7 @@ namespace AssetBundleGraph {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						SaveGraphWithReload();
+						SaveGraphAndRefresh();
 						break;
 					}
 
@@ -1381,7 +1386,7 @@ namespace AssetBundleGraph {
 						var deletingNodeId = e.eventSourceNode.Id;
 						DeleteNode(deletingNodeId);
 
-						SaveGraphWithReload();
+						SaveGraphAndRefresh();
 						InitializeGraph();
 						break;
 					}
@@ -1514,7 +1519,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				case NodeEvent.EventType.EVENT_SAVE: {
-					SaveGraphWithReload(true);
+					SaveGraphAndRefresh(true);
 					Repaint();
 					break;
 				}
@@ -1626,7 +1631,7 @@ namespace AssetBundleGraph {
 
 							DeleteConnectionById(deletedConnectionId);
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 							Repaint();
 							break;
 						}

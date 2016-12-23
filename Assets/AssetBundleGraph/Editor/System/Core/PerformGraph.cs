@@ -17,12 +17,15 @@ namespace AssetBundleGraph {
 
 		public class Node {
 			public NodeData data;
+			public NodeData originalData;
 			public List<AssetStream> streamFrom;
 			public List<AssetStream> streamTo;
 			public bool dirty;
 
 			public Node(NodeData d) {
 				data = d;
+				// data instance may be modified over time, so keep the state of data to detect changes
+				originalData = d.Duplicate(true);
 				streamFrom = new List<AssetStream>();
 				streamTo = new List<AssetStream>();
 				dirty = true;
@@ -118,7 +121,7 @@ namespace AssetBundleGraph {
 				UnityEngine.Assertions.Assert.IsNotNull(output);
 
 				nodeTo.dirty = true;
-				Debug.LogFormat("{0} marked dirty ({1} => {2} updated)", nodeTo.data.Name, nodeFrom.data.Name, nodeTo.data.Name);
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} marked dirty ({1} => {2} updated)", nodeTo.data.Name, nodeFrom.data.Name, nodeTo.data.Name);
 				assetGroups = output;
 				m.AssignAssetGroup(connection, output);
 				output = null;
@@ -160,7 +163,6 @@ namespace AssetBundleGraph {
 		}
 
 		private AssetReferenceStreamManager m_streamManager;
-		private SaveData  m_saveData;
 		private List<Node> m_nodes;
 		private List<AssetStream> m_streams;
 		private Dictionary<string, List<AssetReference>> m_emptyAssetGroup;
@@ -174,11 +176,13 @@ namespace AssetBundleGraph {
 			m_target = (BuildTarget)int.MaxValue;
 		}
 
-		public void BuildGraphFromSaveData(SaveData saveData, BuildTarget target, PerformGraph old) {
-			m_saveData = saveData;
+		public void BuildGraphFromSaveData(BuildTarget target, PerformGraph old) {
+
+			var saveData = SaveData.Data;
+
 			m_target = target;
 
-			ValidateLoopConnection(m_saveData);
+			ValidateLoopConnection(saveData);
 
 			m_nodes.Clear();
 			m_streams.Clear();
@@ -228,15 +232,18 @@ namespace AssetBundleGraph {
 
 				if(old == null) {
 					n.dirty = true;
-					Debug.Log(n.data.Name + " mark modified.(old=null)");
+					LogUtility.Logger.Log(n.data.Name + " mark modified.(old=null)");
 				} else {
 					Node oldNode = old.m_nodes.Find(x => x.data.Id == n.data.Id);
 					// this is new node
 					if(oldNode == null) {
-						Debug.Log(n.data.Name + " mark modified.(oldnode null)");
+						LogUtility.Logger.Log(n.data.Name + " mark modified.(oldnode null)");
 						n.dirty = true;
 					}
-					else if(!n.data.CompareIgnoreGUIChanges(oldNode.data)) {
+					else if(n.data.NeedsRevisit) {
+						n.dirty = true;
+					}
+					else if(!n.originalData.CompareIgnoreGUIChanges(oldNode.originalData)) {
 						n.dirty = true;
 					}
 				}
@@ -261,7 +268,7 @@ namespace AssetBundleGraph {
 
 					var receiver = m_nodes.Find( n => n.data.Id == deleted.nodeTo.data.Id );
 					if(receiver != null) {
-						Debug.LogFormat("{0} input is removed. making it dirty...", receiver.data.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} input is removed. making it dirty...", receiver.data.Name);
 						receiver.dirty = true;
 					}
 				}
@@ -282,7 +289,7 @@ namespace AssetBundleGraph {
 		}
 
 		public void VisitFrom(NodeData node, Perform performFunc) {
-			Node n = m_nodes.Find(x => x.data == node);
+			Node n = m_nodes.Find(x => x.data.Id == node.Id);
 			Assert.IsNotNull(n);
 			_Visit(n, performFunc);
 		}
@@ -301,13 +308,13 @@ namespace AssetBundleGraph {
 				if(n.streamFrom.Count == 0) {
 					for(int i = 0; i < n.streamTo.Count; ++i) {
 						var output = n.streamTo[i];
-						Debug.Log(n.data.Name + " performed(root)");
+						LogUtility.Logger.Log(n.data.Name + " performed(root)");
 						performFunc(n.data, null, output.connection, m_emptyAssetGroup, 
 							(Dictionary<string, List<AssetReference>> newOutput) => 
 							{
 								if(output.assetGroups != newOutput) {
 									output.nodeTo.dirty = true;
-									Debug.LogFormat("{0} marked dirty ({1} => {2} updated)", output.nodeTo.data.Name, output.nodeFrom.data.Name, output.nodeTo.data.Name);
+									LogUtility.Logger.LogFormat(LogType.Log, "{0} marked dirty ({1} => {2} updated)", output.nodeTo.data.Name, output.nodeFrom.data.Name, output.nodeTo.data.Name);
 									m_streamManager.AssignAssetGroup(output.connection, newOutput);
 									output.assetGroups = newOutput;
 								}
@@ -321,7 +328,7 @@ namespace AssetBundleGraph {
 						if(n.streamTo.Count > 0) {
 							for(int j = 0; j < n.streamTo.Count; ++j) {
 								var output = n.streamTo[j];
-								Debug.LogFormat("{0} perfomed (from {1} input)", n.data.Name, input.nodeFrom.data.Name);
+								LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed (from {1} input)", n.data.Name, input.nodeFrom.data.Name);
 								performFunc(n.data,input.connection, output.connection, input.assetGroups, 
 									(Dictionary<string, List<AssetReference>> newOutput) => 
 									{
@@ -330,7 +337,7 @@ namespace AssetBundleGraph {
 								);
 							}
 						} else {
-							Debug.LogFormat("{0} perfomed (from {1} input)", n.data.Name, input.nodeFrom.data.Name);
+							LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed (from {1} input)", n.data.Name, input.nodeFrom.data.Name);
 							performFunc(n.data,input.connection, null, input.assetGroups, 
 								(Dictionary<string, List<AssetReference>> newOutput) => 
 								{
@@ -345,7 +352,7 @@ namespace AssetBundleGraph {
 							if(to.IsStreamAssetRequireUpdate) {
 								to.UpdateAssetGroup(m_streamManager);
 							} else {
-								Debug.LogFormat("[skipped]stream update skipped. Result is equivarent: {0} -> {1}", n.data.Name, to.nodeTo.data.Name);
+								LogUtility.Logger.LogFormat(LogType.Log, "[skipped]stream update skipped. Result is equivarent: {0} -> {1}", n.data.Name, to.nodeTo.data.Name);
 							}
 						}
 					}

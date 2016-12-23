@@ -14,7 +14,6 @@ namespace AssetBundleGraph {
 	 */
 	public class AssetBundleGraphController {
 
-		private SaveData m_saveData;
 		private List<NodeException> m_nodeExceptions;
 		private AssetReferenceStreamManager m_streamManager;
 		private PerformGraph[] m_performGraph;
@@ -54,41 +53,45 @@ namespace AssetBundleGraph {
 		 * Execute Run operations using current graph
 		 */
 		public void Perform (
-			SaveData saveData, 
 			BuildTarget target,
 			bool isRun,
 			bool callPostprocess,
 			Action<NodeData, float> updateHandler) 
 		{
+			var saveData = SaveData.Data;
+			foreach(var e in m_nodeExceptions) {
+				var errorNode = saveData.Nodes.Find(n => n.Id == e.Id);
+				// errorNode may not be found if user delete it on graph
+				if(errorNode != null) {
+					LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} is marked to revisit due to last error", errorNode.Name);
+					errorNode.NeedsRevisit = true;
+				}
+			}
+
 			m_nodeExceptions.Clear();
-			m_saveData = saveData;
 			m_lastTarget = target;
 
-			try {
-				PerformGraph oldGraph = m_performGraph[gIndex];
-				gIndex = (gIndex+1) %2;
-				PerformGraph newGraph = m_performGraph[gIndex];
-				newGraph.BuildGraphFromSaveData(saveData, target, oldGraph);
+			PerformGraph oldGraph = m_performGraph[gIndex];
+			gIndex = (gIndex+1) %2;
+			PerformGraph newGraph = m_performGraph[gIndex];
+			newGraph.BuildGraphFromSaveData(target, oldGraph);
 
-				PerformGraph.Perform performFunc =
-					(NodeData data, 
-						ConnectionData src, 
-						ConnectionData dst, 
-						Dictionary<string, List<AssetReference>> inputGroups, 
-						PerformGraph.Output outputFunc) =>
-				{
-					DoNodeOperation(target, data, src, dst, inputGroups, outputFunc, isRun, updateHandler);
-				};
+			PerformGraph.Perform performFunc =
+				(NodeData data, 
+					ConnectionData src, 
+					ConnectionData dst, 
+					Dictionary<string, List<AssetReference>> inputGroups, 
+					PerformGraph.Output outputFunc) =>
+			{
+				DoNodeOperation(target, data, src, dst, inputGroups, outputFunc, isRun, updateHandler);
+			};
 
-				newGraph.VisitAll(performFunc, isRun);
+			newGraph.VisitAll(performFunc, isRun);
 
-				if(callPostprocess) {
-					Postprocess(isRun);
-				}
-
-			} catch (NodeException e) {
-				m_nodeExceptions.Add(e);
+			if(callPostprocess && m_nodeExceptions.Count == 0) {
+				Postprocess(isRun);
 			}
+
 			Profiler.EndSample();
 		}
 
@@ -97,19 +100,20 @@ namespace AssetBundleGraph {
 			BuildTarget target) 
 		{
 			m_nodeExceptions.RemoveAll(e => e.Id == node.Data.Id);
+			var saveData = SaveData.Data;
 
 			try {
-				Debug.LogFormat("[validate] {0} validate", node.Name);
+				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
 				DoNodeOperation(target, node.Data, null, null, new Dictionary<string, List<AssetReference>>(), 
 					(Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
 
-				Debug.LogFormat("[Perform] {0} ", node.Name);
+				LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
 
-				var v = m_saveData.Nodes.Find(n => n.Id == node.Data.Id);
+				var v = saveData.Nodes.Find(n => n.Id == node.Data.Id);
 				v.FromJsonDictionary(node.Data.ToJsonDictionary());
 
-				Perform(m_saveData, target, false, false, null);
+				Perform(target, false, false, null);
 
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
@@ -130,22 +134,26 @@ namespace AssetBundleGraph {
 			bool isActualRun,
 			Action<NodeData, float> updateHandler) 
 		{
-			if (updateHandler != null) {
-				updateHandler(currentNodeData, 0f);
-			}
-
-			INodeOperation executor = CreateOperation(currentNodeData);
-			if(executor != null) {
-				if(isActualRun) {
-					executor.Run(target, currentNodeData, sourceConnection, destinationConnection, inputGroupAssets, outputFunc);
+			try {
+				if (updateHandler != null) {
+					updateHandler(currentNodeData, 0f);
 				}
-				else {
-					executor.Setup(target, currentNodeData, sourceConnection, destinationConnection, inputGroupAssets, outputFunc);
-				}
-			}
 
-			if (updateHandler != null) {
-				updateHandler(currentNodeData, 1f);
+				INodeOperation executor = CreateOperation(currentNodeData);
+				if(executor != null) {
+					if(isActualRun) {
+						executor.Run(target, currentNodeData, sourceConnection, destinationConnection, inputGroupAssets, outputFunc);
+					}
+					else {
+						executor.Setup(target, currentNodeData, sourceConnection, destinationConnection, inputGroupAssets, outputFunc);
+					}
+				}
+
+				if (updateHandler != null) {
+					updateHandler(currentNodeData, 1f);
+				}
+			} catch (NodeException e) {
+				m_nodeExceptions.Add(e);
 			}
 		}
 
@@ -196,7 +204,7 @@ namespace AssetBundleGraph {
 					}
 
 				default: {
-						Debug.LogError(currentNodeData.Name + " is defined as unknown kind of node. value:" + currentNodeData.Kind);
+						LogUtility.Logger.LogError(LogUtility.kTag, currentNodeData.Name + " is defined as unknown kind of node. value:" + currentNodeData.Kind);
 						break;
 					}
 				} 
@@ -225,58 +233,71 @@ namespace AssetBundleGraph {
 
 		public void OnAssetsReimported(BuildTarget target, string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 
+			var saveData = SaveData.Data;
 
-			if(m_saveData == null || m_saveData.Nodes == null) {
+			if(saveData.Nodes == null) {
 				return;
 			}
 
 			bool isAnyNodeAffected = false;
 
-			foreach(var node in m_saveData.Nodes) {
+			foreach(var node in saveData.Nodes) {
 				if(node.Kind == NodeKind.LOADER_GUI) {
 					var loadPath = node.LoaderLoadPath[target];
 					if(string.IsNullOrEmpty(loadPath)) {
-						Debug.LogFormat("{0} is marked to revisit", node.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
 						node.NeedsRevisit = true;
 						isAnyNodeAffected = true;
 					}
-					foreach(var path in importedAssets) {
-						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
-							Debug.LogFormat("{0} is marked to revisit", node.Name);
-							node.NeedsRevisit = true;
-							isAnyNodeAffected = true;
-							break;
+
+					var connOut = saveData.Connections.Find(c => c.FromNodeId == node.Id);
+
+					if( connOut != null ) {
+
+						var assetGroup = m_streamManager.FindAssetGroup(connOut);
+						var importPath = "Assets/" + node.LoaderLoadPath[target];
+
+						foreach(var path in importedAssets) {
+							if(path.StartsWith(importPath)) {
+								// if this is reimport, we don't need to redo Loader
+								if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
+									LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+									node.NeedsRevisit = true;
+									isAnyNodeAffected = true;
+									break;
+								}
+							}
 						}
-					}
-					foreach(var path in deletedAssets) {
-						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
-							Debug.LogFormat("{0} is marked to revisit", node.Name);
-							node.NeedsRevisit = true;
-							isAnyNodeAffected = true;
-							break;
+						foreach(var path in deletedAssets) {
+							if(path.StartsWith(importPath)) {
+								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+								node.NeedsRevisit = true;
+								isAnyNodeAffected = true;
+								break;
+							}
 						}
-					}
-					foreach(var path in movedAssets) {
-						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
-							Debug.LogFormat("{0} is marked to revisit", node.Name);
-							node.NeedsRevisit = true;
-							isAnyNodeAffected = true;
-							break;
+						foreach(var path in movedAssets) {
+							if(path.StartsWith(importPath)) {
+								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+								node.NeedsRevisit = true;
+								isAnyNodeAffected = true;
+								break;
+							}
 						}
-					}
-					foreach(var path in movedFromAssetPaths) {
-						if(path.StartsWith("Assets/" + node.LoaderLoadPath[target])) {
-							Debug.LogFormat("{0} is marked to revisit", node.Name);
-							node.NeedsRevisit = true;
-							isAnyNodeAffected = true;
-							break;
+						foreach(var path in movedFromAssetPaths) {
+							if(path.StartsWith(importPath)) {
+								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+								node.NeedsRevisit = true;
+								isAnyNodeAffected = true;
+								break;
+							}
 						}
 					}
 				}
 			}
 
 			if(isAnyNodeAffected) {
-				Perform(m_saveData, m_lastTarget, false, false, null);
+				Perform(m_lastTarget, false, false, null);
 			}
 		}
 	}

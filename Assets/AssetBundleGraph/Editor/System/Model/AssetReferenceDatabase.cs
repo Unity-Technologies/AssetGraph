@@ -66,7 +66,7 @@ namespace AssetBundleGraph {
 					}
 				}
 			} catch(Exception e) {
-				Debug.LogWarning(e);
+				LogUtility.Logger.LogWarning(LogUtility.kTag, e);
 			}
 
 			return loaded;

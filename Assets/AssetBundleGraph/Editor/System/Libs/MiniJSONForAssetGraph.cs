@@ -53,16 +53,16 @@ namespace AssetBundleGraph {
     //
     //          var dict = Json.Deserialize(jsonString) as Dictionary<string,object>;
     //
-    //          Debug.Log("deserialized: " + dict.GetType());
-    //          Debug.Log("dict['array'][0]: " + ((List<object>) dict["array"])[0]);
-    //          Debug.Log("dict['string']: " + (string) dict["string"]);
-    //          Debug.Log("dict['float']: " + (double) dict["float"]); // floats come out as doubles
-    //          Debug.Log("dict['int']: " + (long) dict["int"]); // ints come out as longs
-    //          Debug.Log("dict['unicode']: " + (string) dict["unicode"]);
+    //          LogUtility.Logger.Log("deserialized: " + dict.GetType());
+    //          LogUtility.Logger.Log("dict['array'][0]: " + ((List<object>) dict["array"])[0]);
+    //          LogUtility.Logger.Log("dict['string']: " + (string) dict["string"]);
+    //          LogUtility.Logger.Log("dict['float']: " + (double) dict["float"]); // floats come out as doubles
+    //          LogUtility.Logger.Log("dict['int']: " + (long) dict["int"]); // ints come out as longs
+    //          LogUtility.Logger.Log("dict['unicode']: " + (string) dict["unicode"]);
     //
     //          var str = Json.Serialize(dict);
     //
-    //          Debug.Log("serialized: " + str);
+    //          LogUtility.Logger.Log("serialized: " + str);
     //      }
     //  }
 

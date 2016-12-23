@@ -360,7 +360,7 @@ namespace AssetBundleGraph {
 			m_name = jsonData[NODE_NAME] as string;
 			m_id = jsonData[NODE_ID]as string;
 			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
-			m_nodeNeedsRevisit = true;
+			m_nodeNeedsRevisit = false;
 
 			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
 			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
@@ -474,7 +474,7 @@ namespace AssetBundleGraph {
 			m_x = x;
 			m_y = y;
 			m_kind = kind;
-			m_nodeNeedsRevisit = true;
+			m_nodeNeedsRevisit = false;
 
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
@@ -537,10 +537,14 @@ namespace AssetBundleGraph {
 		/**
 		 * Duplicate this node with new guid.
 		 */ 
-		public NodeData Duplicate () {
+		public NodeData Duplicate (bool keepGuid = false) {
+
+			if(keepGuid) {
+				return new NodeData( this.ToJsonDictionary() );
+			}
 
 			var newData = new NodeData(m_name, m_kind, m_x, m_y);
-			newData.m_nodeNeedsRevisit = true;
+			newData.m_nodeNeedsRevisit = false;
 
 			switch(m_kind) {
 			case NodeKind.IMPORTSETTING_GUI:
@@ -696,7 +700,7 @@ namespace AssetBundleGraph {
 						if(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled) {
 							int flag = ~((int)BuildAssetBundleOptions.DisableWriteTypeTree + (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
 							v.value = v.value & flag;
-							Debug.LogWarning(m_name + ": DisableWriteTypeTree and IgnoreTypeTreeChanges can not be used together. Settings overwritten.");
+							LogUtility.Logger.LogWarning(LogUtility.kTag, m_name + ": DisableWriteTypeTree and IgnoreTypeTreeChanges can not be used together. Settings overwritten.");
 						}
 					}
 				}
@@ -717,30 +721,30 @@ namespace AssetBundleGraph {
 		public bool CompareIgnoreGUIChanges (NodeData rhs) {
 
 			if(this.m_kind != rhs.m_kind) {
-				Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Kind");
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Kind");
 				return false;
 			}
 
 			if(m_inputPoints.Count != rhs.m_inputPoints.Count) {
-				Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Input Count");
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Input Count");
 				return false;
 			}
 
 			if(m_outputPoints.Count != rhs.m_outputPoints.Count) {
-				Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Output Count");
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Output Count");
 				return false;
 			}
 
 			foreach(var pin in m_inputPoints) {
 				if(rhs.m_inputPoints.Find(x => pin.Id == x.Id) == null) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Input point not found");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Input point not found");
 					return false;
 				}
 			}
 
 			foreach(var pout in m_outputPoints) {
 				if(rhs.m_outputPoints.Find(x => pout.Id == x.Id) == null) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Output point not found");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Output point not found");
 					return false;
 				}
 			}
@@ -749,18 +753,18 @@ namespace AssetBundleGraph {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				if(m_scriptClassName != rhs.m_scriptClassName) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Script classname different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script classname different");
 					return false;
 				}
 				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
 					return false;
 				}
 				break;
 
 			case NodeKind.LOADER_GUI:
 				if(m_loaderLoadPath != rhs.m_loaderLoadPath) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Loader load path different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Loader load path different");
 					return false;
 				}
 				break;
@@ -768,7 +772,7 @@ namespace AssetBundleGraph {
 			case NodeKind.FILTER_GUI:
 				foreach(var f in m_filter) {
 					if(null == rhs.m_filter.Find(x => x.FilterKeytype == f.FilterKeytype && x.FilterKeyword == f.FilterKeyword)) {
-						Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Filter entry not found");
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Filter entry not found");
 						return false;
 					}
 				}
@@ -776,23 +780,23 @@ namespace AssetBundleGraph {
 
 			case NodeKind.GROUPING_GUI:
 				if(m_groupingKeyword != rhs.m_groupingKeyword) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Grouping keyword different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Grouping keyword different");
 					return false;
 				}
 				break;
 
 			case NodeKind.BUNDLECONFIG_GUI:
 				if(m_bundleConfigBundleNameTemplate != rhs.m_bundleConfigBundleNameTemplate) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "BundleNameTemplate different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "BundleNameTemplate different");
 					return false;
 				}
 				if(m_bundleConfigUseGroupAsVariants != rhs.m_bundleConfigUseGroupAsVariants) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "UseGroupAsVariants different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "UseGroupAsVariants different");
 					return false;
 				}
 				foreach(var v in m_variants) {
 					if(null == rhs.m_variants.Find(x => x.Name == v.Name && x.ConnectionPoint.Id == v.ConnectionPoint.Id)) {
-						Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "Variants not found");
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Variants not found");
 						return false;
 					}
 				}
@@ -800,18 +804,18 @@ namespace AssetBundleGraph {
 
 			case NodeKind.BUNDLEBUILDER_GUI:
 				if(m_bundleBuilderEnabledBundleOptions != rhs.m_bundleBuilderEnabledBundleOptions) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "EnabledBundleOptions different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "EnabledBundleOptions different");
 					return false;
 				}
 				break;
 
 			case NodeKind.EXPORTER_GUI:
 				if(m_exporterExportPath != rhs.m_exporterExportPath) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "ExporterPath different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ExporterPath different");
 					return false;
 				}
 				if(m_exporterExportOption != rhs.m_exporterExportOption) {
-					Debug.LogFormat("{0} and {1} was different: {2}", Name, rhs.Name, "ExporterOption different");
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ExporterOption different");
 					return false;
 				}
 				break;
@@ -824,7 +828,7 @@ namespace AssetBundleGraph {
 				throw new ArgumentOutOfRangeException ();
 			}
 
-			return !m_nodeNeedsRevisit;
+			return true;
 		}
 
 

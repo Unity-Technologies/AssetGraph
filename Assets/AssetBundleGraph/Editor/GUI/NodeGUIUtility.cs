@@ -272,7 +272,7 @@ namespace AssetBundleGraph {
 						}
 
 					} catch(Exception e) {
-						Debug.LogError(e.ToString());
+						LogUtility.Logger.LogError(LogUtility.kTag, e.ToString());
 					}
 				}
 			}

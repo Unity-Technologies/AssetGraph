@@ -686,7 +686,7 @@ namespace AssetBundleGraph {
 				DoInspectorExporterGUI(node);
 				break;
 			default: 
-				Debug.LogError(node.Name + " is defined as unknown kind of node. value:" + node.Kind);
+				LogUtility.Logger.LogError(LogUtility.kTag, node.Name + " is defined as unknown kind of node. value:" + node.Kind);
 				break;
 			}
 

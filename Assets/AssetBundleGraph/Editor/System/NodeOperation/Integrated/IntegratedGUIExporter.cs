@@ -113,7 +113,7 @@ namespace AssetBundleGraph {
 							File.Copy(source.importFrom, destination);
 						} catch(Exception e) {
 							failedExports.Add(source.importFrom);
-							Debug.LogError(node.Name + ": Error occured: " + e.Message);
+							LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Error occured: " + e.Message);
 						}
 					}
 
@@ -124,7 +124,7 @@ namespace AssetBundleGraph {
 			}
 
 			if (failedExports.Any()) {
-				Debug.LogError(node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
+				LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
 			Output(outputDict);

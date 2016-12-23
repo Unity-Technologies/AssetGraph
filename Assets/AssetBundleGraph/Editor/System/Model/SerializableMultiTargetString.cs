@@ -47,7 +47,7 @@ namespace AssetBundleGraph {
 					string val = json[buildTargetName] as string;
 					m_values.Add(new Entry(g, val));
 				} catch(Exception e) {
-					Debug.LogWarning("Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
+					LogUtility.Logger.LogWarning(LogUtility.kTag, "Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
 				}
 			}
 		}

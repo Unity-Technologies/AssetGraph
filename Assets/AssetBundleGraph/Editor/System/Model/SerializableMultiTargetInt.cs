@@ -47,7 +47,7 @@ namespace AssetBundleGraph {
 					int val = Convert.ToInt32(json[buildTargetName]);
 					m_values.Add(new Entry(g, val));
 				} catch(Exception e) {
-					Debug.LogWarning("Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e);
+					LogUtility.Logger.Log(LogType.Warning, "Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e);
 				}
 			}
 		}

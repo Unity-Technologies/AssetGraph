@@ -105,7 +105,7 @@ namespace AssetBundleGraph {
 			// check by asset importer type.
 			var importer = AssetImporter.GetAtPath(assetPath);
 			if (importer == null) {
-				Debug.LogWarning("Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
+				LogUtility.Logger.LogWarning(LogUtility.kTag, "Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
 				return typeof(object);
 			}
 
@@ -131,7 +131,7 @@ namespace AssetBundleGraph {
 			}
 			
 			// unhandled.
-			Debug.LogWarning("Unknown file type found:" + extension + "\n. AssetReference:" + assetPath + "\n Assume 'object'.");
+			LogUtility.Logger.LogWarning(LogUtility.kTag, "Unknown file type found:" + extension + "\n. AssetReference:" + assetPath + "\n Assume 'object'.");
 			return typeof(object);
 		}			
 

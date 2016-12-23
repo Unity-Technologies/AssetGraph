@@ -8,8 +8,7 @@ using System.Collections.Generic;
 namespace AssetBundleGraph {
 	[Serializable] 
 	public class ConnectionGUI {
-		[SerializeField] private string label;
-		[SerializeField] private string id;
+		[SerializeField] private ConnectionData data;
 
 		[SerializeField] private ConnectionPointData outputPoint;
 		[SerializeField] private ConnectionPointData inputPoint;
@@ -19,16 +18,16 @@ namespace AssetBundleGraph {
 
 		public string Label {
 			get {
-				return label;
+				return data.Label;
 			}
 			set {
-				label = value;
+				data.Label = value;
 			}
 		}
 
 		public string Id {
 			get {
-				return id;
+				return data.Id;
 			}
 		}
 
@@ -56,12 +55,17 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public ConnectionData Data {
+			get {
+				return data;
+			}
+		}
+
 		private Rect buttonRect;
 
-		public static ConnectionGUI LoadConnection (string label, string id, ConnectionPointData output, ConnectionPointData input) {
+		public static ConnectionGUI LoadConnection (ConnectionData data, ConnectionPointData output, ConnectionPointData input) {
 			return new ConnectionGUI(
-				label,
-				id,
+				data,
 				output,
 				input
 			);
@@ -69,14 +73,13 @@ namespace AssetBundleGraph {
 
 		public static ConnectionGUI CreateConnection (string label, ConnectionPointData output, ConnectionPointData input) {
 			return new ConnectionGUI(
-				label,
-				Guid.NewGuid().ToString(),
+				new ConnectionData(label, output, input),
 				output,
 				input
 			);
 		}
 
-		private ConnectionGUI (string label, string id, ConnectionPointData output, ConnectionPointData input) {
+		private ConnectionGUI (ConnectionData data, ConnectionPointData output, ConnectionPointData input) {
 
 			UnityEngine.Assertions.Assert.IsTrue(output.IsOutput, "Given Output point is not output.");
 			UnityEngine.Assertions.Assert.IsTrue(input.IsInput,   "Given Input point is not input.");
@@ -84,9 +87,7 @@ namespace AssetBundleGraph {
 			conInsp = ScriptableObject.CreateInstance<ConnectionGUIInspectorHelper>();
 			conInsp.hideFlags = HideFlags.DontSave;
 
-			this.label = label;
-			this.id = id;
-
+			this.data = data;
 			this.outputPoint = output;
 			this.inputPoint = input;
 
@@ -141,7 +142,7 @@ namespace AssetBundleGraph {
 
 			// draw connection label if connection's label is not normal.
 			if (NodeGUI.scaleFactor == NodeGUI.SCALE_MAX) {
-				switch (label){
+				switch (Label){
 					case AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL: {
 						// show nothing
 						break;
@@ -154,8 +155,8 @@ namespace AssetBundleGraph {
 					}
 
 					default: {
-						var labelPointV3 = new Vector3(centerPointV3.x - ((label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, label, "WhiteMiniLabel");
+						var labelPointV3 = new Vector3(centerPointV3.x - ((Label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, Label, "WhiteMiniLabel");
 						break;
 					}
 				}
