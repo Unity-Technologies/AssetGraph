@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEngine;
 
 using System;
 using System.Linq;
@@ -10,12 +11,12 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Setup");
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
 				node.BundleConfigUseGroupAsVariants,
@@ -45,21 +46,21 @@ namespace AssetBundleGraph {
 			/*
 			 * Check if incoming asset has valid import path
 			 */ 
-			var invalids = new List<Asset>();
+			var invalids = new List<AssetReference>();
 			foreach (var groupKey in inputGroupAssets.Keys) {
 				inputGroupAssets[groupKey].ForEach( a => { if (string.IsNullOrEmpty(a.importFrom)) invalids.Add(a); } );
 			}
 			if (invalids.Any()) {
 				throw new NodeException(node.Name + 
 					": Invalid files are found. Following files need to be imported to put into asset bundle: " + 
-					string.Join(", ", invalids.Select(a =>a.absoluteAssetPath).ToArray()), node.Id );
+					string.Join(", ", invalids.Select(a =>a.absolutePath).ToArray()), node.Id );
 			}
 
-			var output = new Dictionary<string, List<Asset>>();
+			var output = new Dictionary<string, List<AssetReference>>();
 
 			string variantName = null;
 			if(!node.BundleConfigUseGroupAsVariants) {
-				var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
+				var currentVariant = node.Variants.Find( v => v.ConnectionPoint.Id == connectionFromInput.ToNodeConnectionPointId );
 				variantName = (currentVariant == null) ? null : currentVariant.Name;
 			}
 
@@ -78,22 +79,24 @@ namespace AssetBundleGraph {
 				}
 			}
 			
-			Output(connectionToOutput, output, null);
+			Output(output);
+			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
-			var output = new Dictionary<string, List<Asset>>();
+			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Run");
+
+			var output = new Dictionary<string, List<AssetReference>>();
 
 			string variantName = null;
 			if(!node.BundleConfigUseGroupAsVariants) {
-				var currentVariant = node.Variants.Find( v => v.ConnectionPoint == inputPoint );
+				var currentVariant = node.Variants.Find( v => v.ConnectionPoint.Id == connectionFromInput.ToNodeConnectionPointId );
 				variantName = (currentVariant == null) ? null : currentVariant.Name;
 			}
 
@@ -112,16 +115,18 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			Output(connectionToOutput, output, null);
+			Output(output);
+			Profiler.EndSample();
 		}
 
-		public List<Asset> ConfigureAssetBundleSettings (string variantName, List<Asset> assets) {		
+		public List<AssetReference> ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
 
-			List<Asset> configuredAssets = new List<Asset>();
+			List<AssetReference> configuredAssets = new List<AssetReference>();
 
 			foreach(var a in assets) {
 				var lowerName = (string.IsNullOrEmpty(variantName))? variantName : variantName.ToLower();
-				configuredAssets.Add( Asset.DuplicateAssetWithVariant(a, lowerName) );
+				a.variantName = lowerName;
+				configuredAssets.Add( a );
 			}
 
 			return configuredAssets;

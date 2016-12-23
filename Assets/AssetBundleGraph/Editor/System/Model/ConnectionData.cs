@@ -29,8 +29,11 @@ namespace AssetBundleGraph {
 		[SerializeField] private string m_fromNodeConnectionPointId;
 		[SerializeField] private string m_toNodeId;
 		[SerializeField] private string m_toNodeConnectionPoiontId;
+		[SerializeField] private string m_label;
 
-		private string m_label;
+		private ConnectionData() {
+			m_id = Guid.NewGuid().ToString();
+		}
 
 		public ConnectionData(Dictionary<string, object> jsonData) {
 
@@ -42,13 +45,13 @@ namespace AssetBundleGraph {
 			m_toNodeConnectionPoiontId = jsonData[CONNECTION_TONODE_CONPOINT_ID] as string;
 		}
 
-		public ConnectionData(ConnectionGUI c) {
-			m_id = c.Id;
-			m_label = c.Label;
-			m_fromNodeId = c.OutputNodeId;
-			m_fromNodeConnectionPointId = c.OutputPoint.Id;
-			m_toNodeId = c.InputNodeId;
-			m_toNodeConnectionPoiontId = c.InputPoint.Id;
+		public ConnectionData(string label, ConnectionPointData output, ConnectionPointData input) {
+			m_id = Guid.NewGuid().ToString();
+			m_label = label;
+			m_fromNodeId = output.NodeId;
+			m_fromNodeConnectionPointId = output.Id;
+			m_toNodeId = input.NodeId;
+			m_toNodeConnectionPoiontId = input.Id;
 		}
 
 		public string Id {
@@ -60,6 +63,10 @@ namespace AssetBundleGraph {
 		public string Label {
 			get {
 				return m_label;
+			}
+
+			set {
+				m_label = value;
 			}
 		}
 
@@ -85,6 +92,20 @@ namespace AssetBundleGraph {
 			get {
 				return m_toNodeConnectionPoiontId;
 			}
+		}
+
+		public ConnectionData Duplicate(bool keepGuid = false) {
+			ConnectionData newData = new ConnectionData();
+			if(keepGuid) {
+				newData.m_id = m_id;
+			}
+			newData.m_label = m_label;
+			newData.m_fromNodeId = m_fromNodeId;
+			newData.m_fromNodeConnectionPointId = m_fromNodeConnectionPointId;
+			newData.m_toNodeId = m_toNodeId;
+			newData.m_toNodeConnectionPoiontId = m_toNodeConnectionPoiontId;
+
+			return newData;
 		}
 
 		public Dictionary<string, object> ToJsonDictionary() {

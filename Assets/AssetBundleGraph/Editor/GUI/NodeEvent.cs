@@ -10,7 +10,9 @@ namespace AssetBundleGraph {
 			EVENT_NODE_CONNECT_STARTED,
 			EVENT_NODE_CONNECTION_OVERED,
 			EVENT_NODE_CONNECTION_RAISED,
-			
+
+			EVENT_NODE_UPDATED,
+
 			EVENT_NODE_TOUCHED,
 
 			EVENT_CONNECTIONPOINT_DELETED,
@@ -33,6 +35,11 @@ namespace AssetBundleGraph {
 			this.eventSourceNode = node;
 			this.point = point;
 			this.globalMousePosition = new Vector2(localMousePos.x + node.GetX(), localMousePos.y + node.GetY());
+		}
+
+		public NodeEvent (EventType type, NodeGUI node) {
+			this.eventType = type;
+			this.eventSourceNode = node;
 		}
 
 		public NodeEvent (EventType type, string message) {

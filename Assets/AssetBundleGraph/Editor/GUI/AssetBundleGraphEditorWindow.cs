@@ -88,9 +88,8 @@ namespace AssetBundleGraph {
 		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
 		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
 
-		[SerializeField] private BuildTarget selectedTarget;
-
 		private bool showErrors;
+		private bool showVerboseLog;
 		private NodeEvent currentEventSource;
 		private Texture2D _selectionTex;
 		private GUIContent _reloadButtonTexture;
@@ -104,10 +103,10 @@ namespace AssetBundleGraph {
 		private AssetBundleGraphSelection selection;
 		private ScalePoint scalePoint;
 		private GraphBackground background = new GraphBackground();
+		private AssetBundleGraphController controller = new AssetBundleGraphController();
 
-		private static Dictionary<ConnectionData,Dictionary<string, List<Asset>>> s_assetStreamMap = 
-			new Dictionary<ConnectionData, Dictionary<string, List<Asset>>>();
-		private static List<NodeException> s_nodeExceptionPool = new List<NodeException>();
+		private static AssetBundleGraphController s_currentController;
+		private static BuildTarget s_selectedTarget;
 
 		private Texture2D selectionTex {
 			get{
@@ -150,7 +149,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 			default: {
-					Debug.LogError("Unknown script type found:" + scriptType);
+					LogUtility.Logger.LogError(LogUtility.kTag, "Unknown script type found:" + scriptType);
 					break;
 				}
 			}
@@ -189,14 +188,14 @@ namespace AssetBundleGraph {
 		public static bool BuildFromMenuValidator () {
 			// Calling GetWindow<>() will force open window
 			// That's not what we want to do in validator function,
-			// so just reference s_nodeExceptionPool directly
-			return (s_nodeExceptionPool != null && s_nodeExceptionPool.Count == 0);
+			// so just reference s_currentController directly
+			return (s_currentController != null && !s_currentController.IsAnyIssueFound);
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.Run(window.ActiveBuildTarget);
+			window.Run(ActiveBuildTarget);
 		}
 
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
@@ -211,9 +210,9 @@ namespace AssetBundleGraph {
 			AssetDatabase.Refresh();
 		}
 
-		public BuildTarget ActiveBuildTarget {
+		public static BuildTarget ActiveBuildTarget {
 			get {
-				return selectedTarget;
+				return s_selectedTarget;
 			}
 		}
 
@@ -228,6 +227,10 @@ namespace AssetBundleGraph {
 			modifyMode = ModifyMode.NONE;
 		}
 
+		public void OnProjectChange() {
+			Repaint();
+		}
+
 		public void SelectNode(string nodeId) {
 			var selectObject = nodes.Find(node => node.Id == nodeId);
 			// set deactive for all nodes.
@@ -240,11 +243,16 @@ namespace AssetBundleGraph {
 		}
 
 		private void Init() {
+
+			s_currentController = this.controller;
+			s_selectedTarget    = EditorUserBuildSettings.activeBuildTarget;
+
+			LogUtility.Logger.filterLogType = LogType.Warning;
+
 			this.titleContent = new GUIContent("AssetBundle");
-			this.selectedTarget = EditorUserBuildSettings.activeBuildTarget;
 
 			Undo.undoRedoPerformed += () => {
-				SaveGraphWithReload();
+				SaveGraphAndRefresh();
 				Repaint();
 			};
 
@@ -260,24 +268,10 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static void AddNodeException (NodeException nodeEx) {
-			s_nodeExceptionPool.Add(nodeEx);
-		}
-
-		private static void ResetNodeExceptionPool () {
-			s_nodeExceptionPool.Clear();
-		}
-
-		private bool isAnyIssueFound {
-			get {
-				return s_nodeExceptionPool.Count > 0;
-			}
-		}
-
 		private void ShowErrorOnNodes () {
 			foreach (var node in nodes) {
 				node.ResetErrorStatus();
-				var errorsForeachNode = s_nodeExceptionPool.Where(e => e.Id == node.Id).Select(e => e.reason).ToList();
+				var errorsForeachNode = controller.Issues.Where(e => e.Id == node.Id).Select(e => e.reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}
@@ -307,16 +301,14 @@ namespace AssetBundleGraph {
 		*/
 		public void InitializeGraph () {
 
-			SaveData saveData = SaveData.LoadFromDisk();
-
 			/*
 				do nothing if json does not modified after first load.
 			*/
-			if (saveData.LastModified == lastLoaded) {
+			if (SaveData.Data.LastModified == lastLoaded) {
 				return;
 			}
 				
-			lastLoaded = saveData.LastModified;
+			lastLoaded = SaveData.Data.LastModified;
 
 			minSize = new Vector2(600f, 300f);
 			
@@ -327,7 +319,7 @@ namespace AssetBundleGraph {
 			/*
 				load graph data from deserialized data.
 			*/
-			ConstructGraphFromSaveData(saveData, out this.nodes, out this.connections);
+			ConstructGraphFromSaveData(out this.nodes, out this.connections);
 		}
 
 		/**
@@ -347,7 +339,8 @@ namespace AssetBundleGraph {
 		/**
 		 * Creates Graph structure with NodeGUI and ConnectionGUI from SaveData
 		 */ 
-		private static void ConstructGraphFromSaveData (SaveData saveData, out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
+		private static void ConstructGraphFromSaveData (out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
+			var saveData = SaveData.Data;
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
@@ -371,7 +364,7 @@ namespace AssetBundleGraph {
 				var startPoint = startNode.Data.FindConnectionPoint (c.FromNodeConnectionPointId);
 				var endPoint = endNode.Data.FindConnectionPoint (c.ToNodeConnectionPointId);
 
-				currentConnections.Add(ConnectionGUI.LoadConnection(c.Label, c.Id, startPoint, endPoint));
+				currentConnections.Add(ConnectionGUI.LoadConnection(c, startPoint, endPoint));
 			}
 
 			nodes = currentNodes;
@@ -379,17 +372,16 @@ namespace AssetBundleGraph {
 		}
 
 		private void SaveGraph () {
-			SaveData newSaveData = new SaveData(nodes, connections);
-			newSaveData.Save();
+			SaveData.Data.ApplyGraph(nodes, connections);
 		}
 
-		private void SaveGraphWithReload (bool silent = false) {
+		private void SaveGraphAndRefresh (bool silent = false) {
 			SaveGraph();
 			try {
 				Setup(ActiveBuildTarget);
 			} catch (Exception e) {
 				if(!silent){
-					Debug.LogError("Error occured during reload:" + e);
+					LogUtility.Logger.LogError(LogUtility.kTag, "Error occured during reload:" + e);
 				}
 			}
 		}
@@ -400,38 +392,44 @@ namespace AssetBundleGraph {
 			EditorUtility.ClearProgressBar();
 
 			try {
-				ResetNodeExceptionPool();
-
-				if (!SaveData.IsSaveDataAvailableAtDisk()) {
-					SaveData.RecreateDataOnDisk();
-					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
-					return;
-				}
-
 				foreach (var node in nodes) {
 					node.HideProgress();
 				}
 
-				// reload data from file.
-				SaveData saveData = SaveData.LoadFromDisk();
+				SaveGraph();
 
 				// update static all node names.
 				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-				Action<NodeException> errorHandler = (NodeException e) => {
-					AssetBundleGraphEditorWindow.AddNodeException(e);
-				};
+				controller.Perform(target, false, true, null);
 
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
-
-				RefreshInspector(s_assetStreamMap);
+				RefreshInspector(controller.StreamManager);
 				ShowErrorOnNodes();
-
-				AssetBundleGraphController.Postprocess(saveData, s_assetStreamMap, false);
 			} catch(Exception e) {
-				Debug.LogError(e);
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
 			} finally {
 				EditorUtility.ClearProgressBar();
+			}
+		}
+
+		private void Validate (BuildTarget target, NodeGUI node) {
+
+			EditorUtility.ClearProgressBar();
+
+
+			try {
+				node.ResetErrorStatus();
+				node.HideProgress();
+
+				controller.Validate(node, target);
+
+				RefreshInspector(controller.StreamManager);
+				ShowErrorOnNodes();
+			} catch(Exception e) {
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
+			} finally {
+				EditorUtility.ClearProgressBar();
+				Repaint();
 			}
 		}
 
@@ -441,21 +439,12 @@ namespace AssetBundleGraph {
 		private void Run (BuildTarget target) {
 
 			try {
-				ResetNodeExceptionPool();
-
-				if (!SaveData.IsSaveDataAvailableAtDisk()) {
-					SaveData.RecreateDataOnDisk();
-					Debug.Log("AssetBundleGraph save data not found. Creating from scratch...");
-					return;
-				}
-
-				// load data from file.
-				SaveData saveData = SaveData.LoadFromDisk();
+				SaveData.Data.Save();
 
 				List<NodeGUI> currentNodes = null;
 				List<ConnectionGUI> currentConnections = null;
 
-				ConstructGraphFromSaveData(saveData, out currentNodes, out currentConnections);
+				ConstructGraphFromSaveData(out currentNodes, out currentConnections);
 
 				var currentCount = 0.00f;
 				var totalCount = currentNodes.Count * 1f;
@@ -471,30 +460,24 @@ namespace AssetBundleGraph {
 					EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
 				};
 
-				Action<NodeException> errorHandler = (NodeException e) => {
-					AssetBundleGraphEditorWindow.AddNodeException(e);
-				};
-
 				// perform setup. Fails if any exception raises.
-				s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
+				controller.Perform(target, false, false,  null);				 
 
 				// if there is not error reported, then run
-				if(s_nodeExceptionPool.Count == 0) {
-					// run datas.
-					s_assetStreamMap = AssetBundleGraphController.Perform(saveData, target, true, errorHandler, updateHandler);
+				if(!controller.IsAnyIssueFound) {
+					controller.Perform(target, true, true, updateHandler);
 				}
-				RefreshInspector(s_assetStreamMap);
+				RefreshInspector(controller.StreamManager);
 				AssetDatabase.Refresh();
 				ShowErrorOnNodes();
-				AssetBundleGraphController.Postprocess(saveData, s_assetStreamMap, true);
 			} catch(Exception e) {
-				Debug.LogError(e);
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
 			} finally {
 				EditorUtility.ClearProgressBar();
 			}
 		}
 
-		private static void RefreshInspector (Dictionary<ConnectionData,Dictionary<string, List<Asset>>> currentResult) {
+		private static void RefreshInspector (AssetReferenceStreamManager streamManager) {
 			if (Selection.activeObject == null) {
 				return;
 			}
@@ -508,11 +491,7 @@ namespace AssetBundleGraph {
 						return; 
 					}
 
-					ConnectionData c = currentResult.Keys.ToList().Find(v => v.Id == con.Id);
-
-					if (c != null) {
-						((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateAssetGroups(currentResult[c]);
-					}
+					((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateAssetGroups(streamManager.FindAssetGroup(con.Id));
 					break;
 				}
 				default: {
@@ -522,20 +501,17 @@ namespace AssetBundleGraph {
 			}
 		}
 			
-		public static Dictionary<string, List<Asset>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
-			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
-			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
-
-			if(s_assetStreamMap == null) {
-				return null;
+		public static Dictionary<string, List<AssetReference>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
+			if(s_currentController != null) {
+				return s_currentController.StreamManager.GetIncomingAssetGroups(inputPoint);
 			}
-
-			var keyEnum = s_assetStreamMap.Keys.Where(c => c.ToNodeConnectionPointId == inputPoint.Id);
-			if (keyEnum.Any()) { 
-				return s_assetStreamMap[keyEnum.First()];
-			}
-
 			return null;
+		}
+
+		public static void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+			if(s_currentController != null) {
+				s_currentController.OnAssetsReimported(s_selectedTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+			}
 		}
 
 		private void DrawGUIToolBar() {
@@ -545,9 +521,17 @@ namespace AssetBundleGraph {
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 
+				GUILayout.Space(4);
+
+				bool b = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+				if(b != showVerboseLog) {
+					showVerboseLog = b;
+					LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
+				}
+
 				GUILayout.FlexibleSpace();
 
-				if(isAnyIssueFound) {
+				if(controller.IsAnyIssueFound) {
 					GUIStyle errorStyle = new GUIStyle("ErrorLabel");
 					errorStyle.alignment = TextAnchor.MiddleCenter;
 					GUILayout.Label("All errors needs to be fixed before building", errorStyle);
@@ -566,17 +550,17 @@ namespace AssetBundleGraph {
 
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
-				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == selectedTarget));
+				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == s_selectedTarget));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
 					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
-					selectedTarget = supportedTargets[newIndex];
+					s_selectedTarget = supportedTargets[newIndex];
 					Setup(ActiveBuildTarget);
 				}
 
-				using(new EditorGUI.DisabledScope(isAnyIssueFound)) {
+				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
 					if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
 						SaveGraph();
 						Run(ActiveBuildTarget);
@@ -590,7 +574,7 @@ namespace AssetBundleGraph {
 			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
 			{
 				using (new EditorGUILayout.VerticalScope()) {
-					foreach(NodeException e in s_nodeExceptionPool) {
+					foreach(NodeException e in controller.Issues) {
 						EditorGUILayout.HelpBox(e.reason, MessageType.Error);
 						if( GUILayout.Button("Go to Node") ) {
 							SelectNode(e.Id);
@@ -624,13 +608,7 @@ namespace AssetBundleGraph {
 
 				// draw connections.
 				foreach (var con in connections) {
-					var keyEnum = s_assetStreamMap.Keys.Where(c => c.Id == con.Id);
-					if (keyEnum.Any()) { 
-						var assets = s_assetStreamMap[keyEnum.First()];
-						con.DrawConnection(nodes, assets);
-					} else {
-						con.DrawConnection(nodes, new Dictionary<string, List<Asset>>());
-					}
+					con.DrawConnection(nodes, controller.StreamManager.FindAssetGroup(con.Id));
 				}
 					
 				// draw connection output point marks.
@@ -816,6 +794,16 @@ namespace AssetBundleGraph {
 			Init();
 		}
 
+//		public void OnDestroy() {
+//			LogUtility.Logger.Log("OnDestroy");
+//			SaveData.Data.Save();
+//		}
+
+		public void OnDisable() {
+			LogUtility.Logger.Log("OnDisable");
+			SaveData.Data.Save();
+		}
+
 		public void OnGUI () {
 			DrawGUIToolBar();
 
@@ -879,7 +867,7 @@ namespace AssetBundleGraph {
 					}
 
 					if (shouldSave) {
-						SaveGraphWithReload();
+						SaveGraphAndRefresh();
 					}
 					break;
 				}
@@ -895,7 +883,7 @@ namespace AssetBundleGraph {
 							false, 
 							() => {
 								AddNodeFromGUI(kind, rightClickPos.x, rightClickPos.y);
-								SaveGraphWithReload();
+								SaveGraphAndRefresh();
 								Repaint();
 							}
 						);
@@ -1022,7 +1010,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 
 							activeObject = RenewActiveObject(new List<string>());
 							UpdateActivationOfObjects(activeObject);
@@ -1061,7 +1049,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 							InitializeGraph();
 
 							activeObject = RenewActiveObject(new List<string>());
@@ -1119,7 +1107,7 @@ namespace AssetBundleGraph {
 								DuplicateNode(newNode);
 							}
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 							InitializeGraph();
 
 							Event.current.Use();
@@ -1189,7 +1177,7 @@ namespace AssetBundleGraph {
 			}
 
 			if (newNode == null) {
-				Debug.LogError("Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
+				LogUtility.Logger.LogError(LogUtility.kTag, "Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
 					") is not supported to create from code.");
 				return;
 			}
@@ -1220,287 +1208,290 @@ namespace AssetBundleGraph {
 		*/
 		private void HandleNodeEvent (NodeEvent e) {
 			switch (modifyMode) {
-				case ModifyMode.CONNECTING: {
-					switch (e.eventType) {
-						/*
-							handling
-						*/
-						case NodeEvent.EventType.EVENT_NODE_MOVING: {
-							// do nothing.
-							break;
-						}
-
-						/*
-							connection drop detected from toward node.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED: {
-							// finish connecting mode.
-							modifyMode = ModifyMode.NONE;
-							
-							if (currentEventSource == null) {
-								break;
-							}
-
-							var sourceNode = currentEventSource.eventSourceNode;
-							var sourceConnectionPoint = currentEventSource.point;
-							
-							var targetNode = e.eventSourceNode;
-							var targetConnectionPoint = e.point;
-
-							if (sourceNode.Id == targetNode.Id) {
-								break;
-							}
-
-							if (!IsConnectablePointFromTo(sourceConnectionPoint, targetConnectionPoint)) {
-								break;
-							}
-
-							var startNode = sourceNode;
-							var startConnectionPoint = sourceConnectionPoint;
-							var endNode = targetNode;
-							var endConnectionPoint = targetConnectionPoint;
-
-							// reverse if connected from input to output.
-							if (sourceConnectionPoint.IsInput) {
-								startNode = targetNode;
-								startConnectionPoint = targetConnectionPoint;
-								endNode = sourceNode;
-								endConnectionPoint = sourceConnectionPoint;
-							}
-
-							var outputPoint = startConnectionPoint;
-							var inputPoint = endConnectionPoint;							
-							var label = startConnectionPoint.Label;
-
-							// if two nodes are not supposed to connect, dismiss
-							if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
-								break;
-							}
-
-							AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-							SaveGraphWithReload();
-							break;
-						}
-
-						/*
-							connection drop detected by started node.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
-							// finish connecting mode.
-							modifyMode = ModifyMode.NONE;
-							
-							/*
-								connect when dropped target is connectable from start connectionPoint.
-							*/
-							var node = FindNodeByPosition(e.globalMousePosition);
-							if (node == null) {
-								break;
-							}
-						
-							// ignore if target node is source itself.
-							if (node == e.eventSourceNode) {
-								break;
-							}
-
-							var pointAtPosition = node.FindConnectionPointByPosition(e.globalMousePosition);
-							if (pointAtPosition == null) {
-								break;
-							}
-
-							var sourcePoint = currentEventSource.point;
-							
-							// limit by connectable or not.
-							if(!IsConnectablePointFromTo(sourcePoint, pointAtPosition)) {
-								break;
-							}
-
-							var isInput = currentEventSource.point.IsInput;
-							var startNode = (isInput)? node : e.eventSourceNode;
-							var endNode   = (isInput)? e.eventSourceNode: node;
-							var startConnectionPoint = (isInput)? pointAtPosition : currentEventSource.point;
-							var endConnectionPoint   = (isInput)? currentEventSource.point: pointAtPosition;
-							var outputPoint = startConnectionPoint;
-							var inputPoint = endConnectionPoint;							
-							var label = startConnectionPoint.Label;
-
-							// if two nodes are not supposed to connect, dismiss
-							if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
-								break;
-							}
-
-							AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-							SaveGraphWithReload();
-							break;
-						}
-
-						default: {
-							modifyMode = ModifyMode.NONE;
-							break;
-						}
+			case ModifyMode.CONNECTING: {
+				switch (e.eventType) {
+					/*
+						handling
+					*/
+					case NodeEvent.EventType.EVENT_NODE_MOVING: {
+						// do nothing.
+						break;
 					}
-					break;
+
+					/*
+						connection drop detected from toward node.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED: {
+						// finish connecting mode.
+						modifyMode = ModifyMode.NONE;
+						
+						if (currentEventSource == null) {
+							break;
+						}
+
+						var sourceNode = currentEventSource.eventSourceNode;
+						var sourceConnectionPoint = currentEventSource.point;
+						
+						var targetNode = e.eventSourceNode;
+						var targetConnectionPoint = e.point;
+
+						if (sourceNode.Id == targetNode.Id) {
+							break;
+						}
+
+						if (!IsConnectablePointFromTo(sourceConnectionPoint, targetConnectionPoint)) {
+							break;
+						}
+
+						var startNode = sourceNode;
+						var startConnectionPoint = sourceConnectionPoint;
+						var endNode = targetNode;
+						var endConnectionPoint = targetConnectionPoint;
+
+						// reverse if connected from input to output.
+						if (sourceConnectionPoint.IsInput) {
+							startNode = targetNode;
+							startConnectionPoint = targetConnectionPoint;
+							endNode = sourceNode;
+							endConnectionPoint = sourceConnectionPoint;
+						}
+
+						var outputPoint = startConnectionPoint;
+						var inputPoint = endConnectionPoint;							
+						var label = startConnectionPoint.Label;
+
+						// if two nodes are not supposed to connect, dismiss
+						if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+							break;
+						}
+
+						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
+						SaveGraphAndRefresh();
+						break;
+					}
+
+					/*
+						connection drop detected by started node.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
+						// finish connecting mode.
+						modifyMode = ModifyMode.NONE;
+						
+						/*
+							connect when dropped target is connectable from start connectionPoint.
+						*/
+						var node = FindNodeByPosition(e.globalMousePosition);
+						if (node == null) {
+							break;
+						}
+					
+						// ignore if target node is source itself.
+						if (node == e.eventSourceNode) {
+							break;
+						}
+
+						var pointAtPosition = node.FindConnectionPointByPosition(e.globalMousePosition);
+						if (pointAtPosition == null) {
+							break;
+						}
+
+						var sourcePoint = currentEventSource.point;
+						
+						// limit by connectable or not.
+						if(!IsConnectablePointFromTo(sourcePoint, pointAtPosition)) {
+							break;
+						}
+
+						var isInput = currentEventSource.point.IsInput;
+						var startNode = (isInput)? node : e.eventSourceNode;
+						var endNode   = (isInput)? e.eventSourceNode: node;
+						var startConnectionPoint = (isInput)? pointAtPosition : currentEventSource.point;
+						var endConnectionPoint   = (isInput)? currentEventSource.point: pointAtPosition;
+						var outputPoint = startConnectionPoint;
+						var inputPoint = endConnectionPoint;							
+						var label = startConnectionPoint.Label;
+
+						// if two nodes are not supposed to connect, dismiss
+						if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+							break;
+						}
+
+						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
+						SaveGraphAndRefresh();
+						break;
+					}
+
+					default: {
+						modifyMode = ModifyMode.NONE;
+						break;
+					}
 				}
-				case ModifyMode.NONE: {
-					switch (e.eventType) {
-						/*
-							node move detected.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_MOVING: {
-							var tappedNode = e.eventSourceNode;
-							var tappedNodeId = tappedNode.Id;
+				break;
+			}
+			case ModifyMode.NONE: {
+				switch (e.eventType) {
+					/*
+						node move detected.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_MOVING: {
+						var tappedNode = e.eventSourceNode;
+						var tappedNodeId = tappedNode.Id;
+						
+						if (activeObject.idPosDict.ContainsKey(tappedNodeId)) {
+							// already active, do nothing for this node.
+							var distancePos = tappedNode.GetPos() - activeObject.idPosDict.ReadonlyDict()[tappedNodeId];
+
+							foreach (var node in nodes) {
+								if (node.Id == tappedNodeId) continue;
+								if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
+								var relativePos = activeObject.idPosDict.ReadonlyDict()[node.Id] + distancePos;
+								node.SetPos(relativePos);
+							}
+							break;
+						}
+
+						if (Event.current.shift) {
+							Undo.RecordObject(this, "Select Objects");
+
+							var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+
+							additiveIds.Add(tappedNodeId);
 							
-							if (activeObject.idPosDict.ContainsKey(tappedNodeId)) {
-								// already active, do nothing for this node.
-								var distancePos = tappedNode.GetPos() - activeObject.idPosDict.ReadonlyDict()[tappedNodeId];
+							activeObject = RenewActiveObject(additiveIds);
 
-								foreach (var node in nodes) {
-									if (node.Id == tappedNodeId) continue;
-									if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
-									var relativePos = activeObject.idPosDict.ReadonlyDict()[node.Id] + distancePos;
-									node.SetPos(relativePos);
-								}
-								break;
-							}
-
-							if (Event.current.shift) {
-								Undo.RecordObject(this, "Select Objects");
-
-								var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-
-								additiveIds.Add(tappedNodeId);
-								
-								activeObject = RenewActiveObject(additiveIds);
-
-								UpdateActivationOfObjects(activeObject);
-								UpdateSpacerRect();
-								break;
-							}
-
-							Undo.RecordObject(this, "Select " + tappedNode.Name);
-							activeObject = RenewActiveObject(new List<string>{tappedNodeId});
 							UpdateActivationOfObjects(activeObject);
+							UpdateSpacerRect();
 							break;
 						}
 
-						/*
-							start connection handling.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
-							modifyMode = ModifyMode.CONNECTING;
-							currentEventSource = e;
-							break;
-						}
+						Undo.RecordObject(this, "Select " + tappedNode.Name);
+						activeObject = RenewActiveObject(new List<string>{tappedNodeId});
+						UpdateActivationOfObjects(activeObject);
+						break;
+					}
 
-						case NodeEvent.EventType.EVENT_CLOSE_TAPPED: {
-							
-							Undo.RecordObject(this, "Delete Node");
-							
-							var deletingNodeId = e.eventSourceNode.Id;
-							DeleteNode(deletingNodeId);
+					/*
+						start connection handling.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
+						modifyMode = ModifyMode.CONNECTING;
+						currentEventSource = e;
+						break;
+					}
 
-							SaveGraphWithReload();
-							InitializeGraph();
-							break;
-						}
+					case NodeEvent.EventType.EVENT_CLOSE_TAPPED: {
+						
+						Undo.RecordObject(this, "Delete Node");
+						
+						var deletingNodeId = e.eventSourceNode.Id;
+						DeleteNode(deletingNodeId);
 
-						/*
-							releasse detected.
-								node move over.
-								node tapped.
-						*/
-						case NodeEvent.EventType.EVENT_NODE_TOUCHED: {
-							var movedNode = e.eventSourceNode;
-							var movedNodeId = movedNode.Id;
+						SaveGraphAndRefresh();
+						InitializeGraph();
+						break;
+					}
 
-							// already active, node(s) are just tapped or moved.
-							if (activeObject.idPosDict.ContainsKey(movedNodeId)) {
+					/*
+						releasse detected.
+							node move over.
+							node tapped.
+					*/
+					case NodeEvent.EventType.EVENT_NODE_TOUCHED: {
+						var movedNode = e.eventSourceNode;
+						var movedNodeId = movedNode.Id;
 
-								/*
-									active nodes(contains tap released node) are possibly moved.
-								*/
-								var movedIdPosDict = new Dictionary<string, Vector2>();
-								foreach (var node in nodes) {
-									if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
+						// already active, node(s) are just tapped or moved.
+						if (activeObject.idPosDict.ContainsKey(movedNodeId)) {
 
-									var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
-									if (node.GetPos() != startPos) {
-										// moved.
-										movedIdPosDict[node.Id] = node.GetPos();
-									}
+							/*
+								active nodes(contains tap released node) are possibly moved.
+							*/
+							var movedIdPosDict = new Dictionary<string, Vector2>();
+							foreach (var node in nodes) {
+								if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
+
+								var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
+								if (node.GetPos() != startPos) {
+									// moved.
+									movedIdPosDict[node.Id] = node.GetPos();
 								}
-
-								if (movedIdPosDict.Any()) {
-									
-									foreach (var node in nodes) {
-										if (activeObject.idPosDict.ReadonlyDict().Keys.Contains(node.Id)) {
-											var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
-											node.SetPos(startPos);
-										}
-									}
-
-									Undo.RecordObject(this, "Move " + movedNode.Name);
-
-									foreach (var node in nodes) {
-										if (movedIdPosDict.Keys.Contains(node.Id)) {
-											var endPos = movedIdPosDict[node.Id];
-											node.SetPos(endPos);
-										}
-									}
-
-									var activeObjectIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-									activeObject = RenewActiveObject(activeObjectIds);
-								} else {
-									// nothing moved, should cancel selecting this node.
-									var cancelledActivatedIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-									cancelledActivatedIds.Remove(movedNodeId);
-
-									Undo.RecordObject(this, "Select Objects");
-
-									activeObject = RenewActiveObject(cancelledActivatedIds);
-								}
-								
-								UpdateActivationOfObjects(activeObject);
-
-								UpdateSpacerRect();
-								SaveGraph();
-								break;
 							}
 
-							if (Event.current.shift) {
+							if (movedIdPosDict.Any()) {
+								
+								foreach (var node in nodes) {
+									if (activeObject.idPosDict.ReadonlyDict().Keys.Contains(node.Id)) {
+										var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
+										node.SetPos(startPos);
+									}
+								}
+
+								Undo.RecordObject(this, "Move " + movedNode.Name);
+
+								foreach (var node in nodes) {
+									if (movedIdPosDict.Keys.Contains(node.Id)) {
+										var endPos = movedIdPosDict[node.Id];
+										node.SetPos(endPos);
+									}
+								}
+
+								var activeObjectIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
+								activeObject = RenewActiveObject(activeObjectIds);
+							} else {
+								// nothing moved, should cancel selecting this node.
+								var cancelledActivatedIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+								cancelledActivatedIds.Remove(movedNodeId);
+
 								Undo.RecordObject(this, "Select Objects");
 
-								var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-
-								// already contained, cancel.
-								if (additiveIds.Contains(movedNodeId)) {
-									additiveIds.Remove(movedNodeId);
-								} else {
-									additiveIds.Add(movedNodeId);
-								}
-
-								activeObject = RenewActiveObject(additiveIds);
-								UpdateActivationOfObjects(activeObject);
-
-								UpdateSpacerRect();
-								SaveGraph();
-								break;
+								activeObject = RenewActiveObject(cancelledActivatedIds);
 							}
 							
-							Undo.RecordObject(this, "Select " + movedNode.Name);
-
-							activeObject = RenewActiveObject(new List<string>{movedNodeId});
 							UpdateActivationOfObjects(activeObject);
 
 							UpdateSpacerRect();
-							SaveGraph();
+							//SaveGraph();
 							break;
 						}
 
-						default: {
+						if (Event.current.shift) {
+							Undo.RecordObject(this, "Select Objects");
+
+							var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+
+							// already contained, cancel.
+							if (additiveIds.Contains(movedNodeId)) {
+								additiveIds.Remove(movedNodeId);
+							} else {
+								additiveIds.Add(movedNodeId);
+							}
+
+							activeObject = RenewActiveObject(additiveIds);
+							UpdateActivationOfObjects(activeObject);
+
+							UpdateSpacerRect();
+							//SaveGraph();
 							break;
 						}
+						
+						Undo.RecordObject(this, "Select " + movedNode.Name);
+
+						activeObject = RenewActiveObject(new List<string>{movedNodeId});
+						UpdateActivationOfObjects(activeObject);
+
+						UpdateSpacerRect();
+						//SaveGraph();
+						break;
 					}
-					break;
+					case NodeEvent.EventType.EVENT_NODE_UPDATED: {
+						break;
+					}
+
+					default: {
+						break;
+					}
+				}
+				break;
 				}
 			}
 
@@ -1518,12 +1509,17 @@ namespace AssetBundleGraph {
 					Repaint();
 					break;
 				}
+				case NodeEvent.EventType.EVENT_NODE_UPDATED: {
+					Validate(ActiveBuildTarget, e.eventSourceNode);
+					break;
+				}
+
 				case NodeEvent.EventType.EVENT_RECORDUNDO: {
 					Undo.RecordObject(this, e.message);
 					break;
 				}
 				case NodeEvent.EventType.EVENT_SAVE: {
-					SaveGraphWithReload(true);
+					SaveGraphAndRefresh(true);
 					Repaint();
 					break;
 				}
@@ -1635,7 +1631,7 @@ namespace AssetBundleGraph {
 
 							DeleteConnectionById(deletedConnectionId);
 
-							SaveGraphWithReload();
+							SaveGraphAndRefresh();
 							Repaint();
 							break;
 						}

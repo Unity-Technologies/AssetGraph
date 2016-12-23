@@ -18,12 +18,13 @@ namespace AssetBundleGraph {
 
 		public const string GUI_TEXT_MENU_GENERATE_POSTPROCESS = GUI_TEXT_MENU_GENERATE + "/Postprocess Script";
 		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
-
+		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
-
+		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
+		
 		public const string ASSETS_PATH = "Assets/";
 		public const string ASSETBUNDLEGRAPH_PATH = ASSETS_PATH + "AssetBundleGraph/";
 		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETBUNDLEGRAPH_PATH + "Cache/";
@@ -119,7 +120,7 @@ namespace AssetBundleGraph {
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
 		public const string BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*";
 
-		// by default, AssetBundleGraph's node has only 1 InputPoint. and
+		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
 		// this is only one definition of it's label.
 		public const string DEFAULT_INPUTPOINT_LABEL = "-";
 		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
@@ -142,6 +143,8 @@ namespace AssetBundleGraph {
 
 			public const float NODE_BASE_WIDTH = 120f;
 			public const float NODE_BASE_HEIGHT = 40f;
+			public const float NODE_WIDTH_MARGIN = 48f;
+			public const float NODE_TITLE_HEIGHT_MARGIN = 8f;
 
 			public const float CONNECTION_ARROW_WIDTH = 12f;
 			public const float CONNECTION_ARROW_HEIGHT = 15f;

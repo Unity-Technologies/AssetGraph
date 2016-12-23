@@ -617,9 +617,7 @@ namespace AssetBundleGraph {
 							using (new EditorGUILayout.HorizontalScope()) {
 								EditorGUILayout.LabelField(exporterNodePath + " does not exist.");
 								if(GUILayout.Button("Create directory")) {
-									using(new SaveScope(node)) {
-										Directory.CreateDirectory(exporterNodePath);
-									}
+									Directory.CreateDirectory(exporterNodePath);
 								}
 							}
 							EditorGUILayout.Space();
@@ -688,7 +686,7 @@ namespace AssetBundleGraph {
 				DoInspectorExporterGUI(node);
 				break;
 			default: 
-				Debug.LogError(node.Name + " is defined as unknown kind of node. value:" + node.Kind);
+				LogUtility.Logger.LogError(LogUtility.kTag, node.Name + " is defined as unknown kind of node. value:" + node.Kind);
 				break;
 			}
 
@@ -739,7 +737,6 @@ namespace AssetBundleGraph {
 					.Select(group => group.Key);
 				if (overlapping.Any() && overlapping.Contains(newName)) {
 					EditorGUILayout.HelpBox("There are node with the same name. You may want to rename to avoid confusion:" + newName, MessageType.Info);
-					AssetBundleGraphEditorWindow.AddNodeException(new NodeException("Node name " + newName + " already exist.", node.Id ));
 				}
 			}
 

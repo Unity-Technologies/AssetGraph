@@ -151,11 +151,11 @@ namespace AssetBundleGraph {
 			return new Vector2(x, y);
 		}
 
-		public void UpdateRegion (NodeGUI node, int index, int max) {
+		public void UpdateRegion (NodeGUI node, float yOffset, int index, int max) {
 			var parentRegion = node.Region;
 			if(IsInput){
 
-				var initialY = (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT) / 2f;
+				var initialY = yOffset + (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT) / 2f;
 				var marginY  = initialY + AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * (index);
 
 				buttonRect = new Rect(
@@ -165,7 +165,7 @@ namespace AssetBundleGraph {
 					AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT);
 			} else {
 
-				var initialY = (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.OUTPUT_POINT_HEIGHT) / 2f;
+				var initialY = yOffset + (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.OUTPUT_POINT_HEIGHT) / 2f;
 				var marginY  = initialY + AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * (index);
 
 				buttonRect = new Rect(

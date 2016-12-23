@@ -17,10 +17,10 @@ namespace AssetBundleGraph {
 		/**
 			Return true if given asset is already Cached
 		*/
-		public static bool IsCached (Asset relatedAsset, List<string> alreadyCachedPath, string localAssetPath) {
+		public static bool IsCached (AssetReference relatedAsset, List<string> alreadyCachedPath, string localAssetPath) {
 			if (alreadyCachedPath.Contains(localAssetPath)) {
 				// if source is exists, check hash.
-				var sourceHash = GetHash(relatedAsset.absoluteAssetPath);
+				var sourceHash = GetHash(relatedAsset.absolutePath);
 				var destHash = GetHash(localAssetPath);
 
 				// completely hit.
@@ -29,28 +29,6 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			return false;
-		}
-
-		/**
-			Return true if all given assets are cached in most updated manner
-		*/
-		public static bool IsAllAssetsCachedAndUpdated (List<Asset> relatedAssets, List<string> alreadyCachedPath, string localAssetPath) {
-			// check prefab-out file is exist or not.
-			if (alreadyCachedPath.Contains(localAssetPath)) {
-				
-				// cached. check if 
-				var changed = false;
-				foreach (var relatedAsset in relatedAssets) {
-					if (relatedAsset.isNew) {
-						changed = true;
-						break;
-					}
-				}
-				
-				if (changed) return false;
-				return true;
-			}
 			return false;
 		}
 
