@@ -13,12 +13,12 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIPrefabBuilder.Setup");
 			ValidatePrefabBuilder(node, target, inputGroupAssets,
 				() => {
 					throw new NodeException(node.Name + " :PrefabBuilder is not configured. Please configure from Inspector.", node.Id);
@@ -29,7 +29,7 @@ namespace AssetBundleGraph {
 				(string groupKey) => {
 					throw new NodeException(string.Format("{0} :Can not create prefab with incoming assets for group {1}.", node.Name, groupKey), node.Id);
 				},
-				(Asset badAsset) => {
+				(AssetReference badAsset) => {
 					throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node.Id);
 				}
 			);
@@ -38,19 +38,24 @@ namespace AssetBundleGraph {
 			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
-			Dictionary<string, List<Asset>> output = new Dictionary<string, List<Asset>>();
+			Dictionary<string, List<AssetReference>> output = new Dictionary<string, List<AssetReference>>();
 
 			foreach(var key in inputGroupAssets.Keys) {
-				var prefabFileName = builder.CanCreatePrefab(key, LoadAllAssets(inputGroupAssets[key]));
-				output[key] = new List<Asset> () {
-					Asset.CreateAssetWithImportPath(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
-				};
+				List<UnityEngine.Object> allAssets = LoadAllAssets(inputGroupAssets[key]);
+				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
+				if(prefabFileName != null) {
+					output[key] = new List<AssetReference> () {
+						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
+					};
+				}
+				allAssets.ForEach(o => Resources.UnloadAsset(o));
 			}
 
-			Output(connectionToOutput, output, null);
+			Output(output);
+			Profiler.EndSample();
 		}
 
-		private static List<UnityEngine.Object> LoadAllAssets(List<Asset> assets) {
+		private static List<UnityEngine.Object> LoadAllAssets(List<AssetReference> assets) {
 			List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
 			assets.ForEach(a => objects.AddRange( AssetDatabase.LoadAllAssetsAtPath(a.importFrom).AsEnumerable() ));
 			return objects;
@@ -58,18 +63,18 @@ namespace AssetBundleGraph {
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUIPrefabBuilder.Run");
 
 			var builder = PrefabBuilderUtility.CreatePrefabBuilder(node, target);
 			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
-			Dictionary<string, List<Asset>> output = new Dictionary<string, List<Asset>>();
+			Dictionary<string, List<AssetReference>> output = new Dictionary<string, List<AssetReference>>();
 
 			foreach(var key in inputGroupAssets.Keys) {
 				var allAssets = LoadAllAssets(inputGroupAssets[key]);
@@ -83,23 +88,25 @@ namespace AssetBundleGraph {
 				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
 				PrefabUtility.CreatePrefab(prefabSavePath, obj, ReplacePrefabOptions.Default);
 
-				output[key] = new List<Asset> () {
-					Asset.CreateAssetWithImportPath(prefabSavePath)
+				output[key] = new List<AssetReference> () {
+					AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
 				};
 				GameObject.DestroyImmediate(obj);
+				allAssets.ForEach(o => Resources.UnloadAsset(o));
 			}
 
-			Output(connectionToOutput, output, null);
+			Output(output);
+			Profiler.EndSample();
 		}
 
 		public static void ValidatePrefabBuilder (
 			NodeData node,
 			BuildTarget target,
-			Dictionary<string, List<Asset>> inputGroupAssets,
+			Dictionary<string, List<AssetReference>> inputGroupAssets,
 			Action noBuilderData,
 			Action failedToCreateBuilder,
 			Action<string> canNotCreatePrefab,
-			Action<Asset> canNotImportAsset
+			Action<AssetReference> canNotImportAsset
 		) {
 			if(string.IsNullOrEmpty(node.InstanceData[target])) {
 				noBuilderData();
@@ -124,9 +131,11 @@ namespace AssetBundleGraph {
 						}
 						if(isAllGoodAssets) {
 							// do not call LoadAllAssets() unless all assets have importFrom
-							if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, LoadAllAssets(assets)))) {
+							List<UnityEngine.Object> allAssets = LoadAllAssets(inputGroupAssets[key]);
+							if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets))) {
 								canNotCreatePrefab(key);
 							}
+							allAssets.ForEach(o => Resources.UnloadAsset(o));
 						}
 					}
 				}

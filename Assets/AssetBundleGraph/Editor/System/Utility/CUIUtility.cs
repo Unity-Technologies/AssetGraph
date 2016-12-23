@@ -53,7 +53,7 @@ namespace AssetBundleGraph {
 
 				if(targetIndex >= 0) {
 					var targetStr = arguments[targetIndex+1];
-					Debug.Log("Target specified:"+ targetStr);
+					LogUtility.Logger.Log("Target specified:"+ targetStr);
 
 					var newTarget = BuildTargetUtility.BuildTargetFromString(arguments[targetIndex+1]);
 					if(!BuildTargetUtility.IsBuildTargetSupported(newTarget)) {
@@ -66,29 +66,23 @@ namespace AssetBundleGraph {
 					}
 				}
 
-				Debug.Log("Asset bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
+				LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
 				if (!SaveData.IsSaveDataAvailableAtDisk()) {
-					Debug.Log("AssetBundleGraph save data not found. Aborting...");
+					LogUtility.Logger.Log("AssetBundleGraph save data not found. Aborting...");
 					return;
 				}
 
 				// load data from file.
-				SaveData saveData = SaveData.LoadFromDisk();
-				List<NodeException> errors = new List<NodeException>();
-				Dictionary<ConnectionData,Dictionary<string, List<Asset>>> result = null;
-
-				Action<NodeException> errorHandler = (NodeException e) => {
-					errors.Add(e);
-				};
+				AssetBundleGraphController c = new AssetBundleGraphController();
 
 				// perform setup. Fails if any exception raises.
-				AssetBundleGraphController.Perform(saveData, target, false, errorHandler, null);
+				c.Perform(target, false, false, null);
 
 				// if there is error reported, then run
-				if(errors.Count > 0) {
-					Debug.Log("Build terminated because following error found during Setup phase. Please fix issues by opening editor before building.");
-					errors.ForEach(e => Debug.LogError(e));
+				if(c.IsAnyIssueFound) {
+					LogUtility.Logger.Log("Build terminated because following error found during Setup phase. Please fix issues by opening editor before building.");
+					c.Issues.ForEach(e => LogUtility.Logger.LogError(LogUtility.kTag, e));
 
 					return;
 				}
@@ -100,29 +94,28 @@ namespace AssetBundleGraph {
 						lastNodeData = node;
 						lastProgress = progress;
 
-						Debug.LogFormat("Processing {0}...", node.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "Processing {0}...", node.Name);
 					}
 					if(progress > lastProgress) {
 						if(progress <= 1.0f) {
-							Debug.LogFormat("{0} Complete.", node.Name);
+							LogUtility.Logger.LogFormat(LogType.Log, "{0} Complete.", node.Name);
 						} else if( (progress - lastProgress) > 0.2f ) {
-							Debug.LogFormat("{0}: {1} %", node.Name, (int)progress*100f);
+							LogUtility.Logger.LogFormat(LogType.Log, "{0}: {1} %", node.Name, (int)progress*100f);
 						}
 						lastProgress = progress;
 					}
 				};
 
 				// run datas.
-				result = AssetBundleGraphController.Perform(saveData, target, true, errorHandler, updateHandler);
+				c.Perform(target, true, true, updateHandler);
 
 				AssetDatabase.Refresh();
-				AssetBundleGraphController.Postprocess(saveData, result, true);
 
 			} catch(Exception e) {
-				Debug.LogError(e);
-				Debug.LogError("Building asset bundles terminated due to unexpected error.");
+				LogUtility.Logger.LogError(LogUtility.kTag, e);
+				LogUtility.Logger.LogError(LogUtility.kTag, "Building asset bundles terminated due to unexpected error.");
 			} finally {
-				Debug.Log("End of build.");
+				LogUtility.Logger.Log("End of build.");
 			}
 		}
 	}

@@ -47,7 +47,7 @@ namespace AssetBundleGraph {
 					string val = json[buildTargetName] as string;
 					m_values.Add(new Entry(g, val));
 				} catch(Exception e) {
-					Debug.LogWarning("Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
+					LogUtility.Logger.LogWarning(LogUtility.kTag, "Failed to retrieve SerializableMultiTargetString. skipping entry - " + buildTargetName + ":" + json[buildTargetName] + " error:" + e.Message);
 				}
 			}
 		}
@@ -126,6 +126,50 @@ namespace AssetBundleGraph {
 				dic.Add(e.targetGroup.ToString(), e.value);
 			}
 			return dic;
+		}
+
+		public override bool Equals(object rhs)
+		{
+			SerializableMultiTargetString other = rhs as SerializableMultiTargetString; 
+			if (other == null) {
+				return false;
+			} else {
+				return other == this;
+			}
+		}
+
+		public override int GetHashCode()
+		{
+			return this.m_values.GetHashCode(); 
+		}
+
+		public static bool operator == (SerializableMultiTargetString lhs, SerializableMultiTargetString rhs) {
+
+			object lobj = lhs;
+			object robj = rhs;
+
+			if(lobj == null && robj == null) {
+				return true;
+			}
+			if(lobj == null || robj == null) {
+				return false;
+			}
+
+			if( lhs.m_values.Count != rhs.m_values.Count ) {
+				return false;
+			}
+
+			foreach(var l in lhs.m_values) {
+				if(rhs[l.targetGroup] != l.value) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		public static bool operator != (SerializableMultiTargetString lhs, SerializableMultiTargetString rhs) {
+			return !(lhs == rhs);
 		}
 	}
 }

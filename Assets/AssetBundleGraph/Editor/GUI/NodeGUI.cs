@@ -103,8 +103,6 @@ namespace AssetBundleGraph {
 			this.m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT);
 
 			this.m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
-
-			UpdateNodeRect();
 		}
 
 		public NodeGUI Duplicate (float newX, float newY) {
@@ -124,24 +122,16 @@ namespace AssetBundleGraph {
 			this.m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
 		}
 			
-		private void RefreshConnectionPos () {
+		private void RefreshConnectionPos (float yOffset) {
 			for (int i = 0; i < m_data.InputPoints.Count; i++) {
 				var point = m_data.InputPoints[i];
-				point.UpdateRegion(this, i, m_data.InputPoints.Count);
+				point.UpdateRegion(this, yOffset, i, m_data.InputPoints.Count);
 			}
 
 			for (int i = 0; i < m_data.OutputPoints.Count; i++) {
 				var point = m_data.OutputPoints[i];
-				point.UpdateRegion(this, i, m_data.OutputPoints.Count);
+				point.UpdateRegion(this, yOffset, i, m_data.OutputPoints.Count);
 			}
-		}
-
-		public void DrawNode () {
-			var scaledBaseRect = ScaleEffect(m_baseRect);
-
-			var movedRect = GUI.Window(m_nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, m_nodeSyle);
-
-			m_baseRect.position = m_baseRect.position + (movedRect.position - scaledBaseRect.position);
 		}
 
 		public static Rect ScaleEffect (Rect nonScaledRect) {
@@ -158,12 +148,6 @@ namespace AssetBundleGraph {
 			scaledVector2.x = scaledVector2.x * scaleFactor;
 			scaledVector2.y = scaledVector2.y * scaleFactor;
 			return scaledVector2;
-		}
-
-		private void DrawThisNode(int id) {
-			HandleNodeEvent ();
-			DrawNodeContents();
-			GUI.DragWindow();
 		}
 
 		/**
@@ -323,6 +307,21 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public void DrawNode () {
+			var scaledBaseRect = ScaleEffect(m_baseRect);
+
+			var movedRect = GUI.Window(m_nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, m_nodeSyle);
+
+			m_baseRect.position = m_baseRect.position + (movedRect.position - scaledBaseRect.position);
+		}
+
+		private void DrawThisNode(int id) {
+			UpdateNodeRect ();
+			HandleNodeEvent ();
+			DrawNodeContents();
+			GUI.DragWindow();
+		}
+			
 		private void DrawNodeContents () {
 			var style = new GUIStyle(EditorStyles.label);
 			style.alignment = TextAnchor.MiddleCenter;
@@ -333,7 +332,8 @@ namespace AssetBundleGraph {
 			var connectionNodeStyleInput = new GUIStyle(EditorStyles.label);
 			connectionNodeStyleInput.alignment = TextAnchor.MiddleLeft;
 
-			var nodeTitleRect = new Rect(0, 0, m_baseRect.width * scaleFactor, m_baseRect.height * scaleFactor);
+			var titleHeight = style.CalcSize(new GUIContent(Name)).y + AssetBundleGraphSettings.GUI.NODE_TITLE_HEIGHT_MARGIN;
+			var nodeTitleRect = new Rect(0, 0, m_baseRect.width * scaleFactor, titleHeight);
 			GUI.Label(nodeTitleRect, Name, style);
 
 			if (m_running) {
@@ -374,33 +374,39 @@ namespace AssetBundleGraph {
 		public void UpdateNodeRect () {
 			// UpdateNodeRect will be called outside OnGUI(), so it use inacurate but simple way to calcurate label width
 			// instead of CalcSize()
-			var contentLabelWordsLength = this.Name.Length;
+
+			float labelWidth = GUI.skin.label.CalcSize(new GUIContent(this.Name)).x;
+			float outputLabelWidth = 0f;
+			float inputLabelWidth = 0f;
 
 			if(m_data.InputPoints.Count > 0) {
-				var inputLabels = m_data.InputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label.Length).ToList();
+				var inputLabels = m_data.InputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label);
 				if (inputLabels.Any()) {
-					contentLabelWordsLength = contentLabelWordsLength + 1 + inputLabels[0];
+					inputLabelWidth = GUI.skin.label.CalcSize(new GUIContent(inputLabels.First())).x;
 				}
 			}
 
 			if(m_data.OutputPoints.Count > 0) {
-				var outputLabels = m_data.OutputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label.Length).ToList();
+				var outputLabels = m_data.OutputPoints.OrderByDescending(p => p.Label.Length).Select(p => p.Label);
 				if (outputLabels.Any()) {
-					contentLabelWordsLength = contentLabelWordsLength + 1 + outputLabels[0];
+					outputLabelWidth = GUI.skin.label.CalcSize(new GUIContent(outputLabels.First())).x;
 				}
 			}
+
+			var titleHeight = GUI.skin.label.CalcSize(new GUIContent(Name)).y + AssetBundleGraphSettings.GUI.NODE_TITLE_HEIGHT_MARGIN;
 
 			// update node height by number of output connectionPoint.
 			var nPoints = Mathf.Max(m_data.OutputPoints.Count, m_data.InputPoints.Count);
 			this.m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, 
 				m_baseRect.width, 
-				AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT + (AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
+				AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT + titleHeight + (AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
 			);
 
-			var newWidth = Mathf.Max(AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, contentLabelWordsLength * 10.0f);
+			var newWidth = Mathf.Max(AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, outputLabelWidth + inputLabelWidth + AssetBundleGraphSettings.GUI.NODE_WIDTH_MARGIN);
+			newWidth = Mathf.Max(newWidth, labelWidth + AssetBundleGraphSettings.GUI.NODE_WIDTH_MARGIN);
 			m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, newWidth, m_baseRect.height);
 
-			RefreshConnectionPos();
+			RefreshConnectionPos(titleHeight);
 		}
 
 		private ConnectionPointData IsOverConnectionPoint (Vector2 touchedPoint) {

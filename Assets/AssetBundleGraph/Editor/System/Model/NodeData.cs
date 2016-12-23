@@ -53,7 +53,7 @@ namespace AssetBundleGraph {
 		}
 		public string FilterKeytype {
 			get {
-				return m_filterKeytype;
+				return m_filterKeytype; 
 			}
 			set {
 				m_filterKeytype = value;
@@ -61,7 +61,7 @@ namespace AssetBundleGraph {
 		}
 		public ConnectionPointData ConnectionPoint {
 			get {
-				return m_point;
+				return m_point; 
 			}
 		}
 		public string Hash {
@@ -92,7 +92,7 @@ namespace AssetBundleGraph {
 		}
 		public ConnectionPointData ConnectionPoint {
 			get {
-				return m_point;
+				return m_point; 
 			}
 		}
 	}
@@ -150,7 +150,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private float m_y;
 		[SerializeField] private string m_scriptClassName;
 		[SerializeField] private List<FilterEntry> m_filter;
-		[SerializeField] private List<ConnectionPointData> 	m_inputPoints;
+		[SerializeField] private List<ConnectionPointData> 	m_inputPoints; 
 		[SerializeField] private List<ConnectionPointData> 	m_outputPoints;
 		[SerializeField] private SerializableMultiTargetString m_loaderLoadPath;
 		[SerializeField] private SerializableMultiTargetString m_exporterExportPath;
@@ -164,10 +164,20 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private bool m_isNodeOperationPerformed;
 
+		private bool m_nodeNeedsRevisit;
 
 		/*
 		 * Properties
-		 */
+		 */ 
+
+		public bool NeedsRevisit {
+			get {
+				return m_nodeNeedsRevisit;
+			}
+			set {
+				m_nodeNeedsRevisit = value;
+			}
+		}
 
 		public string Name {
 			get {
@@ -237,7 +247,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString LoaderLoadPath {
 			get {
 				ValidateAccess(
-					NodeKind.LOADER_GUI
+					NodeKind.LOADER_GUI 
 				);
 				return m_loaderLoadPath;
 			}
@@ -246,7 +256,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString ExporterExportPath {
 			get {
 				ValidateAccess(
-					NodeKind.EXPORTER_GUI
+					NodeKind.EXPORTER_GUI 
 				);
 				return m_exporterExportPath;
 			}
@@ -255,7 +265,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString GroupingKeywords {
 			get {
 				ValidateAccess(
-					NodeKind.GROUPING_GUI
+					NodeKind.GROUPING_GUI 
 				);
 				return m_groupingKeyword;
 			}
@@ -264,7 +274,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetString BundleNameTemplate {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI
+					NodeKind.BUNDLECONFIG_GUI 
 				);
 				return m_bundleConfigBundleNameTemplate;
 			}
@@ -273,13 +283,13 @@ namespace AssetBundleGraph {
 		public bool BundleConfigUseGroupAsVariants {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI
+					NodeKind.BUNDLECONFIG_GUI 
 				);
 				return m_bundleConfigUseGroupAsVariants;
 			}
 			set {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI
+					NodeKind.BUNDLECONFIG_GUI 
 				);
 				m_bundleConfigUseGroupAsVariants = value;
 			}
@@ -298,7 +308,7 @@ namespace AssetBundleGraph {
 		public List<Variant> Variants {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLECONFIG_GUI
+					NodeKind.BUNDLECONFIG_GUI 
 				);
 				return m_variants;
 			}
@@ -307,7 +317,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetInt BundleBuilderBundleOptions {
 			get {
 				ValidateAccess(
-					NodeKind.BUNDLEBUILDER_GUI
+					NodeKind.BUNDLEBUILDER_GUI 
 				);
 				return m_bundleBuilderEnabledBundleOptions;
 			}
@@ -316,7 +326,7 @@ namespace AssetBundleGraph {
 		public SerializableMultiTargetInt ExporterExportOption {
 			get {
 				ValidateAccess(
-					NodeKind.EXPORTER_GUI
+					NodeKind.EXPORTER_GUI 
 				);
 				return m_exporterExportOption;
 			}
@@ -341,12 +351,16 @@ namespace AssetBundleGraph {
 
 		/*
 		 *  Create NodeData from JSON
-		 */
+		 */ 
 		public NodeData(Dictionary<string, object> jsonData) {
+			FromJsonDictionary(jsonData);
+		}
 
+		public void FromJsonDictionary(Dictionary<string, object> jsonData) {
 			m_name = jsonData[NODE_NAME] as string;
 			m_id = jsonData[NODE_ID]as string;
 			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
+			m_nodeNeedsRevisit = false;
 
 			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
 			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
@@ -452,7 +466,7 @@ namespace AssetBundleGraph {
 
 		/*
 		 * Constructor used to create new node from GUI
-		 */
+		 */ 
 		public NodeData(string name, NodeKind kind, float x, float y) {
 
 			m_id = Guid.NewGuid().ToString();
@@ -460,6 +474,7 @@ namespace AssetBundleGraph {
 			m_x = x;
 			m_y = y;
 			m_kind = kind;
+			m_nodeNeedsRevisit = false;
 
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
@@ -483,7 +498,7 @@ namespace AssetBundleGraph {
 				m_scriptClassName 	= String.Empty;
 				m_scriptInstanceData = new SerializableMultiTargetString();
 				break;
-
+			
 			case NodeKind.IMPORTSETTING_GUI:
 				break;
 
@@ -521,10 +536,15 @@ namespace AssetBundleGraph {
 
 		/**
 		 * Duplicate this node with new guid.
-		 */
-		public NodeData Duplicate () {
+		 */ 
+		public NodeData Duplicate (bool keepGuid = false) {
+
+			if(keepGuid) {
+				return new NodeData( this.ToJsonDictionary() );
+			}
 
 			var newData = new NodeData(m_name, m_kind, m_x, m_y);
+			newData.m_nodeNeedsRevisit = false;
 
 			switch(m_kind) {
 			case NodeKind.IMPORTSETTING_GUI:
@@ -680,7 +700,7 @@ namespace AssetBundleGraph {
 						if(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled) {
 							int flag = ~((int)BuildAssetBundleOptions.DisableWriteTypeTree + (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
 							v.value = v.value & flag;
-							Debug.LogWarning(m_name + ": DisableWriteTypeTree and IgnoreTypeTreeChanges can not be used together. Settings overwritten.");
+							LogUtility.Logger.LogWarning(LogUtility.kTag, m_name + ": DisableWriteTypeTree and IgnoreTypeTreeChanges can not be used together. Settings overwritten.");
 						}
 					}
 				}
@@ -698,9 +718,123 @@ namespace AssetBundleGraph {
 			return nodeScriptInstance != null;
 		}
 
+		public bool CompareIgnoreGUIChanges (NodeData rhs) {
+
+			if(this.m_kind != rhs.m_kind) {
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Kind");
+				return false;
+			}
+
+			if(m_inputPoints.Count != rhs.m_inputPoints.Count) {
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Input Count");
+				return false;
+			}
+
+			if(m_outputPoints.Count != rhs.m_outputPoints.Count) {
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Output Count");
+				return false;
+			}
+
+			foreach(var pin in m_inputPoints) {
+				if(rhs.m_inputPoints.Find(x => pin.Id == x.Id) == null) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Input point not found");
+					return false;
+				}
+			}
+
+			foreach(var pout in m_outputPoints) {
+				if(rhs.m_outputPoints.Find(x => pout.Id == x.Id) == null) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Output point not found");
+					return false;
+				}
+			}
+
+			switch (m_kind) {
+			case NodeKind.PREFABBUILDER_GUI:
+			case NodeKind.MODIFIER_GUI:
+				if(m_scriptClassName != rhs.m_scriptClassName) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script classname different");
+					return false;
+				}
+				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
+					return false;
+				}
+				break;
+
+			case NodeKind.LOADER_GUI:
+				if(m_loaderLoadPath != rhs.m_loaderLoadPath) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Loader load path different");
+					return false;
+				}
+				break;
+
+			case NodeKind.FILTER_GUI:
+				foreach(var f in m_filter) {
+					if(null == rhs.m_filter.Find(x => x.FilterKeytype == f.FilterKeytype && x.FilterKeyword == f.FilterKeyword)) {
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Filter entry not found");
+						return false;
+					}
+				}
+				break;
+
+			case NodeKind.GROUPING_GUI:
+				if(m_groupingKeyword != rhs.m_groupingKeyword) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Grouping keyword different");
+					return false;
+				}
+				break;
+
+			case NodeKind.BUNDLECONFIG_GUI:
+				if(m_bundleConfigBundleNameTemplate != rhs.m_bundleConfigBundleNameTemplate) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "BundleNameTemplate different");
+					return false;
+				}
+				if(m_bundleConfigUseGroupAsVariants != rhs.m_bundleConfigUseGroupAsVariants) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "UseGroupAsVariants different");
+					return false;
+				}
+				foreach(var v in m_variants) {
+					if(null == rhs.m_variants.Find(x => x.Name == v.Name && x.ConnectionPoint.Id == v.ConnectionPoint.Id)) {
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Variants not found");
+						return false;
+					}
+				}
+				break;
+
+			case NodeKind.BUNDLEBUILDER_GUI:
+				if(m_bundleBuilderEnabledBundleOptions != rhs.m_bundleBuilderEnabledBundleOptions) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "EnabledBundleOptions different");
+					return false;
+				}
+				break;
+
+			case NodeKind.EXPORTER_GUI:
+				if(m_exporterExportPath != rhs.m_exporterExportPath) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ExporterPath different");
+					return false;
+				}
+				if(m_exporterExportOption != rhs.m_exporterExportOption) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ExporterOption different");
+					return false;
+				}
+				break;
+
+			case NodeKind.IMPORTSETTING_GUI:
+				// nothing to do
+				break;
+
+			default:
+				throw new ArgumentOutOfRangeException ();
+			}
+
+			return true;
+		}
+
+
 		/**
 		 * Serialize to JSON dictionary
-		 */
+		 */ 
 		public Dictionary<string, object> ToJsonDictionary() {
 			var nodeDict = new Dictionary<string, object>();
 
@@ -726,7 +860,7 @@ namespace AssetBundleGraph {
 				{NODE_POS_X, m_x},
 				{NODE_POS_Y, m_y}
 			};
-
+				
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
@@ -739,7 +873,7 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.FILTER_GUI:
-				var filterDict = new List<Dictionary<string, object>>();
+				var filterDict = new List<object>();
 				foreach(var f in m_filter) {
 					var df = new Dictionary<string, object>();
 					df[NODE_FILTER_KEYWORD] = f.FilterKeyword;
@@ -757,7 +891,7 @@ namespace AssetBundleGraph {
 			case NodeKind.BUNDLECONFIG_GUI:
 				nodeDict[NODE_BUNDLECONFIG_BUNDLENAME_TEMPLATE] = m_bundleConfigBundleNameTemplate.ToJsonDictionary();
 				nodeDict[NODE_BUNDLECONFIG_USE_GROUPASVARIANTS] = m_bundleConfigUseGroupAsVariants;
-				var variantsDict = new List<Dictionary<string, object>>();
+				var variantsDict = new List<object>();
 				foreach(var v in m_variants) {
 					var dv = new Dictionary<string, object>();
 					dv[NODE_BUNDLECONFIG_VARIANTS_NAME] 	= v.Name;
@@ -789,7 +923,7 @@ namespace AssetBundleGraph {
 
 		/**
 		 * Serialize to JSON string
-		 */
+		 */ 
 		public string ToJsonString() {
 			return AssetBundleGraph.Json.Serialize(ToJsonDictionary());
 		}

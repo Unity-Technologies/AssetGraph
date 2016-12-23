@@ -11,33 +11,35 @@ namespace AssetBundleGraph
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
-			GroupingOutput(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output);
+			Profiler.BeginSample("AssetBundleGraph.GUIGrouping.Setup");
+			GroupingOutput(target, node, connectionFromInput, connectionToOutput, inputGroupAssets, Output);
+			Profiler.EndSample();
 		}
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
-			GroupingOutput(target, node, inputPoint, connectionToOutput, inputGroupAssets, Output);
+			Profiler.BeginSample("AssetBundleGraph.GUIGrouping.Run");
+			GroupingOutput(target, node, connectionFromInput, connectionToOutput, inputGroupAssets, Output);
+			Profiler.EndSample();
 		}
 
 
 		private void GroupingOutput (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
 
 			ValidateGroupingKeyword(
@@ -50,33 +52,35 @@ namespace AssetBundleGraph
 				}
 			);
 
-			var outputDict = new Dictionary<string, List<Asset>>();
+			var outputDict = new Dictionary<string, List<AssetReference>>();
 
-			var mergedGroupedSources = new List<Asset>();
+			var mergedGroupedSources = new List<AssetReference>();
 
-			foreach (var groupKey in inputGroupAssets.Keys) {
-				mergedGroupedSources.AddRange(inputGroupAssets[groupKey]);
-			}
-
-			var groupingKeyword = node.GroupingKeywords[target];
-			var split = groupingKeyword.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD);
-			var groupingKeywordPrefix  = split[0];
-			var groupingKeywordPostfix = split[1];
-
-			foreach (var source in mergedGroupedSources) {
-				var targetPath = source.GetAbsolutePathOrImportedPath();
-
-				var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
-				var match = regex.Match(targetPath);
-
-				if (match.Success) {
-					var newGroupingKey = match.Groups[1].Value;
-					if (!outputDict.ContainsKey(newGroupingKey)) outputDict[newGroupingKey] = new List<Asset>();
-					outputDict[newGroupingKey].Add(source);
+			if(inputGroupAssets != null) {
+				foreach (var groupKey in inputGroupAssets.Keys) {
+					mergedGroupedSources.AddRange(inputGroupAssets[groupKey]);
 				}
+
+				var groupingKeyword = node.GroupingKeywords[target];
+				var split = groupingKeyword.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD);
+				var groupingKeywordPrefix  = split[0];
+				var groupingKeywordPostfix = split[1];
+
+				foreach (var source in mergedGroupedSources) {
+					var targetPath = source.path;
+
+					var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
+					var match = regex.Match(targetPath);
+
+					if (match.Success) {
+						var newGroupingKey = match.Groups[1].Value;
+						if (!outputDict.ContainsKey(newGroupingKey)) outputDict[newGroupingKey] = new List<AssetReference>();
+						outputDict[newGroupingKey].Add(source);
+					}
+				}
+
+				Output(outputDict);
 			}
-			
-			Output(connectionToOutput, outputDict, null);
 		}
 
 		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {

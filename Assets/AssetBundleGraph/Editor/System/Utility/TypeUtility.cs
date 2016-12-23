@@ -73,16 +73,29 @@ namespace AssetBundleGraph {
 		 * Get type of asset from give path.
 		 */
 		public static Type GetTypeOfAsset (string assetPath) {
-			if (assetPath.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION)) return typeof(string);
+			Profiler.BeginSample("AssetBundleGraph.GetTypeOfAsset");
 
-			var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
-
-			// If asset is null, this asset is not imported yet, or unsupported type of file
-			// so we set this to object type.
-			if (asset == null) {
-				return typeof(object);
+			if (assetPath.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION)) {
+				return typeof(string);
 			}
-			return asset.GetType();
+
+			Type t = null;
+			#if (UNITY_5_4_OR_NEWER && !UNITY_5_4_0 && !UNITY_5_4_1)
+
+			t = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+
+			#else
+
+			UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+
+			if (asset != null) {
+				t = asset.GetType();
+				Resources.UnloadAsset(asset);
+			}
+			#endif
+
+			Profiler.EndSample();
+			return t;
 		}
 
 		/**
@@ -92,7 +105,7 @@ namespace AssetBundleGraph {
 			// check by asset importer type.
 			var importer = AssetImporter.GetAtPath(assetPath);
 			if (importer == null) {
-				Debug.LogWarning("Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
+				LogUtility.Logger.LogWarning(LogUtility.kTag, "Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
 				return typeof(object);
 			}
 
@@ -118,18 +131,20 @@ namespace AssetBundleGraph {
 			}
 			
 			// unhandled.
-			Debug.LogWarning("Unknown file type found:" + extension + "\n. Asset:" + assetPath + "\n Assume 'object'.");
+			LogUtility.Logger.LogWarning(LogUtility.kTag, "Unknown file type found:" + extension + "\n. AssetReference:" + assetPath + "\n Assume 'object'.");
 			return typeof(object);
 		}			
 
-		public static Type FindIncomingAssetType(List<Asset> assets) {
+		public static Type FindIncomingAssetType(List<AssetReference> assets) {
 
 			if(assets.Any()) {
-				Type expectedType = FindTypeOfAsset(assets.First().importFrom);
-				return expectedType;
+				return assets.First().filterType;
 			}
 
 			return null;
 		}
 	}
+
+	public class AssetBundleReference {}
+	public class AssetBundleManifestReference {}
 }

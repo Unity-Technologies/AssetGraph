@@ -9,12 +9,12 @@ namespace AssetBundleGraph {
 	public class IntegratedGUILoader : INodeOperation {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUILoader.Setup");
 			ValidateLoadPath(
 				node.LoaderLoadPath[target],
 				node.GetLoaderFullLoadPath(target),
@@ -28,29 +28,31 @@ namespace AssetBundleGraph {
 			);
 
 			Load(target, node, connectionToOutput, inputGroupAssets, Output);
+			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionPointData inputPoint,
+			ConnectionData connectionFromInput,
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			List<string> alreadyCached, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
+			Profiler.BeginSample("AssetBundleGraph.GUILoader.Run");
 			Load(target, node, connectionToOutput, inputGroupAssets, Output);
+			Profiler.EndSample();
 		}
 
 		void Load (BuildTarget target, 
 			NodeData node, 
 			ConnectionData connectionToOutput, 
-			Dictionary<string, List<Asset>> inputGroupAssets, 
-			Action<ConnectionData, Dictionary<string, List<Asset>>, List<string>> Output) 
+			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			PerformGraph.Output Output) 
 		{
 			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
 
-			var outputSource = new List<Asset>();
+			var outputSource = new List<AssetReference>();
 			var targetFilePaths = FileUtility.GetAllFilePathsInFolder(node.GetLoaderFullLoadPath(target));
 
 			foreach (var targetFilePath in targetFilePaths) {
@@ -64,23 +66,21 @@ namespace AssetBundleGraph {
 				if (targetFilePath.StartsWith(assetsFolderPath)) {
 					var relativePath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
 
-					var assetType = TypeUtility.GetTypeOfAsset(relativePath);
-					if (assetType == typeof(object)) {
-						continue;
+					var r = AssetReferenceDatabase.GetReference(relativePath);
+					if(r != null) {
+						outputSource.Add(AssetReferenceDatabase.GetReference(relativePath));
 					}
-
-					outputSource.Add(Asset.CreateNewAssetFromLoader(targetFilePath, relativePath));
 					continue;
 				}
 
 				throw new NodeException(node.Name + ": Invalid Load Path. Path must start with Assets/", node.Name);
 			}
 
-			var outputDir = new Dictionary<string, List<Asset>> {
+			var outputDir = new Dictionary<string, List<AssetReference>> {
 				{"0", outputSource}
 			};
 
-			Output(connectionToOutput, outputDir, null);
+			Output(outputDir);
 		}
 
 		public static void ValidateLoadPath (string currentLoadPath, string combinedPath, Action NullOrEmpty, Action NotExist) {
