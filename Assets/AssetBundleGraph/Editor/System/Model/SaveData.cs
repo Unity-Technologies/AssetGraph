@@ -206,10 +206,10 @@ namespace AssetBundleGraph {
 			m_version = ABG_FILE_VERSION;
 		}
 
-//		public static SaveData Reload() {
-//			s_saveData = LoadFromDisk();
-//			return s_saveData;
-//		}
+		public static SaveData Reload() {
+			s_saveData = LoadFromDisk();
+			return s_saveData;
+		}
 			
 		public static bool IsSaveDataAvailableAtDisk() {
 			return File.Exists(SaveDataPath);

@@ -276,11 +276,11 @@ namespace AssetBundleGraph {
 		}
 
 
-		public void VisitAll(Perform performFunc, bool redoRoot = false) {
+		public void VisitAll(Perform performFunc, bool visitAll = false) {
 			List<Node> rootNodes = m_nodes.FindAll(n => n.streamFrom.Count == 0);
 
-			if(redoRoot) {
-				rootNodes.ForEach(n => n.dirty = true);
+			if(visitAll) {
+				m_nodes.ForEach(n => n.dirty = true);
 			}
 
 			foreach(var n in rootNodes) {
