@@ -246,10 +246,11 @@ namespace AssetBundleGraph {
 
 			s_currentController = this.controller;
 			s_selectedTarget    = EditorUserBuildSettings.activeBuildTarget;
-
 			LogUtility.Logger.filterLogType = LogType.Warning;
 
 			this.titleContent = new GUIContent("AssetBundle");
+
+			SaveData.Reload();
 
 			Undo.undoRedoPerformed += () => {
 				SaveGraphAndRefresh();
@@ -387,7 +388,7 @@ namespace AssetBundleGraph {
 		}
 
 
-		private void Setup (BuildTarget target) {
+		private void Setup (BuildTarget target, bool forceVisitAll = false) {
 
 			EditorUtility.ClearProgressBar();
 
@@ -401,7 +402,7 @@ namespace AssetBundleGraph {
 				// update static all node names.
 				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-				controller.Perform(target, false, true, null);
+				controller.Perform(target, false, forceVisitAll, true, null);
 
 				RefreshInspector(controller.StreamManager);
 				ShowErrorOnNodes();
@@ -461,11 +462,11 @@ namespace AssetBundleGraph {
 				};
 
 				// perform setup. Fails if any exception raises.
-				controller.Perform(target, false, false,  null);				 
+				controller.Perform(target, false, true, false,  null);				 
 
 				// if there is not error reported, then run
 				if(!controller.IsAnyIssueFound) {
-					controller.Perform(target, true, true, updateHandler);
+					controller.Perform(target, true, true, true, updateHandler);
 				}
 				RefreshInspector(controller.StreamManager);
 				AssetDatabase.Refresh();
@@ -557,7 +558,7 @@ namespace AssetBundleGraph {
 
 				if(newIndex != currentIndex) {
 					s_selectedTarget = supportedTargets[newIndex];
-					Setup(ActiveBuildTarget);
+					Setup(ActiveBuildTarget, true);
 				}
 
 				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {

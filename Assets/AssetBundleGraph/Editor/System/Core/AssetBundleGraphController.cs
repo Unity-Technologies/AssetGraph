@@ -55,6 +55,7 @@ namespace AssetBundleGraph {
 		public void Perform (
 			BuildTarget target,
 			bool isRun,
+			bool forceVisitAll,
 			bool callPostprocess,
 			Action<NodeData, float> updateHandler) 
 		{
@@ -86,7 +87,7 @@ namespace AssetBundleGraph {
 				DoNodeOperation(target, data, src, dst, inputGroups, outputFunc, isRun, updateHandler);
 			};
 
-			newGraph.VisitAll(performFunc, isRun);
+			newGraph.VisitAll(performFunc, forceVisitAll);
 
 			if(callPostprocess && m_nodeExceptions.Count == 0) {
 				Postprocess(isRun);
@@ -113,7 +114,7 @@ namespace AssetBundleGraph {
 				var v = saveData.Nodes.Find(n => n.Id == node.Data.Id);
 				v.FromJsonDictionary(node.Data.ToJsonDictionary());
 
-				Perform(target, false, false, null);
+				Perform(target, false, false, false, null);
 
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
@@ -297,7 +298,7 @@ namespace AssetBundleGraph {
 			}
 
 			if(isAnyNodeAffected) {
-				Perform(m_lastTarget, false, false, null);
+				Perform(m_lastTarget, false, false, false, null);
 			}
 		}
 	}

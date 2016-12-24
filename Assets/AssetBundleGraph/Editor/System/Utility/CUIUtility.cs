@@ -77,7 +77,7 @@ namespace AssetBundleGraph {
 				AssetBundleGraphController c = new AssetBundleGraphController();
 
 				// perform setup. Fails if any exception raises.
-				c.Perform(target, false, false, null);
+				c.Perform(target, false, true, false, null);
 
 				// if there is error reported, then run
 				if(c.IsAnyIssueFound) {
@@ -107,7 +107,7 @@ namespace AssetBundleGraph {
 				};
 
 				// run datas.
-				c.Perform(target, true, true, updateHandler);
+				c.Perform(target, true, true, true, updateHandler);
 
 				AssetDatabase.Refresh();
 
