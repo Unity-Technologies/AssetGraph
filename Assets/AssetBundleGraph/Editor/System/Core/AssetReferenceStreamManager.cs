@@ -83,6 +83,9 @@ namespace AssetBundleGraph {
 			var g = m_leafnodeOutput[node.Id];
 
 			foreach(var k in groups.Keys) {
+				if(!g.ContainsKey(k)) {
+					g[k] = new List<AssetReference>();
+				}
 				g[k].AddRange(groups[k]);
 			}
 		}
