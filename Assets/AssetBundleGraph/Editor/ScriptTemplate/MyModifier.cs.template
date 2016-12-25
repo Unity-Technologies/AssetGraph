@@ -20,9 +20,10 @@ public class MyModifier : AssetBundleGraph.IModifier {
 
 	// Draw inspector gui 
 	public void OnInspectorGUI (Action onValueChanged) {
-		GUILayout.Label("MyModifier!");
 
-		var newValue = GUILayout.Toggle(doSomething, "Do Something");
+		EditorGUILayout.HelpBox("This is the inspector of your custom Modifier. You can customize by implementing OnInspectorGUI().", MessageType.Info);
+
+		var newValue = GUILayout.Toggle(doSomething, "Example toggle");
 		if(newValue != doSomething) {
 			doSomething = newValue;
 			onValueChanged();
