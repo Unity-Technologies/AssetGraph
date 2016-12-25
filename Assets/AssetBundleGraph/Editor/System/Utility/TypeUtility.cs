@@ -19,6 +19,7 @@ namespace AssetBundleGraph {
 			typeof(AudioImporter).ToString(),
 			
 			// others(Assets)
+			typeof(TextAsset).ToString(),
 			typeof(Animation).ToString(),
 			typeof(Animator).ToString(),
 			typeof(AvatarMask).ToString(),
@@ -53,6 +54,15 @@ namespace AssetBundleGraph {
 			// typeof(SceneAsset).ToString(),
 			{".shader", typeof(Shader)},
 			{".unity", typeof(Scene)},
+			{".txt", typeof(TextAsset)},
+			{".html", typeof(TextAsset)},
+			{".htm", typeof(TextAsset)},
+			{".xml", typeof(TextAsset)},
+			{".bytes", typeof(TextAsset)},
+			{".json", typeof(TextAsset)},
+			{".csv", typeof(TextAsset)},
+			{".yaml", typeof(TextAsset)},
+			{".fnt", typeof(TextAsset)},
 			{".prefab", typeof(UnityEngine.Object)}
 
 			// {"", typeof(Sprite)},
@@ -65,7 +75,6 @@ namespace AssetBundleGraph {
 			".sample",
 			".cs",
 			".sh",
-			".json",
 			".js",
 		};
 
@@ -135,13 +144,31 @@ namespace AssetBundleGraph {
 			return typeof(object);
 		}			
 
-		public static Type FindIncomingAssetType(List<AssetReference> assets) {
+		public static Type FindFirstIncomingAssetType(List<AssetReference> assets) {
 
 			if(assets.Any()) {
 				return assets.First().filterType;
 			}
 
 			return null;
+		}
+
+		public static MonoScript LoadMonoScript(string className) {
+			var t = Type.GetType(className);
+			if(t == null) {
+				return null;
+			}
+
+			string[] guids = AssetDatabase.FindAssets ("t:MonoScript " + className);
+
+			MonoScript s = null;
+
+			if(guids.Length > 0 ) {
+				var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+				s = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+			}
+
+			return s;
 		}
 	}
 

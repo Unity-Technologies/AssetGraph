@@ -230,6 +230,18 @@ namespace AssetBundleGraph {
 				if (Event.current.type == EventType.ContextClick || (Event.current.type == EventType.MouseUp && Event.current.button == 1)) 
 				{
 					var menu = new GenericMenu();
+
+					MonoScript s = TypeUtility.LoadMonoScript(Data.ScriptClassName);
+					if(s != null) {
+						menu.AddItem(
+							new GUIContent("Edit Script"),
+							false, 
+							() => {
+								AssetDatabase.OpenAsset(s, 0);
+							}
+						);
+					}
+
 					menu.AddItem(
 						new GUIContent("Delete"),
 						false, 
@@ -323,6 +335,8 @@ namespace AssetBundleGraph {
 		}
 			
 		private void DrawNodeContents () {
+			var oldColor = GUI.color;
+			var textColor = (EditorGUIUtility.isProSkin)? Color.black : oldColor;
 			var style = new GUIStyle(EditorStyles.label);
 			style.alignment = TextAnchor.MiddleCenter;
 
@@ -334,7 +348,9 @@ namespace AssetBundleGraph {
 
 			var titleHeight = style.CalcSize(new GUIContent(Name)).y + AssetBundleGraphSettings.GUI.NODE_TITLE_HEIGHT_MARGIN;
 			var nodeTitleRect = new Rect(0, 0, m_baseRect.width * scaleFactor, titleHeight);
+			GUI.color = textColor;
 			GUI.Label(nodeTitleRect, Name, style);
+			GUI.color = oldColor;
 
 			if (m_running) {
 				EditorGUI.ProgressBar(new Rect(10f, m_baseRect.height - 20f, m_baseRect.width - 20f, 10f), m_progress, string.Empty);
@@ -360,7 +376,9 @@ namespace AssetBundleGraph {
 						var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
 						var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
 
+						GUI.color = textColor;
 						GUI.Label(labelRect, label, labelStyle);
+						GUI.color = oldColor;
 					}
 					GUI.backgroundColor = Color.clear;
 					Texture2D tex = (point.IsInput)? NodeGUIUtility.inputPointTex : NodeGUIUtility.outputPointTex;

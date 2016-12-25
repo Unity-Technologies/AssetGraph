@@ -40,6 +40,7 @@ namespace AssetBundleGraph {
 			m_filterKeyword = keyword;
 			m_filterKeytype = keytype;
 			m_point = point;
+			SetLabelName();
 		}
 
 		public string FilterKeyword {
@@ -48,7 +49,7 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_filterKeyword = value;
-				m_point.Label = value;
+				SetLabelName();
 			}
 		}
 		public string FilterKeytype {
@@ -57,6 +58,7 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_filterKeytype = value;
+				SetLabelName();
 			}
 		}
 		public ConnectionPointData ConnectionPoint {
@@ -67,6 +69,16 @@ namespace AssetBundleGraph {
 		public string Hash {
 			get {
 				return m_filterKeyword+m_filterKeytype;
+			}
+		}
+
+		private void SetLabelName() {
+			if(m_filterKeytype == AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+				m_point.Label = m_filterKeyword;
+			} else {
+				var pointIndex = m_filterKeytype.LastIndexOf('.');
+				var keytypeName = (pointIndex > 0)? m_filterKeytype.Substring(pointIndex+1):m_filterKeytype;
+				m_point.Label = string.Format("{0}[{1}]", m_filterKeyword, keytypeName);
 			}
 		}
 	}
@@ -199,17 +211,9 @@ namespace AssetBundleGraph {
 		}
 		public string ScriptClassName {
 			get {
-				ValidateAccess(
-					NodeKind.PREFABBUILDER_GUI,
-					NodeKind.MODIFIER_GUI
-				);
 				return m_scriptClassName;
 			}
 			set {
-				ValidateAccess(
-					NodeKind.PREFABBUILDER_GUI,
-					NodeKind.MODIFIER_GUI
-				);
 				m_scriptClassName = value;
 			}
 		}
@@ -360,7 +364,12 @@ namespace AssetBundleGraph {
 			m_name = jsonData[NODE_NAME] as string;
 			m_id = jsonData[NODE_ID]as string;
 			m_kind = AssetBundleGraphSettings.NodeKindFromString(jsonData[NODE_KIND] as string);
+			m_scriptClassName = string.Empty;
 			m_nodeNeedsRevisit = false;
+
+			if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
+				m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
+			}
 
 			var pos = jsonData[NODE_POS] as Dictionary<string, object>;
 			m_x = (float)Convert.ToDouble(pos[NODE_POS_X]);
@@ -388,9 +397,6 @@ namespace AssetBundleGraph {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
 				{
-					if(jsonData.ContainsKey(NODE_SCRIPT_CLASSNAME)) {
-						m_scriptClassName = jsonData[NODE_SCRIPT_CLASSNAME] as string;
-					}
 					if(jsonData.ContainsKey(NODE_SCRIPT_INSTANCE_DATA)) {
 						m_scriptInstanceData = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_SCRIPT_INSTANCE_DATA));
 					}
@@ -475,6 +481,7 @@ namespace AssetBundleGraph {
 			m_y = y;
 			m_kind = kind;
 			m_nodeNeedsRevisit = false;
+			m_scriptClassName = String.Empty;
 
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
@@ -495,7 +502,6 @@ namespace AssetBundleGraph {
 			switch(m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
-				m_scriptClassName 	= String.Empty;
 				m_scriptInstanceData = new SerializableMultiTargetString();
 				break;
 			
@@ -545,13 +551,13 @@ namespace AssetBundleGraph {
 
 			var newData = new NodeData(m_name, m_kind, m_x, m_y);
 			newData.m_nodeNeedsRevisit = false;
+			newData.m_scriptClassName = m_scriptClassName;
 
 			switch(m_kind) {
 			case NodeKind.IMPORTSETTING_GUI:
 				break;
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
-				newData.m_scriptClassName = m_scriptClassName;
 				newData.m_scriptInstanceData = new SerializableMultiTargetString(m_scriptInstanceData);
 				break;
 
@@ -725,6 +731,11 @@ namespace AssetBundleGraph {
 				return false;
 			}
 
+			if(m_scriptClassName != rhs.m_scriptClassName) {
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script classname different");
+				return false;
+			}
+
 			if(m_inputPoints.Count != rhs.m_inputPoints.Count) {
 				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Input Count");
 				return false;
@@ -752,10 +763,6 @@ namespace AssetBundleGraph {
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
-				if(m_scriptClassName != rhs.m_scriptClassName) {
-					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script classname different");
-					return false;
-				}
 				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
 					return false;
@@ -842,6 +849,10 @@ namespace AssetBundleGraph {
 			nodeDict[NODE_ID] 	= m_id;
 			nodeDict[NODE_KIND] = m_kind.ToString();
 
+			if(!string.IsNullOrEmpty(m_scriptClassName)) {
+				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
+			}
+
 			var inputs  = new List<object>();
 			var outputs = new List<object>();
 
@@ -864,7 +875,6 @@ namespace AssetBundleGraph {
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
 			case NodeKind.MODIFIER_GUI:
-				nodeDict[NODE_SCRIPT_CLASSNAME] = m_scriptClassName;
 				nodeDict[NODE_SCRIPT_INSTANCE_DATA] = m_scriptInstanceData.ToJsonDictionary();
 				break;
 

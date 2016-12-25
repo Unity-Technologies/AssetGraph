@@ -13,11 +13,11 @@ namespace AssetBundleGraph {
 			if (Directory.Exists(localFolderPath)) Directory.Delete(localFolderPath, true);
 			Directory.CreateDirectory(localFolderPath);
 		}
-		
-		public static void CopyFileFromGlobalToLocal (string absoluteSourceFilePath, string localTargetFilePath) {
-			var parentDirectoryPath = Path.GetDirectoryName(localTargetFilePath);
+			
+		public static void CopyFile (string sourceFilePath, string targetFilePath) {
+			var parentDirectoryPath = Path.GetDirectoryName(targetFilePath);
 			Directory.CreateDirectory(parentDirectoryPath);
-			File.Copy(absoluteSourceFilePath, localTargetFilePath, true);
+			File.Copy(sourceFilePath, targetFilePath, true);
 		}
 
 		public static void DeleteFileThenDeleteFolderIfEmpty (string localTargetFilePath) {			
@@ -166,6 +166,20 @@ namespace AssetBundleGraph {
 				}
 			}
 			return cacheDir;
+		}
+
+
+		public static string GetImportSettingTemplateFilePath(AssetReference a) {
+			if(a.filterType == typeof(ModelImporter)) {
+				return AssetBundleGraphSettings.SETTINGTEMPLATE_FILE_MODEL;
+			}
+			if(a.filterType == typeof(AudioImporter)) {
+				return AssetBundleGraphSettings.SETTINGTEMPLATE_FILE_AUDIO;
+			}
+			if(a.filterType == typeof(TextureImporter)) {
+				return AssetBundleGraphSettings.SETTINGTEMPLATE_FILE_TEXTURE;
+			}
+			return null;
 		}
 	}
 }

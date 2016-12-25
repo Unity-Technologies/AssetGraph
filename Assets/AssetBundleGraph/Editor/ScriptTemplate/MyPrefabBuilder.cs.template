@@ -49,7 +49,9 @@ public class MyPrefabBuilder : IPrefabBuilder {
 	 */ 
 	public void OnInspectorGUI (Action onValueChanged) {
 
-		var newValue = EditorGUILayout.ColorField("Texture Color", color);
+		EditorGUILayout.HelpBox("This is the inspector of your custom PrefabBuilder. You can customize by implementing OnInspectorGUI().", MessageType.Info);
+
+		var newValue = EditorGUILayout.ColorField("Example", color);
 		if(newValue != color) {
 			color = newValue;
 			onValueChanged();

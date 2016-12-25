@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
@@ -158,9 +159,14 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			FileUtility.CopyFileFromGlobalToLocal(sourceFileName, destinationPath);
+			FileUtility.CopyFile(sourceFileName, destinationPath);
 
 			AssetDatabase.Refresh();
+
+			//Highlight in ProjectView
+			MonoScript s = AssetDatabase.LoadAssetAtPath<MonoScript>(destinationPath);
+			UnityEngine.Assertions.Assert.IsNotNull(s);
+			EditorGUIUtility.PingObject(s);
 		}
 
 		/*
@@ -501,10 +507,10 @@ namespace AssetBundleGraph {
 				}
 			}
 		}
-			
-		public static Dictionary<string, List<AssetReference>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
+
+		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(ConnectionPointData inputPoint) {
 			if(s_currentController != null) {
-				return s_currentController.StreamManager.GetIncomingAssetGroups(inputPoint);
+				return s_currentController.StreamManager.EnumurateIncomingAssetGroups(inputPoint);
 			}
 			return null;
 		}
@@ -1505,7 +1511,7 @@ namespace AssetBundleGraph {
 				}
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
 					// point label change is handled by caller, so we are changing label of connection associated with it.
-					var affectingConnections = connections.FindAll( c=> c.OutputPoint == e.point );
+					var affectingConnections = connections.FindAll( c=> c.OutputPoint.Id == e.point.Id );
 					affectingConnections.ForEach(c => c.Label = e.point.Label);
 					Repaint();
 					break;
