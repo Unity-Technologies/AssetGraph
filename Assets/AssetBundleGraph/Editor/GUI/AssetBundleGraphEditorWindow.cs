@@ -161,6 +161,11 @@ namespace AssetBundleGraph {
 			FileUtility.CopyFileFromGlobalToLocal(sourceFileName, destinationPath);
 
 			AssetDatabase.Refresh();
+
+			//Highlight in ProjectView
+			MonoScript s = AssetDatabase.LoadAssetAtPath<MonoScript>(destinationPath);
+			UnityEngine.Assertions.Assert.IsNotNull(s);
+			EditorGUIUtility.PingObject(s);
 		}
 
 		/*
