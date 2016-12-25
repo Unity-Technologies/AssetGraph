@@ -83,10 +83,11 @@ namespace AssetBundleGraph {
 				Directory.CreateDirectory(samplingDirectoryPath);
 			}
 
-			var absoluteFilePath = asset.absolutePath;
-			var targetFilePath = FileUtility.PathCombine(samplingDirectoryPath, asset.fileNameAndExtension);
+			var configFilePath = FileUtility.GetImportSettingTemplateFilePath(asset);
+			UnityEngine.Assertions.Assert.IsNotNull(configFilePath);
+			var targetFilePath = FileUtility.PathCombine(samplingDirectoryPath, Path.GetFileName(configFilePath));
 
-			FileUtility.CopyFileFromGlobalToLocal(absoluteFilePath, targetFilePath);
+			FileUtility.CopyFile(configFilePath, targetFilePath);
 
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 		}

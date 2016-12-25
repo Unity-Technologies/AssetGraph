@@ -159,7 +159,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			FileUtility.CopyFileFromGlobalToLocal(sourceFileName, destinationPath);
+			FileUtility.CopyFile(sourceFileName, destinationPath);
 
 			AssetDatabase.Refresh();
 
