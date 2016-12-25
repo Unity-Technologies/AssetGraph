@@ -79,12 +79,12 @@ namespace AssetBundleGraph {
 							removing = cond;
 						}
 						else {
-							var newContainsKeyword = cond.FilterKeyword;
+							var keyword = cond.FilterKeyword;
 
 							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
 
 							using (new EditorGUILayout.HorizontalScope()) {
-								newContainsKeyword = EditorGUILayout.TextField(cond.FilterKeyword, s, GUILayout.Width(120));
+								keyword = EditorGUILayout.TextField(cond.FilterKeyword, s, GUILayout.Width(120));
 								if (GUILayout.Button(cond.FilterKeytype , "Popup")) {
 									var ind = i;// need this because of closure locality bug in unity C#
 									NodeGUI.ShowFilterKeyTypeMenu(
@@ -93,17 +93,19 @@ namespace AssetBundleGraph {
 											using(new RecordUndoScope("Modify Filter Type", node, true)){
 												node.Data.FilterConditions[ind].FilterKeytype = selectedTypeStr;
 											}
+											// event must raise to propagate change to connection associated with point
+											NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
 										} 
 									);
 								}
 							}
 
-							if (newContainsKeyword != cond.FilterKeyword) {
+							if (keyword != cond.FilterKeyword) {
 								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
-									cond.FilterKeyword = newContainsKeyword;
-									// event must raise to propagate change to connection associated with point
-									NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
+									cond.FilterKeyword = keyword;
 								}
+								// event must raise to propagate change to connection associated with point
+								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
 							}
 						}
 					}

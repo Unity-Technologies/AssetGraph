@@ -139,9 +139,12 @@ namespace AssetBundleGraph {
 			}
 
 
-
 			// draw connection label if connection's label is not normal.
 			if (NodeGUI.scaleFactor == NodeGUI.SCALE_MAX) {
+
+				GUIStyle labelStyle = new GUIStyle("WhiteMiniLabel");
+				labelStyle.alignment = TextAnchor.MiddleLeft;
+
 				switch (Label){
 					case AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL: {
 						// show nothing
@@ -149,14 +152,16 @@ namespace AssetBundleGraph {
 					}
 					
 					case AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL: {
-						var labelPointV3 = new Vector3(centerPointV3.x - ((AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL.Length * 6f) / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL, "WhiteMiniLabel");
+						var labelWidth = labelStyle.CalcSize(new GUIContent(AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL));
+						var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL, labelStyle);
 						break;
 					}
 
 					default: {
-						var labelPointV3 = new Vector3(centerPointV3.x - ((Label.Length * 7f) / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, Label, "WhiteMiniLabel");
+						var labelWidth = labelStyle.CalcSize(new GUIContent(Label));
+						var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
+						Handles.Label(labelPointV3, Label, labelStyle);
 						break;
 					}
 				}

@@ -40,6 +40,7 @@ namespace AssetBundleGraph {
 			m_filterKeyword = keyword;
 			m_filterKeytype = keytype;
 			m_point = point;
+			SetLabelName();
 		}
 
 		public string FilterKeyword {
@@ -48,7 +49,7 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_filterKeyword = value;
-				m_point.Label = value;
+				SetLabelName();
 			}
 		}
 		public string FilterKeytype {
@@ -57,6 +58,7 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_filterKeytype = value;
+				SetLabelName();
 			}
 		}
 		public ConnectionPointData ConnectionPoint {
@@ -67,6 +69,16 @@ namespace AssetBundleGraph {
 		public string Hash {
 			get {
 				return m_filterKeyword+m_filterKeytype;
+			}
+		}
+
+		private void SetLabelName() {
+			if(m_filterKeytype == AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+				m_point.Label = m_filterKeyword;
+			} else {
+				var pointIndex = m_filterKeytype.LastIndexOf('.');
+				var keytypeName = (pointIndex > 0)? m_filterKeytype.Substring(pointIndex+1):m_filterKeytype;
+				m_point.Label = string.Format("{0}[{1}]", m_filterKeyword, keytypeName);
 			}
 		}
 	}

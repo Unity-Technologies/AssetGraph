@@ -1505,7 +1505,7 @@ namespace AssetBundleGraph {
 				}
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
 					// point label change is handled by caller, so we are changing label of connection associated with it.
-					var affectingConnections = connections.FindAll( c=> c.OutputPoint == e.point );
+					var affectingConnections = connections.FindAll( c=> c.OutputPoint.Id == e.point.Id );
 					affectingConnections.ForEach(c => c.Label = e.point.Label);
 					Repaint();
 					break;
