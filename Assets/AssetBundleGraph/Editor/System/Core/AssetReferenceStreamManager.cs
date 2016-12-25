@@ -19,12 +19,8 @@ namespace AssetBundleGraph {
 		// key: nodedata id
 		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_leafnodeOutput;
 
-		// key: nodedata id
-		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_nodeStreamCache;
-
 		public AssetReferenceStreamManager() {
 			m_connectionStreamMap = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
-			m_nodeStreamCache = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 			m_leafnodeOutput = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 		}
 

@@ -226,9 +226,9 @@ namespace AssetBundleGraph {
 					throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
 				}
 
-				//TODO: call postprocess with proper output
-//				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
-//				postprocessInstance.Run(nodeResult, isRun);
+				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
+				// TODO: implement this properly
+				postprocessInstance.Run(null, isRun);
 			}
 		}
 
