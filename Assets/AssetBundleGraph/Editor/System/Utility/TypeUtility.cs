@@ -143,6 +143,24 @@ namespace AssetBundleGraph {
 
 			return null;
 		}
+
+		public static MonoScript LoadMonoScript(string className) {
+			var t = Type.GetType(className);
+			if(t == null) {
+				return null;
+			}
+
+			string[] guids = AssetDatabase.FindAssets ("t:MonoScript " + className);
+
+			MonoScript s = null;
+
+			if(guids.Length > 0 ) {
+				var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+				s = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+			}
+
+			return s;
+		}
 	}
 
 	public class AssetBundleReference {}

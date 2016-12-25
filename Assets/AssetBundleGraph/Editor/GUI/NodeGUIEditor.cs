@@ -226,6 +226,14 @@ namespace AssetBundleGraph {
 								);
 							}
 						}
+
+						MonoScript s = TypeUtility.LoadMonoScript(node.Data.ScriptClassName);
+
+						using(new EditorGUI.DisabledScope(s == null)) {
+							if(GUILayout.Button("Edit", GUILayout.Width(50))) {
+								AssetDatabase.OpenAsset(s, 0);
+							}
+						}
 					}
 
 				} else {
@@ -349,6 +357,14 @@ namespace AssetBundleGraph {
 										}
 									} 
 								);
+							}
+						}
+
+						MonoScript s = TypeUtility.LoadMonoScript(node.Data.ScriptClassName);
+
+						using(new EditorGUI.DisabledScope(s == null)) {
+							if(GUILayout.Button("Edit", GUILayout.Width(50))) {
+								AssetDatabase.OpenAsset(s, 0);
 							}
 						}
 					}

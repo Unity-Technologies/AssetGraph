@@ -230,6 +230,18 @@ namespace AssetBundleGraph {
 				if (Event.current.type == EventType.ContextClick || (Event.current.type == EventType.MouseUp && Event.current.button == 1)) 
 				{
 					var menu = new GenericMenu();
+
+					MonoScript s = TypeUtility.LoadMonoScript(Data.ScriptClassName);
+					if(s != null) {
+						menu.AddItem(
+							new GUIContent("Edit Script"),
+							false, 
+							() => {
+								AssetDatabase.OpenAsset(s, 0);
+							}
+						);
+					}
+
 					menu.AddItem(
 						new GUIContent("Delete"),
 						false, 
