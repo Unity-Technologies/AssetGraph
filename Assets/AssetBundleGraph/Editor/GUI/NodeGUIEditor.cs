@@ -147,7 +147,7 @@ namespace AssetBundleGraph {
 				platform key is contained by Unity's importer inspector itself.
 			*/
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+				Type incomingType = FindFirstIncomingAssetType(node.Data.InputPoints[0]);
 				IntegratedGUIImportSetting.ConfigStatus status = 
 					IntegratedGUIImportSetting.GetConfigStatus(node.Data);
 
@@ -191,7 +191,7 @@ namespace AssetBundleGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				Type incomingType = FindIncomingAssetType(node.Data.InputPoints[0]);
+				Type incomingType = FindFirstIncomingAssetType(node.Data.InputPoints[0]);
 
 				if(incomingType == null) {
 					// if there is no asset input to determine incomingType,
@@ -443,7 +443,6 @@ namespace AssetBundleGraph {
 					using(new RecordUndoScope("Change Bundle Config", node, true)){
 						node.Data.BundleConfigUseGroupAsVariants = newUseGroupAsVariantValue;
 
-						// TODO: preserve variants
 						List<Variant> rv = new List<Variant>(node.Data.Variants);
 						foreach(var v in rv) {
 							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, v.ConnectionPoint));
@@ -629,7 +628,6 @@ namespace AssetBundleGraph {
 						newExportPath,
 						exporterNodePath,
 						() => {
-							// TODO Make text field bold
 						},
 						() => {
 							using (new EditorGUILayout.HorizontalScope()) {
@@ -738,12 +736,23 @@ namespace AssetBundleGraph {
 			menu.ShowAsContext();
 		}
 
-		private Type FindIncomingAssetType(ConnectionPointData inputPoint) {
-			var assetGroups = AssetBundleGraphEditorWindow.GetIncomingAssetGroups(inputPoint);
-			if(assetGroups == null) {
+		private Type FindFirstIncomingAssetType(ConnectionPointData inputPoint) {
+			var assetGroupEnum = AssetBundleGraphEditorWindow.EnumurateIncomingAssetGroups(inputPoint);
+			if(assetGroupEnum == null) {
 				return null;
 			}
-			return TypeUtility.FindIncomingAssetType(assetGroups.SelectMany(v => v.Value).ToList());
+
+			if(assetGroupEnum.Any()) {
+				var ag = assetGroupEnum.First();
+				if(ag.Values.Any()) {
+					var assets = ag.Values.First();
+					if(assets.Count > 0) {
+						return assets[0].filterType;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		private void UpdateNodeName (NodeGUI node) {

@@ -83,7 +83,7 @@ namespace AssetBundleGraph {
 			Action failedToCreateModifier,
 			Action<Type, Type> incomingTypeMismatch
 		) {
-			Type expectedType = TypeUtility.FindIncomingAssetType(incomingAssets);
+			Type expectedType = TypeUtility.FindFirstIncomingAssetType(incomingAssets);
 			if(expectedType != null) {
 				foreach(var a  in incomingAssets) {
 					Type assetType = a.filterType;

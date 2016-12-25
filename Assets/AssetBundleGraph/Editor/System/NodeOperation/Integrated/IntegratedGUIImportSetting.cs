@@ -163,7 +163,7 @@ namespace AssetBundleGraph {
 			Action<Type, Type> incomingTypeMismatch,
 			Action<ConfigStatus> errorInConfig
 		) {
-			Type expectedType = TypeUtility.FindIncomingAssetType(incomingAssets);
+			Type expectedType = TypeUtility.FindFirstIncomingAssetType(incomingAssets);
 			if(multipleAssetTypeFound != null) {
 				if(expectedType != null) {
 					foreach(var a  in incomingAssets) {

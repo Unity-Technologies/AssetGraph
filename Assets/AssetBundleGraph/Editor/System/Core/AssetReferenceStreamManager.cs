@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
@@ -27,18 +28,16 @@ namespace AssetBundleGraph {
 			m_leafnodeOutput = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 		}
 
-		public Dictionary<string, List<AssetReference>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
+		public IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(ConnectionPointData inputPoint) {
 			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
 			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
 
-			// TODO: do incoming
-			// TODO: check what happens to multiple incomings
+			var connections = SaveData.Data.Connections;
 
-//			var keyEnum = m_connectionStreamMap.Keys.Where(c => c.ToNodeConnectionPointId == inputPoint.Id);
-//			if (keyEnum.Any()) { 
-//				return m_connectionStreamMap[keyEnum.First()];
-//			}
-			return null;
+			return m_connectionStreamMap.Where(v => { 
+				var conn = connections.Find(c => c.Id == v.Key);
+				return conn!= null && conn.ToNodeConnectionPointId == inputPoint.Id;
+			}).Select(v => v.Value);
 		}
 
 		public Dictionary<string, List<AssetReference>> FindAssetGroup(string connectionId) {

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace AssetBundleGraph {
@@ -506,10 +507,10 @@ namespace AssetBundleGraph {
 				}
 			}
 		}
-			
-		public static Dictionary<string, List<AssetReference>> GetIncomingAssetGroups(ConnectionPointData inputPoint) {
+
+		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(ConnectionPointData inputPoint) {
 			if(s_currentController != null) {
-				return s_currentController.StreamManager.GetIncomingAssetGroups(inputPoint);
+				return s_currentController.StreamManager.EnumurateIncomingAssetGroups(inputPoint);
 			}
 			return null;
 		}

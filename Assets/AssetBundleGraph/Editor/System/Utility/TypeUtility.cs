@@ -135,7 +135,7 @@ namespace AssetBundleGraph {
 			return typeof(object);
 		}			
 
-		public static Type FindIncomingAssetType(List<AssetReference> assets) {
+		public static Type FindFirstIncomingAssetType(List<AssetReference> assets) {
 
 			if(assets.Any()) {
 				return assets.First().filterType;
