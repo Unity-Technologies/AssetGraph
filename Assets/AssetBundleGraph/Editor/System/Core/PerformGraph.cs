@@ -12,8 +12,8 @@ using System.Security.Cryptography;
 namespace AssetBundleGraph {
 	public class PerformGraph {
 
-		public delegate void Output(Dictionary<string, List<AssetReference>> outputGroupAsset);
-		public delegate void Perform(NodeData data, ConnectionData src, ConnectionData dst, Dictionary<string, List<AssetReference>> inputGroups, Output outputFunc);
+		public delegate void Output(ConnectionData destination, Dictionary<string, List<AssetReference>> outputGroupAsset);
+		public delegate void Perform(NodeData data, IEnumerable<PerformGraph.AssetGroups> incoming, IEnumerable<ConnectionData> connectionsToOutput, Output outputFunc);
 
 		public class Node {
 			public NodeData data;
@@ -162,17 +162,24 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public class AssetGroups {
+			public ConnectionData connection;
+			public Dictionary<string, List<AssetReference>> assetGroups;
+			public AssetGroups(ConnectionData c, Dictionary<string, List<AssetReference>> ag) {
+				connection = c;
+				assetGroups = ag;
+			}
+		}
+
 		private AssetReferenceStreamManager m_streamManager;
 		private List<Node> m_nodes;
 		private List<AssetStream> m_streams;
-		private Dictionary<string, List<AssetReference>> m_emptyAssetGroup;
 		private BuildTarget m_target;
 
 		public PerformGraph(AssetReferenceStreamManager mgr) {
 			m_nodes = new List<Node>();
 			m_streams = new List<AssetStream>();
 			m_streamManager = mgr;
-			m_emptyAssetGroup = new Dictionary<string, List<AssetReference>>();
 			m_target = (BuildTarget)int.MaxValue;
 		}
 
@@ -288,12 +295,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public void VisitFrom(NodeData node, Perform performFunc) {
-			Node n = m_nodes.Find(x => x.data.Id == node.Id);
-			Assert.IsNotNull(n);
-			_Visit(n, performFunc);
-		}
-
 		private void _Visit(Node n, Perform performFunc) {
 
 			if(n.dirty) {
@@ -306,12 +307,15 @@ namespace AssetBundleGraph {
 
 				//root node
 				if(n.streamFrom.Count == 0) {
-					for(int i = 0; i < n.streamTo.Count; ++i) {
-						var output = n.streamTo[i];
-						LogUtility.Logger.Log(n.data.Name + " performed(root)");
-						performFunc(n.data, null, output.connection, m_emptyAssetGroup, 
-							(Dictionary<string, List<AssetReference>> newOutput) => 
-							{
+					IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
+
+					LogUtility.Logger.Log(n.data.Name + " performed(root)");
+					performFunc(n.data, null, outputConnections,  
+						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+						{
+							if(destination != null) {
+								AssetStream output = n.streamTo.Find(v => v.connection == destination);
+								Assert.IsNotNull(output);
 								if(output.assetGroups != newOutput) {
 									output.nodeTo.dirty = true;
 									LogUtility.Logger.LogFormat(LogType.Log, "{0} marked dirty ({1} => {2} updated)", output.nodeTo.data.Name, output.nodeFrom.data.Name, output.nodeTo.data.Name);
@@ -319,33 +323,35 @@ namespace AssetBundleGraph {
 									output.assetGroups = newOutput;
 								}
 							}
+						}
+					);
+				} else {
+					if(n.streamTo.Count > 0) {
+						IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
+						IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
+
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
+						performFunc(n.data, inputs, outputConnections, 
+							(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+							{
+								Assert.IsNotNull(destination);
+								AssetStream output = n.streamTo.Find(v => v.connection == destination);
+								Assert.IsNotNull(output);
+								output.AddNewOutput(newOutput);
+							}
+						);
+					} else {
+						IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
+
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
+						performFunc(n.data,inputs, null,  
+							(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+							{
+								m_streamManager.AppendLeafnodeAssetGroupOutout(n.data, newOutput);
+							}
 						);
 					}
-				} else {
-					for(int i = 0; i < n.streamFrom.Count; ++i) {
-						var input = n.streamFrom[i];
 
-						if(n.streamTo.Count > 0) {
-							for(int j = 0; j < n.streamTo.Count; ++j) {
-								var output = n.streamTo[j];
-								LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed (from {1} input)", n.data.Name, input.nodeFrom.data.Name);
-								performFunc(n.data,input.connection, output.connection, input.assetGroups, 
-									(Dictionary<string, List<AssetReference>> newOutput) => 
-									{
-										output.AddNewOutput(newOutput);
-									}
-								);
-							}
-						} else {
-							LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed (from {1} input)", n.data.Name, input.nodeFrom.data.Name);
-							performFunc(n.data,input.connection, null, input.assetGroups, 
-								(Dictionary<string, List<AssetReference>> newOutput) => 
-								{
-									m_streamManager.AppendLeafnodeAssetGroupOutout(n.data, newOutput);
-								}
-							);
-						}
-					}
 					// Test output asset group after all input-output pairs are performed
 					if(n.streamTo.Count > 0) {
 						foreach(var to in n.streamTo) {

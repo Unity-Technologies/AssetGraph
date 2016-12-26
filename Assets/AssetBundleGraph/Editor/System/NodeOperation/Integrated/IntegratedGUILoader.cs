@@ -2,6 +2,7 @@ using UnityEngine;
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 
@@ -9,9 +10,8 @@ namespace AssetBundleGraph {
 	public class IntegratedGUILoader : INodeOperation {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUILoader.Setup");
@@ -27,28 +27,31 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Load(target, node, connectionToOutput, inputGroupAssets, Output);
+			Load(target, node, connectionsToOutput, Output);
 			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUILoader.Run");
-			Load(target, node, connectionToOutput, inputGroupAssets, Output);
+			Load(target, node, connectionsToOutput, Output);
 			Profiler.EndSample();
 		}
 
 		void Load (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
+
+			if(connectionsToOutput == null) {
+				return;
+			}
+
 			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
 			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
 
@@ -76,11 +79,13 @@ namespace AssetBundleGraph {
 				throw new NodeException(node.Name + ": Invalid Load Path. Path must start with Assets/", node.Name);
 			}
 
-			var outputDir = new Dictionary<string, List<AssetReference>> {
+			var output = new Dictionary<string, List<AssetReference>> {
 				{"0", outputSource}
 			};
 
-			Output(outputDir);
+			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+				null : connectionsToOutput.First();
+			Output(dst, output);
 		}
 
 		public static void ValidateLoadPath (string currentLoadPath, string combinedPath, Action NullOrEmpty, Action NotExist) {
