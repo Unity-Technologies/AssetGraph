@@ -14,28 +14,33 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIBundleBuilder.Setup");
+			// BundleBuilder do nothing without incoming connections
+			if(incoming == null) {
+				return;
+			}
 
 			var outputDict = new Dictionary<string, List<AssetReference>>();
 			outputDict[key] = new List<AssetReference>();
 
-			var bundleNames = inputGroupAssets.Keys.ToList();
-
+			var bundleNames = incoming.SelectMany(v => v.assetGroups.Keys).Distinct().ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
 
 			// get all variant name for bundles
-			foreach (var name in bundleNames) {
-				bundleVariants[name] = new List<string>();
-				var assets = inputGroupAssets[name];
-				foreach(var a in assets) {
-					var variantName = a.variantName;
-					if(!bundleVariants[name].Contains(variantName)) {
-						bundleVariants[name].Add(variantName);
+			foreach(var ag in incoming) {
+				foreach(var name in ag.assetGroups.Keys) {
+					if(!bundleVariants.ContainsKey(name)) {
+						bundleVariants[name] = new List<string>();
+					}
+					var assets = ag.assetGroups[name];
+					foreach(var a in assets) {
+						var variantName = a.variantName;
+						if(!bundleVariants[name].Contains(variantName)) {
+							bundleVariants[name].Add(variantName);
+						}
 					}
 				}
 			}
@@ -57,29 +62,46 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			Output(outputDict);
-
-			Profiler.EndSample();
+			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+				null : connectionsToOutput.First();
+			Output(dst, outputDict);
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
+			if(incoming == null) {
+				return;
+			}
+
 			Profiler.BeginSample("AssetBundleGraph.GUIBundleBuilder.Run");
+
+			var aggregatedGroups = new Dictionary<string, List<AssetReference>>();
+			aggregatedGroups[key] = new List<AssetReference>();
+
+			foreach(var ag in incoming) {
+				foreach(var name in ag.assetGroups.Keys) {
+					if(!aggregatedGroups.ContainsKey(name)) {
+						aggregatedGroups[name] = new List<AssetReference>();
+					}
+					aggregatedGroups[name].AddRange(ag.assetGroups[name].AsEnumerable());
+				}
+			}
 
 			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
 
-			var bundleNames = inputGroupAssets.Keys.ToList();
+			var bundleNames = aggregatedGroups.Keys.ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
 
 			// get all variant name for bundles
-			foreach (var name in bundleNames) {
-				bundleVariants[name] = new List<string>();
-				var assets = inputGroupAssets[name];
+			foreach(var name in aggregatedGroups.Keys) {
+				if(!bundleVariants.ContainsKey(name)) {
+					bundleVariants[name] = new List<string>();
+				}
+				var assets = aggregatedGroups[name];
 				foreach(var a in assets) {
 					var variantName = a.variantName;
 					if(!bundleVariants[name].Contains(variantName)) {
@@ -90,7 +112,7 @@ namespace AssetBundleGraph {
 
 			int validNames = 0;
 			foreach (var name in bundleNames) {
-				var assets = inputGroupAssets[name];
+				var assets = aggregatedGroups[name];
 				// we do not build bundle without any asset
 				if( assets.Count > 0 ) {
 					validNames += bundleVariants[name].Count;
@@ -103,7 +125,7 @@ namespace AssetBundleGraph {
 			foreach(var name in bundleNames) {
 				foreach(var v in bundleVariants[name]) {
 					var bundleName = name;
-					var assets = inputGroupAssets[name];
+					var assets = aggregatedGroups[name];
 
 					if(assets.Count <= 0) {
 						continue;
@@ -135,7 +157,10 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			Output(output);
+			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+				null : connectionsToOutput.First();
+			Output(dst, output);
+
 			Profiler.EndSample();
 		}
 

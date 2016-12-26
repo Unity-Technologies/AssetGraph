@@ -153,6 +153,32 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
+		public static AssetReference GetFirstIncomingAsset(IEnumerable<PerformGraph.AssetGroups> incoming) {
+
+			if( incoming == null ) {
+				return null;
+			}
+
+			foreach(var ag in incoming) {
+				foreach(var v in ag.assetGroups.Values) {
+					if(v.Count > 0) {
+						return v[0];
+					}
+				}
+			}
+
+			return null;
+		}
+
+		public static Type FindFirstIncomingAssetType(IEnumerable<PerformGraph.AssetGroups> incoming) {
+			AssetReference r = GetFirstIncomingAsset(incoming);
+			if(r != null) {
+				return r.filterType;
+			}
+			return null;
+		}
+
+
 		public static MonoScript LoadMonoScript(string className) {
 			var t = Type.GetType(className);
 			if(t == null) {

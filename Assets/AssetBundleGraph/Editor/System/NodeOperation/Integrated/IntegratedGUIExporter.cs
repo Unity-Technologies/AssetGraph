@@ -10,9 +10,8 @@ namespace AssetBundleGraph {
 	public class IntegratedGUIExporter : INodeOperation {
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Setup");
@@ -29,30 +28,32 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(target, node, connectionFromInput, connectionToOutput, inputGroupAssets, Output, false);
+			Export(target, node, incoming, connectionsToOutput, Output, false);
 			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Run");
-			Export(target, node, connectionFromInput, connectionToOutput, inputGroupAssets, Output, true);
+			Export(target, node, incoming, connectionsToOutput, Output, true);
 			Profiler.EndSample();
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
 			bool isRun) 
 		{
+			if(incoming == null) {
+				return;
+			}
+
 			var outputDict = new Dictionary<string, List<AssetReference>>();
 			outputDict["0"] = new List<AssetReference>();
 
@@ -74,60 +75,65 @@ namespace AssetBundleGraph {
 
 			var failedExports = new List<string>();
 
-			foreach (var groupKey in inputGroupAssets.Keys) {
-				var exportedAssets = new List<AssetReference>();
-				var inputSources = inputGroupAssets[groupKey];
+			foreach(var ag in incoming) {
+				foreach (var groupKey in ag.assetGroups.Keys) {
+					var exportedAssets = new List<AssetReference>();
+					var inputSources = ag.assetGroups[groupKey];
 
-				foreach (var source in inputSources) {					
-					var destinationSourcePath = source.importFrom;
-					
-					// in bundleBulider, use platform-package folder for export destination.
-					if (destinationSourcePath.StartsWith(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE)) {
-						var depth = AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;
-						
-						var splitted = destinationSourcePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
-						var reducedArray = new string[splitted.Length - depth];
-						
-						Array.Copy(splitted, depth, reducedArray, 0, reducedArray.Length);
-						var fromDepthToEnd = string.Join(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
-						
-						destinationSourcePath = fromDepthToEnd;
+					foreach (var source in inputSources) {					
+						var destinationSourcePath = source.importFrom;
+
+						// in bundleBulider, use platform-package folder for export destination.
+						if (destinationSourcePath.StartsWith(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE)) {
+							var depth = AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;
+
+							var splitted = destinationSourcePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
+							var reducedArray = new string[splitted.Length - depth];
+
+							Array.Copy(splitted, depth, reducedArray, 0, reducedArray.Length);
+							var fromDepthToEnd = string.Join(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
+
+							destinationSourcePath = fromDepthToEnd;
+						}
+
+						var destination = FileUtility.PathCombine(exportPath, destinationSourcePath);
+
+						var parentDir = Directory.GetParent(destination).ToString();
+
+						if (isRun) {
+							if (!Directory.Exists(parentDir)) {
+								Directory.CreateDirectory(parentDir);
+							}
+							if (File.Exists(destination)) {
+								File.Delete(destination);
+							}
+							if (string.IsNullOrEmpty(source.importFrom)) {
+								failedExports.Add(source.absolutePath);
+								continue;
+							}
+							try {
+								File.Copy(source.importFrom, destination);
+							} catch(Exception e) {
+								failedExports.Add(source.importFrom);
+								LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Error occured: " + e.Message);
+							}
+						}
+
+						source.exportTo = destination;
+						exportedAssets.Add(source);
 					}
-					
-					var destination = FileUtility.PathCombine(exportPath, destinationSourcePath);
-					
-					var parentDir = Directory.GetParent(destination).ToString();
-
-					if (isRun) {
-						if (!Directory.Exists(parentDir)) {
-							Directory.CreateDirectory(parentDir);
-						}
-						if (File.Exists(destination)) {
-							File.Delete(destination);
-						}
-						if (string.IsNullOrEmpty(source.importFrom)) {
-							failedExports.Add(source.absolutePath);
-							continue;
-						}
-						try {
-							File.Copy(source.importFrom, destination);
-						} catch(Exception e) {
-							failedExports.Add(source.importFrom);
-							LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Error occured: " + e.Message);
-						}
-					}
-
-					source.exportTo = destination;
-					exportedAssets.Add(source);
+					outputDict["0"].AddRange(exportedAssets);
 				}
-				outputDict["0"].AddRange(exportedAssets);
 			}
 
 			if (failedExports.Any()) {
 				LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
 			}
 
-			Output(outputDict);
+			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+				null : connectionsToOutput.First();
+
+			Output(dst, outputDict);
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {

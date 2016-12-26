@@ -11,86 +11,77 @@ namespace AssetBundleGraph {
 
 		public void Setup (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUIFilter.Setup");
 			node.ValidateOverlappingFilterCondition(true);
-			Filter(node, connectionFromInput, connectionToOutput, inputGroupAssets, Output);
+			Filter(node, incoming, connectionsToOutput, Output);
 			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUIFilter.Run");
-			Filter(node, connectionFromInput, connectionToOutput, inputGroupAssets, Output);
+			Filter(node, incoming, connectionsToOutput, Output);
 			Profiler.EndSample();
 		}
 
-		private class FilterableAsset {
-			public AssetReference asset;
-			public bool isFiltered = false;
-
-			public FilterableAsset (AssetReference asset) {
-				this.asset = asset;
-			}
-		}
-
 		private void Filter (NodeData node, 
-			ConnectionData connectionFromInput,
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			var output = new Dictionary<string, List<AssetReference>>();
+			if(connectionsToOutput == null || incoming == null) {
+				return;
+			}
 
-			foreach(var groupKey in inputGroupAssets.Keys) {
+			var allOutput = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 
-				var assets = new List<FilterableAsset>();
-				inputGroupAssets[groupKey].ForEach(a => assets.Add(new FilterableAsset(a)));
+			foreach(var outPoints in node.OutputPoints) {
+				allOutput[outPoints.Id] = new Dictionary<string, List<AssetReference>>();
+			}
 
-				foreach(var a in assets) {
-					foreach(var filter in node.FilterConditions) {
-						if(a.isFiltered) {
-							continue;
-						}
-						bool isTargetFilter = false;
-						if(connectionToOutput != null) {
-							isTargetFilter = connectionToOutput.FromNodeConnectionPointId == filter.ConnectionPoint.Id;
-						}
+			foreach(var ag in incoming) {
+				foreach(var groupKey in ag.assetGroups.Keys) {
 
-						bool keywordMatch = Regex.IsMatch(a.asset.importFrom, filter.FilterKeyword, 
-							RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+					foreach(var a in ag.assetGroups[groupKey]) {
+						foreach(var filter in node.FilterConditions) {
+							bool keywordMatch = Regex.IsMatch(a.importFrom, filter.FilterKeyword, 
+								RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
-						bool match = keywordMatch;
+							bool match = keywordMatch;
 
-						if(keywordMatch && filter.FilterKeytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) 
-						{
-							var assumedType = a.asset.filterType;
-							match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
-						}
+							if(keywordMatch && filter.FilterKeytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) 
+							{
+								var assumedType = a.filterType;
+								match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
+							}
 
-						if(match) {
-							a.isFiltered = true;
-							if(isTargetFilter) {
+							if(match) {
+								var output = allOutput[filter.ConnectionPoint.Id];
 								if(!output.ContainsKey(groupKey)) {
 									output[groupKey] = new List<AssetReference>();
 								}
-								output[groupKey].Add(a.asset);
+								output[groupKey].Add(a);
+								// consume this asset with this output
+								break;
 							}
 						}
 					}
 				}
 			}
 
-			Output(output);
+			foreach(var dst in connectionsToOutput) {
+				if(allOutput.ContainsKey(dst.FromNodeConnectionPointId)) {
+					Output(dst, allOutput[dst.FromNodeConnectionPointId]);
+				}
+			}
 		}
 	}
 }

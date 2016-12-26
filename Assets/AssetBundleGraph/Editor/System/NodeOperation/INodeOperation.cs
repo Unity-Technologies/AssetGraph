@@ -13,9 +13,8 @@ namespace AssetBundleGraph {
 		*/
 		void Setup (BuildTarget target, 
 			NodeData nodeData, 
-			ConnectionData connectionFromInput, 
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc);
 
 		/**
@@ -23,9 +22,8 @@ namespace AssetBundleGraph {
 		*/
 		void Run (BuildTarget target, 
 			NodeData nodeData, 
-			ConnectionData connectionFromInput, 
-			ConnectionData connectionToOutput, 
-			Dictionary<string, List<AssetReference>> inputGroupAssets, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc);
 	}
 }

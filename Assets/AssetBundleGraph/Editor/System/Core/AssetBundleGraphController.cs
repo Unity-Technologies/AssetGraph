@@ -79,12 +79,11 @@ namespace AssetBundleGraph {
 
 			PerformGraph.Perform performFunc =
 				(NodeData data, 
-					ConnectionData src, 
-					ConnectionData dst, 
-					Dictionary<string, List<AssetReference>> inputGroups, 
+					IEnumerable<PerformGraph.AssetGroups> incoming, 
+					IEnumerable<ConnectionData> connectionsToOutput, 
 					PerformGraph.Output outputFunc) =>
 			{
-				DoNodeOperation(target, data, src, dst, inputGroups, outputFunc, isRun, updateHandler);
+				DoNodeOperation(target, data, incoming, connectionsToOutput, outputFunc, isRun, updateHandler);
 			};
 
 			newGraph.VisitAll(performFunc, forceVisitAll);
@@ -105,8 +104,8 @@ namespace AssetBundleGraph {
 
 			try {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
-				DoNodeOperation(target, node.Data, null, null, new Dictionary<string, List<AssetReference>>(), 
-					(Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
+				DoNodeOperation(target, node.Data, null, null, 
+					(ConnectionData dst, Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
 
 				LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
@@ -128,9 +127,8 @@ namespace AssetBundleGraph {
 		private void DoNodeOperation (
 			BuildTarget target,
 			NodeData currentNodeData,
-			ConnectionData sourceConnection,
-			ConnectionData destinationConnection,
-			Dictionary<string, List<AssetReference>> inputGroupAssets,
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
 			bool isActualRun,
 			Action<NodeData, float> updateHandler) 
@@ -143,10 +141,10 @@ namespace AssetBundleGraph {
 				INodeOperation executor = CreateOperation(currentNodeData);
 				if(executor != null) {
 					if(isActualRun) {
-						executor.Run(target, currentNodeData, sourceConnection, destinationConnection, inputGroupAssets, outputFunc);
+						executor.Run(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
 					}
 					else {
-						executor.Setup(target, currentNodeData, sourceConnection, destinationConnection, inputGroupAssets, outputFunc);
+						executor.Setup(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
 					}
 				}
 
