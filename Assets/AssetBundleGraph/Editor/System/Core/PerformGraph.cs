@@ -284,89 +284,94 @@ namespace AssetBundleGraph {
 
 
 		public void VisitAll(Perform performFunc, bool visitAll = false) {
-			List<Node> rootNodes = m_nodes.FindAll(n => n.streamFrom.Count == 0);
+			List<Node> leafNodes = m_nodes.FindAll(n => n.streamTo.Count == 0);
 
 			if(visitAll) {
 				m_nodes.ForEach(n => n.dirty = true);
 			}
 
-			foreach(var n in rootNodes) {
+			foreach(var n in leafNodes) {
 				_Visit(n, performFunc);
+			}
+		}
+
+		private void _Perform(Node n, Perform performFunc) {
+
+			n.dirty = false;
+			n.data.NeedsRevisit = false;
+
+			if(n.streamTo.Count == 0) {
+				m_streamManager.ClearLeafAssetGroupOutout(n.data);
+			}
+
+			//root node
+			if(n.streamFrom.Count == 0) {
+				IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
+
+				LogUtility.Logger.Log(n.data.Name + " performed(root)");
+				performFunc(n.data, null, outputConnections,  
+					(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+					{
+						if(destination != null) {
+							AssetStream output = n.streamTo.Find(v => v.connection == destination);
+							Assert.IsNotNull(output);
+							if(output.assetGroups != newOutput) {
+								output.nodeTo.dirty = true;
+								LogUtility.Logger.LogFormat(LogType.Log, "{0} marked dirty ({1} => {2} updated)", output.nodeTo.data.Name, output.nodeFrom.data.Name, output.nodeTo.data.Name);
+								m_streamManager.AssignAssetGroup(output.connection, newOutput);
+								output.assetGroups = newOutput;
+							}
+						}
+					}
+				);
+			} else {
+				if(n.streamTo.Count > 0) {
+					IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
+					IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
+
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
+					performFunc(n.data, inputs, outputConnections, 
+						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+						{
+							Assert.IsNotNull(destination);
+							AssetStream output = n.streamTo.Find(v => v.connection == destination);
+							Assert.IsNotNull(output);
+							output.AddNewOutput(newOutput);
+						}
+					);
+				} else {
+					IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
+
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
+					performFunc(n.data,inputs, null,  
+						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+						{
+							m_streamManager.AppendLeafnodeAssetGroupOutout(n.data, newOutput);
+						}
+					);
+				}
+
+				// Test output asset group after all input-output pairs are performed
+				if(n.streamTo.Count > 0) {
+					foreach(var to in n.streamTo) {
+						if(to.IsStreamAssetRequireUpdate) {
+							to.UpdateAssetGroup(m_streamManager);
+						} else {
+							LogUtility.Logger.LogFormat(LogType.Log, "[skipped]stream update skipped. Result is equivarent: {0} -> {1}", n.data.Name, to.nodeTo.data.Name);
+						}
+					}
+				}
 			}
 		}
 
 		private void _Visit(Node n, Perform performFunc) {
 
-			if(n.dirty) {
-				n.dirty = false;
-				n.data.NeedsRevisit = false;
-
-				if(n.streamTo.Count == 0) {
-					m_streamManager.ClearLeafAssetGroupOutout(n.data);
-				}
-
-				//root node
-				if(n.streamFrom.Count == 0) {
-					IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
-
-					LogUtility.Logger.Log(n.data.Name + " performed(root)");
-					performFunc(n.data, null, outputConnections,  
-						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
-						{
-							if(destination != null) {
-								AssetStream output = n.streamTo.Find(v => v.connection == destination);
-								Assert.IsNotNull(output);
-								if(output.assetGroups != newOutput) {
-									output.nodeTo.dirty = true;
-									LogUtility.Logger.LogFormat(LogType.Log, "{0} marked dirty ({1} => {2} updated)", output.nodeTo.data.Name, output.nodeFrom.data.Name, output.nodeTo.data.Name);
-									m_streamManager.AssignAssetGroup(output.connection, newOutput);
-									output.assetGroups = newOutput;
-								}
-							}
-						}
-					);
-				} else {
-					if(n.streamTo.Count > 0) {
-						IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
-						IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
-
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
-						performFunc(n.data, inputs, outputConnections, 
-							(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
-							{
-								Assert.IsNotNull(destination);
-								AssetStream output = n.streamTo.Find(v => v.connection == destination);
-								Assert.IsNotNull(output);
-								output.AddNewOutput(newOutput);
-							}
-						);
-					} else {
-						IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
-
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
-						performFunc(n.data,inputs, null,  
-							(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
-							{
-								m_streamManager.AppendLeafnodeAssetGroupOutout(n.data, newOutput);
-							}
-						);
-					}
-
-					// Test output asset group after all input-output pairs are performed
-					if(n.streamTo.Count > 0) {
-						foreach(var to in n.streamTo) {
-							if(to.IsStreamAssetRequireUpdate) {
-								to.UpdateAssetGroup(m_streamManager);
-							} else {
-								LogUtility.Logger.LogFormat(LogType.Log, "[skipped]stream update skipped. Result is equivarent: {0} -> {1}", n.data.Name, to.nodeTo.data.Name);
-							}
-						}
-					}
-				}
+			foreach(var input in n.streamFrom) {
+				_Visit(input.nodeFrom, performFunc);
 			}
 
-			foreach(var output in n.streamTo) {
-				_Visit(output.nodeTo, performFunc);
+			if(n.dirty) {
+				_Perform(n, performFunc);
 			}
 		}
 
