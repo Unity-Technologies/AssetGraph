@@ -60,7 +60,7 @@ namespace AssetBundleGraph {
 		{
 
 			if(isRun) {
-				AssetBundleBuildReport.ClearBuildReports();
+				AssetBundleBuildReport.ClearReports();
 			}
 
 			var saveData = SaveData.Data;
@@ -230,7 +230,7 @@ namespace AssetBundleGraph {
 
 				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
 				// TODO: implement this properly
-				postprocessInstance.DoPostprocess(AssetBundleBuildReport.BuildReports);
+				postprocessInstance.DoPostprocess(AssetBundleBuildReport.BuildReports, AssetBundleBuildReport.ExportReports);
 			}
 		}
 

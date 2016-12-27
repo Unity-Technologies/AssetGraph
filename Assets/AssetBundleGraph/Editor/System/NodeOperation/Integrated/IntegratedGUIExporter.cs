@@ -73,7 +73,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			var failedExports = new List<string>();
+			var report = new ExportReport(node);
 
 			foreach(var ag in incoming) {
 				foreach (var groupKey in ag.assetGroups.Keys) {
@@ -108,14 +108,14 @@ namespace AssetBundleGraph {
 								File.Delete(destination);
 							}
 							if (string.IsNullOrEmpty(source.importFrom)) {
-								failedExports.Add(source.absolutePath);
+								report.AddErrorEntry(source.absolutePath, destination, "Source Asset import path is empty; given asset is not imported by Unity.");
 								continue;
 							}
 							try {
 								File.Copy(source.importFrom, destination);
+								report.AddExportedEntry(source.importFrom, destination);
 							} catch(Exception e) {
-								failedExports.Add(source.importFrom);
-								LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Error occured: " + e.Message);
+								report.AddErrorEntry(source.importFrom, destination, e.Message);
 							}
 						}
 
@@ -126,14 +126,12 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (failedExports.Any()) {
-				LogUtility.Logger.LogError(LogUtility.kTag, node.Name + ": Failed to export files. All files must be imported before exporting: " + string.Join(", ", failedExports.ToArray()));
-			}
-
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 
 			Output(dst, outputDict);
+
+			AssetBundleBuildReport.AddExportReport(report);
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {
