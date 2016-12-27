@@ -11,35 +11,23 @@ Example code for asset bundle build postprocess.
 */
 public class MyPostprocess : AssetBundleGraph.IPostprocess {
 	/* 
-	 * Run() is called when build or dry-run is performed. 
-	 * 
-	 * @param [in] assetGroups	Dictionary of asset groups per Node 
-	 * @param [in] isRun		True if this is actual build. 
+	 * DoPostprocess() is called when build performed.
+	 * @param [in] reports	collection of AssetBundleBuildReport from each BundleBuilders.
 	 */
-	public void Run (Dictionary<AssetBundleGraph.NodeData, Dictionary<string, List<AssetBundleGraph.Asset>>> assetGroups, bool isRun) {
+	public void DoPostprocess (IEnumerable<AssetBundleGraph.AssetBundleBuildReport> reports) {
 
-		if (!isRun) {
-			return;
-		}
-
-		Debug.Log("BUILD REPORT:");
-
-		foreach (var node in assetGroups.Keys) {
-			var result = assetGroups[node];
+		foreach (var report in reports) {
 
 			StringBuilder sb = new StringBuilder();
 
-			foreach (var groupKey in result.Keys) {
-				var assets = result[groupKey];
+			sb.AppendFormat("-------\nBUILD REPORT({0}):\n-------\n", report.Node.Name);
 
-				sb.AppendFormat("In {0}:\n", groupKey);
-
-				foreach (var a in assets) {
-					sb.AppendFormat("\t {0} {1}\n", a.path, (a.isBundled)?"[in AssetBundle]":"");
-				}
+			foreach(var v in report.BuiltBundleFiles) {
+				sb.AppendFormat("{0}\n", v.fileNameAndExtension);
 			}
 
-			Debug.LogFormat("Node:{0}\n---\n{1}", node.Name, sb.ToString());
+			sb.Append("-------\n");
+			Debug.Log(sb.ToString());
 		}
 	}
 }
