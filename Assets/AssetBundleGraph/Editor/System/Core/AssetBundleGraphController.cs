@@ -56,9 +56,13 @@ namespace AssetBundleGraph {
 			BuildTarget target,
 			bool isRun,
 			bool forceVisitAll,
-			bool callPostprocess,
 			Action<NodeData, float> updateHandler) 
 		{
+
+			if(isRun) {
+				AssetBundleBuildReport.ClearBuildReports();
+			}
+
 			var saveData = SaveData.Data;
 			foreach(var e in m_nodeExceptions) {
 				var errorNode = saveData.Nodes.Find(n => n.Id == e.Id);
@@ -88,8 +92,8 @@ namespace AssetBundleGraph {
 
 			newGraph.VisitAll(performFunc, forceVisitAll);
 
-			if(callPostprocess && m_nodeExceptions.Count == 0) {
-				Postprocess(isRun);
+			if(isRun && m_nodeExceptions.Count == 0) {
+				Postprocess();
 			}
 
 			Profiler.EndSample();
@@ -113,7 +117,7 @@ namespace AssetBundleGraph {
 				var v = saveData.Nodes.Find(n => n.Id == node.Data.Id);
 				v.FromJsonDictionary(node.Data.ToJsonDictionary());
 
-				Perform(target, false, false, false, null);
+				Perform(target, false, false, null);
 
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
@@ -214,7 +218,7 @@ namespace AssetBundleGraph {
 			return executor;
 		}
 
-		private void Postprocess (bool isRun) 
+		private void Postprocess () 
 		{
 			var postprocessType = typeof(IPostprocess);
 			var ppTypes = Assembly.GetExecutingAssembly().GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
@@ -226,7 +230,7 @@ namespace AssetBundleGraph {
 
 				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
 				// TODO: implement this properly
-				postprocessInstance.Run(null, isRun);
+				postprocessInstance.DoPostprocess(AssetBundleBuildReport.BuildReports);
 			}
 		}
 
@@ -296,7 +300,7 @@ namespace AssetBundleGraph {
 			}
 
 			if(isAnyNodeAffected) {
-				Perform(m_lastTarget, false, false, false, null);
+				Perform(m_lastTarget, false, false, null);
 			}
 		}
 	}

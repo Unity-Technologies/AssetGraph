@@ -139,8 +139,7 @@ namespace AssetBundleGraph {
 			}
 
 
-			BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
-
+			AssetBundleManifest m = BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
 
 			var output = new Dictionary<string, List<AssetReference>>();
 			output[key] = new List<AssetReference>();
@@ -160,6 +159,8 @@ namespace AssetBundleGraph {
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 			Output(dst, output);
+
+			AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, bundleBuild, output[key], aggregatedGroups, bundleVariants));
 
 			Profiler.EndSample();
 		}
