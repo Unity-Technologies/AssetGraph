@@ -16,16 +16,24 @@ namespace AssetBundleGraph {
 
 		private class AssetBundleBuildReportManager {
 
-			private List<AssetBundleBuildReport> m_reports;
+			private List<AssetBundleBuildReport> m_buildReports;
+			private List<ExportReport> m_exportReports;
 
-			public List<AssetBundleBuildReport> Reports {
+			public List<AssetBundleBuildReport> BuildReports {
 				get {
-					return m_reports;
+					return m_buildReports;
+				}
+			}
+
+			public List<ExportReport> ExportReports {
+				get {
+					return m_exportReports;
 				}
 			}
 
 			public AssetBundleBuildReportManager() {
-				m_reports = new List<AssetBundleBuildReport>();
+				m_buildReports = new List<AssetBundleBuildReport>();
+				m_exportReports = new List<ExportReport>();
 			}
 		}
 
@@ -39,17 +47,27 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		static public void ClearBuildReports() {
-			Manager.Reports.Clear();
+		static public void ClearReports() {
+			Manager.BuildReports.Clear();
+			Manager.ExportReports.Clear();
 		}
 
 		static public void AddBuildReport(AssetBundleBuildReport r) {
-			Manager.Reports.Add(r);
+			Manager.BuildReports.Add(r);
+		}
+		static public void AddExportReport(ExportReport r) {
+			Manager.ExportReports.Add(r);
 		}
 
 		static public IEnumerable<AssetBundleBuildReport> BuildReports {
 			get {
-				return Manager.Reports;
+				return Manager.BuildReports;
+			}
+		}
+
+		static public IEnumerable<ExportReport> ExportReports {
+			get {
+				return Manager.ExportReports;
 			}
 		}
 
@@ -116,6 +134,67 @@ namespace AssetBundleGraph {
 			m_builtBundles = builtBundles;
 			m_assetGroups = ag;
 			m_bundleNamesAndVariants = names;
+		}
+	}
+
+	public class ExportReport {
+
+		public class Entry {
+			public string source;
+			public string destination;
+			public Entry(string src, string dst) {
+				source = src;
+				destination = dst;
+			}
+		}
+
+		public class ErrorEntry {
+			public string source;
+			public string destination;
+			public string reason;
+			public ErrorEntry(string src, string dst, string r) {
+				source = src;
+				destination = dst;
+				reason = r;
+			}
+		}
+
+		private NodeData m_nodeData;
+
+		private List<Entry> m_exportedItems;
+		private List<ErrorEntry> m_failedItems;
+
+		public List<Entry> ExportedItems {
+			get {
+				return m_exportedItems;
+			}
+		}
+
+		public List<ErrorEntry> Errors {
+			get {
+				return m_failedItems;
+			}
+		}
+
+		public NodeData Node {
+			get {
+				return m_nodeData;
+			}
+		}
+
+		public ExportReport(NodeData node) {
+			m_nodeData = node;
+
+			m_exportedItems = new List<Entry>();
+			m_failedItems = new List<ErrorEntry> ();
+		}
+
+		public void AddExportedEntry(string src, string dst) {
+			m_exportedItems.Add(new Entry(src, dst));
+		}
+
+		public void AddErrorEntry(string src, string dst, string reason) {
+			m_failedItems.Add(new ErrorEntry(src, dst, reason));
 		}
 	}
 }

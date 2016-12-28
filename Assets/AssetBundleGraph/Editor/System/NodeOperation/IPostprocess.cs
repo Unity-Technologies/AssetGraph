@@ -5,6 +5,6 @@ using System.Collections.Generic;
 
 namespace AssetBundleGraph {
 	public interface IPostprocess {
-		void DoPostprocess (IEnumerable<AssetBundleBuildReport> reports);
+		void DoPostprocess (IEnumerable<AssetBundleBuildReport> buildReports, IEnumerable<ExportReport> exportReports);
 	}
 }
