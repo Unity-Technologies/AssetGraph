@@ -530,11 +530,8 @@ namespace AssetBundleGraph {
 
 				GUILayout.Space(4);
 
-				bool b = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
-				if(b != showVerboseLog) {
-					showVerboseLog = b;
-					LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
-				}
+				showVerboseLog = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+				LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
 
 				GUILayout.FlexibleSpace();
 
