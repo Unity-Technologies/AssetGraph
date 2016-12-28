@@ -27,7 +27,7 @@ namespace AssetBundleGraph {
 					s_database.m_dictionary = new SortedList<string, AssetReference>();
 					s_database.m_version = DB_VERSION;
 
-					Save();
+					AssetDatabase.CreateAsset(s_database, DBPath);
 				}
 			}
 
@@ -70,10 +70,6 @@ namespace AssetBundleGraph {
 			}
 
 			return loaded;
-		}
-
-		public static void Save() {
-			AssetDatabase.CreateAsset(s_database, DBPath);
 		}
 
 		public static void SetDBDirty() {
