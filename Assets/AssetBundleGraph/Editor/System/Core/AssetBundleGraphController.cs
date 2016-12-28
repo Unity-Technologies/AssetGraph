@@ -21,6 +21,8 @@ namespace AssetBundleGraph {
 
 		private BuildTarget m_lastTarget;
 
+		private bool m_isBuilding;
+
 		public bool IsAnyIssueFound {
 			get {
 				return m_nodeExceptions.Count > 0;
@@ -58,6 +60,8 @@ namespace AssetBundleGraph {
 			bool forceVisitAll,
 			Action<NodeData, float> updateHandler) 
 		{
+			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build BEGIN---" : "---Setup BEGIN---");
+			m_isBuilding = true;
 
 			if(isRun) {
 				AssetBundleBuildReport.ClearReports();
@@ -96,7 +100,8 @@ namespace AssetBundleGraph {
 				Postprocess();
 			}
 
-			Profiler.EndSample();
+			m_isBuilding = false;
+			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build END---" : "---Setup END---");
 		}
 
 		public void Validate (
@@ -108,6 +113,7 @@ namespace AssetBundleGraph {
 
 			try {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
+				m_isBuilding = true;
 				DoNodeOperation(target, node.Data, null, null, 
 					(ConnectionData dst, Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
@@ -118,11 +124,10 @@ namespace AssetBundleGraph {
 				v.FromJsonDictionary(node.Data.ToJsonDictionary());
 
 				Perform(target, false, false, null);
-
+				m_isBuilding = false;
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
 			}
-			Profiler.EndSample();
 		}
 
 		/**
@@ -236,6 +241,11 @@ namespace AssetBundleGraph {
 
 		public void OnAssetsReimported(BuildTarget target, string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 
+			// ignore asset reimport event during build
+			if(m_isBuilding) {
+				return;
+			}
+
 			var saveData = SaveData.Data;
 
 			if(saveData.Nodes == null) {
@@ -248,9 +258,13 @@ namespace AssetBundleGraph {
 				if(node.Kind == NodeKind.LOADER_GUI) {
 					var loadPath = node.LoaderLoadPath[target];
 					if(string.IsNullOrEmpty(loadPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-						node.NeedsRevisit = true;
-						isAnyNodeAffected = true;
+						// ignore config file path update
+						var notConfigFilePath = importedAssets.Where( path => !path.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
+						if(!string.IsNullOrEmpty(notConfigFilePath)) {
+							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+							node.NeedsRevisit = true;
+							isAnyNodeAffected = true;
+						}
 					}
 
 					var connOut = saveData.Connections.Find(c => c.FromNodeId == node.Id);
