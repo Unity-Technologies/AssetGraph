@@ -28,7 +28,6 @@ namespace AssetBundleGraph {
 				}
 			);
 
-			Export(target, node, incoming, connectionsToOutput, Output, false);
 			Profiler.EndSample();
 		}
 		
@@ -39,7 +38,7 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Run");
-			Export(target, node, incoming, connectionsToOutput, Output, true);
+			Export(target, node, incoming, connectionsToOutput, Output);
 			Profiler.EndSample();
 		}
 
@@ -47,8 +46,7 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
-			bool isRun) 
+			PerformGraph.Output Output) 
 		{
 			if(incoming == null) {
 				return;
@@ -59,17 +57,15 @@ namespace AssetBundleGraph {
 
 			var exportPath = FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]);
 
-			if (isRun) {
-				if(node.ExporterExportOption[target] == (int)ExporterExportOption.DeleteAndRecreateExportDirectory) {
-					if (Directory.Exists(exportPath)) {
-						Directory.Delete(exportPath, true);
-					}
+			if(node.ExporterExportOption[target] == (int)ExporterExportOption.DeleteAndRecreateExportDirectory) {
+				if (Directory.Exists(exportPath)) {
+					Directory.Delete(exportPath, true);
 				}
+			}
 
-				if(node.ExporterExportOption[target] != (int)ExporterExportOption.ErrorIfNoExportDirectoryFound) {
-					if (!Directory.Exists(exportPath)) {
-						Directory.CreateDirectory(exportPath);
-					}
+			if(node.ExporterExportOption[target] != (int)ExporterExportOption.ErrorIfNoExportDirectoryFound) {
+				if (!Directory.Exists(exportPath)) {
+					Directory.CreateDirectory(exportPath);
 				}
 			}
 
@@ -100,23 +96,21 @@ namespace AssetBundleGraph {
 
 						var parentDir = Directory.GetParent(destination).ToString();
 
-						if (isRun) {
-							if (!Directory.Exists(parentDir)) {
-								Directory.CreateDirectory(parentDir);
-							}
-							if (File.Exists(destination)) {
-								File.Delete(destination);
-							}
-							if (string.IsNullOrEmpty(source.importFrom)) {
-								report.AddErrorEntry(source.absolutePath, destination, "Source Asset import path is empty; given asset is not imported by Unity.");
-								continue;
-							}
-							try {
-								File.Copy(source.importFrom, destination);
-								report.AddExportedEntry(source.importFrom, destination);
-							} catch(Exception e) {
-								report.AddErrorEntry(source.importFrom, destination, e.Message);
-							}
+						if (!Directory.Exists(parentDir)) {
+							Directory.CreateDirectory(parentDir);
+						}
+						if (File.Exists(destination)) {
+							File.Delete(destination);
+						}
+						if (string.IsNullOrEmpty(source.importFrom)) {
+							report.AddErrorEntry(source.absolutePath, destination, "Source Asset import path is empty; given asset is not imported by Unity.");
+							continue;
+						}
+						try {
+							File.Copy(source.importFrom, destination);
+							report.AddExportedEntry(source.importFrom, destination);
+						} catch(Exception e) {
+							report.AddErrorEntry(source.importFrom, destination, e.Message);
 						}
 
 						source.exportTo = destination;

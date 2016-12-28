@@ -37,9 +37,7 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUILoader.Run");
-			Load(target, node, connectionsToOutput, Output);
-			Profiler.EndSample();
+			//Load operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
 		void Load (BuildTarget target, 
