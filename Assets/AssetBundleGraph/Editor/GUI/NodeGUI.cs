@@ -71,16 +71,26 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		private NodeGUIInspectorHelper Inspector {
+			get {
+				if(m_nodeInsp == null) {
+					m_nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
+					m_nodeInsp.hideFlags = HideFlags.DontSave;
+				}
+				return m_nodeInsp;
+			}
+		}
+
 		public void ResetErrorStatus () {
 			m_hasErrors = false;
-			this.m_nodeInsp.UpdateNode(this);
-			this.m_nodeInsp.UpdateErrors(new List<string>());
+			Inspector.UpdateNode(this);
+			Inspector.UpdateErrors(new List<string>());
 		}
 
 		public void AppendErrorSources (List<string> errors) {
 			this.m_hasErrors = true;
-			this.m_nodeInsp.UpdateNode(this);
-			this.m_nodeInsp.UpdateErrors(errors);
+			Inspector.UpdateNode(this);
+			Inspector.UpdateErrors(errors);
 		}
 
 		public int WindowId {
@@ -94,15 +104,12 @@ namespace AssetBundleGraph {
 		}
 
 		public NodeGUI (NodeData data) {
-			this.m_nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
-			this.m_nodeInsp.hideFlags = HideFlags.DontSave;
-			this.m_nodeWindowId = 0;
+			m_nodeWindowId = 0;
+			m_data = data;
 
-			this.m_data = data;
+			m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT);
 
-			this.m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT);
-
-			this.m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
+			m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
 		}
 
 		public NodeGUI Duplicate (float newX, float newY) {
@@ -113,13 +120,13 @@ namespace AssetBundleGraph {
 		}
 
 		public void SetActive () {
-			m_nodeInsp.UpdateNode(this);
-			Selection.activeObject = m_nodeInsp;
-			this.m_nodeSyle = NodeGUIUtility.SelectedStyle[m_data.Kind];
+			Inspector.UpdateNode(this);
+			Selection.activeObject = Inspector;
+			m_nodeSyle = NodeGUIUtility.SelectedStyle[m_data.Kind];
 		}
 
 		public void SetInactive () {
-			this.m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
+			m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
 		}
 			
 		private void RefreshConnectionPos (float yOffset) {
