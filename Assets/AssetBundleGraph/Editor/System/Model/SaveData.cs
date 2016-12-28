@@ -49,7 +49,7 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private List<NodeData> m_allNodes;
 		[SerializeField] private List<ConnectionData> m_allConnections;
-		[SerializeField] private DateTime m_lastModified;
+		[SerializeField] private long m_lastModified;
 		[SerializeField] private int m_version;
 
 		private static SaveData s_saveData;
@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void Initialize() {
-			m_lastModified = DateTime.UtcNow;
+			m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
 			m_version = ABG_FILE_VERSION;
@@ -68,7 +68,7 @@ namespace AssetBundleGraph {
 		private void InitializeFromJson(Dictionary<string, object> jsonData) {
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
-			m_lastModified = Convert.ToDateTime(jsonData[LASTMODIFIED] as string);
+			m_lastModified = Convert.ToDateTime(jsonData[LASTMODIFIED] as string).ToFileTimeUtc();
 			m_version = ABG_FILE_VERSION;
 
 			var nodeList = jsonData[NODES] as List<object>;
@@ -84,7 +84,7 @@ namespace AssetBundleGraph {
 			EditorUtility.SetDirty(this);
 		}
 
-		public DateTime LastModified {
+		public long LastModified {
 			get {
 				return m_lastModified;
 			}
@@ -123,7 +123,7 @@ namespace AssetBundleGraph {
 
 			return new Dictionary<string, object>{
 				{VERSION, m_version},
-				{LASTMODIFIED, m_lastModified.ToString()},
+				{LASTMODIFIED, new DateTime(m_lastModified, DateTimeKind.Utc).ToString()},
 				{NODES, nodeList},
 				{CONNECTIONS, connList}
 			};
@@ -185,7 +185,7 @@ namespace AssetBundleGraph {
 				Directory.CreateDirectory(dir);
 			}
 
-			m_lastModified = DateTime.UtcNow;
+			m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
 			m_version = ABG_FILE_VERSION;
 
 			var dataStr = Json.Serialize(ToJsonDictionary());
@@ -210,7 +210,7 @@ namespace AssetBundleGraph {
 			m_allNodes = nodes.Select(n => n.Data).ToList();
 			m_allConnections = connections.Select(c => c.Data).ToList();
 			m_version = ABG_FILE_VERSION;
-			m_lastModified = DateTime.UtcNow;
+			m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
 
 			EditorUtility.SetDirty(this);
 		}
@@ -326,7 +326,7 @@ namespace AssetBundleGraph {
 			if(changed) {
 				Nodes.RemoveAll(n => removingNodes.Contains(n));
 				Connections.RemoveAll(c => removingConnections.Contains(c));
-				m_lastModified = DateTime.UtcNow;
+				m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
 			}
 
 			return !changed;

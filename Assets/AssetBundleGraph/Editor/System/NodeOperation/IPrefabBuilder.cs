@@ -39,6 +39,7 @@ namespace AssetBundleGraph {
 	[AttributeUsage(AttributeTargets.Class)] 
 	public class CustomPrefabBuilder : Attribute {
 		private string m_name;
+		private string m_version;
 
 		public string Name {
 			get {
@@ -46,8 +47,20 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public string Version {
+			get {
+				return m_version;
+			}
+		}
+
 		public CustomPrefabBuilder (string name) {
 			m_name = name;
+			m_version = string.Empty;
+		}
+
+		public CustomPrefabBuilder (string name, string version) {
+			m_name = name;
+			m_version = version;
 		}
 	}
 
@@ -106,6 +119,18 @@ namespace AssetBundleGraph {
 					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
 				if(attr != null) {
 					return attr.Name;
+				}
+			}
+			return string.Empty;
+		}
+
+		public static string GetPrefabBuilderVersion(string className) {
+			var type = Type.GetType(className);
+			if(type != null) {
+				CustomPrefabBuilder attr = 
+					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+				if(attr != null) {
+					return attr.Version;
 				}
 			}
 			return string.Empty;

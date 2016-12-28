@@ -29,12 +29,17 @@ namespace AssetBundleGraph {
 			else if(importer.GetType() == typeof(UnityEditor.ModelImporter)) {
 				return IsEqual(importer as UnityEditor.ModelImporter);
 			}
-			else {
-				throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
-			}
+
+			throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
 		}
 
 		public void OverwriteImportSettings(AssetImporter importer) {
+
+			// avoid touching asset if there is no need to.
+			if(IsEqual(importer)) {
+				return;
+			}
+
 			if(importer.GetType() != referenceImporter.GetType()) {
 				throw new AssetBundleGraphException("Importer type does not match.");
 			}
@@ -48,9 +53,8 @@ namespace AssetBundleGraph {
 			else if(importer.GetType() == typeof(UnityEditor.ModelImporter)) {
 				OverwriteImportSettings(importer as UnityEditor.ModelImporter);
 			}
-			else {
-				throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
-			}
+
+			throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
 		}
 
 		private void OverwriteImportSettings (TextureImporter importer) {

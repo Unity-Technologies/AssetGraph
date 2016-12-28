@@ -33,6 +33,10 @@ namespace AssetBundleGraph {
 				}
 			);
 
+			if(incoming == null) {
+				return;
+			}
+
 			var builder = PrefabBuilderUtility.CreatePrefabBuilder(node, target);
 			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
@@ -79,6 +83,10 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
+			if(incoming == null) {
+				return;
+			}
+
 			Profiler.BeginSample("AssetBundleGraph.GUIPrefabBuilder.Run");
 
 			var builder = PrefabBuilderUtility.CreatePrefabBuilder(node, target);
@@ -98,21 +106,33 @@ namespace AssetBundleGraph {
 			}
 
 			foreach(var key in aggregatedGroups.Keys) {
-				var allAssets = LoadAllAssets(aggregatedGroups[key]);
+
+				var assets = aggregatedGroups[key];
+
+				var allAssets = LoadAllAssets(assets);
+
 				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
-				UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets);
-				if(obj == null) {
-					throw new AssetBundleGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
-						node.Name, builder.GetType().FullName, key));
-				}
-					
 				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
-				PrefabUtility.CreatePrefab(prefabSavePath, obj, ReplacePrefabOptions.Default);
+
+				if(PrefabBuildInfo.DoesPrefabNeedRebuilding(node, target, key, assets)) {
+					UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets);
+					if(obj == null) {
+						throw new AssetBundleGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
+							node.Name, builder.GetType().FullName, key));
+					}
+
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} is (re)creating Prefab:{1} with {2}({3})", node.Name, prefabFileName,
+						PrefabBuilderUtility.GetPrefabBuilderGUIName(node.ScriptClassName),
+						PrefabBuilderUtility.GetPrefabBuilderVersion(node.ScriptClassName));
+
+					PrefabUtility.CreatePrefab(prefabSavePath, obj, ReplacePrefabOptions.Default);
+					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);
+					GameObject.DestroyImmediate(obj);
+				}
 
 				output[key] = new List<AssetReference> () {
 					AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
 				};
-				GameObject.DestroyImmediate(obj);
 				aggregatedGroups[key].ForEach(a => a.ReleaseData());
 			}
 
