@@ -32,9 +32,9 @@ namespace AssetBundleGraph {
 	}
 
 	/*
-	 * Json save data which holds all AssetBundleGraph settings and configurations.
+	 * Save data which holds all AssetBundleGraph settings and configurations.
 	 */ 
-	public class SaveData {
+	public class SaveData : ScriptableObject {
 
 		public const string LASTMODIFIED 	= "lastModified";
 		public const string NODES 			= "nodes";
@@ -47,31 +47,32 @@ namespace AssetBundleGraph {
 		 */ 
 		public const int ABG_FILE_VERSION = 1;
 
-		private Dictionary<string, object> m_jsonData;
-
-		private List<NodeData> m_allNodes;
-		private List<ConnectionData> m_allConnections;
-		private DateTime m_lastModified;
-		private int m_version;
+		[SerializeField] private List<NodeData> m_allNodes;
+		[SerializeField] private List<ConnectionData> m_allConnections;
+		[SerializeField] private DateTime m_lastModified;
+		[SerializeField] private int m_version;
 
 		private static SaveData s_saveData;
 
-		private SaveData() {
+		void OnEnable() {
+		}
+
+		private void Initialize() {
 			m_lastModified = DateTime.UtcNow;
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
 			m_version = ABG_FILE_VERSION;
+			EditorUtility.SetDirty(this);
 		}
 
-		private SaveData(Dictionary<string, object> jsonData) {
-			m_jsonData = jsonData;
+		private void InitializeFromJson(Dictionary<string, object> jsonData) {
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
-			m_lastModified = Convert.ToDateTime(m_jsonData[LASTMODIFIED] as string);
+			m_lastModified = Convert.ToDateTime(jsonData[LASTMODIFIED] as string);
 			m_version = ABG_FILE_VERSION;
 
-			var nodeList = m_jsonData[NODES] as List<object>;
-			var connList = m_jsonData[CONNECTIONS] as List<object>;
+			var nodeList = jsonData[NODES] as List<object>;
+			var connList = jsonData[CONNECTIONS] as List<object>;
 
 			foreach(var n in nodeList) {
 				m_allNodes.Add(new NodeData(n as Dictionary<string, object>));
@@ -80,15 +81,7 @@ namespace AssetBundleGraph {
 			foreach(var c in connList) {
 				m_allConnections.Add(new ConnectionData(c as Dictionary<string, object>));
 			}
-		}
-
-		private SaveData(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
-			m_jsonData = null;
-
-			m_lastModified = DateTime.UtcNow;
-			m_allNodes = nodes.Select(n => n.Data).ToList();
-			m_allConnections = connections.Select(c => c.Data).ToList();
-			m_version = ABG_FILE_VERSION;
+			EditorUtility.SetDirty(this);
 		}
 
 		public DateTime LastModified {
@@ -158,22 +151,32 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private static string SaveDataPath {
+		private static string SaveDataAssetPath {
 			get {
-				return FileUtility.PathCombine(SaveDataDirectoryPath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
+				return FileUtility.PathCombine("Assets/", AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
+			}
+		}
+
+		private static string SaveDataJsonPath {
+			get {
+				return FileUtility.PathCombine(SaveDataDirectoryPath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
 			}
 		}
 
 		public static SaveData Data {
 			get {
 				if(s_saveData == null) {
-					s_saveData = LoadFromDisk();
+					// while AssetDatabase.CreateAsset() invokes OnPostprocessAllAssets where
+					// SaveData.Data is used through AssetReferenceDatabasePostprocessor,
+					// s_saveData must be set carefully in right order inside LoadFromDisk()
+					// so setting s_saveData is handled inside LoadFromDisk()
+					LoadFromDisk();
 				}
 				return s_saveData;
 			}
 		}
 
-		public void Save () {
+		public void ExportToJson () {
 
 			LogUtility.Logger.Log("[SaveData] Saved to Disk.");
 
@@ -188,70 +191,109 @@ namespace AssetBundleGraph {
 			var dataStr = Json.Serialize(ToJsonDictionary());
 			var prettified = Json.Prettify(dataStr);
 
-			using (var sw = new StreamWriter(SaveDataPath)) {
+			using (var sw = new StreamWriter(SaveDataJsonPath)) {
 				sw.Write(prettified);
 			}
 			// reflect change of data.
 			AssetDatabase.Refresh();
 		}
 
+		public static void SetSavedataDirty() {
+			EditorUtility.SetDirty(Data);
+		}
+
+
 		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
 
 			LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
 
-			m_jsonData = null;
-
 			m_allNodes = nodes.Select(n => n.Data).ToList();
 			m_allConnections = connections.Select(c => c.Data).ToList();
 			m_version = ABG_FILE_VERSION;
+			m_lastModified = DateTime.UtcNow;
+
+			EditorUtility.SetDirty(this);
 		}
 
 		public static SaveData Reload() {
-			s_saveData = LoadFromDisk();
-			return s_saveData;
+			s_saveData = null;
+			return Data;
 		}
 			
 		public static bool IsSaveDataAvailableAtDisk() {
-			return File.Exists(SaveDataPath);
+			return File.Exists(SaveDataAssetPath) || File.Exists(SaveDataJsonPath);
 		}
 
-		private static SaveData Load() {
+		private static void LoadJsonData() {
 			var dataStr = string.Empty;
-			using (var sr = new StreamReader(SaveDataPath)) {
+			using (var sr = new StreamReader(SaveDataJsonPath)) {
 				dataStr = sr.ReadToEnd();
 			}
 			var deserialized = AssetBundleGraph.Json.Deserialize(dataStr) as Dictionary<string, object>;
-			return new SaveData(deserialized);
+			var data = ScriptableObject.CreateInstance<SaveData>();
+			data.InitializeFromJson(deserialized);
+
+			data.Validate();
+
+			// s_saveData must be set before calling AssetDatabase.CreateAsset() (for OnPostprocessAllAssets())
+			s_saveData = data;
+			AssetDatabase.CreateAsset(data, SaveDataAssetPath);
 		}
 
-		private static SaveData RecreateDataOnDisk () {
-			s_saveData = new SaveData();
-			s_saveData.Save();
-			return s_saveData;
-		}
-			
-		private static SaveData LoadFromDisk() {
+		private static void CreateNewSaveData () {
 
-			if(!IsSaveDataAvailableAtDisk()) {
-				return RecreateDataOnDisk ();
-			} 
+			var dir = SaveDataDirectoryPath;
 
-			try {
-				SaveData saveData = Load();
-				if(!saveData.Validate()) {
-					saveData.Save();
-
-					// reload and construct again from disk
-					return Load();
-				} 
-				else {
-					return saveData;
-				}
-			} catch (Exception e) {
-				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + SaveDataPath);
+			if (!Directory.Exists(dir)) {
+				Directory.CreateDirectory(dir);
 			}
 
-			return new SaveData();
+			var data = ScriptableObject.CreateInstance<SaveData>();
+			data.Initialize();
+
+			data.Validate();
+
+			// s_saveData must be set before calling AssetDatabase.CreateAsset() (for OnPostprocessAllAssets())
+			s_saveData = data;
+			AssetDatabase.CreateAsset(data, SaveDataAssetPath);
+		}
+			
+		private static void LoadFromDisk() {
+
+			// First, try loading from asset.
+			try {
+				var path = SaveDataAssetPath;
+
+				if(File.Exists(path)) 
+				{
+					SaveData data = AssetDatabase.LoadAssetAtPath<SaveData>(path);
+
+					if(data != null) {
+						if(data.m_version > ABG_FILE_VERSION) {
+							LogUtility.Logger.LogFormat(LogType.Warning, "AssetBundleGraph Savedata on disk is too new(our version:{0} config version:{1}). Saving project may cause data loss.", 
+								ABG_FILE_VERSION, data.m_version);
+						}
+
+						data.Validate();
+						s_saveData = data;
+						return;
+					}
+				}
+			} catch(Exception e) {
+				LogUtility.Logger.LogWarning(LogUtility.kTag, e);
+			}
+
+			// If there is no asset found, look for json.
+			try {
+				if(File.Exists(SaveDataJsonPath)) {
+					LoadJsonData();
+					return;
+				}
+			} catch (Exception e) {
+				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to deserialize AssetBundleGraph settings. Error:" + e + " File:" + SaveDataJsonPath);
+			}
+
+			CreateNewSaveData ();
 		}
 
 		/*

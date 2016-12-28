@@ -259,7 +259,7 @@ namespace AssetBundleGraph {
 			SaveData.Reload();
 
 			Undo.undoRedoPerformed += () => {
-				SaveGraphAndRefresh();
+				Setup(ActiveBuildTarget);
 				Repaint();
 			};
 
@@ -382,18 +382,9 @@ namespace AssetBundleGraph {
 			SaveData.Data.ApplyGraph(nodes, connections);
 		}
 
-		private void SaveGraphAndRefresh (bool silent = false) {
-			SaveGraph();
-			try {
-				Setup(ActiveBuildTarget);
-			} catch (Exception e) {
-				if(!silent){
-					LogUtility.Logger.LogError(LogUtility.kTag, "Error occured during reload:" + e);
-				}
-			}
-		}
-
-
+		/**
+		 * Save Graph and update all nodes & connections
+		 */ 
 		private void Setup (BuildTarget target, bool forceVisitAll = false) {
 
 			EditorUtility.ClearProgressBar();
@@ -446,7 +437,7 @@ namespace AssetBundleGraph {
 		private void Run (BuildTarget target) {
 
 			try {
-				SaveData.Data.Save();
+				AssetDatabase.SaveAssets();
 
 				List<NodeGUI> currentNodes = null;
 				List<ConnectionGUI> currentConnections = null;
@@ -798,14 +789,9 @@ namespace AssetBundleGraph {
 			Init();
 		}
 
-//		public void OnDestroy() {
-//			LogUtility.Logger.Log("OnDestroy");
-//			SaveData.Data.Save();
-//		}
-
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
-			SaveData.Data.Save();
+			SaveData.SetSavedataDirty();
 		}
 
 		public void OnGUI () {
@@ -871,7 +857,7 @@ namespace AssetBundleGraph {
 					}
 
 					if (shouldSave) {
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 					}
 					break;
 				}
@@ -887,7 +873,7 @@ namespace AssetBundleGraph {
 							false, 
 							() => {
 								AddNodeFromGUI(kind, rightClickPos.x, rightClickPos.y);
-								SaveGraphAndRefresh();
+								Setup(ActiveBuildTarget);
 								Repaint();
 							}
 						);
@@ -1014,7 +1000,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 
 							activeObject = RenewActiveObject(new List<string>());
 							UpdateActivationOfObjects(activeObject);
@@ -1053,7 +1039,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 							InitializeGraph();
 
 							activeObject = RenewActiveObject(new List<string>());
@@ -1111,7 +1097,7 @@ namespace AssetBundleGraph {
 								DuplicateNode(newNode);
 							}
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 							InitializeGraph();
 
 							Event.current.Use();
@@ -1270,7 +1256,7 @@ namespace AssetBundleGraph {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 						break;
 					}
 
@@ -1321,7 +1307,7 @@ namespace AssetBundleGraph {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 						break;
 					}
 
@@ -1390,7 +1376,7 @@ namespace AssetBundleGraph {
 						var deletingNodeId = e.eventSourceNode.Id;
 						DeleteNode(deletingNodeId);
 
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 						InitializeGraph();
 						break;
 					}
@@ -1523,7 +1509,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				case NodeEvent.EventType.EVENT_SAVE: {
-					SaveGraphAndRefresh(true);
+					Setup(ActiveBuildTarget);
 					Repaint();
 					break;
 				}
@@ -1635,7 +1621,7 @@ namespace AssetBundleGraph {
 
 							DeleteConnectionById(deletedConnectionId);
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 							Repaint();
 							break;
 						}
