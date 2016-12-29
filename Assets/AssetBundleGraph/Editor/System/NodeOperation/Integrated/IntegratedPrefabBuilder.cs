@@ -40,6 +40,7 @@ namespace AssetBundleGraph {
 			var builder = PrefabBuilderUtility.CreatePrefabBuilder(node, target);
 			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
+
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			Dictionary<string, List<AssetReference>> output = new Dictionary<string, List<AssetReference>>();
 
@@ -54,6 +55,15 @@ namespace AssetBundleGraph {
 			}
 
 			foreach(var key in aggregatedGroups.Keys) {
+
+				var assets = aggregatedGroups[key];
+				var thresold = PrefabBuilderUtility.GetPrefabBuilderAssetThreshold(node.ScriptClassName);
+				if( thresold < assets.Count ) {
+					var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(node.ScriptClassName);
+					throw new NodeException(string.Format("{0} :Too many assets passed to {1} for group:{2}. {3}'s threshold is set to {4}", 
+						node.Name, guiName, key, guiName,thresold), node.Id);
+				}
+
 				List<UnityEngine.Object> allAssets = LoadAllAssets(aggregatedGroups[key]);
 				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
 				if(prefabFileName != null) {
