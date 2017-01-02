@@ -16,12 +16,12 @@ namespace AssetBundleGraph {
 		class UsedAssets {
 			public string importFrom;
 			public string assetGuid;
-			public long lastUpdated;
+			public string lastUpdated; // long is not supported by Text Serializer, so save it in string.
 
 			public UsedAssets(string importFrom) {
 				this.importFrom = importFrom;
 				this.assetGuid = AssetDatabase.AssetPathToGUID(importFrom);
-				this.lastUpdated = File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc();
+				this.lastUpdated = File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc().ToString();
 			}
 
 			public bool IsAssetModifiedFromLastTime {
@@ -29,7 +29,7 @@ namespace AssetBundleGraph {
 					if(!File.Exists(importFrom)) {
 						return true;
 					}
-					if(lastUpdated != File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc()) {
+					if(lastUpdated != File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc().ToString()) {
 						return true;
 					}
 					if(assetGuid != AssetDatabase.AssetPathToGUID(importFrom)) {

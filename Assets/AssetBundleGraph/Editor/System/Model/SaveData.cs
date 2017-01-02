@@ -49,7 +49,7 @@ namespace AssetBundleGraph {
 
 		[SerializeField] private List<NodeData> m_allNodes;
 		[SerializeField] private List<ConnectionData> m_allConnections;
-		[SerializeField] private long m_lastModified;
+		[SerializeField] private string m_lastModified;
 		[SerializeField] private int m_version;
 
 		private static SaveData s_saveData;
@@ -57,8 +57,12 @@ namespace AssetBundleGraph {
 		void OnEnable() {
 		}
 
+		private string GetFileTimeUtcString() {
+			return DateTime.UtcNow.ToFileTimeUtc().ToString();
+		}
+
 		private void Initialize() {
-			m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
+			m_lastModified = GetFileTimeUtcString();
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
 			m_version = ABG_FILE_VERSION;
@@ -68,7 +72,7 @@ namespace AssetBundleGraph {
 		private void InitializeFromJson(Dictionary<string, object> jsonData) {
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
-			m_lastModified = Convert.ToDateTime(jsonData[LASTMODIFIED] as string).ToFileTimeUtc();
+			m_lastModified = jsonData[LASTMODIFIED] as string;
 			m_version = ABG_FILE_VERSION;
 
 			var nodeList = jsonData[NODES] as List<object>;
@@ -84,7 +88,7 @@ namespace AssetBundleGraph {
 			EditorUtility.SetDirty(this);
 		}
 
-		public long LastModified {
+		public string LastModified {
 			get {
 				return m_lastModified;
 			}
@@ -123,7 +127,7 @@ namespace AssetBundleGraph {
 
 			return new Dictionary<string, object>{
 				{VERSION, m_version},
-				{LASTMODIFIED, new DateTime(m_lastModified, DateTimeKind.Utc).ToString()},
+				{LASTMODIFIED, m_lastModified},
 				{NODES, nodeList},
 				{CONNECTIONS, connList}
 			};
@@ -185,7 +189,6 @@ namespace AssetBundleGraph {
 				Directory.CreateDirectory(dir);
 			}
 
-			m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
 			m_version = ABG_FILE_VERSION;
 
 			var dataStr = Json.Serialize(ToJsonDictionary());
@@ -205,14 +208,20 @@ namespace AssetBundleGraph {
 
 		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
 
-			LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
+			List<NodeData> n = nodes.Select(v => v.Data).ToList();
+			List<ConnectionData> c = connections.Select(v => v.Data).ToList();
 
-			m_allNodes = nodes.Select(n => n.Data).ToList();
-			m_allConnections = connections.Select(c => c.Data).ToList();
-			m_version = ABG_FILE_VERSION;
-			m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
+			if( !Enumerable.SequenceEqual(n.OrderBy(v => v.Id), m_allNodes.OrderBy(v => v.Id)) ||
+				!Enumerable.SequenceEqual(c.OrderBy(v => v.Id), m_allConnections.OrderBy(v => v.Id)) ) 
+			{
+				LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
 
-			EditorUtility.SetDirty(this);
+				m_version = ABG_FILE_VERSION;
+				m_lastModified = GetFileTimeUtcString();
+				EditorUtility.SetDirty(this);
+			} else {
+				LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
+			}
 		}
 
 		public static SaveData Reload() {
@@ -326,7 +335,7 @@ namespace AssetBundleGraph {
 			if(changed) {
 				Nodes.RemoveAll(n => removingNodes.Contains(n));
 				Connections.RemoveAll(c => removingConnections.Contains(c));
-				m_lastModified = DateTime.UtcNow.ToFileTimeUtc();
+				m_lastModified = GetFileTimeUtcString();
 			}
 
 			return !changed;

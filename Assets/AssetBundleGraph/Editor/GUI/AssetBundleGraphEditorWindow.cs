@@ -95,7 +95,7 @@ namespace AssetBundleGraph {
 		private Texture2D _selectionTex;
 		private GUIContent _reloadButtonTexture;
 		private ModifyMode modifyMode;
-		private long lastLoaded = 0;
+		private string lastLoaded;
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
 		private Vector2 errorScrollPos = new Vector2(0,0);
