@@ -1498,6 +1498,12 @@ namespace AssetBundleGraph {
 			}
 
 			switch (e.eventType) {
+				case NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT: {
+					// deleting all connections to this point
+					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+					Repaint();
+					break;
+				}
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
 					// deleting point is handled by caller, so we are deleting connections associated with it.
 					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );

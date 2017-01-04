@@ -511,6 +511,9 @@ namespace AssetBundleGraph {
 					}
 					if (GUILayout.Button("+")) {
 						using(new RecordUndoScope("Add Variant", node, true)){
+							if(node.Data.Variants.Count == 0) {
+								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT, node, Vector2.zero, node.Data.InputPoints[0]));
+							}
 							node.Data.AddVariant(AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
 						}
 					}

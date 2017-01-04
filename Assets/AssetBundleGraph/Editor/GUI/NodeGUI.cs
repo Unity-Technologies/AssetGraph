@@ -157,6 +157,18 @@ namespace AssetBundleGraph {
 			return scaledVector2;
 		}
 
+		private bool IsValidInputConnectionPoint(ConnectionPointData point) {
+
+			if(m_data.Kind == NodeKind.BUNDLECONFIG_GUI && !m_data.BundleConfigUseGroupAsVariants) {
+				if(m_data.Variants.Count > 0 && m_data.Variants.Find(v => v.ConnectionPoint.Id == point.Id) == null) 
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
 		/**
 			retrieve mouse events for this node in this AssetGraoh window.
 		*/
@@ -210,8 +222,11 @@ namespace AssetBundleGraph {
 						if(eventRaised) {
 							return;
 						}
-//						var region = point.Region;
-//						var globalConnectonPointRect = new Rect(region.x, region.y, region.width, region.height);
+
+						if(!IsValidInputConnectionPoint(point)) {
+							return;
+						}
+
 						if (point.Region.Contains(Event.current.mousePosition)) {
 							NodeGUIUtility.NodeEventHandler(
 								new NodeEvent(NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, 
@@ -280,11 +295,10 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			foreach (var point in m_data.InputPoints) {				
-				GUI.DrawTexture(
-					point.GetGlobalPointRegion(this), 
-					defaultPointTex
-				);
+			foreach (var point in m_data.InputPoints) {
+				if(IsValidInputConnectionPoint(point)) {
+					GUI.DrawTexture(point.GetGlobalPointRegion(this), defaultPointTex);
+				}
 			}
 		}
 
@@ -438,6 +452,11 @@ namespace AssetBundleGraph {
 
 			foreach(var p in m_data.InputPoints) {
 				var region = p.Region;
+
+				if(!IsValidInputConnectionPoint(p)) {
+					continue;
+				}
+
 				if (region.x <= touchedPoint.x && 
 					touchedPoint.x <= region.x + region.width && 
 					region.y <= touchedPoint.y && 
@@ -522,6 +541,10 @@ namespace AssetBundleGraph {
 		public ConnectionPointData FindConnectionPointByPosition (Vector2 globalPos) {
 
 			foreach (var point in m_data.InputPoints) {
+				if(!IsValidInputConnectionPoint(point)) {
+					continue;
+				}
+
 				if (point.GetGlobalRegion(this).Contains(globalPos) || 
 					point.GetGlobalPointRegion(this).Contains(globalPos)) 
 				{
