@@ -15,10 +15,8 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIFilter.Setup");
 			node.ValidateOverlappingFilterCondition(true);
 			Filter(node, incoming, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 

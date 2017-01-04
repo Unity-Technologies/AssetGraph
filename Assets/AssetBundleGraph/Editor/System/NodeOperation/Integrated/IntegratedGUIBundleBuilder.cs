@@ -77,8 +77,6 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			Profiler.BeginSample("AssetBundleGraph.GUIBundleBuilder.Run");
-
 			var aggregatedGroups = new Dictionary<string, List<AssetReference>>();
 			aggregatedGroups[key] = new List<AssetReference>();
 
@@ -161,8 +159,6 @@ namespace AssetBundleGraph {
 			Output(dst, output);
 
 			AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, bundleBuild, output[key], aggregatedGroups, bundleVariants));
-
-			Profiler.EndSample();
 		}
 
 		// Check if given file is generated Item

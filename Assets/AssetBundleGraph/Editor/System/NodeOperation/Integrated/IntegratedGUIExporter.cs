@@ -14,7 +14,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Setup");
 			ValidateExportPath(
 				node.ExporterExportPath[target],
 				FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]),
@@ -27,8 +26,6 @@ namespace AssetBundleGraph {
 					}
 				}
 			);
-
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
@@ -37,9 +34,7 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Run");
 			Export(target, node, incoming, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 
 		private void Export (BuildTarget target, 

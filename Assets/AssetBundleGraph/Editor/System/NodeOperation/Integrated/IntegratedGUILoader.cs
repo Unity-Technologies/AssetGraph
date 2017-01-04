@@ -14,7 +14,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUILoader.Setup");
 			ValidateLoadPath(
 				node.LoaderLoadPath[target],
 				node.GetLoaderFullLoadPath(target),
@@ -28,7 +27,6 @@ namespace AssetBundleGraph {
 			);
 
 			Load(target, node, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 

@@ -17,7 +17,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIPrefabBuilder.Setup");
 			ValidatePrefabBuilder(node, target, incoming,
 				() => {
 					throw new NodeException(node.Name + " :PrefabBuilder is not configured. Please configure from Inspector.", node.Id);
@@ -77,8 +76,6 @@ namespace AssetBundleGraph {
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 			Output(dst, output);
-
-			Profiler.EndSample();
 		}
 
 		private static List<UnityEngine.Object> LoadAllAssets(List<AssetReference> assets) {
@@ -96,8 +93,6 @@ namespace AssetBundleGraph {
 			if(incoming == null) {
 				return;
 			}
-
-			Profiler.BeginSample("AssetBundleGraph.GUIPrefabBuilder.Run");
 
 			var builder = PrefabBuilderUtility.CreatePrefabBuilder(node, target);
 			UnityEngine.Assertions.Assert.IsNotNull(builder);
@@ -135,7 +130,7 @@ namespace AssetBundleGraph {
 						PrefabBuilderUtility.GetPrefabBuilderGUIName(node.ScriptClassName),
 						PrefabBuilderUtility.GetPrefabBuilderVersion(node.ScriptClassName));
 
-					PrefabUtility.CreatePrefab(prefabSavePath, obj, ReplacePrefabOptions.Default);
+					PrefabUtility.CreatePrefab(prefabSavePath, obj, node.ReplacePrefabOptions);
 					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
 				}
@@ -149,8 +144,6 @@ namespace AssetBundleGraph {
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 			Output(dst, output);
-
-			Profiler.EndSample();
 		}
 
 		public static void ValidatePrefabBuilder (

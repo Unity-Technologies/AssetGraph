@@ -15,8 +15,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Setup");
-
 			int groupCount = 0;
 
 			if(incoming != null) {
@@ -109,8 +107,6 @@ namespace AssetBundleGraph {
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 			Output(dst, output);
-
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
@@ -119,8 +115,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Run");
-
 			var output = new Dictionary<string, List<AssetReference>>();
 
 			if(incoming != null) {
@@ -151,8 +145,6 @@ namespace AssetBundleGraph {
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 			Output(dst, output);
-
-			Profiler.EndSample();
 		}
 
 		public List<AssetReference> ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		

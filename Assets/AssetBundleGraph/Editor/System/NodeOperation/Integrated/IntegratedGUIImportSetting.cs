@@ -72,8 +72,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIImportSetting.Run");
-
 			if(incoming != null){
 				ApplyImportSetting(node, incoming);
 
@@ -84,8 +82,6 @@ namespace AssetBundleGraph {
 					Output(dst, ag.assetGroups);
 				}
 			}
-
-			Profiler.EndSample();
 		}
 
 		private void SaveSampleFile(NodeData node, AssetReference asset) {

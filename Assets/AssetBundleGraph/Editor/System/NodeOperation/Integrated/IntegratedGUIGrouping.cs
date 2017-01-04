@@ -16,9 +16,7 @@ namespace AssetBundleGraph
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIGrouping.Setup");
 			GroupingOutput(target, node, incoming, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 
 		public void Run (BuildTarget target, 

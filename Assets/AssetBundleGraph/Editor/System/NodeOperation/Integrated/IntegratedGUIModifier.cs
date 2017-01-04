@@ -15,8 +15,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIModifier.Setup");
-
 			ValidateModifier(node, target, incoming,
 				(Type expectedType, Type foundType, AssetReference foundAsset) => {
 					throw new NodeException(string.Format("{3} :Modifier expect {0}, but different type of incoming asset is found({1} {2})", 
@@ -44,8 +42,6 @@ namespace AssetBundleGraph {
 					Output(dst, ag.assetGroups);
 				}
 			}
-
-			Profiler.EndSample();
 		}
 
 		
@@ -58,9 +54,6 @@ namespace AssetBundleGraph {
 			if(incoming == null) {
 				return;
 			}
-
-			Profiler.BeginSample("AssetBundleGraph.GUIModifier.Run");
-
 			var modifier = ModifierUtility.CreateModifier(node, target);
 			UnityEngine.Assertions.Assert.IsNotNull(modifier);
 			bool isAnyAssetModified = false;
@@ -91,7 +84,6 @@ namespace AssetBundleGraph {
 					Output(dst, ag.assetGroups);
 				}
 			}
-			Profiler.EndSample();
 		}
 			
 		public static void ValidateModifier (
