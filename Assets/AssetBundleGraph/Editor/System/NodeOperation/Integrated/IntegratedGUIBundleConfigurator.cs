@@ -94,11 +94,12 @@ namespace AssetBundleGraph {
 							variantName = groupKey;
 						}
 						var bundleName = GetBundleName(target, node, groupKey);
-						var newBundleSetting = ConfigureAssetBundleSettings(variantName, ag.assetGroups[groupKey]);
+						var assets = ag.assetGroups[groupKey];
+						ConfigureAssetBundleSettings(variantName, assets);
 						if(output.ContainsKey(bundleName)) {
-							output[bundleName].AddRange(newBundleSetting);
+							output[bundleName].AddRange(assets);
 						} else {
-							output[bundleName] = newBundleSetting;
+							output[bundleName] = assets;
 						}
 					}
 				}
@@ -135,11 +136,12 @@ namespace AssetBundleGraph {
 
 						if(progressFunc != null) progressFunc(node, string.Format("Configuring {0}", bundleName), 0.5f);
 
-						var newBundleSetting = ConfigureAssetBundleSettings(variantName, ag.assetGroups[groupKey]);
+						var assets = ag.assetGroups[groupKey];
+						ConfigureAssetBundleSettings(variantName, assets);
 						if(output.ContainsKey(bundleName)) {
-							output[bundleName].AddRange(newBundleSetting);
+							output[bundleName].AddRange(assets);
 						} else {
-							output[bundleName] = newBundleSetting;
+							output[bundleName] = assets;
 						}
 					}
 				}
@@ -150,17 +152,11 @@ namespace AssetBundleGraph {
 			Output(dst, output);
 		}
 
-		public List<AssetReference> ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
-
-			List<AssetReference> configuredAssets = new List<AssetReference>();
+		public void ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
 
 			foreach(var a in assets) {
-				var lowerName = (string.IsNullOrEmpty(variantName))? variantName : variantName.ToLower();
-				a.variantName = lowerName;
-				configuredAssets.Add( a );
+				a.variantName = (string.IsNullOrEmpty(variantName))? null : variantName.ToLower();;
 			}
-
-			return configuredAssets;
 		}
 
 		public static void ValidateBundleNameTemplate (string bundleNameTemplate, bool useGroupAsVariants, int groupCount,
