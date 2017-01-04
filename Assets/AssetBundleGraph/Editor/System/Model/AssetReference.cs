@@ -127,6 +127,10 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public void TouchImportAsset() {
+			System.IO.File.SetLastWriteTime(importFrom, DateTime.UtcNow);
+		}
+
 		public static AssetReference CreateReference (string importFrom) {
 			return new AssetReference(
 				guid: Guid.NewGuid(),
