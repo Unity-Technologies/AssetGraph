@@ -105,7 +105,7 @@ namespace AssetBundleGraph {
 			if(db.m_dictionary.ContainsKey(oldPath)) {
 				var r = db.m_dictionary[oldPath];
 				db.m_dictionary.Remove(oldPath);
-				db.m_dictionary.Add(newPath, r);
+				db.m_dictionary[newPath]= r;
 				r.importFrom = newPath;
 			}
 		}
