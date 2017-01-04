@@ -127,14 +127,13 @@ namespace AssetBundleGraph {
 			int bbIndex = 0;
 			foreach(var name in bundleNames) {
 				foreach(var v in bundleVariants[name]) {
-					var bundleName = name;
 					var assets = aggregatedGroups[name];
 
 					if(assets.Count <= 0) {
 						continue;
 					}
 
-					bundleBuild[bbIndex].assetBundleName = bundleName;
+					bundleBuild[bbIndex].assetBundleName = name;
 					bundleBuild[bbIndex].assetBundleVariant = v;
 					bundleBuild[bbIndex].assetNames = assets.Where(x => x.variantName == v).Select(x => x.importFrom).ToArray();
 					++bbIndex;
@@ -150,13 +149,11 @@ namespace AssetBundleGraph {
 
 			var generatedFiles = FileUtility.GetAllFilePathsInFolder(bundleOutputDir);
 			// add manifest file
-			bundleNames.Add( BuildTargetUtility.TargetToAssetBundlePlatformName(target) );
+			bundleVariants.Add( BuildTargetUtility.TargetToAssetBundlePlatformName(target).ToLower(), new List<string> { null } );
 			foreach (var path in generatedFiles) {
 				var fileName = Path.GetFileName(path);
-				if( IsFileIntendedItem(fileName, bundleNames) ) {
+				if( IsFileIntendedItem(fileName, bundleVariants) ) {
 					output[key].Add( AssetReferenceDatabase.GetAssetBundleReference(path) );
-				} else {
-					LogUtility.Logger.LogWarning(LogUtility.kTag, node.Name + ":Irrelevant file found in assetbundle cache folder:" + fileName);
 				}
 			}
 
@@ -168,22 +165,22 @@ namespace AssetBundleGraph {
 		}
 
 		// Check if given file is generated Item
-		private bool IsFileIntendedItem(string filename, List<string> bundleNames) {
+		private bool IsFileIntendedItem(string filename, Dictionary<string, List<string>> bundleVariants) {
 			filename = filename.ToLower();
-			foreach(var name in bundleNames) {
-				var compName = name.ToLower();
-				// bundle identifier may have "/"
-				if(compName.IndexOf(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR) != -1) {
-					var items = compName.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
-					compName  = items[items.Length-1];
-				}
-				// related files always start from bundle names, as variants and manifests
-				// are only appended on treail
-				if( filename.IndexOf(compName.ToLower()) == 0 ) {
-					return true;
-				}
+
+			int lastDotManifestIndex = filename.LastIndexOf(".manifest");
+			filename = (lastDotManifestIndex > 0)? filename.Substring(0, lastDotManifestIndex) : filename;
+
+			int lastDotIndex = filename.LastIndexOf('.');
+			var bundleNameFromFile  = (lastDotIndex > 0) ? filename.Substring(0, lastDotIndex): filename;
+			var variantNameFromFile = (lastDotIndex > 0) ? filename.Substring(lastDotIndex+1): null;
+
+			if(!bundleVariants.ContainsKey(bundleNameFromFile)) {
+				return false;
 			}
-			return false;
+
+			var variants = bundleVariants[bundleNameFromFile];
+			return variants.Contains(variantNameFromFile);
 		}
 	}
 }
