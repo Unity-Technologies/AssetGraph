@@ -16,15 +16,35 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output) 
 		{
 			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Setup");
+
+			int groupCount = 0;
+
+			if(incoming != null) {
+				var groupNames = new List<string>();
+				foreach(var ag in incoming) {
+					foreach (var groupKey in ag.assetGroups.Keys) {
+						if(!groupNames.Contains(groupKey)) {
+							groupNames.Add(groupKey);
+						}
+					}
+				}
+				groupCount = groupNames.Count;
+			}
+
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
 				node.BundleConfigUseGroupAsVariants,
+				groupCount,
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
 				},
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template can not contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
 						+ "' when group name is used for variants.", node.Id);
+				},
+				() => {
+					throw new NodeException(node.Name + ":Bundle Name Template must contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
+						+ "' when group name is not used for variants and expecting multiple incoming groups.", node.Id);
 				}
 			);
 
@@ -148,12 +168,20 @@ namespace AssetBundleGraph {
 			return configuredAssets;
 		}
 
-		public static void ValidateBundleNameTemplate (string bundleNameTemplate, bool useGroupAsVariants, Action NullOrEmpty, Action InvalidBundleNameTemplate) {
+		public static void ValidateBundleNameTemplate (string bundleNameTemplate, bool useGroupAsVariants, int groupCount,
+			Action NullOrEmpty, 
+			Action InvalidBundleNameTemplateForVariants, 
+			Action InvalidBundleNameTemplateForNotVariants
+		) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)){
 				NullOrEmpty();
 			}
 			if(useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) >= 0) {
-				InvalidBundleNameTemplate();
+				InvalidBundleNameTemplateForVariants();
+			}
+			if(!useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) < 0 &&
+				groupCount > 1) {
+				InvalidBundleNameTemplateForNotVariants();
 			}
 		}
 
