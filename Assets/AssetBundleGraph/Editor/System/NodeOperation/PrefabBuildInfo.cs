@@ -45,15 +45,17 @@ namespace AssetBundleGraph {
 		[SerializeField] private string m_prefabBuilderClass;
 		[SerializeField] private string m_prefabBuilderData;
 		[SerializeField] private string m_prefabBuilderVersion;
+		[SerializeField] private int m_replacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
 		[SerializeField] private List<UsedAssets> m_usedAssets;
 
 		public PrefabBuildInfo() {}
 
-		public void Initialize(string groupKey, string builderClass, string builderData, string version, List<AssetReference> assets) {
+		public void Initialize(string groupKey, string builderClass, string builderData, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
 			m_groupKey = groupKey;
 			m_prefabBuilderClass = builderClass;
 			m_prefabBuilderData = builderData;
 			m_prefabBuilderVersion = version;
+			m_replacePrefabOptions = (int)opt;
 
 			m_usedAssets = new List<UsedAssets> ();
 			assets.ForEach(a => m_usedAssets.Add(new UsedAssets(a.importFrom)));
@@ -82,6 +84,11 @@ namespace AssetBundleGraph {
 
 			// need rebuilding if given builder is changed
 			if(buildInfo.m_prefabBuilderData != node.InstanceData[target]) {
+				return true;
+			}
+
+			// need rebuilding if replace prefab option is changed
+			if(buildInfo.m_replacePrefabOptions != (int)node.ReplacePrefabOptions) {
 				return true;
 			}
 
@@ -122,7 +129,7 @@ namespace AssetBundleGraph {
 			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(node.ScriptClassName);
 
 			var buildInfo = ScriptableObject.CreateInstance<PrefabBuildInfo>();
-			buildInfo.Initialize(groupKey, node.ScriptClassName, node.InstanceData[target], version, assets);
+			buildInfo.Initialize(groupKey, node.ScriptClassName, node.InstanceData[target], version, node.ReplacePrefabOptions, assets);
 
 			AssetDatabase.CreateAsset(buildInfo, buildInfoPath);		
 		}

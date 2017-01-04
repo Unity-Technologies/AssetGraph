@@ -155,6 +155,9 @@ namespace AssetBundleGraph {
 		//bundlebuilder settings
 		private const string NODE_BUNDLEBUILDER_ENABLEDBUNDLEOPTIONS = "enabledBundleOptions";
 
+		//prefabbuilder settings
+		private const string NODE_PREFABBUILDER_REPLACEPREFABOPTIONS = "replacePrefabOptions";
+
 		[SerializeField] private string m_name;
 		[SerializeField] private string m_id;
 		[SerializeField] private NodeKind m_kind;
@@ -173,8 +176,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private bool m_bundleConfigUseGroupAsVariants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 		[SerializeField] private SerializableMultiTargetInt m_exporterExportOption;
-
-		[SerializeField] private bool m_isNodeOperationPerformed;
+		[SerializeField] private int m_prefabBuilderReplacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
 
 		private bool m_nodeNeedsRevisit;
 
@@ -336,6 +338,21 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public UnityEditor.ReplacePrefabOptions ReplacePrefabOptions {
+			get {
+				ValidateAccess(
+					NodeKind.PREFABBUILDER_GUI 
+				);
+				return (UnityEditor.ReplacePrefabOptions)m_prefabBuilderReplacePrefabOptions;
+			}
+			set {
+				ValidateAccess(
+					NodeKind.PREFABBUILDER_GUI 
+				);
+				m_prefabBuilderReplacePrefabOptions = (int)value;
+			}
+		}
+
 		public List<FilterEntry> FilterConditions {
 			get {
 				ValidateAccess(
@@ -395,6 +412,15 @@ namespace AssetBundleGraph {
 				// nothing to do
 				break;
 			case NodeKind.PREFABBUILDER_GUI:
+				{
+					if(jsonData.ContainsKey(NODE_PREFABBUILDER_REPLACEPREFABOPTIONS)) {
+						m_prefabBuilderReplacePrefabOptions = Convert.ToInt32(jsonData[NODE_PREFABBUILDER_REPLACEPREFABOPTIONS]);
+					}
+					if(jsonData.ContainsKey(NODE_SCRIPT_INSTANCE_DATA)) {
+						m_scriptInstanceData = new SerializableMultiTargetString(_SafeGet(jsonData, NODE_SCRIPT_INSTANCE_DATA));
+					}
+				}
+				break;
 			case NodeKind.MODIFIER_GUI:
 				{
 					if(jsonData.ContainsKey(NODE_SCRIPT_INSTANCE_DATA)) {
@@ -486,7 +512,6 @@ namespace AssetBundleGraph {
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
 
-
 			// adding defalut input point.
 			// Loader does not take input
 			if(kind != NodeKind.LOADER_GUI) {
@@ -501,6 +526,10 @@ namespace AssetBundleGraph {
 
 			switch(m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
+				m_prefabBuilderReplacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
+				m_scriptInstanceData = new SerializableMultiTargetString();
+				break;
+
 			case NodeKind.MODIFIER_GUI:
 				m_scriptInstanceData = new SerializableMultiTargetString();
 				break;
@@ -557,6 +586,10 @@ namespace AssetBundleGraph {
 			case NodeKind.IMPORTSETTING_GUI:
 				break;
 			case NodeKind.PREFABBUILDER_GUI:
+				newData.m_prefabBuilderReplacePrefabOptions = m_prefabBuilderReplacePrefabOptions;
+				newData.m_scriptInstanceData = new SerializableMultiTargetString(m_scriptInstanceData);
+				break;
+
 			case NodeKind.MODIFIER_GUI:
 				newData.m_scriptInstanceData = new SerializableMultiTargetString(m_scriptInstanceData);
 				break;
@@ -762,6 +795,16 @@ namespace AssetBundleGraph {
 
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
+				if(m_prefabBuilderReplacePrefabOptions != rhs.m_prefabBuilderReplacePrefabOptions) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ReplacePrefabOptions different");
+					return false;
+				}
+				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
+					return false;
+				}
+				break;
+
 			case NodeKind.MODIFIER_GUI:
 				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
@@ -874,6 +917,10 @@ namespace AssetBundleGraph {
 				
 			switch (m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
+				nodeDict[NODE_PREFABBUILDER_REPLACEPREFABOPTIONS] = m_prefabBuilderReplacePrefabOptions;
+				nodeDict[NODE_SCRIPT_INSTANCE_DATA] = m_scriptInstanceData.ToJsonDictionary();
+				break;
+
 			case NodeKind.MODIFIER_GUI:
 				nodeDict[NODE_SCRIPT_INSTANCE_DATA] = m_scriptInstanceData.ToJsonDictionary();
 				break;

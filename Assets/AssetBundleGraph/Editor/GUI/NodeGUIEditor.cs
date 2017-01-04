@@ -368,6 +368,12 @@ namespace AssetBundleGraph {
 							}
 						}
 					}
+					ReplacePrefabOptions opt = (ReplacePrefabOptions)EditorGUILayout.EnumPopup("Prefab Replace Option", node.Data.ReplacePrefabOptions, GUILayout.MinWidth(150f));
+					if(node.Data.ReplacePrefabOptions != opt) {
+						using(new RecordUndoScope("Change Prefab Replace Option", node, true)) {
+							node.Data.ReplacePrefabOptions = opt;
+						}
+					}
 				} else {
 					if(!string.IsNullOrEmpty(node.Data.ScriptClassName)) {
 						EditorGUILayout.HelpBox(
