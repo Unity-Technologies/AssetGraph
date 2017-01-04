@@ -48,14 +48,35 @@ namespace AssetBundleGraph {
 				});
 
 				using (disabledScope) {
+					var path = node.Data.LoaderLoadPath[currentEditingGroup];
 					EditorGUILayout.LabelField("Load Path:");
-					var newLoadPath = EditorGUILayout.TextField(
-						SystemDataUtility.GetProjectName() + AssetBundleGraphSettings.ASSETS_PATH,
-						node.Data.LoaderLoadPath[currentEditingGroup]
-					);
-					if (newLoadPath !=	node.Data.LoaderLoadPath[currentEditingGroup]) {
+
+					var newLoadPath = EditorGUILayout.TextField(AssetBundleGraphSettings.ASSETS_PATH, path);
+					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							node.Data.LoaderLoadPath[currentEditingGroup] = newLoadPath;
+						}
+					}
+
+					var dirPath = Path.Combine(AssetBundleGraphSettings.ASSETS_PATH,newLoadPath);
+					bool dirExists = Directory.Exists(dirPath);
+
+					using (new EditorGUILayout.HorizontalScope()) {
+						using(new EditorGUI.DisabledScope(string.IsNullOrEmpty(newLoadPath)||!dirExists)) 
+						{
+							GUILayout.FlexibleSpace();
+							if(GUILayout.Button("Select in Project Window", GUILayout.Width(150))) {
+								var obj = AssetDatabase.LoadMainAssetAtPath(dirPath);
+								EditorGUIUtility.PingObject(obj);
+							}
+						}
+					}
+
+					if(!dirExists) {
+						EditorGUILayout.LabelField("Available Directories:");
+						string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(dirPath));
+						foreach(string s in dirs) {
+							EditorGUILayout.LabelField(s);
 						}
 					}
 				}
