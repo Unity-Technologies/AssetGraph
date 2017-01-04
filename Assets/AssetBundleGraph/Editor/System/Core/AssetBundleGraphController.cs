@@ -109,7 +109,6 @@ namespace AssetBundleGraph {
 			BuildTarget target) 
 		{
 			m_nodeExceptions.RemoveAll(e => e.Id == node.Data.Id);
-			var saveData = SaveData.Data;
 
 			try {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
@@ -119,9 +118,6 @@ namespace AssetBundleGraph {
 					false, null);
 
 				LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
-
-				var v = saveData.Nodes.Find(n => n.Id == node.Data.Id);
-				v.FromJsonDictionary(node.Data.ToJsonDictionary());
 
 				Perform(target, false, false, null);
 				m_isBuilding = false;

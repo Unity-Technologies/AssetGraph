@@ -218,6 +218,8 @@ namespace AssetBundleGraph {
 
 				m_version = ABG_FILE_VERSION;
 				m_lastModified = GetFileTimeUtcString();
+				m_allNodes = n;
+				m_allConnections = c;
 				EditorUtility.SetDirty(this);
 			} else {
 				LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");

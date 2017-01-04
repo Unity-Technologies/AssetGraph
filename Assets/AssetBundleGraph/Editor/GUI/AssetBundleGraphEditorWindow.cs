@@ -419,6 +419,8 @@ namespace AssetBundleGraph {
 				node.ResetErrorStatus();
 				node.HideProgress();
 
+				SaveGraph ();
+
 				controller.Validate(node, target);
 
 				RefreshInspector(controller.StreamManager);
