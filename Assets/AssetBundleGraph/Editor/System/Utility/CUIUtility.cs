@@ -61,7 +61,11 @@ namespace AssetBundleGraph {
 					}
 
 					if(newTarget != target) {
+						#if UNITY_5_6
+						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetUtility.TargetToGroup(newTarget), newTarget);
+						#else
 						EditorUserBuildSettings.SwitchActiveBuildTarget(newTarget);
+						#endif
 						target = newTarget;
 					}
 				}
