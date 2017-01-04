@@ -32,16 +32,18 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
-			Export(target, node, incoming, connectionsToOutput, Output);
+			Export(target, node, incoming, connectionsToOutput, Output, progressFunc);
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
@@ -102,6 +104,7 @@ namespace AssetBundleGraph {
 							continue;
 						}
 						try {
+							if(progressFunc != null) progressFunc(node, string.Format("Copying {0}", source.fileNameAndExtension), 0.5f);
 							File.Copy(source.importFrom, destination);
 							report.AddExportedEntry(source.importFrom, destination);
 						} catch(Exception e) {

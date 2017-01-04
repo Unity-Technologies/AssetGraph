@@ -446,18 +446,28 @@ namespace AssetBundleGraph {
 
 				ConstructGraphFromSaveData(out currentNodes, out currentConnections);
 
-				var currentCount = 0.00f;
-				var totalCount = currentNodes.Count * 1f;
+				float currentCount = 0f;
+				float totalCount = (float)currentNodes.Count;
+				NodeData lastNode = null;
 
-				Action<NodeData, float> updateHandler = (node, progress) => {
-					var progressPercentage = ((currentCount/totalCount) * 100).ToString();				
-					if (progressPercentage.Contains(".")) progressPercentage = progressPercentage.Split('.')[0];
+				Action<NodeData, string, float> updateHandler = (node, message, progress) => {
 
-					if (0 < progress) {
-						currentCount = currentCount + 1f;
+					if(lastNode != node) {
+						// do not add count on first node visit to 
+						// calcurate percantage correctly
+						if(lastNode != null) {
+							++currentCount;
+						}
+						lastNode = node;
 					}
 
-					EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
+					float currentNodeProgress = progress * (1.0f / totalCount);
+					float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
+
+					string title = string.Format("Processing AssetBundle Graph[{0}/{1}]", currentCount, totalCount);
+					string info  = string.Format("{0}:{1}", node.Name, message);
+
+					EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
 				};
 
 				// perform setup. Fails if any exception raises.

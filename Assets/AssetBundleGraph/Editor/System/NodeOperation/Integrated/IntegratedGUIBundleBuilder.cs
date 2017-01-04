@@ -71,7 +71,8 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
@@ -79,6 +80,8 @@ namespace AssetBundleGraph {
 
 			var aggregatedGroups = new Dictionary<string, List<AssetReference>>();
 			aggregatedGroups[key] = new List<AssetReference>();
+
+			if(progressFunc != null) progressFunc(node, "Collecting all inputs...", 0f);
 
 			foreach(var ag in incoming) {
 				foreach(var name in ag.assetGroups.Keys) {
@@ -93,6 +96,8 @@ namespace AssetBundleGraph {
 
 			var bundleNames = aggregatedGroups.Keys.ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
+
+			if(progressFunc != null) progressFunc(node, "Building bundle variants map...", 0.2f);
 
 			// get all variant name for bundles
 			foreach(var name in aggregatedGroups.Keys) {
@@ -136,6 +141,7 @@ namespace AssetBundleGraph {
 				}
 			}
 
+			if(progressFunc != null) progressFunc(node, "Building Asset Bundles...", 0.7f);
 
 			AssetBundleManifest m = BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
 

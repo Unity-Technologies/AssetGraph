@@ -88,7 +88,8 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
@@ -129,6 +130,8 @@ namespace AssetBundleGraph {
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} is (re)creating Prefab:{1} with {2}({3})", node.Name, prefabFileName,
 						PrefabBuilderUtility.GetPrefabBuilderGUIName(node.ScriptClassName),
 						PrefabBuilderUtility.GetPrefabBuilderVersion(node.ScriptClassName));
+
+					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", prefabFileName), 0.5f);
 
 					PrefabUtility.CreatePrefab(prefabSavePath, obj, node.ReplacePrefabOptions);
 					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);

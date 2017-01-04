@@ -113,7 +113,8 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			var output = new Dictionary<string, List<AssetReference>>();
 
@@ -131,6 +132,8 @@ namespace AssetBundleGraph {
 							variantName = groupKey;
 						}
 						var bundleName = GetBundleName(target, node, groupKey);
+
+						if(progressFunc != null) progressFunc(node, string.Format("Configuring {0}", bundleName), 0.5f);
 
 						var newBundleSetting = ConfigureAssetBundleSettings(variantName, ag.assetGroups[groupKey]);
 						if(output.ContainsKey(bundleName)) {

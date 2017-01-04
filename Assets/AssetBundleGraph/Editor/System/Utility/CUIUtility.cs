@@ -89,18 +89,19 @@ namespace AssetBundleGraph {
 
 				NodeData lastNodeData = null;
 				float lastProgress = 0.0f;
-				Action<NodeData, float> updateHandler = (NodeData node, float progress) => {
+
+				Action<NodeData, string, float> updateHandler = (NodeData node, string message, float progress) => {
 					if(node != null && lastNodeData != node) {
 						lastNodeData = node;
 						lastProgress = progress;
 
-						LogUtility.Logger.LogFormat(LogType.Log, "Processing {0}...", node.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "Processing {0}", node.Name);
 					}
 					if(progress > lastProgress) {
 						if(progress <= 1.0f) {
 							LogUtility.Logger.LogFormat(LogType.Log, "{0} Complete.", node.Name);
 						} else if( (progress - lastProgress) > 0.2f ) {
-							LogUtility.Logger.LogFormat(LogType.Log, "{0}: {1} %", node.Name, (int)progress*100f);
+							LogUtility.Logger.LogFormat(LogType.Log, "{0}: {1} % : {2}", node.Name, (int)progress*100f, message);
 						}
 						lastProgress = progress;
 					}

@@ -70,10 +70,11 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			if(incoming != null){
-				ApplyImportSetting(node, incoming);
+				ApplyImportSetting(node, incoming, progressFunc);
 
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
@@ -139,7 +140,7 @@ namespace AssetBundleGraph {
 			return AssetImporter.GetAtPath(sampleFiles[0]);	
 		}
 
-		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
+		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming, Action<NodeData, string, float> progressFunc) {
 
 			var referenceImporter = GetReferenceAssetImporter(node);	
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
@@ -149,6 +150,7 @@ namespace AssetBundleGraph {
 					foreach(var asset in assets) {
 						var importer = AssetImporter.GetAtPath(asset.importFrom);
 						if(!configurator.IsEqual(importer)) {
+							if(progressFunc != null) progressFunc(node, string.Format("Modifying {0}", asset.fileNameAndExtension), 0.5f);
 							configurator.OverwriteImportSettings(importer);
 							asset.TouchImportAsset();
 						}

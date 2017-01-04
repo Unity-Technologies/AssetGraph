@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 			BuildTarget target,
 			bool isRun,
 			bool forceVisitAll,
-			Action<NodeData, float> updateHandler) 
+			Action<NodeData, string, float> updateHandler) 
 		{
 			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
@@ -136,17 +136,17 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
 			bool isActualRun,
-			Action<NodeData, float> updateHandler) 
+			Action<NodeData, string, float> updateHandler) 
 		{
 			try {
 				if (updateHandler != null) {
-					updateHandler(currentNodeData, 0f);
+					updateHandler(currentNodeData, "Starting...", 0f);
 				}
 
 				INodeOperation executor = CreateOperation(currentNodeData);
 				if(executor != null) {
 					if(isActualRun) {
-						executor.Run(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
+						executor.Run(target, currentNodeData, incoming, connectionsToOutput, outputFunc, updateHandler);
 					}
 					else {
 						executor.Setup(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
@@ -154,7 +154,7 @@ namespace AssetBundleGraph {
 				}
 
 				if (updateHandler != null) {
-					updateHandler(currentNodeData, 1f);
+					updateHandler(currentNodeData, "Completed.", 1f);
 				}
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
