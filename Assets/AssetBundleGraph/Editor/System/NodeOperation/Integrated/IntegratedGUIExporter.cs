@@ -35,22 +35,18 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output,
 			Action<NodeData, string, float> progressFunc) 
 		{
-			Export(target, node, incoming, connectionsToOutput, Output, progressFunc);
+			Export(target, node, incoming, connectionsToOutput, progressFunc);
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
 			Action<NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
 			}
-
-			var outputDict = new Dictionary<string, List<AssetReference>>();
-			outputDict["0"] = new List<AssetReference>();
 
 			var exportPath = FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]);
 
@@ -70,7 +66,6 @@ namespace AssetBundleGraph {
 
 			foreach(var ag in incoming) {
 				foreach (var groupKey in ag.assetGroups.Keys) {
-					var exportedAssets = new List<AssetReference>();
 					var inputSources = ag.assetGroups[groupKey];
 
 					foreach (var source in inputSources) {					
@@ -112,16 +107,9 @@ namespace AssetBundleGraph {
 						}
 
 						source.exportTo = destination;
-						exportedAssets.Add(source);
 					}
-					outputDict["0"].AddRange(exportedAssets);
 				}
 			}
-
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-
-			Output(dst, outputDict);
 
 			AssetBundleBuildReport.AddExportReport(report);
 		}

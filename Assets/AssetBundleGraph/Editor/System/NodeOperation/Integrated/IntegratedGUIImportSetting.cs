@@ -56,7 +56,7 @@ namespace AssetBundleGraph {
 			ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, errorInConfig);
 
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
-			if(incoming != null) {
+			if(incoming != null && Output != null) {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
 

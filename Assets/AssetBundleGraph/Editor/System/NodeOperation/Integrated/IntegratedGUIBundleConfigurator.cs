@@ -77,8 +77,11 @@ namespace AssetBundleGraph {
 						string.Join(", ", invalids.Select(a =>a.absolutePath).ToArray()), node.Id );
 				}
 			}
-				
-			var output = new Dictionary<string, List<AssetReference>>();
+
+			Dictionary<string, List<AssetReference>> output = null;
+			if(Output != null) {
+				output = new Dictionary<string, List<AssetReference>>();
+			}
 
 			if(incoming != null) {
 				foreach(var ag in incoming) {
@@ -96,17 +99,21 @@ namespace AssetBundleGraph {
 						var bundleName = GetBundleName(target, node, groupKey);
 						var assets = ag.assetGroups[groupKey];
 						ConfigureAssetBundleSettings(variantName, assets);
-						if(!output.ContainsKey(bundleName)) {
-							output[bundleName] = new List<AssetReference>();
-						} 
-						output[bundleName].AddRange(assets);
+						if(output != null) {
+							if(!output.ContainsKey(bundleName)) {
+								output[bundleName] = new List<AssetReference>();
+							} 
+							output[bundleName].AddRange(assets);
+						}
 					}
 				}
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 		}
 		
 		public void Run (BuildTarget target, 
@@ -116,7 +123,10 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output,
 			Action<NodeData, string, float> progressFunc) 
 		{
-			var output = new Dictionary<string, List<AssetReference>>();
+			Dictionary<string, List<AssetReference>> output = null;
+			if(Output != null) {
+				output = new Dictionary<string, List<AssetReference>>();
+			}
 
 			if(incoming != null) {
 				foreach(var ag in incoming) {
@@ -137,17 +147,21 @@ namespace AssetBundleGraph {
 
 						var assets = ag.assetGroups[groupKey];
 						ConfigureAssetBundleSettings(variantName, assets);
-						if(!output.ContainsKey(bundleName)) {
-							output[bundleName] = new List<AssetReference>();
-						} 
-						output[bundleName].AddRange(assets);
+						if(output != null) {
+							if(!output.ContainsKey(bundleName)) {
+								output[bundleName] = new List<AssetReference>();
+							} 
+							output[bundleName].AddRange(assets);
+						}
 					}
 				}
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 		}
 
 		public void ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		

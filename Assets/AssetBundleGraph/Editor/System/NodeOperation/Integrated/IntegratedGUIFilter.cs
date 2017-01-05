@@ -34,7 +34,7 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			if(connectionsToOutput == null || incoming == null) {
+			if(connectionsToOutput == null || incoming == null || Output == null) {
 				return;
 			}
 

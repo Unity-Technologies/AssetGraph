@@ -299,10 +299,6 @@ namespace AssetBundleGraph {
 			n.dirty = false;
 			n.data.NeedsRevisit = false;
 
-			if(n.streamTo.Count == 0) {
-				m_streamManager.ClearLeafAssetGroupOutout(n.data);
-			}
-
 			//root node
 			if(n.streamFrom.Count == 0) {
 				IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
@@ -342,12 +338,7 @@ namespace AssetBundleGraph {
 					IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
 
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
-					performFunc(n.data,inputs, null,  
-						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
-						{
-							m_streamManager.AppendLeafnodeAssetGroupOutout(n.data, newOutput);
-						}
-					);
+					performFunc(n.data,inputs, null,  null);
 				}
 
 				// Test output asset group after all input-output pairs are performed
@@ -413,6 +404,8 @@ namespace AssetBundleGraph {
 		}
 
 		private void MarkAndTraverseParent(SaveData saveData, NodeData current, List<ConnectionData> visitedConnections, List<NodeData> visitedNode) {
+
+			Assert.IsNotNull(current);
 
 			// if node is visited from other route, just quit
 			if(visitedNode.Contains(current)) {

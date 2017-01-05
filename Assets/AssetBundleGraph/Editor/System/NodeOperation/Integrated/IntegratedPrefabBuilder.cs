@@ -41,7 +41,10 @@ namespace AssetBundleGraph {
 
 
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
-			Dictionary<string, List<AssetReference>> output = new Dictionary<string, List<AssetReference>>();
+			Dictionary<string, List<AssetReference>> output = null;
+			if(Output != null) {
+				output = new Dictionary<string, List<AssetReference>>();
+			}
 
 			var aggregatedGroups = new Dictionary<string, List<AssetReference>>();
 			foreach(var ag in incoming) {
@@ -65,7 +68,7 @@ namespace AssetBundleGraph {
 
 				List<UnityEngine.Object> allAssets = LoadAllAssets(aggregatedGroups[key]);
 				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
-				if(prefabFileName != null) {
+				if(output != null && prefabFileName != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
 					};
@@ -73,9 +76,11 @@ namespace AssetBundleGraph {
 				allAssets.ForEach( o => Resources.UnloadAsset(o) );
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 		}
 
 		private static List<UnityEngine.Object> LoadAllAssets(List<AssetReference> assets) {
@@ -99,7 +104,10 @@ namespace AssetBundleGraph {
 			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
-			Dictionary<string, List<AssetReference>> output = new Dictionary<string, List<AssetReference>>();
+			Dictionary<string, List<AssetReference>> output = null;
+			if(Output != null) {
+				output = new Dictionary<string, List<AssetReference>>();
+			}
 
 			var aggregatedGroups = new Dictionary<string, List<AssetReference>>();
 			foreach(var ag in incoming) {
@@ -139,15 +147,19 @@ namespace AssetBundleGraph {
 				}
 				allAssets.ForEach( o => Resources.UnloadAsset(o) );
 
-				output[key] = new List<AssetReference> () {
-					AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
-				};
+				if(output != null) {
+					output[key] = new List<AssetReference> () {
+						AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
+					};
+				}
 				aggregatedGroups[key].ForEach(a => a.ReleaseData());
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 		}
 
 		public static void ValidatePrefabBuilder (

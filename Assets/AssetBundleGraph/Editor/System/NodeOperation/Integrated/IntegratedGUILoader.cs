@@ -45,7 +45,7 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output) 
 		{
 
-			if(connectionsToOutput == null) {
+			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
 

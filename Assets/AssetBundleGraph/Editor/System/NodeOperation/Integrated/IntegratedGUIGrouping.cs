@@ -47,7 +47,7 @@ namespace AssetBundleGraph
 				}
 			);
 
-			if(incoming == null || connectionsToOutput == null) {
+			if(incoming == null || connectionsToOutput == null || Output == null) {
 				return;
 			}
 

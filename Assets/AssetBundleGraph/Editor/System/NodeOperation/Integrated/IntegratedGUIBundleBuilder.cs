@@ -23,9 +23,6 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			var outputDict = new Dictionary<string, List<AssetReference>>();
-			outputDict[key] = new List<AssetReference>();
-
 			var bundleNames = incoming.SelectMany(v => v.assetGroups.Keys).Distinct().ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
 
@@ -50,21 +47,27 @@ namespace AssetBundleGraph {
 			bundleNames.Add( manifestName );
 			bundleVariants[manifestName] = new List<string>() {""};
 
-			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+			if(connectionsToOutput != null && Output != null) {
+				UnityEngine.Assertions.Assert.IsTrue(connectionsToOutput.Any());
 
-			foreach (var name in bundleNames) {
-				foreach(var v in bundleVariants[name]) {
-					string bundleName = (string.IsNullOrEmpty(v))? name : name + "." + v;
-					AssetReference bundle = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName) );
-					AssetReference manifest = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName + AssetBundleGraphSettings.MANIFEST_FOOTER) );
-					outputDict[key].Add(bundle);
-					outputDict[key].Add(manifest);
+				var outputDict = new Dictionary<string, List<AssetReference>>();
+				outputDict[key] = new List<AssetReference>();
+				var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+
+				foreach (var name in bundleNames) {
+					foreach(var v in bundleVariants[name]) {
+						string bundleName = (string.IsNullOrEmpty(v))? name : name + "." + v;
+						AssetReference bundle = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName) );
+						AssetReference manifest = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName + AssetBundleGraphSettings.MANIFEST_FOOTER) );
+						outputDict[key].Add(bundle);
+						outputDict[key].Add(manifest);
+					}
 				}
-			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, outputDict);
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, outputDict);
+			}
 		}
 		
 		public void Run (BuildTarget target, 
@@ -157,9 +160,11 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 
 			AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, bundleBuild, output[key], aggregatedGroups, bundleVariants));
 		}

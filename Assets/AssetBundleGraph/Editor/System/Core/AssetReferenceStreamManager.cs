@@ -16,12 +16,8 @@ namespace AssetBundleGraph {
 		// key: connectiondata id
 		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_connectionStreamMap;
 
-		// key: nodedata id
-		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_leafnodeOutput;
-
 		public AssetReferenceStreamManager() {
 			m_connectionStreamMap = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
-			m_leafnodeOutput = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 		}
 
 		public IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(ConnectionPointData inputPoint) {
@@ -62,60 +58,5 @@ namespace AssetBundleGraph {
 				m_connectionStreamMap.Remove(connection.Id);
 			}
 		}
-
-		public void ClearLeafAssetGroupOutout(NodeData node) {
-			if( m_leafnodeOutput.ContainsKey(node.Id) ) {
-				m_leafnodeOutput[node.Id].Clear();
-			}
-		}
-
-		public void AppendLeafnodeAssetGroupOutout(NodeData node, Dictionary<string, List<AssetReference>> groups) {
-
-			if(!m_leafnodeOutput.ContainsKey(node.Id)) {
-				m_leafnodeOutput[node.Id] = new Dictionary<string, List<AssetReference>>();
-			}
-
-			var g = m_leafnodeOutput[node.Id];
-
-			foreach(var k in groups.Keys) {
-				if(!g.ContainsKey(k)) {
-					g[k] = new List<AssetReference>();
-				}
-				g[k].AddRange(groups[k]);
-			}
-		}
-
-//		public Dictionary<string, List<AssetReference>> FindAssetGroup(NodeData node) {
-//
-//			if(!m_nodeStreamCache.ContainsKey(node.Id)) {
-//				m_nodeStreamCache[node.Id] = new Dictionary<string, List<AssetReference>>();
-//			}
-//
-//			// TODO: fix this
-//			//return m_connectionStreamMap[node];
-//
-//			return m_nodeStreamCache[node.Id];
-//
-////			Dictionary<string, List<AssetReference>> group = new Dictionary<string, List<AssetReference>>();
-//
-////			foreach (var c in m_connectionStreamMap.Keys) {
-////				if(c.FromNodeId != node.Id) {
-////					continue;
-////				}
-////				var targetNode = data.Nodes.Find(node => node.Id == c.FromNodeId);
-////				var groupDict = result[c];
-////
-////				if (!nodeDatas.ContainsKey(targetNode)) {
-////					nodeDatas[targetNode] = new Dictionary<string, List<AssetReference>>();
-////				}
-////				foreach (var groupKey in groupDict.Keys) {
-////					if (!nodeDatas[targetNode].ContainsKey(groupKey)) {
-////						nodeDatas[targetNode][groupKey] = new List<AssetReference>();
-////					}
-////					nodeDatas[targetNode][groupKey].AddRange(groupDict[groupKey]);
-////				}
-////			}
-//		}
-
 	}
 }

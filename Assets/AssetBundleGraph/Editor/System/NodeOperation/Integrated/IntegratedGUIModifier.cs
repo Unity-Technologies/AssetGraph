@@ -33,7 +33,7 @@ namespace AssetBundleGraph {
 			);
 
 
-			if(incoming != null) {
+			if(incoming != null && Output != null) {
 				// Modifier does not add, filter or change structure of group, so just pass given group of assets
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
@@ -76,7 +76,7 @@ namespace AssetBundleGraph {
 				AssetDatabase.Refresh();
 			}
 
-			if(incoming != null) {
+			if(incoming != null && Output != null) {
 				// Modifier does not add, filter or change structure of group, so just pass given group of assets
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
