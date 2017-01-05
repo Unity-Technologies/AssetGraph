@@ -70,7 +70,7 @@ namespace AssetBundleGraph {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
 					};
 				}
-				aggregatedGroups[key].ForEach(a => a.ReleaseData());
+				allAssets.ForEach( o => Resources.UnloadAsset(o) );
 			}
 
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
@@ -137,6 +137,7 @@ namespace AssetBundleGraph {
 					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
 				}
+				allAssets.ForEach( o => Resources.UnloadAsset(o) );
 
 				output[key] = new List<AssetReference> () {
 					AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
