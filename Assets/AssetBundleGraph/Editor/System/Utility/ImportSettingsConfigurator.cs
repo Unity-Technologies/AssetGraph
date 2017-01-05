@@ -238,6 +238,11 @@ namespace AssetBundleGraph {
 
 			importer.importTangents = reference.importTangents;
 
+			#if UNITY_5_6
+			importer.keepQuads = reference.keepQuads;
+			importer.weldVertices = reference.weldVertices;
+			#endif
+
 			/* read only */
 			/* 
 			importer.importedTakeInfos
@@ -388,6 +393,11 @@ namespace AssetBundleGraph {
 			if (target.importTangents != reference.importTangents) return false;
 			if (target.transformPaths != reference.transformPaths) return false;
 			if (target.useFileUnits != reference.useFileUnits) return false;
+
+			#if UNITY_5_6
+			if (target.keepQuads != reference.keepQuads) return false;
+			if (target.weldVertices != reference.weldVertices) return false;
+			#endif
 
 			return true;
 		}
