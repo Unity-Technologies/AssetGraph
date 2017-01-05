@@ -14,7 +14,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUILoader.Setup");
 			ValidateLoadPath(
 				node.LoaderLoadPath[target],
 				node.GetLoaderFullLoadPath(target),
@@ -28,14 +27,14 @@ namespace AssetBundleGraph {
 			);
 
 			Load(target, node, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			//Load operation is completed furing Setup() phase, so do nothing in Run.
 		}
@@ -46,7 +45,7 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output) 
 		{
 
-			if(connectionsToOutput == null) {
+			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
 

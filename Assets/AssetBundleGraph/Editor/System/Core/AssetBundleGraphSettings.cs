@@ -22,7 +22,8 @@ namespace AssetBundleGraph {
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
-		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.json";
+		public const string ASSETBUNDLEGRAPH_DATA_JSON_NAME = "AssetBundleGraph.json";
+		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.asset";
 		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
 		
 		public const string ASSETS_PATH = "Assets/";

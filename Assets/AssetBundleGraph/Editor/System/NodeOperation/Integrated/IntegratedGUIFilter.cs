@@ -15,17 +15,16 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIFilter.Setup");
 			node.ValidateOverlappingFilterCondition(true);
 			Filter(node, incoming, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
@@ -35,7 +34,7 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			if(connectionsToOutput == null || incoming == null) {
+			if(connectionsToOutput == null || incoming == null || Output == null) {
 				return;
 			}
 

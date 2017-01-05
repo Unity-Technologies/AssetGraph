@@ -56,7 +56,7 @@ namespace AssetBundleGraph {
 			ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, errorInConfig);
 
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
-			if(incoming != null) {
+			if(incoming != null && Output != null) {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
 
@@ -70,12 +70,11 @@ namespace AssetBundleGraph {
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIImportSetting.Run");
-
 			if(incoming != null){
-				ApplyImportSetting(node, incoming);
+				ApplyImportSetting(node, incoming, progressFunc);
 
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
@@ -84,8 +83,6 @@ namespace AssetBundleGraph {
 					Output(dst, ag.assetGroups);
 				}
 			}
-
-			Profiler.EndSample();
 		}
 
 		private void SaveSampleFile(NodeData node, AssetReference asset) {
@@ -143,7 +140,7 @@ namespace AssetBundleGraph {
 			return AssetImporter.GetAtPath(sampleFiles[0]);	
 		}
 
-		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
+		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming, Action<NodeData, string, float> progressFunc) {
 
 			var referenceImporter = GetReferenceAssetImporter(node);	
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
@@ -153,7 +150,9 @@ namespace AssetBundleGraph {
 					foreach(var asset in assets) {
 						var importer = AssetImporter.GetAtPath(asset.importFrom);
 						if(!configurator.IsEqual(importer)) {
+							if(progressFunc != null) progressFunc(node, string.Format("Modifying {0}", asset.fileNameAndExtension), 0.5f);
 							configurator.OverwriteImportSettings(importer);
+							asset.TouchImportAsset();
 						}
 					}
 				}

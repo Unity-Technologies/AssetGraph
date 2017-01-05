@@ -24,6 +24,7 @@ namespace AssetBundleGraph {
 			NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output outputFunc);
+			PerformGraph.Output outputFunc,
+			Action<NodeData, string, float> progressFunc);
 	}
 }

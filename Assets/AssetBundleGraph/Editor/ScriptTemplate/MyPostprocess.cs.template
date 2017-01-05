@@ -14,16 +14,38 @@ public class MyPostprocess : AssetBundleGraph.IPostprocess {
 	 * DoPostprocess() is called when build performed.
 	 * @param [in] reports	collection of AssetBundleBuildReport from each BundleBuilders.
 	 */
-	public void DoPostprocess (IEnumerable<AssetBundleGraph.AssetBundleBuildReport> reports) {
+	public void DoPostprocess (IEnumerable<AssetBundleGraph.AssetBundleBuildReport> buildReports, IEnumerable<AssetBundleGraph.ExportReport> exportReports) {
 
-		foreach (var report in reports) {
+		foreach (var report in buildReports) {
 
 			StringBuilder sb = new StringBuilder();
 
-			sb.AppendFormat("-------\nBUILD REPORT({0}):\n-------\n", report.Node.Name);
+			sb.AppendFormat("BUILD REPORT({0}):\n-------\n", report.Node.Name);
 
 			foreach(var v in report.BuiltBundleFiles) {
 				sb.AppendFormat("{0}\n", v.fileNameAndExtension);
+			}
+
+			sb.Append("-------\n");
+			Debug.Log(sb.ToString());
+		}
+
+		foreach (var export in exportReports) {
+
+			StringBuilder sb = new StringBuilder();
+
+			sb.AppendFormat("EXPORT REPORT({0}):\n\n", export.Node.Name);
+
+			foreach(var v in export.ExportedItems) {
+				sb.AppendFormat("{0} => {1}\n", v.source, v.destination);
+			}
+
+			if(export.Errors.Count > 0) {
+				sb.Append("\n-- ERRORS -----\n\n");
+
+				foreach(var v in export.Errors) {
+					sb.AppendFormat("{0} => {1} : {2}\n", v.source, v.destination, v.reason);
+				}
 			}
 
 			sb.Append("-------\n");

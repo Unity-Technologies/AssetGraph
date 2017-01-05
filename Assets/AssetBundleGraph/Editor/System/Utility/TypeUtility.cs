@@ -82,8 +82,6 @@ namespace AssetBundleGraph {
 		 * Get type of asset from give path.
 		 */
 		public static Type GetTypeOfAsset (string assetPath) {
-			Profiler.BeginSample("AssetBundleGraph.GetTypeOfAsset");
-
 			if (assetPath.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION)) {
 				return typeof(string);
 			}
@@ -103,7 +101,6 @@ namespace AssetBundleGraph {
 			}
 			#endif
 
-			Profiler.EndSample();
 			return t;
 		}
 

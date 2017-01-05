@@ -276,16 +276,19 @@ namespace AssetBundleGraph {
 
 		public static bool IsBuildTargetSupported(BuildTarget t) {
 
-			//[WrapperlessIcall]
-			//[MethodImpl (MethodImplOptions.InternalCall)]
-			//internal static extern bool IsBuildTargetSupported (BuildTarget target);
-
-      		// Types.GetType is obsolete
-			// var objType = Types.GetType ("UnityEditor.BuildPipeline", "UnityEditor.dll");
-
 			var objType = typeof(UnityEditor.BuildPipeline);
 			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+			#if UNITY_5_6
+			BuildTargetGroup g = BuildTargetUtility.TargetToGroup(t);
+			//internal static extern bool IsBuildTargetSupported (BuildTargetGroup buildTargetGroup, BuildTarget target);
+			var retval = method.Invoke(null, new object[]{
+				System.Enum.ToObject(typeof(BuildTargetGroup), g), 
+				System.Enum.ToObject(typeof(BuildTarget), t)});
+			#else 
+			//internal static extern bool IsBuildTargetSupported (BuildTarget target);
 			var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), t)});
+			#endif
 			return Convert.ToBoolean(retval);
 		}
 	}

@@ -95,7 +95,7 @@ namespace AssetBundleGraph {
 		private Texture2D _selectionTex;
 		private GUIContent _reloadButtonTexture;
 		private ModifyMode modifyMode;
-		private DateTime lastLoaded = DateTime.MinValue;
+		private string lastLoaded;
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
 		private Vector2 errorScrollPos = new Vector2(0,0);
@@ -259,7 +259,7 @@ namespace AssetBundleGraph {
 			SaveData.Reload();
 
 			Undo.undoRedoPerformed += () => {
-				SaveGraphAndRefresh();
+				Setup(ActiveBuildTarget);
 				Repaint();
 			};
 
@@ -382,18 +382,9 @@ namespace AssetBundleGraph {
 			SaveData.Data.ApplyGraph(nodes, connections);
 		}
 
-		private void SaveGraphAndRefresh (bool silent = false) {
-			SaveGraph();
-			try {
-				Setup(ActiveBuildTarget);
-			} catch (Exception e) {
-				if(!silent){
-					LogUtility.Logger.LogError(LogUtility.kTag, "Error occured during reload:" + e);
-				}
-			}
-		}
-
-
+		/**
+		 * Save Graph and update all nodes & connections
+		 */ 
 		private void Setup (BuildTarget target, bool forceVisitAll = false) {
 
 			EditorUtility.ClearProgressBar();
@@ -428,6 +419,8 @@ namespace AssetBundleGraph {
 				node.ResetErrorStatus();
 				node.HideProgress();
 
+				SaveGraph ();
+
 				controller.Validate(node, target);
 
 				RefreshInspector(controller.StreamManager);
@@ -446,25 +439,35 @@ namespace AssetBundleGraph {
 		private void Run (BuildTarget target) {
 
 			try {
-				SaveData.Data.Save();
+				AssetDatabase.SaveAssets();
 
 				List<NodeGUI> currentNodes = null;
 				List<ConnectionGUI> currentConnections = null;
 
 				ConstructGraphFromSaveData(out currentNodes, out currentConnections);
 
-				var currentCount = 0.00f;
-				var totalCount = currentNodes.Count * 1f;
+				float currentCount = 0f;
+				float totalCount = (float)currentNodes.Count;
+				NodeData lastNode = null;
 
-				Action<NodeData, float> updateHandler = (node, progress) => {
-					var progressPercentage = ((currentCount/totalCount) * 100).ToString();				
-					if (progressPercentage.Contains(".")) progressPercentage = progressPercentage.Split('.')[0];
+				Action<NodeData, string, float> updateHandler = (node, message, progress) => {
 
-					if (0 < progress) {
-						currentCount = currentCount + 1f;
+					if(lastNode != node) {
+						// do not add count on first node visit to 
+						// calcurate percantage correctly
+						if(lastNode != null) {
+							++currentCount;
+						}
+						lastNode = node;
 					}
 
-					EditorUtility.DisplayProgressBar("AssetBundleGraph Processing... ", "Processing " + node.Name + ": " + progressPercentage + "%", currentCount/totalCount);
+					float currentNodeProgress = progress * (1.0f / totalCount);
+					float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
+
+					string title = string.Format("Processing AssetBundle Graph[{0}/{1}]", currentCount, totalCount);
+					string info  = string.Format("{0}:{1}", node.Name, message);
+
+					EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
 				};
 
 				// perform setup. Fails if any exception raises.
@@ -798,14 +801,9 @@ namespace AssetBundleGraph {
 			Init();
 		}
 
-//		public void OnDestroy() {
-//			LogUtility.Logger.Log("OnDestroy");
-//			SaveData.Data.Save();
-//		}
-
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
-			SaveData.Data.Save();
+			SaveData.SetSavedataDirty();
 		}
 
 		public void OnGUI () {
@@ -871,7 +869,7 @@ namespace AssetBundleGraph {
 					}
 
 					if (shouldSave) {
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 					}
 					break;
 				}
@@ -887,7 +885,7 @@ namespace AssetBundleGraph {
 							false, 
 							() => {
 								AddNodeFromGUI(kind, rightClickPos.x, rightClickPos.y);
-								SaveGraphAndRefresh();
+								Setup(ActiveBuildTarget);
 								Repaint();
 							}
 						);
@@ -1014,7 +1012,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 
 							activeObject = RenewActiveObject(new List<string>());
 							UpdateActivationOfObjects(activeObject);
@@ -1053,7 +1051,7 @@ namespace AssetBundleGraph {
 								DeleteConnectionById(targetId);
 							}
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 							InitializeGraph();
 
 							activeObject = RenewActiveObject(new List<string>());
@@ -1111,7 +1109,7 @@ namespace AssetBundleGraph {
 								DuplicateNode(newNode);
 							}
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 							InitializeGraph();
 
 							Event.current.Use();
@@ -1270,7 +1268,7 @@ namespace AssetBundleGraph {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 						break;
 					}
 
@@ -1321,7 +1319,7 @@ namespace AssetBundleGraph {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 						break;
 					}
 
@@ -1390,7 +1388,7 @@ namespace AssetBundleGraph {
 						var deletingNodeId = e.eventSourceNode.Id;
 						DeleteNode(deletingNodeId);
 
-						SaveGraphAndRefresh();
+						Setup(ActiveBuildTarget);
 						InitializeGraph();
 						break;
 					}
@@ -1500,6 +1498,12 @@ namespace AssetBundleGraph {
 			}
 
 			switch (e.eventType) {
+				case NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT: {
+					// deleting all connections to this point
+					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+					Repaint();
+					break;
+				}
 				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
 					// deleting point is handled by caller, so we are deleting connections associated with it.
 					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
@@ -1523,7 +1527,7 @@ namespace AssetBundleGraph {
 					break;
 				}
 				case NodeEvent.EventType.EVENT_SAVE: {
-					SaveGraphAndRefresh(true);
+					Setup(ActiveBuildTarget);
 					Repaint();
 					break;
 				}
@@ -1635,7 +1639,7 @@ namespace AssetBundleGraph {
 
 							DeleteConnectionById(deletedConnectionId);
 
-							SaveGraphAndRefresh();
+							Setup(ActiveBuildTarget);
 							Repaint();
 							break;
 						}

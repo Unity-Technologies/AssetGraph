@@ -58,7 +58,7 @@ namespace AssetBundleGraph {
 			BuildTarget target,
 			bool isRun,
 			bool forceVisitAll,
-			Action<NodeData, float> updateHandler) 
+			Action<NodeData, string, float> updateHandler) 
 		{
 			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
@@ -109,7 +109,6 @@ namespace AssetBundleGraph {
 			BuildTarget target) 
 		{
 			m_nodeExceptions.RemoveAll(e => e.Id == node.Data.Id);
-			var saveData = SaveData.Data;
 
 			try {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
@@ -119,9 +118,6 @@ namespace AssetBundleGraph {
 					false, null);
 
 				LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
-
-				var v = saveData.Nodes.Find(n => n.Id == node.Data.Id);
-				v.FromJsonDictionary(node.Data.ToJsonDictionary());
 
 				Perform(target, false, false, null);
 				m_isBuilding = false;
@@ -140,17 +136,17 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
 			bool isActualRun,
-			Action<NodeData, float> updateHandler) 
+			Action<NodeData, string, float> updateHandler) 
 		{
 			try {
 				if (updateHandler != null) {
-					updateHandler(currentNodeData, 0f);
+					updateHandler(currentNodeData, "Starting...", 0f);
 				}
 
 				INodeOperation executor = CreateOperation(currentNodeData);
 				if(executor != null) {
 					if(isActualRun) {
-						executor.Run(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
+						executor.Run(target, currentNodeData, incoming, connectionsToOutput, outputFunc, updateHandler);
 					}
 					else {
 						executor.Setup(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
@@ -158,10 +154,15 @@ namespace AssetBundleGraph {
 				}
 
 				if (updateHandler != null) {
-					updateHandler(currentNodeData, 1f);
+					updateHandler(currentNodeData, "Completed.", 1f);
 				}
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
+			} 
+			// Minimize impact of errors happened during node operation
+			catch (Exception e) {
+				m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1} (See Console for detail)", e.GetType().ToString(), e.Message), currentNodeData.Id));
+				LogUtility.Logger.LogException(e);
 			}
 		}
 

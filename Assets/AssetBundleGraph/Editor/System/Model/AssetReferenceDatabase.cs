@@ -27,7 +27,7 @@ namespace AssetBundleGraph {
 					s_database.m_dictionary = new SortedList<string, AssetReference>();
 					s_database.m_version = DB_VERSION;
 
-					Save();
+					AssetDatabase.CreateAsset(s_database, DBPath);
 				}
 			}
 
@@ -72,10 +72,6 @@ namespace AssetBundleGraph {
 			return loaded;
 		}
 
-		public static void Save() {
-			AssetDatabase.CreateAsset(s_database, DBPath);
-		}
-
 		public static void SetDBDirty() {
 			EditorUtility.SetDirty(s_database);
 		}
@@ -109,7 +105,7 @@ namespace AssetBundleGraph {
 			if(db.m_dictionary.ContainsKey(oldPath)) {
 				var r = db.m_dictionary[oldPath];
 				db.m_dictionary.Remove(oldPath);
-				db.m_dictionary.Add(newPath, r);
+				db.m_dictionary[newPath]= r;
 				r.importFrom = newPath;
 			}
 		}

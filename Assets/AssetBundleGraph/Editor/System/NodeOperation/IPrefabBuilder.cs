@@ -39,6 +39,10 @@ namespace AssetBundleGraph {
 	[AttributeUsage(AttributeTargets.Class)] 
 	public class CustomPrefabBuilder : Attribute {
 		private string m_name;
+		private string m_version;
+		private int m_assetThreshold;
+
+		private const int kDEFAULT_ASSET_THRES = 10;
 
 		public string Name {
 			get {
@@ -46,8 +50,34 @@ namespace AssetBundleGraph {
 			}
 		}
 
+		public string Version {
+			get {
+				return m_version;
+			}
+		}
+
+		public int AssetThreshold {
+			get {
+				return m_assetThreshold;
+			}
+		}
+
 		public CustomPrefabBuilder (string name) {
 			m_name = name;
+			m_version = string.Empty;
+			m_assetThreshold = kDEFAULT_ASSET_THRES;
+		}
+
+		public CustomPrefabBuilder (string name, string version) {
+			m_name = name;
+			m_version = version;
+			m_assetThreshold = kDEFAULT_ASSET_THRES;
+		}
+
+		public CustomPrefabBuilder (string name, string version, int itemThreashold) {
+			m_name = name;
+			m_version = version;
+			m_assetThreshold = itemThreashold;
 		}
 	}
 
@@ -109,6 +139,30 @@ namespace AssetBundleGraph {
 				}
 			}
 			return string.Empty;
+		}
+
+		public static string GetPrefabBuilderVersion(string className) {
+			var type = Type.GetType(className);
+			if(type != null) {
+				CustomPrefabBuilder attr = 
+					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+				if(attr != null) {
+					return attr.Version;
+				}
+			}
+			return string.Empty;
+		}
+
+		public static int GetPrefabBuilderAssetThreshold(string className) {
+			var type = Type.GetType(className);
+			if(type != null) {
+				CustomPrefabBuilder attr = 
+					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+				if(attr != null) {
+					return attr.AssetThreshold;
+				}
+			}
+			return 0;
 		}
 
 		public static string GUINameToClassName(string guiName) {

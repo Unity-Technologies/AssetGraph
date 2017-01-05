@@ -15,16 +15,34 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Setup");
+			int groupCount = 0;
+
+			if(incoming != null) {
+				var groupNames = new List<string>();
+				foreach(var ag in incoming) {
+					foreach (var groupKey in ag.assetGroups.Keys) {
+						if(!groupNames.Contains(groupKey)) {
+							groupNames.Add(groupKey);
+						}
+					}
+				}
+				groupCount = groupNames.Count;
+			}
+
 			ValidateBundleNameTemplate(
 				node.BundleNameTemplate[target],
 				node.BundleConfigUseGroupAsVariants,
+				groupCount,
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
 				},
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template can not contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
 						+ "' when group name is used for variants.", node.Id);
+				},
+				() => {
+					throw new NodeException(node.Name + ":Bundle Name Template must contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
+						+ "' when group name is not used for variants and expecting multiple incoming groups.", node.Id);
 				}
 			);
 
@@ -48,7 +66,7 @@ namespace AssetBundleGraph {
 				 * Check if incoming asset has valid import path
 				 */
 				var invalids = new List<AssetReference>();
-								foreach(var ag in incoming) {
+				foreach(var ag in incoming) {
 					foreach (var groupKey in ag.assetGroups.Keys) {
 						ag.assetGroups[groupKey].ForEach( a => { if (string.IsNullOrEmpty(a.importFrom)) invalids.Add(a); } );
 					}
@@ -59,8 +77,11 @@ namespace AssetBundleGraph {
 						string.Join(", ", invalids.Select(a =>a.absolutePath).ToArray()), node.Id );
 				}
 			}
-				
-			var output = new Dictionary<string, List<AssetReference>>();
+
+			Dictionary<string, List<AssetReference>> output = null;
+			if(Output != null) {
+				output = new Dictionary<string, List<AssetReference>>();
+			}
 
 			if(incoming != null) {
 				foreach(var ag in incoming) {
@@ -76,32 +97,36 @@ namespace AssetBundleGraph {
 							variantName = groupKey;
 						}
 						var bundleName = GetBundleName(target, node, groupKey);
-						var newBundleSetting = ConfigureAssetBundleSettings(variantName, ag.assetGroups[groupKey]);
-						if(output.ContainsKey(bundleName)) {
-							output[bundleName].AddRange(newBundleSetting);
-						} else {
-							output[bundleName] = newBundleSetting;
+						var assets = ag.assetGroups[groupKey];
+						ConfigureAssetBundleSettings(variantName, assets);
+						if(output != null) {
+							if(!output.ContainsKey(bundleName)) {
+								output[bundleName] = new List<AssetReference>();
+							} 
+							output[bundleName].AddRange(assets);
 						}
 					}
 				}
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
-
-			Profiler.EndSample();
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIBundleConfigurator.Run");
-
-			var output = new Dictionary<string, List<AssetReference>>();
+			Dictionary<string, List<AssetReference>> output = null;
+			if(Output != null) {
+				output = new Dictionary<string, List<AssetReference>>();
+			}
 
 			if(incoming != null) {
 				foreach(var ag in incoming) {
@@ -118,42 +143,48 @@ namespace AssetBundleGraph {
 						}
 						var bundleName = GetBundleName(target, node, groupKey);
 
-						var newBundleSetting = ConfigureAssetBundleSettings(variantName, ag.assetGroups[groupKey]);
-						if(output.ContainsKey(bundleName)) {
-							output[bundleName].AddRange(newBundleSetting);
-						} else {
-							output[bundleName] = newBundleSetting;
+						if(progressFunc != null) progressFunc(node, string.Format("Configuring {0}", bundleName), 0.5f);
+
+						var assets = ag.assetGroups[groupKey];
+						ConfigureAssetBundleSettings(variantName, assets);
+						if(output != null) {
+							if(!output.ContainsKey(bundleName)) {
+								output[bundleName] = new List<AssetReference>();
+							} 
+							output[bundleName].AddRange(assets);
 						}
 					}
 				}
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, output);
-
-			Profiler.EndSample();
+			if(Output != null) {
+				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+					null : connectionsToOutput.First();
+				Output(dst, output);
+			}
 		}
 
-		public List<AssetReference> ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
-
-			List<AssetReference> configuredAssets = new List<AssetReference>();
+		public void ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
 
 			foreach(var a in assets) {
-				var lowerName = (string.IsNullOrEmpty(variantName))? variantName : variantName.ToLower();
-				a.variantName = lowerName;
-				configuredAssets.Add( a );
+				a.variantName = (string.IsNullOrEmpty(variantName))? null : variantName.ToLower();;
 			}
-
-			return configuredAssets;
 		}
 
-		public static void ValidateBundleNameTemplate (string bundleNameTemplate, bool useGroupAsVariants, Action NullOrEmpty, Action InvalidBundleNameTemplate) {
+		public static void ValidateBundleNameTemplate (string bundleNameTemplate, bool useGroupAsVariants, int groupCount,
+			Action NullOrEmpty, 
+			Action InvalidBundleNameTemplateForVariants, 
+			Action InvalidBundleNameTemplateForNotVariants
+		) {
 			if (string.IsNullOrEmpty(bundleNameTemplate)){
 				NullOrEmpty();
 			}
 			if(useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) >= 0) {
-				InvalidBundleNameTemplate();
+				InvalidBundleNameTemplateForVariants();
+			}
+			if(!useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) < 0 &&
+				groupCount > 1) {
+				InvalidBundleNameTemplateForNotVariants();
 			}
 		}
 

@@ -16,16 +16,15 @@ namespace AssetBundleGraph
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIGrouping.Setup");
 			GroupingOutput(target, node, incoming, connectionsToOutput, Output);
-			Profiler.EndSample();
 		}
 
 		public void Run (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
 			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
@@ -48,7 +47,7 @@ namespace AssetBundleGraph
 				}
 			);
 
-			if(incoming == null || connectionsToOutput == null) {
+			if(incoming == null || connectionsToOutput == null || Output == null) {
 				return;
 			}
 
@@ -68,7 +67,9 @@ namespace AssetBundleGraph
 
 						if (match.Success) {
 							var newGroupingKey = match.Groups[1].Value;
-							if (!outputDict.ContainsKey(newGroupingKey)) outputDict[newGroupingKey] = new List<AssetReference>();
+							if (!outputDict.ContainsKey(newGroupingKey)) {
+								outputDict[newGroupingKey] = new List<AssetReference>();
+							}
 							outputDict[newGroupingKey].Add(a);
 						}
 					}

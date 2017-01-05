@@ -14,7 +14,6 @@ namespace AssetBundleGraph {
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Setup");
 			ValidateExportPath(
 				node.ExporterExportPath[target],
 				FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]),
@@ -27,33 +26,27 @@ namespace AssetBundleGraph {
 					}
 				}
 			);
-
-			Profiler.EndSample();
 		}
 		
 		public void Run (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
 		{
-			Profiler.BeginSample("AssetBundleGraph.GUIExporter.Run");
-			Export(target, node, incoming, connectionsToOutput, Output);
-			Profiler.EndSample();
+			Export(target, node, incoming, connectionsToOutput, progressFunc);
 		}
 
 		private void Export (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output) 
+			Action<NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
 			}
-
-			var outputDict = new Dictionary<string, List<AssetReference>>();
-			outputDict["0"] = new List<AssetReference>();
 
 			var exportPath = FileUtility.GetPathWithProjectPath(node.ExporterExportPath[target]);
 
@@ -73,7 +66,6 @@ namespace AssetBundleGraph {
 
 			foreach(var ag in incoming) {
 				foreach (var groupKey in ag.assetGroups.Keys) {
-					var exportedAssets = new List<AssetReference>();
 					var inputSources = ag.assetGroups[groupKey];
 
 					foreach (var source in inputSources) {					
@@ -107,6 +99,7 @@ namespace AssetBundleGraph {
 							continue;
 						}
 						try {
+							if(progressFunc != null) progressFunc(node, string.Format("Copying {0}", source.fileNameAndExtension), 0.5f);
 							File.Copy(source.importFrom, destination);
 							report.AddExportedEntry(source.importFrom, destination);
 						} catch(Exception e) {
@@ -114,16 +107,9 @@ namespace AssetBundleGraph {
 						}
 
 						source.exportTo = destination;
-						exportedAssets.Add(source);
 					}
-					outputDict["0"].AddRange(exportedAssets);
 				}
 			}
-
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-
-			Output(dst, outputDict);
 
 			AssetBundleBuildReport.AddExportReport(report);
 		}

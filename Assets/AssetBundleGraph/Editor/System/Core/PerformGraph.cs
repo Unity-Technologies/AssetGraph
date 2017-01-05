@@ -89,10 +89,9 @@ namespace AssetBundleGraph {
 
 				foreach(var v in o) {
 					if(!output.ContainsKey(v.Key)) {
-						output[v.Key] = v.Value;
-					} else {
-						output[v.Key].AddRange(v.Value);
-					}
+						output[v.Key] = new List<AssetReference>();
+					} 
+					output[v.Key].AddRange(v.Value);
 				}
 			}
 
@@ -222,14 +221,16 @@ namespace AssetBundleGraph {
 			Node fromNode = m_nodes.Find(n => n.data.Id == conn.FromNodeId);
 			Node toNode = m_nodes.Find(n => n.data.Id == conn.ToNodeId);
 
-			Assert.IsNotNull(fromNode);
-			Assert.IsNotNull(toNode);
+			if(fromNode != null && toNode != null) {
+				AssetStream s = new AssetStream(conn, fromNode, toNode, m_streamManager);
+				m_streams.Add(s);
 
-			AssetStream s = new AssetStream(conn, fromNode, toNode, m_streamManager);
-			m_streams.Add(s);
+				fromNode.streamTo.Add(s);
+				toNode.streamFrom.Add(s);
+			}
 
-			fromNode.streamTo.Add(s);
-			toNode.streamFrom.Add(s);
+//			Assert.IsNotNull(fromNode);
+//			Assert.IsNotNull(toNode);
 		}
 
 		private void CompareAndMarkModified(PerformGraph old) {
@@ -300,10 +301,6 @@ namespace AssetBundleGraph {
 			n.dirty = false;
 			n.data.NeedsRevisit = false;
 
-			if(n.streamTo.Count == 0) {
-				m_streamManager.ClearLeafAssetGroupOutout(n.data);
-			}
-
 			//root node
 			if(n.streamFrom.Count == 0) {
 				IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
@@ -343,12 +340,7 @@ namespace AssetBundleGraph {
 					IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
 
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
-					performFunc(n.data,inputs, null,  
-						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
-						{
-							m_streamManager.AppendLeafnodeAssetGroupOutout(n.data, newOutput);
-						}
-					);
+					performFunc(n.data,inputs, null,  null);
 				}
 
 				// Test output asset group after all input-output pairs are performed
@@ -415,6 +407,11 @@ namespace AssetBundleGraph {
 
 		private void MarkAndTraverseParent(SaveData saveData, NodeData current, List<ConnectionData> visitedConnections, List<NodeData> visitedNode) {
 
+//			Assert.IsNotNull(current);
+			if(current == null) {
+				return;
+			}
+
 			// if node is visited from other route, just quit
 			if(visitedNode.Contains(current)) {
 				return;
@@ -426,11 +423,14 @@ namespace AssetBundleGraph {
 					throw new NodeException("Looped connection detected. Please fix connections to avoid loop.", current.Id);
 				}
 
-				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
-				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
-
 				visitedConnections.Add(c);
-				MarkAndTraverseParent(saveData, parentNode, visitedConnections, visitedNode);
+
+				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
+				if(parentNode != null) {
+					// parentNode may be null while deleting node
+					//				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
+					MarkAndTraverseParent(saveData, parentNode, visitedConnections, visitedNode);
+				}
 			}
 
 			visitedNode.Add(current);
