@@ -221,14 +221,16 @@ namespace AssetBundleGraph {
 			Node fromNode = m_nodes.Find(n => n.data.Id == conn.FromNodeId);
 			Node toNode = m_nodes.Find(n => n.data.Id == conn.ToNodeId);
 
-			Assert.IsNotNull(fromNode);
-			Assert.IsNotNull(toNode);
+			if(fromNode != null && toNode != null) {
+				AssetStream s = new AssetStream(conn, fromNode, toNode, m_streamManager);
+				m_streams.Add(s);
 
-			AssetStream s = new AssetStream(conn, fromNode, toNode, m_streamManager);
-			m_streams.Add(s);
+				fromNode.streamTo.Add(s);
+				toNode.streamFrom.Add(s);
+			}
 
-			fromNode.streamTo.Add(s);
-			toNode.streamFrom.Add(s);
+//			Assert.IsNotNull(fromNode);
+//			Assert.IsNotNull(toNode);
 		}
 
 		private void CompareAndMarkModified(PerformGraph old) {
@@ -405,7 +407,10 @@ namespace AssetBundleGraph {
 
 		private void MarkAndTraverseParent(SaveData saveData, NodeData current, List<ConnectionData> visitedConnections, List<NodeData> visitedNode) {
 
-			Assert.IsNotNull(current);
+//			Assert.IsNotNull(current);
+			if(current == null) {
+				return;
+			}
 
 			// if node is visited from other route, just quit
 			if(visitedNode.Contains(current)) {
@@ -418,11 +423,14 @@ namespace AssetBundleGraph {
 					throw new NodeException("Looped connection detected. Please fix connections to avoid loop.", current.Id);
 				}
 
-				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
-				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
-
 				visitedConnections.Add(c);
-				MarkAndTraverseParent(saveData, parentNode, visitedConnections, visitedNode);
+
+				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
+				if(parentNode != null) {
+					// parentNode may be null while deleting node
+					//				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
+					MarkAndTraverseParent(saveData, parentNode, visitedConnections, visitedNode);
+				}
 			}
 
 			visitedNode.Add(current);
