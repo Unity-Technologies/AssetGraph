@@ -66,7 +66,7 @@ namespace AssetBundleGraph {
 				 * Check if incoming asset has valid import path
 				 */
 				var invalids = new List<AssetReference>();
-								foreach(var ag in incoming) {
+				foreach(var ag in incoming) {
 					foreach (var groupKey in ag.assetGroups.Keys) {
 						ag.assetGroups[groupKey].ForEach( a => { if (string.IsNullOrEmpty(a.importFrom)) invalids.Add(a); } );
 					}
@@ -96,11 +96,10 @@ namespace AssetBundleGraph {
 						var bundleName = GetBundleName(target, node, groupKey);
 						var assets = ag.assetGroups[groupKey];
 						ConfigureAssetBundleSettings(variantName, assets);
-						if(output.ContainsKey(bundleName)) {
-							output[bundleName].AddRange(assets);
-						} else {
-							output[bundleName] = assets;
-						}
+						if(!output.ContainsKey(bundleName)) {
+							output[bundleName] = new List<AssetReference>();
+						} 
+						output[bundleName].AddRange(assets);
 					}
 				}
 			}
@@ -138,11 +137,10 @@ namespace AssetBundleGraph {
 
 						var assets = ag.assetGroups[groupKey];
 						ConfigureAssetBundleSettings(variantName, assets);
-						if(output.ContainsKey(bundleName)) {
-							output[bundleName].AddRange(assets);
-						} else {
-							output[bundleName] = assets;
-						}
+						if(!output.ContainsKey(bundleName)) {
+							output[bundleName] = new List<AssetReference>();
+						} 
+						output[bundleName].AddRange(assets);
 					}
 				}
 			}

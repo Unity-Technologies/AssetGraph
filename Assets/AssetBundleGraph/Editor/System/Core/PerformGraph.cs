@@ -89,10 +89,9 @@ namespace AssetBundleGraph {
 
 				foreach(var v in o) {
 					if(!output.ContainsKey(v.Key)) {
-						output[v.Key] = v.Value;
-					} else {
-						output[v.Key].AddRange(v.Value);
-					}
+						output[v.Key] = new List<AssetReference>();
+					} 
+					output[v.Key].AddRange(v.Value);
 				}
 			}
 

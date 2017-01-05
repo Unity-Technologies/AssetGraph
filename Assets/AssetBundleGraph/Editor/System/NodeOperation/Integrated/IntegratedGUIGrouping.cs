@@ -67,7 +67,9 @@ namespace AssetBundleGraph
 
 						if (match.Success) {
 							var newGroupingKey = match.Groups[1].Value;
-							if (!outputDict.ContainsKey(newGroupingKey)) outputDict[newGroupingKey] = new List<AssetReference>();
+							if (!outputDict.ContainsKey(newGroupingKey)) {
+								outputDict[newGroupingKey] = new List<AssetReference>();
+							}
 							outputDict[newGroupingKey].Add(a);
 						}
 					}
