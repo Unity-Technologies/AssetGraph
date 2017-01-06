@@ -180,20 +180,7 @@ namespace AssetBundleGraph {
 		}
 
 		public static IPrefabBuilder CreatePrefabBuilder(NodeData node, BuildTargetGroup targetGroup) {
-
-			var data  = node.InstanceData[targetGroup];
-			var className = node.ScriptClassName;
-			Type dataType = null;
-
-			if(!string.IsNullOrEmpty(className)) {
-				dataType = Type.GetType(className);
-			}
-
-			if(data != null && dataType != null) {
-				return JsonUtility.FromJson(data, dataType) as IPrefabBuilder;
-			}
-
-			return null;
+			return InstanceDataUtility<IPrefabBuilder>.CreateInstance(node, targetGroup);
 		}
 
 		public static IPrefabBuilder CreatePrefabBuilder(string guiName) {

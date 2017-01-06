@@ -173,20 +173,7 @@ namespace AssetBundleGraph {
 		}
 
 		public static IModifier CreateModifier(NodeData node, BuildTargetGroup targetGroup) {
-
-			var data  = node.InstanceData[targetGroup];
-			var className = node.ScriptClassName;
-			Type dataType = null;
-
-			if(!string.IsNullOrEmpty(className)) {
-				dataType = Type.GetType(className);
-			}
-
-			if(data != null && dataType != null) {
-				return JsonUtility.FromJson(data, dataType) as IModifier;
-			}
-
-			return null;
+			return InstanceDataUtility<IModifier>.CreateInstance(node, targetGroup);
 		}
 
 		public static IModifier CreateModifier(string guiName, Type targetType) {

@@ -50,6 +50,9 @@ namespace AssetBundleGraph {
 		public const string IMPORTER_RECORDFILE = ".importedRecord";
 		public const char UNITY_FOLDER_SEPARATOR = '/';// Mac/Windows/Linux can use '/' in Unity.
 
+		public const string BASE64_IDENTIFIER = "B64|";
+
+
 		public const char KEYWORD_WILDCARD = '*';
 
 		public struct BuildAssetBundleOption {
