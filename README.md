@@ -1,3 +1,6 @@
+# Important
+**AssetBundleGraphTool project has moved to Unity-Technologies BitBucket** ( https://bitbucket.org/Unity-Technologies/assetbundlegraphtool ). **This repository may be outdated. Also, please send any issues and/or pull request to the active repo in BitBucket.**
+
 # AssetBundleGraphTool
 
 ![SS](/Doc/images/readme/graph.png)
