@@ -154,7 +154,7 @@ namespace AssetBundleGraph {
 			// add manifest file
 			bundleVariants.Add( BuildTargetUtility.TargetToAssetBundlePlatformName(target).ToLower(), new List<string> { null } );
 			foreach (var path in generatedFiles) {
-				var fileName = Path.GetFileName(path);
+				var fileName = path.Substring(bundleOutputDir.Length+1);
 				if( IsFileIntendedItem(fileName, bundleVariants) ) {
 					output[key].Add( AssetReferenceDatabase.GetAssetBundleReference(path) );
 				}
