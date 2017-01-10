@@ -78,6 +78,16 @@ namespace AssetBundleGraph {
 			".js",
 		};
 
+		private static readonly List<Type> IgnoreTypes = new List<Type> {
+			typeof(MonoScript),
+			typeof(AssetBundleReference)
+		};
+
+		public static bool IsLoadingAsset (AssetReference r) {
+			Type t = r.assetType;
+			return t != null && !IgnoreTypes.Contains(t);
+		}
+
 		/**
 		 * Get type of asset from give path.
 		 */
@@ -97,7 +107,11 @@ namespace AssetBundleGraph {
 
 			if (asset != null) {
 				t = asset.GetType();
-				Resources.UnloadAsset(asset);
+				if(asset is UnityEngine.GameObject) {
+					GameObject.DestroyImmediate(asset, true);
+				} else {
+					Resources.UnloadAsset(asset);
+				}
 			}
 			#endif
 

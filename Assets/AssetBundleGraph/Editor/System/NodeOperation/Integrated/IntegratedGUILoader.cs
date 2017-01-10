@@ -67,6 +67,11 @@ namespace AssetBundleGraph {
 					var relativePath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
 
 					var r = AssetReferenceDatabase.GetReference(relativePath);
+
+					if(!TypeUtility.IsLoadingAsset(r)) {
+						continue;
+					}
+
 					if(r != null) {
 						outputSource.Add(AssetReferenceDatabase.GetReference(relativePath));
 					}

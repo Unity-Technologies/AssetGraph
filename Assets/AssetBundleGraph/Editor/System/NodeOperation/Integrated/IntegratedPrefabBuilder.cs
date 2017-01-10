@@ -128,6 +128,10 @@ namespace AssetBundleGraph {
 				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
 				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
 
+				if (!Directory.Exists(Path.GetDirectoryName(prefabSavePath))) {
+					Directory.CreateDirectory(Path.GetDirectoryName(prefabSavePath));
+				}
+
 				if(PrefabBuildInfo.DoesPrefabNeedRebuilding(node, target, key, assets)) {
 					UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets);
 					if(obj == null) {
