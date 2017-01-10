@@ -67,6 +67,10 @@ namespace AssetBundleGraph {
 			get {
 				if(m_assetType == null) {
 					m_assetType = Type.GetType(m_assetTypeString);
+					if(m_assetType == null) {
+						m_assetType = TypeUtility.GetTypeOfAsset(importFrom);
+						m_assetTypeString = m_assetType.AssemblyQualifiedName;
+					}
 				}
 				return m_assetType;
 			}
@@ -122,7 +126,13 @@ namespace AssetBundleGraph {
 
 		public void ReleaseData() {
 			if(m_data != null) {
-				Resources.UnloadAsset(m_data);
+				if(m_data is UnityEngine.GameObject) {
+					LogUtility.Logger.LogFormat(LogType.Log, "Destroying GameObject {0} ({1})", importFrom, m_data.GetType().ToString());
+					GameObject.DestroyImmediate(m_data, true);
+				} else {
+					LogUtility.Logger.LogFormat(LogType.Log, "Unloading {0} ({1})", importFrom, m_data.GetType().ToString());
+					Resources.UnloadAsset(m_data);
+				}
 				m_data = null;
 			}
 		}
@@ -175,7 +185,7 @@ namespace AssetBundleGraph {
 			this.m_exportTo = exportTo;
 			this.m_assetDatabaseId = assetDatabaseId;
 			this.m_assetType = assetType;
-			this.m_assetTypeString = assetType.FullName;
+			this.m_assetTypeString = assetType.AssemblyQualifiedName;
 			this.m_variantName = variantName;
 		}
 	}
