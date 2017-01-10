@@ -48,9 +48,9 @@ namespace AssetBundleGraph {
 			{".guiskin", typeof(GUISkin)},
 			// typeof(LightmapParameters).ToString(),
 			{".mat", typeof(Material)},
-			{".physicMaterial", typeof(PhysicMaterial)},
-			{".physicsMaterial2D", typeof(PhysicsMaterial2D)},
-			{".renderTexture", typeof(RenderTexture)},
+			{".physicmaterial", typeof(PhysicMaterial)},
+			{".physicsmaterial2d", typeof(PhysicsMaterial2D)},
+			{".rendertexture", typeof(RenderTexture)},
 			// typeof(SceneAsset).ToString(),
 			{".shader", typeof(Shader)},
 			{".unity", typeof(Scene)},
@@ -73,6 +73,7 @@ namespace AssetBundleGraph {
 			".manifest",
 			".assetbundle",
 			".sample",
+			".unitypackage",
 			".cs",
 			".sh",
 			".js",
@@ -141,7 +142,7 @@ namespace AssetBundleGraph {
 			}
 			
 			// not specific type importer. should determine their type by extension.
-			var extension = Path.GetExtension(assetPath);
+			var extension = Path.GetExtension(assetPath).ToLower();
 			if (AssumeTypeBindingByExtension.ContainsKey(extension)) {
 				return AssumeTypeBindingByExtension[extension];
 			}
