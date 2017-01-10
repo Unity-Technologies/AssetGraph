@@ -129,24 +129,25 @@ namespace AssetBundleGraph {
 
 		public static void GenerateScript (ScriptType scriptType) {
 			var destinationBasePath = AssetBundleGraphSettings.USERSPACE_PATH;
-			var destinationPath = string.Empty;
 
 			var sourceFileName = string.Empty;
+			var destinationFileName = string.Empty;
 
 			switch (scriptType) {
-			case ScriptType.SCRIPT_MODIFIER: {
-				sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyModifier.cs.template");
-				destinationPath = FileUtility.PathCombine(destinationBasePath, "MyModifier.cs");
-				break;
-			}
+			case ScriptType.SCRIPT_MODIFIER: 
+				{
+					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyModifier.cs.template");
+					destinationFileName = "MyModifier{0}{1}";
+					break;
+				}
 			case ScriptType.SCRIPT_PREFABBUILDER: {
 					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabBuilder.cs.template");
-					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPrefabBuilder.cs");
+					destinationFileName = "MyPrefabBuilder{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_POSTPROCESS: {
 					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPostprocess.cs.template");
-					destinationPath = FileUtility.PathCombine(destinationBasePath, "MyPostprocess.cs");
+					destinationFileName = "MyPostprocess{0}{1}";
 					break;
 				}
 			default: {
@@ -155,11 +156,17 @@ namespace AssetBundleGraph {
 				}
 			}
 
-			if (string.IsNullOrEmpty(sourceFileName)) {
+			if (string.IsNullOrEmpty(sourceFileName) || string.IsNullOrEmpty(destinationFileName)) {
 				return;
 			}
 
-			FileUtility.CopyFile(sourceFileName, destinationPath);
+			var destinationPath = FileUtility.PathCombine(destinationBasePath, string.Format(destinationFileName, "", ".cs"));
+			int count = 0;
+			while(File.Exists(destinationPath)) {
+				destinationPath = FileUtility.PathCombine(destinationBasePath, string.Format(destinationFileName, ++count, ".cs"));
+			}
+
+			FileUtility.CopyTemplateFile(sourceFileName, destinationPath, string.Format(destinationFileName, "", ""), string.Format(destinationFileName, count, ""));
 
 			AssetDatabase.Refresh();
 
