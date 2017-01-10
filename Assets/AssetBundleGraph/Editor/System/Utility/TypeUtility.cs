@@ -109,7 +109,7 @@ namespace AssetBundleGraph {
 
 			if (asset != null) {
 				t = asset.GetType();
-				if(asset is UnityEngine.GameObject) {
+				if(asset is UnityEngine.GameObject || asset is UnityEngine.Component) {
 					// do nothing.
 					// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
 				} else {

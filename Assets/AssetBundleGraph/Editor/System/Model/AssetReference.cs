@@ -126,7 +126,7 @@ namespace AssetBundleGraph {
 
 		public void ReleaseData() {
 			if(m_data != null) {
-				if(m_data is UnityEngine.GameObject) {
+				if(m_data is UnityEngine.GameObject || m_data is UnityEngine.Component) {
 					// do nothing.
 					// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
 				} else {
