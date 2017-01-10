@@ -35,6 +35,7 @@ namespace AssetBundleGraph {
 			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
 			typeof(Scene).ToString(),
+			typeof(GameObject).ToString(),
 		};
 		
 		public static readonly Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
@@ -63,7 +64,7 @@ namespace AssetBundleGraph {
 			{".csv", typeof(TextAsset)},
 			{".yaml", typeof(TextAsset)},
 			{".fnt", typeof(TextAsset)},
-			{".prefab", typeof(UnityEngine.Object)}
+			{".prefab", typeof(UnityEngine.GameObject)}
 
 			// {"", typeof(Sprite)},
 		};
@@ -109,7 +110,8 @@ namespace AssetBundleGraph {
 			if (asset != null) {
 				t = asset.GetType();
 				if(asset is UnityEngine.GameObject) {
-					GameObject.DestroyImmediate(asset, true);
+					// do nothing.
+					// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
 				} else {
 					Resources.UnloadAsset(asset);
 				}

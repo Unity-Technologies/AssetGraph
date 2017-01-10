@@ -127,8 +127,8 @@ namespace AssetBundleGraph {
 		public void ReleaseData() {
 			if(m_data != null) {
 				if(m_data is UnityEngine.GameObject) {
-					LogUtility.Logger.LogFormat(LogType.Log, "Destroying GameObject {0} ({1})", importFrom, m_data.GetType().ToString());
-					GameObject.DestroyImmediate(m_data, true);
+					// do nothing.
+					// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
 				} else {
 					LogUtility.Logger.LogFormat(LogType.Log, "Unloading {0} ({1})", importFrom, m_data.GetType().ToString());
 					Resources.UnloadAsset(m_data);
