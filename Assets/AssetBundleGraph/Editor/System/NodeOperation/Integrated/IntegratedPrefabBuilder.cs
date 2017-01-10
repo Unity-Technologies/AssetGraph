@@ -73,7 +73,7 @@ namespace AssetBundleGraph {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
 					};
 				}
-				UnloadAllAssets(aggregatedGroups[key]);
+				UnloadAllAssets(allAssets);
 			}
 
 			if(Output != null) {
@@ -87,16 +87,19 @@ namespace AssetBundleGraph {
 			List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
 
 			foreach(var a in assets) {
-				UnityEngine.Object o = a.data;
-				if(o != null) {
-					objects.Add(o);
-				}
+				objects.AddRange(AssetDatabase.LoadAllAssetsAtPath(a.importFrom).AsEnumerable());
 			}
 			return objects;
 		}
 
-		private static void UnloadAllAssets(List<AssetReference> assets) {
-			assets.ForEach(a => a.ReleaseData());
+		private static void UnloadAllAssets(List<UnityEngine.Object> objects) {
+			foreach(var o in objects) {
+				if(o is GameObject || o is Component) {
+					// do nothing
+				} else {
+					Resources.UnloadAsset(o);
+				}
+			}
 		}
 
 		public void Run (BuildTarget target, 
@@ -159,14 +162,13 @@ namespace AssetBundleGraph {
 					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
 				}
-				allAssets.ForEach( o => Resources.UnloadAsset(o) );
+				UnloadAllAssets(allAssets);
 
 				if(output != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
 					};
 				}
-				aggregatedGroups[key].ForEach(a => a.ReleaseData());
 			}
 
 			if(Output != null) {
@@ -213,7 +215,7 @@ namespace AssetBundleGraph {
 								if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets))) {
 									canNotCreatePrefab(key);
 								}
-								UnloadAllAssets(ag.assetGroups[key]);
+								UnloadAllAssets(allAssets);
 							}
 						}
 					}
