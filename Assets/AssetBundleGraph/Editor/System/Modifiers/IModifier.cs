@@ -18,12 +18,12 @@ namespace AssetBundleGraph {
 		 * Test if incoming assset is different from this IModifier's setting.
 		 * asset is always type of object defined
 		 */ 
-		bool IsModified (object asset);
+		bool IsModified (UnityEngine.Object[] assets);
 
 		/**
 		 * Modifies incoming asset.
 		 */ 
-		void Modify (object asset);
+		void Modify (UnityEngine.Object[] assets);
 
 		/**
 		 * Draw Inspector GUI for this Modifier.

@@ -16,8 +16,8 @@ namespace AssetBundleGraph.Modifiers {
 		
 		public SceneModifier () {}
 
-		public bool IsModified (object asset) {
-			//var anim = asset as UnityEngine.SceneManagement.Scene;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as UnityEngine.SceneManagement.Scene;
 
 			// Do your work here
 
@@ -25,8 +25,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			//var anim = asset as UnityEngine.SceneManagement.Scene;
+		public void Modify (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as UnityEngine.SceneManagement.Scene;
 
 			// Do your work here
 		}

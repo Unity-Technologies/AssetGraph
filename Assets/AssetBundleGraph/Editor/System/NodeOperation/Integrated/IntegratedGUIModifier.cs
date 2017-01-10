@@ -62,9 +62,9 @@ namespace AssetBundleGraph {
 			foreach(var ag in incoming) {
 				foreach(var assets in ag.assetGroups.Values) {
 					foreach(var asset in assets) {
-						if(modifier.IsModified(asset.data)) {
-							modifier.Modify(asset.data);
-							asset.ReleaseData();
+						if(modifier.IsModified(asset.allData)) {
+							modifier.Modify(asset.allData);
+							asset.SetDirty();
 							isAnyAssetModified = true;
 						}
 					}
@@ -73,7 +73,16 @@ namespace AssetBundleGraph {
 
 			if(isAnyAssetModified) {
 				// apply asset setting changes to AssetDatabase.
+				AssetDatabase.SaveAssets();
 				AssetDatabase.Refresh();
+			}
+
+			foreach(var ag in incoming) {
+				foreach(var assets in ag.assetGroups.Values) {
+					foreach(var asset in assets) {
+						asset.ReleaseData();
+					}
+				}
 			}
 
 			if(incoming != null && Output != null) {

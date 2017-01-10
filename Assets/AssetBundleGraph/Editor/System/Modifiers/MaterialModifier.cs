@@ -28,8 +28,8 @@ namespace AssetBundleGraph.Modifiers {
 			blendMode = BlendMode.Opaque;
 		}
 
-		public bool IsModified (object asset) {
-			var mat = asset as Material;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			var mat = assets[0] as Material;
 
 			var changed = false;
 
@@ -40,8 +40,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			var targetMat = asset as Material;
+		public void Modify (UnityEngine.Object[] assets) {
+			var targetMat = assets[0] as Material;
 			var currentMaterial = GenerateSettingMaterial();
 
 			// set blend mode.

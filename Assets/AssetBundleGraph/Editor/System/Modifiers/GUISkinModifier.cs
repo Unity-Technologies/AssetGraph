@@ -16,8 +16,8 @@ namespace AssetBundleGraph.Modifiers {
 		
 		public GUISkinModifier () {}
 
-		public bool IsModified (object asset) {
-			//var anim = asset as GUISkin;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as GUISkin;
 
 			// Do your work here
 
@@ -25,8 +25,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			//var anim = asset as GUISkin;
+		public void Modify (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as GUISkin;
 
 			// Do your work here
 		}

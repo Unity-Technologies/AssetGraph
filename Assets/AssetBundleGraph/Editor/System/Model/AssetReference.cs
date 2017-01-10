@@ -17,7 +17,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private string m_variantName;
 		[SerializeField] private string m_assetTypeString;
 
-		private UnityEngine.Object m_data;
+		private UnityEngine.Object[] m_data;
 		private Type m_assetType;
 		private Type m_filterType;
 
@@ -115,23 +115,33 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public UnityEngine.Object data {
+		public UnityEngine.Object[] allData {
 			get {
-				if(m_data == null) {
-					m_data = AssetDatabase.LoadMainAssetAtPath(importFrom);
+				if(m_data == null || m_data.Length == 0) {
+					m_data = AssetDatabase.LoadAllAssetsAtPath(importFrom);
 				}
 				return m_data;
 			}
 		}
 
+		public void SetDirty() {
+			if(m_data != null) {
+				foreach(var o in m_data) {
+					EditorUtility.SetDirty(o);
+				}
+			}
+		}
+
 		public void ReleaseData() {
 			if(m_data != null) {
-				if(m_data is UnityEngine.GameObject || m_data is UnityEngine.Component) {
-					// do nothing.
-					// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
-				} else {
-					LogUtility.Logger.LogFormat(LogType.Log, "Unloading {0} ({1})", importFrom, m_data.GetType().ToString());
-					Resources.UnloadAsset(m_data);
+				foreach(var o in m_data) {
+					if(o is UnityEngine.GameObject || o is UnityEngine.Component) {
+						// do nothing.
+						// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
+					} else {
+						LogUtility.Logger.LogFormat(LogType.Log, "Unloading {0} ({1})", importFrom, o.GetType().ToString());
+						Resources.UnloadAsset(o);
+					}
 				}
 				m_data = null;
 			}

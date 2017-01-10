@@ -26,8 +26,8 @@ namespace AssetBundleGraph.Modifiers {
 			wrapMode = TextureWrapMode.Clamp;
 		}
 
-		public bool IsModified (object asset) {
-			var cubemap = asset as Cubemap;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			var cubemap = assets[0] as Cubemap;
 
 			var changed = false;
 
@@ -39,8 +39,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			var cubemap = asset as Cubemap;
+		public void Modify (UnityEngine.Object[] assets) {
+			var cubemap = assets[0] as Cubemap;
 
 			cubemap.anisoLevel = this.anisoLevel;
 			cubemap.filterMode = this.filterMode;

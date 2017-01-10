@@ -31,8 +31,8 @@ namespace AssetBundleGraph.Modifiers {
 			anisoLevel = 0;
 		}
 
-		public bool IsModified (object asset) {
-			var renderTex = asset as RenderTexture;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			var renderTex = assets[0] as RenderTexture;
 
 			var changed = false;
 
@@ -43,8 +43,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			var renderTex = asset as RenderTexture;
+		public void Modify (UnityEngine.Object[] assets) {
+			var renderTex = assets[0] as RenderTexture;
 
 			renderTex.wrapMode = this.wrapMode;
 			renderTex.filterMode = this.filterMode;

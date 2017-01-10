@@ -66,14 +66,14 @@ namespace AssetBundleGraph {
 						node.Name, guiName, key, guiName,thresold), node.Id);
 				}
 
-				List<UnityEngine.Object> allAssets = LoadAllAssets(aggregatedGroups[key]);
+				List<UnityEngine.Object> allAssets = LoadAllAssets(assets);
 				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
 				if(output != null && prefabFileName != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
 					};
 				}
-				UnloadAllAssets(allAssets);
+				UnloadAllAssets(assets);
 			}
 
 			if(Output != null) {
@@ -87,19 +87,13 @@ namespace AssetBundleGraph {
 			List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
 
 			foreach(var a in assets) {
-				objects.AddRange(AssetDatabase.LoadAllAssetsAtPath(a.importFrom).AsEnumerable());
+				objects.AddRange(a.allData.AsEnumerable());
 			}
 			return objects;
 		}
 
-		private static void UnloadAllAssets(List<UnityEngine.Object> objects) {
-			foreach(var o in objects) {
-				if(o is GameObject || o is Component) {
-					// do nothing
-				} else {
-					Resources.UnloadAsset(o);
-				}
-			}
+		private static void UnloadAllAssets(List<AssetReference> assets) {
+			assets.ForEach(a => a.ReleaseData());
 		}
 
 		public void Run (BuildTarget target, 
@@ -162,7 +156,7 @@ namespace AssetBundleGraph {
 					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
 				}
-				UnloadAllAssets(allAssets);
+				UnloadAllAssets(assets);
 
 				if(output != null) {
 					output[key] = new List<AssetReference> () {
@@ -211,11 +205,12 @@ namespace AssetBundleGraph {
 							}
 							if(isAllGoodAssets) {
 								// do not call LoadAllAssets() unless all assets have importFrom
-								List<UnityEngine.Object> allAssets = LoadAllAssets(ag.assetGroups[key]);
+								var al = ag.assetGroups[key];
+								List<UnityEngine.Object> allAssets = LoadAllAssets(al);
 								if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets))) {
 									canNotCreatePrefab(key);
 								}
-								UnloadAllAssets(allAssets);
+								UnloadAllAssets(al);
 							}
 						}
 					}

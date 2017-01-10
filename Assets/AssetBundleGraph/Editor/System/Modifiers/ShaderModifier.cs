@@ -17,8 +17,8 @@ namespace AssetBundleGraph.Modifiers {
 
 		public ShaderModifier () {}
 
-		public bool IsModified (object asset) {
-			var shader = asset as Shader;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			var shader = assets[0] as Shader;
 
 			var changed = false;
 
@@ -29,8 +29,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			var shader = asset as Shader;
+		public void Modify (UnityEngine.Object[] assets) {
+			var shader = assets[0] as Shader;
 
 			shader.maximumLOD = this.maximumLOD;
 		}

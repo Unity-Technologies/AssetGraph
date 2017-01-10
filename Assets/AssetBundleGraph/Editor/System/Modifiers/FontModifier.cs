@@ -16,8 +16,8 @@ namespace AssetBundleGraph.Modifiers {
 		
 		public FontModifier () {}
 
-		public bool IsModified (object asset) {
-			//var anim = asset as Font;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as Font;
 
 			// Do your work here
 
@@ -25,8 +25,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			//var anim = asset as Font;
+		public void Modify (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as Font;
 
 			// Do your work here
 		}

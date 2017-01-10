@@ -10,12 +10,12 @@ public class MyModifier : AssetBundleGraph.IModifier {
 	[SerializeField] private bool doSomething;
 
 	// Test if asset is different from intended configuration 
-	public bool IsModified (object asset) {
+	public bool IsModified (UnityEngine.Object[] assets) {
 		return false;
 	}
 
 	// Actually change asset configurations. 
-	public void Modify (object asset) {
+	public void Modify (UnityEngine.Object[] assets) {
 	}
 
 	// Draw inspector gui 
