@@ -19,6 +19,8 @@ namespace AssetBundleGraph {
 		private Rect m_graphRegion;
 		private Vector2 m_scrollPosition;
 
+		private Material m_lineMaterial;
+
 		private static Color gridMinorColor
 		{
 			get
@@ -39,6 +41,17 @@ namespace AssetBundleGraph {
 					return kGridMajorColorLight;
 			}
 		}
+
+		private Material CreateLineMaterial ()
+		{
+			// Unity has a built-in shader that is useful for drawing
+			// simple colored things.
+			Shader shader = Shader.Find ("Hidden/AssetBundleGraph/LineDraw");
+			Material m = new Material (shader);
+			m.hideFlags = HideFlags.HideAndDontSave;
+			return m;
+		}
+
 			
 		public void Draw(Rect position, Vector2 scroll)
 		{
@@ -57,6 +70,12 @@ namespace AssetBundleGraph {
 			if (Event.current.type != EventType.Repaint) {
 				return;
 			}
+
+			if(m_lineMaterial == null) {
+				m_lineMaterial = CreateLineMaterial();
+			}
+
+			m_lineMaterial.SetPass(0);
 
 			GL.PushMatrix ();
 			GL.Begin (GL.LINES);
