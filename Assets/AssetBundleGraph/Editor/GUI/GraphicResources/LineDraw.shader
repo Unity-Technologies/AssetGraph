@@ -23,7 +23,7 @@ Shader "Hidden/AssetBundleGraph/LineDraw"
 
 			#include "UnityCG.cginc"
 
-			#if UNITY_VERSION <= 550
+			#if UNITY_VERSION < 550
 			#define UNITY_VERTEX_INPUT_INSTANCE_ID
 			#define UNITY_VERTEX_OUTPUT_STEREO
 			#define UNITY_SETUP_INSTANCE_ID(v)
