@@ -186,6 +186,7 @@ namespace AssetBundleGraph {
 				case IntegratedGUIImportSetting.ConfigStatus.NoSampleFound:
 					// IntegratedGUIImportSetting.Setup() must run to grab another sample to configure.
 					EditorGUILayout.HelpBox("Press Refresh to configure.", MessageType.Info);
+					node.Data.NeedsRevisit = true;
 					break;
 				case IntegratedGUIImportSetting.ConfigStatus.GoodSampleFound:
 					if (GUILayout.Button("Configure Import Setting")) {

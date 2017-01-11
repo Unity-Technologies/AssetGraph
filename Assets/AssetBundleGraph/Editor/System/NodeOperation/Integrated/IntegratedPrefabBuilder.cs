@@ -66,14 +66,14 @@ namespace AssetBundleGraph {
 						node.Name, guiName, key, guiName,thresold), node.Id);
 				}
 
-				List<UnityEngine.Object> allAssets = LoadAllAssets(aggregatedGroups[key]);
+				List<UnityEngine.Object> allAssets = LoadAllAssets(assets);
 				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
 				if(output != null && prefabFileName != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
 					};
 				}
-				allAssets.ForEach( o => Resources.UnloadAsset(o) );
+				UnloadAllAssets(assets);
 			}
 
 			if(Output != null) {
@@ -85,8 +85,15 @@ namespace AssetBundleGraph {
 
 		private static List<UnityEngine.Object> LoadAllAssets(List<AssetReference> assets) {
 			List<UnityEngine.Object> objects = new List<UnityEngine.Object>();
-			assets.ForEach(a => objects.AddRange( AssetDatabase.LoadAllAssetsAtPath(a.importFrom).AsEnumerable() ));
+
+			foreach(var a in assets) {
+				objects.AddRange(a.allData.AsEnumerable());
+			}
 			return objects;
+		}
+
+		private static void UnloadAllAssets(List<AssetReference> assets) {
+			assets.ForEach(a => a.ReleaseData());
 		}
 
 		public void Run (BuildTarget target, 
@@ -149,14 +156,13 @@ namespace AssetBundleGraph {
 					PrefabBuildInfo.SavePrefabBuildInfo(node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
 				}
-				allAssets.ForEach( o => Resources.UnloadAsset(o) );
+				UnloadAllAssets(assets);
 
 				if(output != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(prefabSavePath)
 					};
 				}
-				aggregatedGroups[key].ForEach(a => a.ReleaseData());
 			}
 
 			if(Output != null) {
@@ -199,11 +205,12 @@ namespace AssetBundleGraph {
 							}
 							if(isAllGoodAssets) {
 								// do not call LoadAllAssets() unless all assets have importFrom
-								List<UnityEngine.Object> allAssets = LoadAllAssets(ag.assetGroups[key]);
+								var al = ag.assetGroups[key];
+								List<UnityEngine.Object> allAssets = LoadAllAssets(al);
 								if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets))) {
 									canNotCreatePrefab(key);
 								}
-								allAssets.ForEach(o => Resources.UnloadAsset(o));
+								UnloadAllAssets(al);
 							}
 						}
 					}

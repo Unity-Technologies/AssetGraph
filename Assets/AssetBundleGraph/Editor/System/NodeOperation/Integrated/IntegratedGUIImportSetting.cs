@@ -55,6 +55,10 @@ namespace AssetBundleGraph {
 
 			ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, errorInConfig);
 
+			if(incoming != null){
+				ApplyImportSetting(node, incoming);
+			}
+
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
 			if(incoming != null && Output != null) {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
@@ -73,16 +77,7 @@ namespace AssetBundleGraph {
 			PerformGraph.Output Output,
 			Action<NodeData, string, float> progressFunc) 
 		{
-			if(incoming != null){
-				ApplyImportSetting(node, incoming, progressFunc);
-
-				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-					null : connectionsToOutput.First();
-
-				foreach(var ag in incoming) {
-					Output(dst, ag.assetGroups);
-				}
-			}
+			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
 		private void SaveSampleFile(NodeData node, AssetReference asset) {
@@ -140,7 +135,7 @@ namespace AssetBundleGraph {
 			return AssetImporter.GetAtPath(sampleFiles[0]);	
 		}
 
-		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming, Action<NodeData, string, float> progressFunc) {
+		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
 
 			var referenceImporter = GetReferenceAssetImporter(node);	
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
@@ -150,13 +145,15 @@ namespace AssetBundleGraph {
 					foreach(var asset in assets) {
 						var importer = AssetImporter.GetAtPath(asset.importFrom);
 						if(!configurator.IsEqual(importer)) {
-							if(progressFunc != null) progressFunc(node, string.Format("Modifying {0}", asset.fileNameAndExtension), 0.5f);
 							configurator.OverwriteImportSettings(importer);
+							importer.SaveAndReimport();
 							asset.TouchImportAsset();
 						}
 					}
 				}
 			}
+
+
 		}
 
 		public enum ConfigStatus {

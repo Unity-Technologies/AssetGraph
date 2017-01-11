@@ -11,8 +11,8 @@ namespace AssetBundleGraph.Modifiers {
 		
 		public AnimationModifier () {}
 
-		public bool IsModified (object asset) {
-//			var anim = asset as Animation;
+		public bool IsModified (UnityEngine.Object[] assets) {
+//			var anim = assets[0] as Animation;
 
 			// Do your work here
 
@@ -20,8 +20,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-//			var anim = asset as Animation;
+		public void Modify (UnityEngine.Object[] assets) {
+//			var anim = assets[0] as Animation;
 
 			// Do your work here
 		}

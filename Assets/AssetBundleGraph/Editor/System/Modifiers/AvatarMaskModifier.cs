@@ -16,8 +16,8 @@ namespace AssetBundleGraph.Modifiers {
 		
 		public AvatarMaskModifier () {}
 
-		public bool IsModified (object asset) {
-			//var anim = asset as AvatarMask;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as AvatarMask;
 
 			// Do your work here
 
@@ -25,8 +25,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			//var anim = asset as AvatarMask;
+		public void Modify (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as AvatarMask;
 
 			// Do your work here
 		}

@@ -4,6 +4,7 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -254,6 +255,21 @@ namespace AssetBundleGraph {
 			}
 
 			bool isAnyNodeAffected = false;
+
+			Regex importSettingsIdMatch = new Regex("ImportSettings\\/([0-9a-z\\-]+)\\/");
+
+			foreach(var imported in importedAssets) {
+				Match m = importSettingsIdMatch.Match(imported);
+				if(m.Success) {
+					Group id = m.Groups[1];
+					NodeData n = saveData.Nodes.Find(v => v.Id == id.ToString());
+					UnityEngine.Assertions.Assert.IsNotNull(n);
+					UnityEngine.Assertions.Assert.IsTrue(n.Kind == NodeKind.IMPORTSETTING_GUI);
+
+					n.NeedsRevisit = true;
+					isAnyNodeAffected = true;
+				}
+			}
 
 			foreach(var node in saveData.Nodes) {
 				if(node.Kind == NodeKind.LOADER_GUI) {

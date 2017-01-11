@@ -16,8 +16,8 @@ namespace AssetBundleGraph.Modifiers {
 		
 		public FlareModifier () {}
 
-		public bool IsModified (object asset) {
-			//var anim = asset as Flare;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as Flare;
 
 			// Do your work here
 
@@ -25,8 +25,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			//var anim = asset as Flare;
+		public void Modify (UnityEngine.Object[] assets) {
+			//var anim = assets[0] as Flare;
 
 			// Do your work here
 		}

@@ -13,11 +13,23 @@ namespace AssetBundleGraph {
 			if (Directory.Exists(localFolderPath)) Directory.Delete(localFolderPath, true);
 			Directory.CreateDirectory(localFolderPath);
 		}
-			
+
 		public static void CopyFile (string sourceFilePath, string targetFilePath) {
 			var parentDirectoryPath = Path.GetDirectoryName(targetFilePath);
 			Directory.CreateDirectory(parentDirectoryPath);
 			File.Copy(sourceFilePath, targetFilePath, true);
+		}
+
+		public static void CopyTemplateFile (string sourceFilePath, string targetFilePath, string srcName, string dstName) {
+			var parentDirectoryPath = Path.GetDirectoryName(targetFilePath);
+			Directory.CreateDirectory(parentDirectoryPath);
+
+			StreamReader r = File.OpenText(sourceFilePath);
+
+			string contents = r.ReadToEnd();
+			contents = contents.Replace(srcName, dstName);
+
+			File.WriteAllText(targetFilePath, contents);
 		}
 
 		public static void DeleteFileThenDeleteFolderIfEmpty (string localTargetFilePath) {			

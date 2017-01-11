@@ -21,8 +21,8 @@ namespace AssetBundleGraph.Modifiers {
 			
 		}
 
-		public bool IsModified (object asset) {
-			var physicsMaterial2D = asset as PhysicsMaterial2D;
+		public bool IsModified (UnityEngine.Object[] assets) {
+			var physicsMaterial2D = assets[0] as PhysicsMaterial2D;
 
 			var changed = false;
 
@@ -32,8 +32,8 @@ namespace AssetBundleGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (object asset) {
-			var physicsMaterial2D = asset as PhysicsMaterial2D;
+		public void Modify (UnityEngine.Object[] assets) {
+			var physicsMaterial2D = assets[0] as PhysicsMaterial2D;
 
 			physicsMaterial2D.friction = this.friction;
 			physicsMaterial2D.bounciness = this.bounciness; 
