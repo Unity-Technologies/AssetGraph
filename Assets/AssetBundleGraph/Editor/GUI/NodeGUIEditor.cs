@@ -113,9 +113,10 @@ namespace AssetBundleGraph {
 										(string selectedTypeStr) => {
 											using(new RecordUndoScope("Modify Filter Type", node, true)){
 												node.Data.FilterConditions[ind].FilterKeytype = selectedTypeStr;
+												node.Data.UpdateFilterEntry(node.Data.FilterConditions[ind]);
 											}
 											// event must raise to propagate change to connection associated with point
-											NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
+											NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, node.Data.GetConnectionPoint(cond)));
 										} 
 									);
 								}
@@ -124,9 +125,10 @@ namespace AssetBundleGraph {
 							if (keyword != cond.FilterKeyword) {
 								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
 									cond.FilterKeyword = keyword;
+									node.Data.UpdateFilterEntry(cond);
 								}
 								// event must raise to propagate change to connection associated with point
-								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, cond.ConnectionPoint));
+								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, node.Data.GetConnectionPoint(cond)));
 							}
 						}
 					}
@@ -150,7 +152,7 @@ namespace AssetBundleGraph {
 				if(removing != null) {
 					using(new RecordUndoScope("Remove Filter Condition", node, true)){
 						// event must raise to remove connection associated with point
-						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, node.Data.GetConnectionPoint(removing)));
 						node.Data.RemoveFilterCondition(removing);
 					}
 				}
@@ -473,7 +475,7 @@ namespace AssetBundleGraph {
 
 						List<Variant> rv = new List<Variant>(node.Data.Variants);
 						foreach(var v in rv) {
-							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, v.ConnectionPoint));
+							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, node.Data.GetConnectionPoint(v)));
 							node.Data.RemoveVariant(v);
 						}
 					}
@@ -505,6 +507,7 @@ namespace AssetBundleGraph {
 								if (variantName != v.Name) {
 									using(new RecordUndoScope("Change Variant Name", node, true)){
 										v.Name = variantName;
+										node.Data.UpdateVariant(v);
 									}
 								}
 							}
@@ -521,7 +524,7 @@ namespace AssetBundleGraph {
 					if(removing != null) {
 						using(new RecordUndoScope("Remove Variant", node, true)){
 							// event must raise to remove connection associated with point
-							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, removing.ConnectionPoint));
+							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, node.Data.GetConnectionPoint(removing)));
 							node.Data.RemoveVariant(removing);
 						}
 					}

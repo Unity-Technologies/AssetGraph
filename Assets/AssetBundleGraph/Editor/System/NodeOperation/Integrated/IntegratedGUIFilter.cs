@@ -61,7 +61,7 @@ namespace AssetBundleGraph {
 							}
 
 							if(match) {
-								var output = allOutput[filter.ConnectionPoint.Id];
+								var output = allOutput[filter.ConnectionPointId];
 								if(!output.ContainsKey(groupKey)) {
 									output[groupKey] = new List<AssetReference>();
 								}

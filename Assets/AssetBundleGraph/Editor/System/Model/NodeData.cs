@@ -34,13 +34,13 @@ namespace AssetBundleGraph {
 	public class FilterEntry {
 		[SerializeField] private string m_filterKeyword;
 		[SerializeField] private string m_filterKeytype;
-		[SerializeField] private ConnectionPointData m_point;
+		[SerializeField] private ConnectionPointData m_point; // deprecated. it is here for compatibility
+		[SerializeField] private string m_pointId;
 
 		public FilterEntry(string keyword, string keytype, ConnectionPointData point) {
 			m_filterKeyword = keyword;
 			m_filterKeytype = keytype;
-			m_point = point;
-			SetLabelName();
+			m_pointId = point.Id;
 		}
 
 		public string FilterKeyword {
@@ -49,7 +49,6 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_filterKeyword = value;
-				SetLabelName();
 			}
 		}
 		public string FilterKeytype {
@@ -58,12 +57,14 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_filterKeytype = value;
-				SetLabelName();
 			}
 		}
-		public ConnectionPointData ConnectionPoint {
+		public string ConnectionPointId {
 			get {
-				return m_point; 
+				if(m_pointId == null && m_point != null) {
+					m_pointId = m_point.Id;
+				}
+				return m_pointId; 
 			}
 		}
 		public string Hash {
@@ -71,26 +72,17 @@ namespace AssetBundleGraph {
 				return m_filterKeyword+m_filterKeytype;
 			}
 		}
-
-		private void SetLabelName() {
-			if(m_filterKeytype == AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
-				m_point.Label = m_filterKeyword;
-			} else {
-				var pointIndex = m_filterKeytype.LastIndexOf('.');
-				var keytypeName = (pointIndex > 0)? m_filterKeytype.Substring(pointIndex+1):m_filterKeytype;
-				m_point.Label = string.Format("{0}[{1}]", m_filterKeyword, keytypeName);
-			}
-		}
 	}
 
 	[Serializable]
 	public class Variant {
 		[SerializeField] private string m_name;
-		[SerializeField] private ConnectionPointData m_point;
+		[SerializeField] private ConnectionPointData m_point; // deprecated. it is here for compatibility
+		[SerializeField] private string m_pointId;
 
 		public Variant(string name, ConnectionPointData point) {
 			m_name = name;
-			m_point = point;
+			m_pointId = point.Id;
 		}
 
 		public string Name {
@@ -99,12 +91,14 @@ namespace AssetBundleGraph {
 			}
 			set {
 				m_name = value;
-				m_point.Label = value;
 			}
 		}
-		public ConnectionPointData ConnectionPoint {
+		public string ConnectionPointId {
 			get {
-				return m_point; 
+				if(m_pointId == null && m_point != null) {
+					m_pointId = m_point.Id;
+				}
+				return m_pointId; 
 			}
 		}
 	}
@@ -448,7 +442,9 @@ namespace AssetBundleGraph {
 
 						var point = m_outputPoints.Find(p => p.Id == pointId);
 						UnityEngine.Assertions.Assert.IsNotNull(point, "Output point not found for " + keyword);
-						m_filter.Add(new FilterEntry(keyword, keytype, point));
+						var newEntry = new FilterEntry(keyword, keytype, point);
+						m_filter.Add(newEntry);
+						UpdateFilterEntry(newEntry);
 					}
 				}
 				break;
@@ -475,7 +471,9 @@ namespace AssetBundleGraph {
 
 							var point = m_inputPoints.Find(p => p.Id == pointId);
 							UnityEngine.Assertions.Assert.IsNotNull(point, "Input point not found for " + name);
-							m_variants.Add(new Variant(name, point));
+							var newVariant = new Variant(name, point);
+							m_variants.Add(newVariant);
+							UpdateVariant(newVariant);
 						}
 					}
 				}
@@ -686,6 +684,7 @@ namespace AssetBundleGraph {
 			m_outputPoints.Add(point);
 			var newEntry = new FilterEntry(keyword, keytype, point);
 			m_filter.Add(newEntry);
+			UpdateFilterEntry(newEntry);
 		}
 
 		public void RemoveFilterCondition(FilterEntry f) {
@@ -694,7 +693,27 @@ namespace AssetBundleGraph {
 			);
 
 			m_filter.Remove(f);
-			m_outputPoints.Remove(f.ConnectionPoint);
+			m_outputPoints.Remove(GetConnectionPoint(f));
+		}
+
+		public ConnectionPointData GetConnectionPoint(FilterEntry f) {
+			ConnectionPointData p = m_outputPoints.Find(v => v.Id == f.ConnectionPointId);
+			UnityEngine.Assertions.Assert.IsNotNull(p);
+			return p;
+		}
+
+		public void UpdateFilterEntry(FilterEntry f) {
+
+			ConnectionPointData p = m_outputPoints.Find(v => v.Id == f.ConnectionPointId);
+			UnityEngine.Assertions.Assert.IsNotNull(p);
+
+			if(f.FilterKeytype == AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+				p.Label = f.FilterKeyword;
+			} else {
+				var pointIndex = f.FilterKeytype.LastIndexOf('.');
+				var keytypeName = (pointIndex > 0)? f.FilterKeytype.Substring(pointIndex+1):f.FilterKeytype;
+				p.Label = string.Format("{0}[{1}]", f.FilterKeyword, keytypeName);
+			}
 		}
 
 		public void AddVariant(string name) {
@@ -706,6 +725,7 @@ namespace AssetBundleGraph {
 			m_inputPoints.Add(point);
 			var newEntry = new Variant(name, point);
 			m_variants.Add(newEntry);
+			UpdateVariant(newEntry);
 		}
 
 		public void RemoveVariant(Variant v) {
@@ -714,7 +734,21 @@ namespace AssetBundleGraph {
 			);
 
 			m_variants.Remove(v);
-			m_inputPoints.Remove(v.ConnectionPoint);
+			m_inputPoints.Remove(GetConnectionPoint(v));
+		}
+
+		public ConnectionPointData GetConnectionPoint(Variant v) {
+			ConnectionPointData p = m_inputPoints.Find(point => point.Id == v.ConnectionPointId);
+			UnityEngine.Assertions.Assert.IsNotNull(p);
+			return p;
+		}
+
+		public void UpdateVariant(Variant variant) {
+
+			ConnectionPointData p = m_inputPoints.Find(v => v.Id == variant.ConnectionPointId);
+			UnityEngine.Assertions.Assert.IsNotNull(p);
+
+			p.Label = variant.Name;
 		}
 
 		private void ValidateAccess(params NodeKind[] allowedKind) {
@@ -845,7 +879,7 @@ namespace AssetBundleGraph {
 					return false;
 				}
 				foreach(var v in m_variants) {
-					if(null == rhs.m_variants.Find(x => x.Name == v.Name && x.ConnectionPoint.Id == v.ConnectionPoint.Id)) {
+					if(null == rhs.m_variants.Find(x => x.Name == v.Name && x.ConnectionPointId == v.ConnectionPointId)) {
 						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Variants not found");
 						return false;
 					}
@@ -935,7 +969,7 @@ namespace AssetBundleGraph {
 					var df = new Dictionary<string, object>();
 					df[NODE_FILTER_KEYWORD] = f.FilterKeyword;
 					df[NODE_FILTER_KEYTYPE] = f.FilterKeytype;
-					df[NODE_FILTER_POINTID] = f.ConnectionPoint.Id;
+					df[NODE_FILTER_POINTID] = f.ConnectionPointId;
 					filterDict.Add(df);
 				}
 				nodeDict[NODE_FILTER] = filterDict;
@@ -952,7 +986,7 @@ namespace AssetBundleGraph {
 				foreach(var v in m_variants) {
 					var dv = new Dictionary<string, object>();
 					dv[NODE_BUNDLECONFIG_VARIANTS_NAME] 	= v.Name;
-					dv[NODE_BUNDLECONFIG_VARIANTS_POINTID] = v.ConnectionPoint.Id;
+					dv[NODE_BUNDLECONFIG_VARIANTS_POINTID] = v.ConnectionPointId;
 					variantsDict.Add(dv);
 				}
 				nodeDict[NODE_BUNDLECONFIG_VARIANTS] = variantsDict;
