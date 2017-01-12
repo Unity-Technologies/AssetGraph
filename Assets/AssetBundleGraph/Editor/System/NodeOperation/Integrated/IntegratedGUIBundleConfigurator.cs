@@ -87,7 +87,7 @@ namespace AssetBundleGraph {
 				foreach(var ag in incoming) {
 					string variantName = null;
 					if(!node.BundleConfigUseGroupAsVariants) {
-						var currentVariant = node.Variants.Find( v => v.ConnectionPoint.Id == ag.connection.ToNodeConnectionPointId );
+						var currentVariant = node.Variants.Find( v => v.ConnectionPointId == ag.connection.ToNodeConnectionPointId );
 						variantName = (currentVariant == null) ? null : currentVariant.Name;
 					}
 
@@ -132,7 +132,7 @@ namespace AssetBundleGraph {
 				foreach(var ag in incoming) {
 					string variantName = null;
 					if(!node.BundleConfigUseGroupAsVariants) {
-						var currentVariant = node.Variants.Find( v => v.ConnectionPoint.Id == ag.connection.ToNodeConnectionPointId );
+						var currentVariant = node.Variants.Find( v => v.ConnectionPointId == ag.connection.ToNodeConnectionPointId );
 						variantName = (currentVariant == null) ? null : currentVariant.Name;
 					}
 

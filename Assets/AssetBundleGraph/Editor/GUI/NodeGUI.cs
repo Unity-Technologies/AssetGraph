@@ -160,7 +160,7 @@ namespace AssetBundleGraph {
 		private bool IsValidInputConnectionPoint(ConnectionPointData point) {
 
 			if(m_data.Kind == NodeKind.BUNDLECONFIG_GUI && !m_data.BundleConfigUseGroupAsVariants) {
-				if(m_data.Variants.Count > 0 && m_data.Variants.Find(v => v.ConnectionPoint.Id == point.Id) == null) 
+				if(m_data.Variants.Count > 0 && m_data.Variants.Find(v => v.ConnectionPointId == point.Id) == null) 
 				{
 					return false;
 				}
