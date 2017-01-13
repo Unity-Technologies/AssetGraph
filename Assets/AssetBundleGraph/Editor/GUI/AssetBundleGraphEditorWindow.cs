@@ -208,6 +208,7 @@ namespace AssetBundleGraph {
 		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
+			window.SaveGraph();
 			window.Run(ActiveBuildTarget);
 		}
 
@@ -532,6 +533,8 @@ namespace AssetBundleGraph {
 		}
 
 		private void DrawGUIToolBar() {
+			bool performBuild = false;
+
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
 					Setup(ActiveBuildTarget);
@@ -560,8 +563,6 @@ namespace AssetBundleGraph {
 				tbLabelTarget.fontStyle = FontStyle.Bold;
 
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
-//				GUILayout.Label(BuildTargetUtility.TargetToHumaneString(ActiveBuildTarget), tbLabelTarget, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
-
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
 				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == s_selectedTarget));
@@ -575,12 +576,17 @@ namespace AssetBundleGraph {
 				}
 
 				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
-					if (GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
-						SaveGraph();
-						Run(ActiveBuildTarget);
-					}
+					performBuild = GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
 				}
+
 			}		
+
+			// Workaround:
+			// Calling time taking procedure such as asset bundle build inside Scope object 
+			// may throw Exception becuase object state is already invalid by the time to Dispose.
+			if(performBuild) {
+				EditorApplication.ExecuteMenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD);
+			}
 		}
 
 		private void DrawGUINodeErrors() {
