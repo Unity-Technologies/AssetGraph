@@ -27,6 +27,13 @@ namespace AssetBundleGraph {
 					s_database.m_dictionary = new SortedList<string, AssetReference>();
 					s_database.m_version = DB_VERSION;
 
+					var DBDir = FileUtility.PathCombine("Assets/", 
+						AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
+
+					if (!Directory.Exists(DBDir)) {
+						Directory.CreateDirectory(DBDir);
+					}
+
 					AssetDatabase.CreateAsset(s_database, DBPath);
 				}
 			}
