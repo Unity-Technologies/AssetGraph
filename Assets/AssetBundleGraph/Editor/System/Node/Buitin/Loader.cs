@@ -17,13 +17,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public string ActiveStyle {
 			get {
-				return string.Empty;
+				return "flow node 0 on";
 			}
 		}
 
 		public string InactiveStyle {
 			get {
-				return string.Empty;
+				return "flow node 0";
 			}
 		}
 			
