@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class ConnectionGUIUtility {
 
 		public static Action<ConnectionEvent> ConnectionEventHandler {
@@ -23,7 +24,7 @@ namespace AssetBundleGraph.V2 {
 			get {
 				// load shared connection textures
 				if( ConnectionGUISingleton.s.connectionArrowTex == null ) {
-					ConnectionGUISingleton.s.connectionArrowTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_ARROW);
+					ConnectionGUISingleton.s.connectionArrowTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_ARROW);
 				}
 				return ConnectionGUISingleton.s.connectionArrowTex;
 			}

@@ -7,7 +7,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Prefab Builder", 70)]
 	public class PrefabBuilder : INode {
@@ -39,14 +41,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -58,7 +60,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -130,7 +132,7 @@ namespace AssetBundleGraph.V2 {
 							string.Format(
 								"Your PrefabBuilder script {0} is missing from assembly. Did you delete script?", builder.ClassName), MessageType.Info);
 					} else {
-						string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
+						string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
 						EditorGUILayout.HelpBox(
 							string.Format(
 								"You need to create at least one PrefabBuilder script to use PrefabBuilder node. To start, select {0}>{1}>{2} menu and create new script from template.",
@@ -186,9 +188,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			ValidatePrefabBuilder(node, target, incoming,
@@ -271,11 +273,11 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
@@ -347,7 +349,7 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void ValidatePrefabBuilder (
-			NodeData node,
+			Model.NodeData node,
 			BuildTarget target,
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			Action noBuilderData,

@@ -6,7 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class CUIUtility {
 
 		private static readonly string kCommandMethod = "AssetBundleGraph.CUIUtility.BuildFromCommandline";
@@ -17,10 +19,10 @@ namespace AssetBundleGraph.V2 {
 		private static readonly string kCommandName = 
 			"buildassetbundle.{0}";
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_CUITOOL)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_CUITOOL)]
 		private static void CreateCUITool() {
 
-            var appPath = EditorApplication.applicationPath.Replace(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR, Path.DirectorySeparatorChar);
+			var appPath = EditorApplication.applicationPath.Replace(Model.Settings.UNITY_FOLDER_SEPARATOR, Path.DirectorySeparatorChar);
 
             var appCmd = string.Format("{0}{1}", appPath, (Application.platform == RuntimePlatform.WindowsEditor) ? "" : "/Contents/MacOS/Unity");
 			var argPass = (Application.platform == RuntimePlatform.WindowsEditor)? "%1 %2 %3 %4 %5 %6 %7 %8 %9" : "$*";
@@ -28,9 +30,9 @@ namespace AssetBundleGraph.V2 {
 			var ext = (Application.platform == RuntimePlatform.WindowsEditor)? "bat" : "sh";
 			var cmdFile = string.Format(kCommandName, ext );
 
-			var destinationPath = FileUtility.PathCombine(AssetBundleGraphSettings.CUISPACE_PATH, cmdFile);
+			var destinationPath = FileUtility.PathCombine(Model.Settings.CUISPACE_PATH, cmdFile);
 
-			Directory.CreateDirectory(AssetBundleGraphSettings.CUISPACE_PATH);
+			Directory.CreateDirectory(Model.Settings.CUISPACE_PATH);
 			File.WriteAllText(destinationPath, cmd);
 
 			AssetDatabase.Refresh();
@@ -72,7 +74,7 @@ namespace AssetBundleGraph.V2 {
 
 				LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
-				if (!V2.SaveData.IsSaveDataAvailableAtDisk()) {
+				if (!Model.SaveData.IsSaveDataAvailableAtDisk()) {
 					LogUtility.Logger.Log("AssetBundleGraph save data not found. Aborting...");
 					return;
 				}
@@ -91,10 +93,10 @@ namespace AssetBundleGraph.V2 {
 					return;
 				}
 
-				V2.NodeData lastNodeData = null;
+				Model.NodeData lastNodeData = null;
 				float lastProgress = 0.0f;
 
-				Action<V2.NodeData, string, float> updateHandler = (V2.NodeData node, string message, float progress) => {
+				Action<Model.NodeData, string, float> updateHandler = (Model.NodeData node, string message, float progress) => {
 					if(node != null && lastNodeData != node) {
 						lastNodeData = node;
 						lastProgress = progress;

@@ -9,7 +9,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	public class AssetReferenceStreamManager {
 
@@ -20,11 +22,11 @@ namespace AssetBundleGraph.V2 {
 			m_connectionStreamMap = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
 		}
 
-		public IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(ConnectionPointData inputPoint) {
+		public IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(Model.ConnectionPointData inputPoint) {
 			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
 			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
 
-			var connections = V2.SaveData.Data.Connections;
+			var connections = Model.SaveData.Data.Connections;
 
 			return m_connectionStreamMap.Where(v => { 
 				var conn = connections.Find(c => c.Id == v.Key);
@@ -41,7 +43,7 @@ namespace AssetBundleGraph.V2 {
 			return m_connectionStreamMap[connectionId];
 		}
 
-		public Dictionary<string, List<AssetReference>> FindAssetGroup(ConnectionData connection) {
+		public Dictionary<string, List<AssetReference>> FindAssetGroup(Model.ConnectionData connection) {
 			if (!m_connectionStreamMap.ContainsKey(connection.Id)) {
 				m_connectionStreamMap[connection.Id] = new Dictionary<string, List<AssetReference>>();
 			}
@@ -49,11 +51,11 @@ namespace AssetBundleGraph.V2 {
 			return m_connectionStreamMap[connection.Id];
 		}
 
-		public void AssignAssetGroup(ConnectionData connection, Dictionary<string, List<AssetReference>> groups) {
+		public void AssignAssetGroup(Model.ConnectionData connection, Dictionary<string, List<AssetReference>> groups) {
 			m_connectionStreamMap[connection.Id] = groups;
 		}
 
-		public void RemoveAssetGroup(ConnectionData connection) {
+		public void RemoveAssetGroup(Model.ConnectionData connection) {
 			if (m_connectionStreamMap.ContainsKey(connection.Id)) { 
 				m_connectionStreamMap.Remove(connection.Id);
 			}

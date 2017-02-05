@@ -6,16 +6,15 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Modifier", 40)]
 	public class Modifier : INode {
 
-//		[SerializeField] private string m_className;
 		[SerializeField] private MultiTargetSerializedInstance<IModifier> m_instance;
 
-//		IModifier m_modifier;
-//
 		public string ActiveStyle {
 			get {
 				return string.Empty;
@@ -28,14 +27,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -47,7 +46,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -124,7 +123,7 @@ namespace AssetBundleGraph.V2 {
 					}
 
 				} else {
-					string[] menuNames = AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_MODIFIER.Split('/');
+					string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER.Split('/');
 					EditorGUILayout.HelpBox(
 						string.Format(
 							"No CustomModifier found for {3} type. \n" +
@@ -181,9 +180,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			ValidateModifier(node, target, incoming,
@@ -217,11 +216,11 @@ namespace AssetBundleGraph.V2 {
 
 		
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
@@ -268,7 +267,7 @@ namespace AssetBundleGraph.V2 {
 		}
 			
 		public void ValidateModifier (
-			NodeData node,
+			Model.NodeData node,
 			BuildTarget target,
 			IEnumerable<PerformGraph.AssetGroups> incoming,
 			Action<Type, Type, AssetReference> multipleAssetTypeFound,

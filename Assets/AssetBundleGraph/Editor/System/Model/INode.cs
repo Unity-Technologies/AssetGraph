@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
-using AssetBundleGraph;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public interface INode : IJSONSerializable {
 
 		string ActiveStyle {
@@ -24,33 +24,33 @@ namespace AssetBundleGraph.V2 {
 			Prepare is the method which validates and perform necessary setups in order to build.
 		*/
 		void Prepare (BuildTarget target, 
-			V2.NodeData nodeData, 
+			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc);
 
 		/**
 			Build is the method which actualy performs the build. It is always called after Setup() is performed.
 		*/
 		void Build (BuildTarget target, 
-			V2.NodeData nodeData, 
+			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
-			Action<V2.NodeData, string, float> progressFunc);
+			Action<Model.NodeData, string, float> progressFunc);
 
 		void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor);
 		void OnNodeGUI(NodeGUI node);
 
-		void Initialize(NodeData data);
+		void Initialize(Model.NodeData data);
 
 		INode Clone();
 
-		bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections);
+		bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections);
 
 		bool IsEqual(INode node);
 
-		bool IsValidInputConnectionPoint(ConnectionPointData point);
+		bool IsValidInputConnectionPoint(Model.ConnectionPointData point);
 
 		bool CanConnectFrom(INode fromNode);
 

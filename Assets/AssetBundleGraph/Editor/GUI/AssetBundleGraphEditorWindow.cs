@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleGraphEditorWindow : EditorWindow {
 
 		[Serializable] 
@@ -112,7 +114,7 @@ namespace AssetBundleGraph.V2 {
 		private Texture2D selectionTex {
 			get{
 				if(_selectionTex == null) {
-					_selectionTex = LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_SELECTION);
+					_selectionTex = LoadTextureFromFile(Model.Settings.GUI.RESOURCE_SELECTION);
 				}
 				return _selectionTex;
 			}
@@ -128,7 +130,7 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public static void GenerateScript (ScriptType scriptType) {
-			var destinationBasePath = AssetBundleGraphSettings.USERSPACE_PATH;
+			var destinationBasePath = Model.Settings.USERSPACE_PATH;
 
 			var sourceFileName = string.Empty;
 			var destinationFileName = string.Empty;
@@ -136,17 +138,17 @@ namespace AssetBundleGraph.V2 {
 			switch (scriptType) {
 			case ScriptType.SCRIPT_MODIFIER: 
 				{
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyModifier.cs.template");
+					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyModifier.cs.template");
 					destinationFileName = "MyModifier{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_PREFABBUILDER: {
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPrefabBuilder.cs.template");
+					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyPrefabBuilder.cs.template");
 					destinationFileName = "MyPrefabBuilder{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_POSTPROCESS: {
-					sourceFileName = FileUtility.PathCombine(AssetBundleGraphSettings.SCRIPT_TEMPLATE_PATH, "MyPostprocess.cs.template");
+					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyPostprocess.cs.template");
 					destinationFileName = "MyPostprocess{0}{1}";
 					break;
 				}
@@ -179,25 +181,25 @@ namespace AssetBundleGraph.V2 {
 		/*
 			menu items
 		*/
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_MODIFIER)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER)]
 		public static void GenerateModifier () {
 			GenerateScript(ScriptType.SCRIPT_MODIFIER);
 		}
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER)]
 		public static void GeneratePrefabBuilder () {
 			GenerateScript(ScriptType.SCRIPT_PREFABBUILDER);
 		}
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_GENERATE_POSTPROCESS)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_POSTPROCESS)]
 		public static void GeneratePostprocess () {
 			GenerateScript(ScriptType.SCRIPT_POSTPROCESS);
 		}
 			
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_OPEN, false, 1)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
 			GetWindow<AssetBundleGraphEditorWindow>();
 		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
 		public static bool BuildFromMenuValidator () {
 			// Calling GetWindow<>() will force open window
 			// That's not what we want to do in validator function,
@@ -205,21 +207,21 @@ namespace AssetBundleGraph.V2 {
 			return (s_currentController != null && !s_currentController.IsAnyIssueFound);
 		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
 			window.SaveGraph();
 			window.Run(ActiveBuildTarget);
 		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
-			FileUtility.RemakeDirectory(AssetBundleGraphSettings.APPLICATIONDATAPATH_CACHE_PATH);
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
+			FileUtility.RemakeDirectory(Model.Settings.APPLICATIONDATAPATH_CACHE_PATH);
 
 			AssetDatabase.Refresh();
 		}
 
-		[MenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS)] public static void DeleteImportSettingSample () {
-			FileUtility.RemakeDirectory(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE);
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS)] public static void DeleteImportSettingSample () {
+			FileUtility.RemakeDirectory(Model.Settings.IMPORTER_SETTINGS_PLACE);
 
 			AssetDatabase.Refresh();
 		}
@@ -264,7 +266,7 @@ namespace AssetBundleGraph.V2 {
 
 			this.titleContent = new GUIContent("AssetBundle");
 
-			V2.SaveData.Reload();
+			Model.SaveData.Reload();
 
 			Undo.undoRedoPerformed += () => {
 				Setup(ActiveBuildTarget);
@@ -319,11 +321,11 @@ namespace AssetBundleGraph.V2 {
 			/*
 				do nothing if json does not modified after first load.
 			*/
-			if (V2.SaveData.Data.LastModified == lastLoaded) {
+			if (Model.SaveData.Data.LastModified == lastLoaded) {
 				return;
 			}
 				
-			lastLoaded = V2.SaveData.Data.LastModified;
+			lastLoaded = Model.SaveData.Data.LastModified;
 
 			minSize = new Vector2(600f, 300f);
 			
@@ -355,7 +357,7 @@ namespace AssetBundleGraph.V2 {
 		 * Creates Graph structure with NodeGUI and ConnectionGUI from SaveData
 		 */ 
 		private static void ConstructGraphFromSaveData (out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
-			var saveData = V2.SaveData.Data;
+			var saveData = Model.SaveData.Data;
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
@@ -387,7 +389,7 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		private void SaveGraph () {
-			V2.SaveData.Data.ApplyGraph(nodes, connections);
+			Model.SaveData.Data.ApplyGraph(nodes, connections);
 		}
 
 		/**
@@ -456,9 +458,9 @@ namespace AssetBundleGraph.V2 {
 
 				float currentCount = 0f;
 				float totalCount = (float)currentNodes.Count;
-				V2.NodeData lastNode = null;
+				Model.NodeData lastNode = null;
 
-				Action<V2.NodeData, string, float> updateHandler = (node, message, progress) => {
+				Action<Model.NodeData, string, float> updateHandler = (node, message, progress) => {
 
 					if(lastNode != node) {
 						// do not add count on first node visit to 
@@ -519,7 +521,7 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(ConnectionPointData inputPoint) {
+		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(Model.ConnectionPointData inputPoint) {
 			if(s_currentController != null) {
 				return s_currentController.StreamManager.EnumurateIncomingAssetGroups(inputPoint);
 			}
@@ -536,14 +538,14 @@ namespace AssetBundleGraph.V2 {
 			bool performBuild = false;
 
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
-				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT))) {
+				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					Setup(ActiveBuildTarget);
 				}
-				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				GUILayout.Space(4);
 
-				showVerboseLog = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+				showVerboseLog = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 				LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
 
 				GUILayout.FlexibleSpace();
@@ -562,13 +564,13 @@ namespace AssetBundleGraph.V2 {
 				GUIStyle tbLabelTarget = new GUIStyle(tbLabel);
 				tbLabelTarget.fontStyle = FontStyle.Bold;
 
-				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
 				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == s_selectedTarget));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
-					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
 					s_selectedTarget = supportedTargets[newIndex];
@@ -576,7 +578,7 @@ namespace AssetBundleGraph.V2 {
 				}
 
 				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
-					performBuild = GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(AssetBundleGraphSettings.GUI.TOOLBAR_HEIGHT));
+					performBuild = GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 				}
 
 			}		
@@ -585,7 +587,7 @@ namespace AssetBundleGraph.V2 {
 			// Calling time taking procedure such as asset bundle build inside Scope object 
 			// may throw Exception becuase object state is already invalid by the time to Dispose.
 			if(performBuild) {
-				EditorApplication.ExecuteMenuItem(AssetBundleGraphSettings.GUI_TEXT_MENU_BUILD);
+				EditorApplication.ExecuteMenuItem(Model.Settings.GUI_TEXT_MENU_BUILD);
 			}
 		}
 
@@ -816,7 +818,7 @@ namespace AssetBundleGraph.V2 {
 
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
-			V2.SaveData.SetSavedataDirty();
+			Model.SaveData.SetSavedataDirty();
 		}
 
 		public void OnGUI () {
@@ -891,7 +893,7 @@ namespace AssetBundleGraph.V2 {
 				case EventType.ContextClick: {
 					var rightClickPos = Event.current.mousePosition;
 					var menu = new GenericMenu();
-					foreach(var n in V2.NodeUtility.CustomNodeTypes) {
+					foreach(var n in NodeUtility.CustomNodeTypes) {
 						menu.AddItem(
 							new GUIContent(string.Format("Create {0} Node", n.node.Name)),
 							false, 
@@ -1091,7 +1093,7 @@ namespace AssetBundleGraph.V2 {
 //								var pasteType = copyField.type;
 //								foreach (var copyFieldData in copyField.datas) {
 //									var nodeJsonDict = AssetBundleGraph.Json.Deserialize(copyFieldData) as Dictionary<string, object>;
-//									var pastingNode = new NodeGUI(new V2.NodeData(nodeJsonDict));
+//									var pastingNode = new NodeGUI(new Model.NodeData(nodeJsonDict));
 //									var pastingNodeName = pastingNode.Name;
 //
 //									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
@@ -1184,7 +1186,7 @@ namespace AssetBundleGraph.V2 {
 //				var modifier = ModifierUtility.CreateModifier(scriptClassName);
 //				UnityEngine.Assertions.Assert.IsNotNull(modifier);
 //
-//				newNode = new NodeGUI(new NodeData(name, NodeKind.MODIFIER_GUI, x, y));
+//				newNode = new NodeGUI(new Model.NodeData(name, NodeKind.MODIFIER_GUI, x, y));
 //				newNode.Data.ScriptClassName = scriptClassName;
 //				newNode.Data.InstanceData.DefaultValue = modifier.Serialize();
 //			}
@@ -1192,7 +1194,7 @@ namespace AssetBundleGraph.V2 {
 //				var builder = PrefabBuilderUtility.CreatePrefabBuilderByClassName(scriptClassName);
 //				UnityEngine.Assertions.Assert.IsNotNull(builder);
 //
-//				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
+//				newNode = new NodeGUI(new Model.NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
 //				newNode.Data.ScriptClassName = scriptClassName;
 //				newNode.Data.InstanceData.DefaultValue = builder.Serialize();
 //			}
@@ -1206,10 +1208,10 @@ namespace AssetBundleGraph.V2 {
 //			AddNodeGUI(newNode);
 //		}
 
-		private void AddNodeFromGUI (V2.INode n, string guiName, float x, float y) {
+		private void AddNodeFromGUI (INode n, string guiName, float x, float y) {
 
 			string nodeName = string.Format("New {0} Node", guiName);
-			NodeGUI newNode = new NodeGUI(new V2.NodeData(nodeName, n, x, y));
+			NodeGUI newNode = new NodeGUI(new Model.NodeData(nodeName, n, x, y));
 
 			Undo.RecordObject(this, "Add " + guiName + " Node");
 
@@ -1558,10 +1560,10 @@ namespace AssetBundleGraph.V2 {
 			it's convenience.
 		*/
 		private void UpdateSpacerRect () {
-			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).Select(node => node.GetRightPos()).ToList()[0] + AssetBundleGraphSettings.WINDOW_SPAN;
+			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).Select(node => node.GetRightPos()).ToList()[0] + Model.Settings.WINDOW_SPAN;
 			if (rightPoint < spacerRectRightBottom.x) rightPoint = spacerRectRightBottom.x;
 
-			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).Select(node => node.GetBottomPos()).ToList()[0] + AssetBundleGraphSettings.WINDOW_SPAN;
+			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).Select(node => node.GetBottomPos()).ToList()[0] + Model.Settings.WINDOW_SPAN;
 			if (bottomPoint < spacerRectRightBottom.y) bottomPoint = spacerRectRightBottom.y;
 
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
@@ -1694,7 +1696,7 @@ namespace AssetBundleGraph.V2 {
 		/**
 			create new connection if same relationship is not exist yet.
 		*/
-		private void AddConnection (string label, NodeGUI startNode, ConnectionPointData startPoint, NodeGUI endNode, ConnectionPointData endPoint) {
+		private void AddConnection (string label, NodeGUI startNode, Model.ConnectionPointData startPoint, NodeGUI endNode, Model.ConnectionPointData endPoint) {
 			Undo.RecordObject(this, "Add Connection");
 
 			var connectionsFromThisNode = connections
@@ -1715,7 +1717,7 @@ namespace AssetBundleGraph.V2 {
 			return nodes.Find(n => n.Conitains(globalPos));
 		}
 
-		private bool IsConnectablePointFromTo (ConnectionPointData sourcePoint, ConnectionPointData destPoint) {
+		private bool IsConnectablePointFromTo (Model.ConnectionPointData sourcePoint, Model.ConnectionPointData destPoint) {
 			if( sourcePoint.IsInput ) {
 				return destPoint.IsOutput;
 			} else {

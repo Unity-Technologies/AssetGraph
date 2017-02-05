@@ -6,7 +6,9 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 
-namespace AssetBundleGraph.V2
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool
 {
 	[CustomNode("Grouping", 50)]
 	public class Grouping : INode {
@@ -25,14 +27,14 @@ namespace AssetBundleGraph.V2
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -44,7 +46,7 @@ namespace AssetBundleGraph.V2
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -104,29 +106,29 @@ namespace AssetBundleGraph.V2
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			GroupingOutput(target, node, incoming, connectionsToOutput, Output);
 		}
 
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
 
 		private void GroupingOutput (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 
@@ -136,7 +138,7 @@ namespace AssetBundleGraph.V2
 					throw new NodeException("Grouping Keyword can not be empty.", node.Id);
 				},
 				() => {
-					throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", AssetBundleGraphSettings.KEYWORD_WILDCARD, m_groupingKeyword[target]), node.Id);
+					throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", Model.Settings.KEYWORD_WILDCARD, m_groupingKeyword[target]), node.Id);
 				}
 			);
 
@@ -146,7 +148,7 @@ namespace AssetBundleGraph.V2
 
 			var outputDict = new Dictionary<string, List<AssetReference>>();
 			var groupingKeyword = m_groupingKeyword[target];
-			var split = groupingKeyword.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD);
+			var split = groupingKeyword.Split(Model.Settings.KEYWORD_WILDCARD);
 			var groupingKeywordPrefix  = split[0];
 			var groupingKeywordPostfix = split[1];
 			var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
@@ -176,7 +178,7 @@ namespace AssetBundleGraph.V2
 
 		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {
 			if (string.IsNullOrEmpty(currentGroupingKeyword)) NullOrEmpty();
-			if (!currentGroupingKeyword.Contains(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString())) ShouldContainWildCardKey();
+			if (!currentGroupingKeyword.Contains(Model.Settings.KEYWORD_WILDCARD.ToString())) ShouldContainWildCardKey();
 		}
 	}
 }

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class GraphBackground {
 
 		protected const float kNodeGridSize = 12.0f;

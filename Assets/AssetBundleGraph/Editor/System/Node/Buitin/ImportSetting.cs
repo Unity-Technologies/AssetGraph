@@ -6,8 +6,9 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	
 	/**
 		ImportSetting is the class for apply specific setting to already imported files.
@@ -27,14 +28,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -46,7 +47,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -116,9 +117,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			Action<Type, Type, AssetReference> multipleAssetTypeFound = (Type expectedType, Type foundType, AssetReference foundAsset) => {
@@ -173,17 +174,17 @@ namespace AssetBundleGraph.V2 {
 		}
 		
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
-		private void SaveSampleFile(NodeData node, AssetReference asset) {
-			var samplingDirectoryPath = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
+		private void SaveSampleFile(Model.NodeData node, AssetReference asset) {
+			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 			if (!Directory.Exists(samplingDirectoryPath)) {
 				Directory.CreateDirectory(samplingDirectoryPath);
 			}
@@ -197,15 +198,15 @@ namespace AssetBundleGraph.V2 {
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 		}
 
-		public static ConfigStatus GetConfigStatus(NodeData node) {
-			var sampleFileDir = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
+		public static ConfigStatus GetConfigStatus(Model.NodeData node) {
+			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 
 			if(!Directory.Exists(sampleFileDir)) {
 				return ConfigStatus.NoSampleFound;
 			}
 
 			var sampleFiles = FileUtility.GetFilePathsInFolder(sampleFileDir)
-				.Where(path => !path.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION))
+				.Where(path => !path.EndsWith(Model.Settings.UNITY_METAFILE_EXTENSION))
 				.ToList();
 
 			if(sampleFiles.Count == 0) {
@@ -218,18 +219,18 @@ namespace AssetBundleGraph.V2 {
 			return ConfigStatus.TooManySamplesFound;
 		}
 
-		public static void ResetConfig(NodeData node) {
-			var sampleFileDir = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
+		public static void ResetConfig(Model.NodeData node) {
+			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 			FileUtility.RemakeDirectory(sampleFileDir);
 		}
 
-		public static AssetImporter GetReferenceAssetImporter(NodeData node) {
-			var sampleFileDir = FileUtility.PathCombine(AssetBundleGraphSettings.IMPORTER_SETTINGS_PLACE, node.Id);
+		public static AssetImporter GetReferenceAssetImporter(Model.NodeData node) {
+			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 
 			UnityEngine.Assertions.Assert.IsTrue(Directory.Exists(sampleFileDir));
 
 			var sampleFiles = FileUtility.GetFilePathsInFolder(sampleFileDir)
-				.Where(path => !path.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION))
+				.Where(path => !path.EndsWith(Model.Settings.UNITY_METAFILE_EXTENSION))
 				.ToList();
 
 			UnityEngine.Assertions.Assert.IsTrue(sampleFiles.Count == 1);
@@ -237,7 +238,7 @@ namespace AssetBundleGraph.V2 {
 			return AssetImporter.GetAtPath(sampleFiles[0]);	
 		}
 
-		private void ApplyImportSetting(NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
+		private void ApplyImportSetting(Model.NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
 
 			var referenceImporter = GetReferenceAssetImporter(node);	
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
@@ -265,7 +266,7 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public static void ValidateInputSetting (
-			NodeData node,
+			Model.NodeData node,
 			BuildTarget target,
 			IEnumerable<PerformGraph.AssetGroups> incoming,
 			Action<Type, Type, AssetReference> multipleAssetTypeFound,

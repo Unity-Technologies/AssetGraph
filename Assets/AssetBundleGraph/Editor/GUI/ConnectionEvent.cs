@@ -1,4 +1,4 @@
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class ConnectionEvent {
 		public enum EventType : int {
 			EVENT_NONE,

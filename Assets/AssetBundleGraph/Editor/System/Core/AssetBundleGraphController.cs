@@ -9,7 +9,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	/*
 	 * AssetBundleGraphController executes operations based on graph 
 	 */
@@ -59,7 +61,7 @@ namespace AssetBundleGraph.V2 {
 			BuildTarget target,
 			bool isRun,
 			bool forceVisitAll,
-			Action<V2.NodeData, string, float> updateHandler) 
+			Action<Model.NodeData, string, float> updateHandler) 
 		{
 			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
@@ -68,7 +70,7 @@ namespace AssetBundleGraph.V2 {
 				AssetBundleBuildReport.ClearReports();
 			}
 
-			var saveData = V2.SaveData.Data;
+			var saveData = Model.SaveData.Data;
 			foreach(var e in m_nodeExceptions) {
 				var errorNode = saveData.Nodes.Find(n => n.Id == e.Id);
 				// errorNode may not be found if user delete it on graph
@@ -87,9 +89,9 @@ namespace AssetBundleGraph.V2 {
 			newGraph.BuildGraphFromSaveData(target, oldGraph);
 
 			PerformGraph.Perform performFunc =
-				(V2.NodeData data, 
+				(Model.NodeData data, 
 					IEnumerable<PerformGraph.AssetGroups> incoming, 
-					IEnumerable<ConnectionData> connectionsToOutput, 
+					IEnumerable<Model.ConnectionData> connectionsToOutput, 
 					PerformGraph.Output outputFunc) =>
 			{
 				DoNodeOperation(target, data, incoming, connectionsToOutput, outputFunc, isRun, updateHandler);
@@ -115,7 +117,7 @@ namespace AssetBundleGraph.V2 {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
 				m_isBuilding = true;
 				DoNodeOperation(target, node.Data, null, null, 
-					(ConnectionData dst, Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
+					(Model.ConnectionData dst, Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
 
 				LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
@@ -132,12 +134,12 @@ namespace AssetBundleGraph.V2 {
 		*/
 		private void DoNodeOperation (
 			BuildTarget target,
-			V2.NodeData currentNodeData,
+			Model.NodeData currentNodeData,
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
 			bool isActualRun,
-			Action<V2.NodeData, string, float> updateHandler) 
+			Action<Model.NodeData, string, float> updateHandler) 
 		{
 			try {
 				if (updateHandler != null) {
@@ -187,7 +189,7 @@ namespace AssetBundleGraph.V2 {
 				return;
 			}
 
-			var saveData = V2.SaveData.Data;
+			var saveData = Model.SaveData.Data;
 
 			if(saveData.Nodes == null) {
 				return;
@@ -205,7 +207,7 @@ namespace AssetBundleGraph.V2 {
 //				Match m = importSettingsIdMatch.Match(imported);
 //				if(m.Success) {
 //					Group id = m.Groups[1];
-//					V2.NodeData n = saveData.Nodes.Find(v => v.Id == id.ToString());
+//					Model.NodeData n = saveData.Nodes.Find(v => v.Id == id.ToString());
 //					UnityEngine.Assertions.Assert.IsNotNull(n);
 //
 //					n.NeedsRevisit = true;
@@ -218,7 +220,7 @@ namespace AssetBundleGraph.V2 {
 //					var loadPath = node.LoaderLoadPath[target];
 //					if(string.IsNullOrEmpty(loadPath)) {
 //						// ignore config file path update
-//						var notConfigFilePath = importedAssets.Where( path => !path.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
+//						var notConfigFilePath = importedAssets.Where( path => !path.Contains(Settings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
 //						if(!string.IsNullOrEmpty(notConfigFilePath)) {
 //							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
 //							node.NeedsRevisit = true;

@@ -5,7 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class ImportSettingsConfigurator {
 		
 		private readonly AssetImporter referenceImporter;

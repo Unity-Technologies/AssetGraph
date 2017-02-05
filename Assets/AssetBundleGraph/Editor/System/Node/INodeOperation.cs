@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	/**
 		interface of all nodes
 	*/
@@ -12,19 +14,19 @@ namespace AssetBundleGraph.V2 {
 			Prepare is the method which validates and perform necessary setups in order to build.
 		*/
 		void Prepare (BuildTarget target, 
-			V2.NodeData nodeData, 
+			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc);
 
 		/**
 			Build is the method which actualy performs the build. It is always called after Setup() is performed.
 		*/
 		void Build (BuildTarget target, 
-			V2.NodeData nodeData, 
+			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
-			Action<V2.NodeData, string, float> progressFunc);
+			Action<Model.NodeData, string, float> progressFunc);
 	}
 }

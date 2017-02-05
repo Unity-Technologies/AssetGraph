@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	class AssetReferenceDatabasePostprocessor : AssetPostprocessor 
 	{
 		static void OnPostprocessAllAssets (string[] importedAssets, 

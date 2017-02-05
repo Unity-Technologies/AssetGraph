@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph.V2 {
+using UnityEngine.AssetBundles.GraphTool;
+
+namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 	/*
 	 * connection data saved in/to Json
@@ -121,7 +123,7 @@ namespace AssetBundleGraph.V2 {
 			return json;
 		}
 
-//		public static bool CanConnect (V2.NodeData from, V2.NodeData to) {
+//		public static bool CanConnect (NodeData from, NodeData to) {
 //			switch (from.Kind) {
 //			case NodeKind.GROUPING_GUI:
 //				{
@@ -180,7 +182,7 @@ namespace AssetBundleGraph.V2 {
 		 * Checks deserialized ConnectionData, and make some changes if necessary
 		 * return false if any changes are perfomed.
 		 */
-		public bool Validate (List<V2.NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
 
 			var fromNode = allNodes.Find(n => n.Id == this.FromNodeId);
 			var toNode   = allNodes.Find(n => n.Id == this.ToNodeId);

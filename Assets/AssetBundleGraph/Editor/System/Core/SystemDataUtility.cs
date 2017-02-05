@@ -8,10 +8,12 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
 /**
 	static executor for AssetBundleGraph's data.
 */
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class SystemDataUtility {
 
 		/**
@@ -40,7 +42,7 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public static T CreateNodeOperationInstance<T> (string typeStr, V2.NodeData node) where T : INodeOperation {
+		public static T CreateNodeOperationInstance<T> (string typeStr, Model.NodeData node) where T : INodeOperation {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
 				throw new NodeException(node.Name + ": Failed to create instance:" + typeStr + " derived from:" + typeof(T), node.Id);
@@ -62,8 +64,8 @@ namespace AssetBundleGraph.V2 {
 
 		public static string GetProjectName () {
 			var assetsPath = Application.dataPath;
-			var projectFolderNameArray = assetsPath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
-			var projectFolderName = projectFolderNameArray[projectFolderNameArray.Length - 2] + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
+			var projectFolderNameArray = assetsPath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR);
+			var projectFolderName = projectFolderNameArray[projectFolderNameArray.Length - 2] + Model.Settings.UNITY_FOLDER_SEPARATOR;
 			return projectFolderName;
 		}
 

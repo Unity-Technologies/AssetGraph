@@ -5,7 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	/**
 		GUI Inspector to ConnectionGUI (Through ConnectionGUIInspectorHelper)
 	*/

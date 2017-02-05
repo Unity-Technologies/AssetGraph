@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	/*
 	 * ScriptableObject helper object to let NodeGUI edit from Inspector
 	 */

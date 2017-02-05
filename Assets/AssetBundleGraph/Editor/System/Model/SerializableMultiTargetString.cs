@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[Serializable] 
 	public class SerializableMultiTargetString {

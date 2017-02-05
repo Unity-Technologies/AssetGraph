@@ -6,9 +6,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using AssetBundleGraph.V2;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Bundle Configurator", 60)]
 	public class BundleConfigurator : INode {
@@ -16,10 +16,10 @@ namespace AssetBundleGraph.V2 {
 		[Serializable]
 		public class Variant {
 			[SerializeField] private string m_name;
-			[SerializeField] private ConnectionPointData m_point; // deprecated. it is here for compatibility
+			[SerializeField] private Model.ConnectionPointData m_point; // deprecated. it is here for compatibility
 			[SerializeField] private string m_pointId;
 
-			public Variant(string name, ConnectionPointData point) {
+			public Variant(string name, Model.ConnectionPointData point) {
 				m_name = name;
 				m_pointId = point.Id;
 			}
@@ -58,14 +58,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -77,7 +77,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -94,27 +94,27 @@ namespace AssetBundleGraph.V2 {
 			return false;
 		}
 
-		private void AddVariant(NodeData n, string name) {
+		private void AddVariant(Model.NodeData n, string name) {
 			var p = n.AddInputPoint(name);
 			var newEntry = new Variant(name, p);
 			m_variants.Add(newEntry);
 			UpdateVariant(n, newEntry);
 		}
 
-		private void RemoveVariant(NodeData n, Variant v) {
+		private void RemoveVariant(Model.NodeData n, Variant v) {
 			m_variants.Remove(v);
 			n.InputPoints.Remove(GetConnectionPoint(n, v));
 		}
 
-		private ConnectionPointData GetConnectionPoint(NodeData n, Variant v) {
-			ConnectionPointData p = n.InputPoints.Find(point => point.Id == v.ConnectionPointId);
+		private Model.ConnectionPointData GetConnectionPoint(Model.NodeData n, Variant v) {
+			Model.ConnectionPointData p = n.InputPoints.Find(point => point.Id == v.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 			return p;
 		}
 
-		private void UpdateVariant(NodeData n,Variant variant) {
+		private void UpdateVariant(Model.NodeData n,Variant variant) {
 
-			ConnectionPointData p = n.InputPoints.Find(v => v.Id == variant.ConnectionPointId);
+			Model.ConnectionPointData p = n.InputPoints.Find(v => v.Id == variant.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 
 			p.Label = variant.Name;
@@ -186,7 +186,7 @@ namespace AssetBundleGraph.V2 {
 							if(m_variants.Count == 0) {
 								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT, node, Vector2.zero, node.Data.InputPoints[0]));
 							}
-							AddVariant(node.Data, AssetBundleGraphSettings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
+							AddVariant(node.Data, Model.Settings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
 						}
 					}
 					if(removing != null) {
@@ -225,9 +225,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			int groupCount = 0;
@@ -252,11 +252,11 @@ namespace AssetBundleGraph.V2 {
 					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
 				},
 				() => {
-					throw new NodeException(node.Name + ":Bundle Name Template can not contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
+					throw new NodeException(node.Name + ":Bundle Name Template can not contain '" + Model.Settings.KEYWORD_WILDCARD.ToString() 
 						+ "' when group name is used for variants.", node.Id);
 				},
 				() => {
-					throw new NodeException(node.Name + ":Bundle Name Template must contain '" + AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString() 
+					throw new NodeException(node.Name + ":Bundle Name Template must contain '" + Model.Settings.KEYWORD_WILDCARD.ToString() 
 						+ "' when group name is not used for variants and expecting multiple incoming groups.", node.Id);
 				}
 			);
@@ -332,11 +332,11 @@ namespace AssetBundleGraph.V2 {
 		}
 		
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			Dictionary<string, List<AssetReference>> output = null;
 			if(Output != null) {
@@ -394,10 +394,10 @@ namespace AssetBundleGraph.V2 {
 			if (string.IsNullOrEmpty(bundleNameTemplate)){
 				NullOrEmpty();
 			}
-			if(useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) >= 0) {
+			if(useGroupAsVariants && bundleNameTemplate.IndexOf(Model.Settings.KEYWORD_WILDCARD) >= 0) {
 				InvalidBundleNameTemplateForVariants();
 			}
-			if(!useGroupAsVariants && bundleNameTemplate.IndexOf(AssetBundleGraphSettings.KEYWORD_WILDCARD) < 0 &&
+			if(!useGroupAsVariants && bundleNameTemplate.IndexOf(Model.Settings.KEYWORD_WILDCARD) < 0 &&
 				groupCount > 1) {
 				InvalidBundleNameTemplateForNotVariants();
 			}
@@ -420,13 +420,13 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public string GetBundleName(BuildTarget target, NodeData node, string groupKey) {
+		public string GetBundleName(BuildTarget target, Model.NodeData node, string groupKey) {
 			var bundleName = m_bundleNameTemplate[target];
 
 			if(m_useGroupAsVariants) {
 				return bundleName;
 			} else {
-				return bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
+				return bundleName.Replace(Model.Settings.KEYWORD_WILDCARD.ToString(), groupKey);
 			}
 		}
 	}

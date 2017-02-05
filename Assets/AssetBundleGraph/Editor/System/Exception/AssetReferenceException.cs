@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace AssetBundleGraph {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	public class AssetReferenceException : Exception {
 		public readonly string importFrom;

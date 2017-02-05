@@ -3,9 +3,9 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-using AssetBundleGraph;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[Serializable] 
 	public class MultiTargetSerializedInstance<T> where T: IJSONSerializable {

@@ -7,11 +7,13 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public static class TypeUtility {
 		public static readonly List<string> KeyTypes = new List<string>{
 			// empty
-			AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE,
+			Model.Settings.DEFAULT_FILTER_KEYTYPE,
 			
 			// importers
 			typeof(TextureImporter).ToString(),
@@ -94,7 +96,7 @@ namespace AssetBundleGraph.V2 {
 		 * Get type of asset from give path.
 		 */
 		public static Type GetTypeOfAsset (string assetPath) {
-			if (assetPath.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION)) {
+			if (assetPath.EndsWith(Model.Settings.UNITY_METAFILE_EXTENSION)) {
 				return typeof(string);
 			}
 
@@ -167,7 +169,7 @@ namespace AssetBundleGraph.V2 {
 			return null;
 		}
 
-		public static Type FindFirstIncomingAssetType(ConnectionPointData inputPoint) {
+		public static Type FindFirstIncomingAssetType(Model.ConnectionPointData inputPoint) {
 			var assetGroupEnum = AssetBundleGraphEditorWindow.EnumurateIncomingAssetGroups(inputPoint);
 			if(assetGroupEnum == null) {
 				return null;

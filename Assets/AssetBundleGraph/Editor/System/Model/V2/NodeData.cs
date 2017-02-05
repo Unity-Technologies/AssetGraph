@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using AssetBundleGraph;
+using UnityEngine.AssetBundles.GraphTool;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 	[Serializable]
 	public class FilterEntry {
@@ -157,13 +157,13 @@ namespace AssetBundleGraph.V2 {
 //			// adding defalut input point.
 //			// Loader does not take input
 //			if(kind != NodeKind.LOADER_GUI) {
-//				m_inputPoints.Add(new ConnectionPointData(AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL, this, true));
+//				m_inputPoints.Add(new ConnectionPointData(Settings.DEFAULT_INPUTPOINT_LABEL, this, true));
 //			}
 //
 //			// adding default output point.
 //			// Filter and Exporter does not have output.
 //			if(kind != NodeKind.FILTER_GUI && kind != NodeKind.EXPORTER_GUI) {
-//				m_outputPoints.Add(new ConnectionPointData(AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL, this, false));
+//				m_outputPoints.Add(new ConnectionPointData(Settings.DEFAULT_OUTPUTPOINT_LABEL, this, false));
 //			}
 //
 //			switch(m_kind) {
@@ -188,11 +188,11 @@ namespace AssetBundleGraph.V2 {
 //				break;
 //
 //			case NodeKind.GROUPING_GUI:
-//				m_groupingKeyword = new SerializableMultiTargetString(AssetBundleGraphSettings.GROUPING_KEYWORD_DEFAULT);
+//				m_groupingKeyword = new SerializableMultiTargetString(Settings.GROUPING_KEYWORD_DEFAULT);
 //				break;
 //
 //			case NodeKind.BUNDLECONFIG_GUI:
-//				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(AssetBundleGraphSettings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
+//				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 //				m_bundleConfigUseGroupAsVariants = false;
 //				m_variants = new List<Variant>();
 //				break;
@@ -350,7 +350,7 @@ namespace AssetBundleGraph.V2 {
 //			ConnectionPointData p = m_outputPoints.Find(v => v.Id == f.ConnectionPointId);
 //			UnityEngine.Assertions.Assert.IsNotNull(p);
 //
-//			if(f.FilterKeytype == AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+//			if(f.FilterKeytype == Settings.DEFAULT_FILTER_KEYTYPE) {
 //				p.Label = f.FilterKeyword;
 //			} else {
 //				var pointIndex = f.FilterKeytype.LastIndexOf('.');

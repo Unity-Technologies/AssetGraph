@@ -9,20 +9,22 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class PerformGraph {
 
-		public delegate void Output(ConnectionData destination, Dictionary<string, List<AssetReference>> outputGroupAsset);
-		public delegate void Perform(V2.NodeData data, IEnumerable<PerformGraph.AssetGroups> incoming, IEnumerable<ConnectionData> connectionsToOutput, Output outputFunc);
+		public delegate void Output(Model.ConnectionData destination, Dictionary<string, List<AssetReference>> outputGroupAsset);
+		public delegate void Perform(Model.NodeData data, IEnumerable<PerformGraph.AssetGroups> incoming, IEnumerable<Model.ConnectionData> connectionsToOutput, Output outputFunc);
 
 		public class Node {
-			public V2.NodeData data;
-			public V2.NodeData originalData;
+			public Model.NodeData data;
+			public Model.NodeData originalData;
 			public List<AssetStream> streamFrom;
 			public List<AssetStream> streamTo;
 			public bool dirty;
 
-			public Node(V2.NodeData d) {
+			public Node(Model.NodeData d) {
 				data = d;
 				// data instance may be modified over time, so keep the state of data to detect changes
 				originalData = d.Duplicate(true);
@@ -67,13 +69,13 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public class AssetStream {
-			public ConnectionData connection;
+			public Model.ConnectionData connection;
 			public Node nodeFrom;
 			public Node nodeTo;
 			public Dictionary<string, List<AssetReference>> assetGroups;
 			private Dictionary<string, List<AssetReference>> output;
 
-			public AssetStream(ConnectionData c, Node f, Node t, AssetReferenceStreamManager m) {
+			public AssetStream(Model.ConnectionData c, Node f, Node t, AssetReferenceStreamManager m) {
 				connection = c;
 				nodeFrom = f;
 				nodeTo = t;
@@ -162,9 +164,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public class AssetGroups {
-			public ConnectionData connection;
+			public Model.ConnectionData connection;
 			public Dictionary<string, List<AssetReference>> assetGroups;
-			public AssetGroups(ConnectionData c, Dictionary<string, List<AssetReference>> ag) {
+			public AssetGroups(Model.ConnectionData c, Dictionary<string, List<AssetReference>> ag) {
 				connection = c;
 				assetGroups = ag;
 			}
@@ -184,7 +186,7 @@ namespace AssetBundleGraph.V2 {
 
 		public void BuildGraphFromSaveData(BuildTarget target, PerformGraph old) {
 
-			var saveData = V2.SaveData.Data;
+			var saveData = Model.SaveData.Data;
 
 			m_target = target;
 
@@ -211,12 +213,12 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		private void SetupNode (V2.NodeData node) {
+		private void SetupNode (Model.NodeData node) {
 			Node n = new Node(node);
 			m_nodes.Add(n);
 		}
 
-		private void SetupStream (ConnectionData conn) {
+		private void SetupStream (Model.ConnectionData conn) {
 
 			Node fromNode = m_nodes.Find(n => n.data.Id == conn.FromNodeId);
 			Node toNode = m_nodes.Find(n => n.data.Id == conn.ToNodeId);
@@ -303,11 +305,11 @@ namespace AssetBundleGraph.V2 {
 
 			//root node
 			if(n.streamFrom.Count == 0) {
-				IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
+				IEnumerable<Model.ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
 
 				LogUtility.Logger.Log(n.data.Name + " performed(root)");
 				performFunc(n.data, null, outputConnections,  
-					(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+					(Model.ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
 					{
 						if(destination != null) {
 							AssetStream output = n.streamTo.Find(v => v.connection == destination);
@@ -323,12 +325,12 @@ namespace AssetBundleGraph.V2 {
 				);
 			} else {
 				if(n.streamTo.Count > 0) {
-					IEnumerable<ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
+					IEnumerable<Model.ConnectionData> outputConnections = n.streamTo.Select(v => v.connection);
 					IEnumerable<AssetGroups> inputs = n.streamFrom.Select(v => new AssetGroups(v.connection, v.assetGroups));
 
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} perfomed", n.data.Name);
 					performFunc(n.data, inputs, outputConnections, 
-						(ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
+						(Model.ConnectionData destination, Dictionary<string, List<AssetReference>> newOutput) => 
 						{
 							Assert.IsNotNull(destination);
 							AssetStream output = n.streamTo.Find(v => v.connection == destination);
@@ -398,14 +400,14 @@ namespace AssetBundleGraph.V2 {
 		/*
 		 * Verify nodes does not create cycle
 		 */
-		private void ValidateLoopConnection(V2.SaveData saveData) {
+		private void ValidateLoopConnection(Model.SaveData saveData) {
 			var leaf = saveData.CollectAllLeafNodes();
 			foreach (var leafNode in leaf) {
-				MarkAndTraverseParent(saveData, leafNode, new List<ConnectionData>(), new List<V2.NodeData>());
+				MarkAndTraverseParent(saveData, leafNode, new List<Model.ConnectionData>(), new List<Model.NodeData>());
 			}
 		}
 
-		private void MarkAndTraverseParent(V2.SaveData saveData, V2.NodeData current, List<ConnectionData> visitedConnections, List<V2.NodeData> visitedNode) {
+		private void MarkAndTraverseParent(Model.SaveData saveData, Model.NodeData current, List<Model.ConnectionData> visitedConnections, List<Model.NodeData> visitedNode) {
 
 //			Assert.IsNotNull(current);
 			if(current == null) {

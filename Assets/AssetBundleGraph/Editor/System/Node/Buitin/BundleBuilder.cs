@@ -6,7 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Bundle Builder", 70)]
 	public class BundleBuilder : INode {
@@ -27,14 +29,14 @@ namespace AssetBundleGraph.V2 {
 
 		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -46,7 +48,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -97,7 +99,7 @@ namespace AssetBundleGraph.V2 {
 
 					bool isSomethingDisabled = isDisableWriteTypeTreeEnabled || isIgnoreTypeTreeChangesEnabled;
 
-					foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
+					foreach (var option in Model.Settings.BundleOptionSettings) {
 
 						// contains keyword == enabled. if not, disabled.
 						bool isEnabled = (bundleOptions & (int)option.option) != 0;
@@ -129,9 +131,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			// BundleBuilder do nothing without incoming connections
@@ -174,7 +176,7 @@ namespace AssetBundleGraph.V2 {
 					foreach(var v in bundleVariants[name]) {
 						string bundleName = (string.IsNullOrEmpty(v))? name : name + "." + v;
 						AssetReference bundle = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName) );
-						AssetReference manifest = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName + AssetBundleGraphSettings.MANIFEST_FOOTER) );
+						AssetReference manifest = AssetReferenceDatabase.GetAssetBundleReference( FileUtility.PathCombine(bundleOutputDir, bundleName + Model.Settings.MANIFEST_FOOTER) );
 						outputDict[key].Add(bundle);
 						outputDict[key].Add(manifest);
 					}
@@ -187,11 +189,11 @@ namespace AssetBundleGraph.V2 {
 		}
 		
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;

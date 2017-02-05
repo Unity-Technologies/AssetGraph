@@ -6,14 +6,14 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using AssetBundleGraph.V2;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Filter", 20)]
 	public class Filter : INode {
 
-		[SerializeField] private List<FilterEntry> m_filter;
+		[SerializeField] private List<Model.FilterEntry> m_filter;
 
 		public string ActiveStyle {
 			get {
@@ -27,14 +27,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -46,7 +46,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -91,7 +91,7 @@ namespace AssetBundleGraph.V2 {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				GUILayout.Label("Filter Settings:");
-				FilterEntry removing = null;
+				Model.FilterEntry removing = null;
 				for (int i= 0; i < m_filter.Count; ++i) {
 					var cond = m_filter[i];
 
@@ -146,8 +146,8 @@ namespace AssetBundleGraph.V2 {
 				if (GUILayout.Button("+")) {
 					using(new RecordUndoScope("Add Filter Condition", node)){
 						AddFilterCondition(node.Data,
-							AssetBundleGraphSettings.DEFAULT_FILTER_KEYWORD, 
-							AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE);
+							Model.Settings.DEFAULT_FILTER_KEYWORD, 
+							Model.Settings.DEFAULT_FILTER_KEYTYPE);
 					}
 				}
 
@@ -165,9 +165,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			ValidateOverlappingFilterCondition(node, true);
@@ -175,18 +175,18 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
-		private void FilterAssets (NodeData node, 
+		private void FilterAssets (Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			if(connectionsToOutput == null || incoming == null || Output == null) {
@@ -209,7 +209,7 @@ namespace AssetBundleGraph.V2 {
 
 							bool match = keywordMatch;
 
-							if(keywordMatch && filter.FilterKeytype != AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) 
+							if(keywordMatch && filter.FilterKeytype != Model.Settings.DEFAULT_FILTER_KEYTYPE) 
 							{
 								var assumedType = a.filterType;
 								match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
@@ -236,30 +236,30 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void AddFilterCondition(NodeData n, string keyword, string keytype) {
+		public void AddFilterCondition(Model.NodeData n, string keyword, string keytype) {
 			var point = n.AddOutputPoint(keyword);
-			var newEntry = new FilterEntry(keyword, keytype, point);
+			var newEntry = new Model.FilterEntry(keyword, keytype, point);
 			m_filter.Add(newEntry);
 			UpdateFilterEntry(n, newEntry);
 		}
 
-		public void RemoveFilterCondition(NodeData n, FilterEntry f) {
+		public void RemoveFilterCondition(Model.NodeData n, Model.FilterEntry f) {
 			m_filter.Remove(f);
 			n.OutputPoints.Remove(GetConnectionPoint(n, f));
 		}
 
-		public ConnectionPointData GetConnectionPoint(NodeData n, FilterEntry f) {
-			ConnectionPointData p = n.OutputPoints.Find(v => v.Id == f.ConnectionPointId);
+		public Model.ConnectionPointData GetConnectionPoint(Model.NodeData n, Model.FilterEntry f) {
+			Model.ConnectionPointData p = n.OutputPoints.Find(v => v.Id == f.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 			return p;
 		}
 
-		public void UpdateFilterEntry(NodeData n, FilterEntry f) {
+		public void UpdateFilterEntry(Model.NodeData n, Model.FilterEntry f) {
 
-			ConnectionPointData p = n.OutputPoints.Find(v => v.Id == f.ConnectionPointId);
+			Model.ConnectionPointData p = n.OutputPoints.Find(v => v.Id == f.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 
-			if(f.FilterKeytype == AssetBundleGraphSettings.DEFAULT_FILTER_KEYTYPE) {
+			if(f.FilterKeytype == Model.Settings.DEFAULT_FILTER_KEYTYPE) {
 				p.Label = f.FilterKeyword;
 			} else {
 				var pointIndex = f.FilterKeytype.LastIndexOf('.');
@@ -268,7 +268,7 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public bool ValidateOverlappingFilterCondition(NodeData n, bool throwException) {
+		public bool ValidateOverlappingFilterCondition(Model.NodeData n, bool throwException) {
 
 			var conditionGroup = m_filter.Select(v => v).GroupBy(v => v.Hash).ToList();
 			var overlap = conditionGroup.Find(v => v.Count() > 1);

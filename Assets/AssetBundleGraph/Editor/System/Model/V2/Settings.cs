@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 
-namespace AssetBundleGraph.V2 {
-	public class AssetBundleGraphSettings {
+using UnityEngine.AssetBundles.GraphTool;
+
+namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
+	public class Settings {
 		/*
 			if true, ignore .meta files inside AssetBundleGraph.
 		*/
@@ -98,18 +100,6 @@ namespace AssetBundleGraph.V2 {
 		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
 		public const string MENU_EXPORTER_NAME = "Exporter";
 
-		public static Dictionary<NodeKind, string> DEFAULT_NODE_NAME = new Dictionary<NodeKind, string>{
-			{NodeKind.LOADER_GUI, "Loader"},
-			{NodeKind.FILTER_GUI, "Filter"},
-			{NodeKind.IMPORTSETTING_GUI, "ImportSetting"},
-			{NodeKind.MODIFIER_GUI, "Modifier"},
-			{NodeKind.GROUPING_GUI, "Grouping"},
-			{NodeKind.PREFABBUILDER_GUI, "PrefabBuilder"},
-			{NodeKind.BUNDLECONFIG_GUI, "BundleConfig"},
-			{NodeKind.BUNDLEBUILDER_GUI, "BundleBuilder"},
-			{NodeKind.EXPORTER_GUI, "Exporter"}
-		};
-
 		/*
 			data key for AssetBundleGraph.json
 		*/
@@ -130,10 +120,6 @@ namespace AssetBundleGraph.V2 {
 		public const string FILTER_KEYWORD_WILDCARD = "*";
 
 		public const string NODE_INPUTPOINT_FIXED_LABEL = "FIXED_INPUTPOINT_ID";
-
-		public static NodeKind NodeKindFromString (string val) {
-			return (NodeKind)Enum.Parse(typeof(NodeKind), val);
-		}
 
 		public class GUI {
 			public const string RESOURCE_BASEPATH = "Assets/AssetBundleGraph/Editor/GUI/GraphicResources/";

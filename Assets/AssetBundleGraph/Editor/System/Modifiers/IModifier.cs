@@ -7,9 +7,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-using AssetBundleGraph.V2;
+using UnityEngine.AssetBundles.GraphTool;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	/**
 	 * IModifier is an interface which modifies incoming assets.

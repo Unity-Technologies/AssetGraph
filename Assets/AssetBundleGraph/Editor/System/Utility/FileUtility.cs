@@ -6,8 +6,9 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class FileUtility {
 		public static void RemakeDirectory (string localFolderPath) {
 			if (Directory.Exists(localFolderPath)) Directory.Delete(localFolderPath, true);
@@ -34,17 +35,17 @@ namespace AssetBundleGraph.V2 {
 
 		public static void DeleteFileThenDeleteFolderIfEmpty (string localTargetFilePath) {			
 			File.Delete(localTargetFilePath);
-			File.Delete(localTargetFilePath + AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION);
+			File.Delete(localTargetFilePath + Model.Settings.UNITY_METAFILE_EXTENSION);
 			var directoryPath = Directory.GetParent(localTargetFilePath).FullName;
 			var restFiles = GetFilePathsInFolder(directoryPath);
 			if (!restFiles.Any()) {
 				Directory.Delete(directoryPath, true);
-				File.Delete(directoryPath + AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION);
+				File.Delete(directoryPath + Model.Settings.UNITY_METAFILE_EXTENSION);
 			}
 		}
 
 		// Get all files under given path, including files in child folders
-		public static List<string> GetAllFilePathsInFolder (string localFolderPath, bool includeHidden=false, bool includeMeta=!AssetBundleGraphSettings.IGNORE_META) 
+		public static List<string> GetAllFilePathsInFolder (string localFolderPath, bool includeHidden=false, bool includeMeta=!Model.Settings.IGNORE_META) 
 		{
 			var filePaths = new List<string>();
 			
@@ -61,25 +62,25 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		// Get files under given path
-		public static List<string> GetFilePathsInFolder (string folderPath, bool includeHidden=false, bool includeMeta=!AssetBundleGraphSettings.IGNORE_META) {
+		public static List<string> GetFilePathsInFolder (string folderPath, bool includeHidden=false, bool includeMeta=!Model.Settings.IGNORE_META) {
 			var filePaths = Directory.GetFiles(folderPath).Select(p=>p);
 
 			if(!includeHidden) {
-				filePaths = filePaths.Where(path => !(Path.GetFileName(path).StartsWith(AssetBundleGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)));
+				filePaths = filePaths.Where(path => !(Path.GetFileName(path).StartsWith(Model.Settings.DOTSTART_HIDDEN_FILE_HEADSTRING)));
 			}
 			if (!includeMeta) {
 				filePaths = filePaths.Where(path => !FileUtility.IsMetaFile(path));
 			}
 
 			// Directory.GetFiles() returns platform dependent delimiter, so make sure replace with "/"
-			if( Path.DirectorySeparatorChar != AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR ) {
-				filePaths =	filePaths.Select(filePath => filePath.Replace(Path.DirectorySeparatorChar.ToString(), AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString()));
+			if( Path.DirectorySeparatorChar != Model.Settings.UNITY_FOLDER_SEPARATOR ) {
+				filePaths =	filePaths.Select(filePath => filePath.Replace(Path.DirectorySeparatorChar.ToString(), Model.Settings.UNITY_FOLDER_SEPARATOR.ToString()));
 			}
 
 			return filePaths.ToList();
 		}
 
-		private static void GetFilePathsRecursively (string localFolderPath, List<string> filePaths, bool includeHidden=false, bool includeMeta=!AssetBundleGraphSettings.IGNORE_META) {
+		private static void GetFilePathsRecursively (string localFolderPath, List<string> filePaths, bool includeHidden=false, bool includeMeta=!Model.Settings.IGNORE_META) {
 			var folders = Directory.GetDirectories(localFolderPath);
 
 			foreach (var folder in folders) {
@@ -110,15 +111,15 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		private static string _PathCombine (string head, string tail) {
-			if (!head.EndsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) {
-				head = head + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
+			if (!head.EndsWith(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString())) {
+				head = head + Model.Settings.UNITY_FOLDER_SEPARATOR;
 			}
 			
 			if (string.IsNullOrEmpty(tail)) {
 				return head;
 			}
 
-			if (tail.StartsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) {
+			if (tail.StartsWith(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString())) {
 				tail = tail.Substring(1);
 			}
 
@@ -138,37 +139,37 @@ namespace AssetBundleGraph.V2 {
 
 		public static string ProjectPathWithSlash () {
 			var assetPath = Application.dataPath;
-			return Directory.GetParent(assetPath).ToString() + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
+			return Directory.GetParent(assetPath).ToString() + Model.Settings.UNITY_FOLDER_SEPARATOR;
 		}
 
 		public static bool IsMetaFile (string filePath) {
-			if (filePath.EndsWith(AssetBundleGraphSettings.UNITY_METAFILE_EXTENSION)) return true;
+			if (filePath.EndsWith(Model.Settings.UNITY_METAFILE_EXTENSION)) return true;
 			return false;
 		}
 
 		public static bool ContainsHiddenFiles (string filePath) {
-			var pathComponents = filePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
+			var pathComponents = filePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR);
 			foreach (var path in pathComponents) {
-				if (path.StartsWith(AssetBundleGraphSettings.DOTSTART_HIDDEN_FILE_HEADSTRING)) return true;
+				if (path.StartsWith(Model.Settings.DOTSTART_HIDDEN_FILE_HEADSTRING)) return true;
 			}
 			return false;
 		}
 
-		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, V2.NodeData node) {
-			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, Model.NodeData node) {
+			var cacheDir = FileUtility.PathCombine(Model.Settings.PREFABBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 
 			if (!Directory.Exists(cacheDir)) {
 				Directory.CreateDirectory(cacheDir);
 			}
-			if (!cacheDir.EndsWith(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString())) {
-				cacheDir = cacheDir + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString();
+			if (!cacheDir.EndsWith(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString())) {
+				cacheDir = cacheDir + Model.Settings.UNITY_FOLDER_SEPARATOR.ToString();
 			}
 			return cacheDir;
 		}
 
 
-		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, V2.NodeData node, bool remake = false) {
-			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, node.Id, BuildTargetUtility.TargetToAssetBundlePlatformName(t));
+		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, Model.NodeData node, bool remake = false) {
+			var cacheDir = FileUtility.PathCombine(Model.Settings.BUNDLEBUILDER_CACHE_PLACE, node.Id, BuildTargetUtility.TargetToAssetBundlePlatformName(t));
 
 			if (!Directory.Exists(cacheDir)) {
 				Directory.CreateDirectory(cacheDir);
@@ -183,13 +184,13 @@ namespace AssetBundleGraph.V2 {
 
 		public static string GetImportSettingTemplateFilePath(AssetReference a) {
 			if(a.filterType == typeof(ModelImporter)) {
-				return AssetBundleGraphSettings.SETTINGTEMPLATE_FILE_MODEL;
+				return Model.Settings.SETTINGTEMPLATE_FILE_MODEL;
 			}
 			if(a.filterType == typeof(AudioImporter)) {
-				return AssetBundleGraphSettings.SETTINGTEMPLATE_FILE_AUDIO;
+				return Model.Settings.SETTINGTEMPLATE_FILE_AUDIO;
 			}
 			if(a.filterType == typeof(TextureImporter)) {
-				return AssetBundleGraphSettings.SETTINGTEMPLATE_FILE_TEXTURE;
+				return Model.Settings.SETTINGTEMPLATE_FILE_TEXTURE;
 			}
 			return null;
 		}

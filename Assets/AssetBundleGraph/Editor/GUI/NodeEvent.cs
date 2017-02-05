@@ -1,6 +1,8 @@
 using UnityEngine;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class NodeEvent {
 		public enum EventType : int {
 			EVENT_NONE,
@@ -28,11 +30,11 @@ namespace AssetBundleGraph.V2 {
 
 		public readonly EventType eventType;
 		public readonly NodeGUI eventSourceNode;
-		public readonly ConnectionPointData point;
+		public readonly Model.ConnectionPointData point;
 		public readonly Vector2 globalMousePosition;
 		public readonly string message;
 
-		public NodeEvent (EventType type, NodeGUI node, Vector2 localMousePos, ConnectionPointData point) {
+		public NodeEvent (EventType type, NodeGUI node, Vector2 localMousePos, Model.ConnectionPointData point) {
 			this.eventType = type;
 			this.eventSourceNode = node;
 			this.point = point;

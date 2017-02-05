@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-using AssetBundleGraph;
-
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	public interface IJSONSerializable {
 		/**

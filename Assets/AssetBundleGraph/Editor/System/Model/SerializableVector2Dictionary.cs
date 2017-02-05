@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	/*
 		string:Vector2 pseudo dictionary to support Undo

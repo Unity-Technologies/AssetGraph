@@ -1,7 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	/*
 	 * ScriptableObject helper object to let ConnectionGUI edit from Inspector
 	 */

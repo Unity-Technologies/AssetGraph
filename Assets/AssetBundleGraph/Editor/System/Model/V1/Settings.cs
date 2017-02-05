@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 
+using UnityEngine.AssetBundles.GraphTool;
+
 namespace AssetBundleGraph {
-	public class AssetBundleGraphSettings {
+	public class Settings {
 		/*
 			if true, ignore .meta files inside AssetBundleGraph.
 		*/

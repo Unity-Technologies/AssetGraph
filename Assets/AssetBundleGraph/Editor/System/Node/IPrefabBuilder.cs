@@ -7,7 +7,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	/**
 	 * IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.

@@ -5,13 +5,15 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	[Serializable] 
 	public class ConnectionGUI {
-		[SerializeField] private ConnectionData m_data;
+		[SerializeField] private Model.ConnectionData m_data;
 
-		[SerializeField] private ConnectionPointData m_outputPoint;
-		[SerializeField] private ConnectionPointData m_inputPoint;
+		[SerializeField] private Model.ConnectionPointData m_outputPoint;
+		[SerializeField] private Model.ConnectionPointData m_inputPoint;
 		[SerializeField] private ConnectionGUIInspectorHelper m_inspector;
 
 		[SerializeField] private string connectionButtonStyle;
@@ -43,19 +45,19 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public ConnectionPointData OutputPoint {
+		public Model.ConnectionPointData OutputPoint {
 			get {
 				return m_outputPoint;
 			}
 		}
 
-		public ConnectionPointData InputPoint {
+		public Model.ConnectionPointData InputPoint {
 			get {
 				return m_inputPoint;
 			}
 		}
 
-		public ConnectionData Data {
+		public Model.ConnectionData Data {
 			get {
 				return m_data;
 			}
@@ -73,7 +75,7 @@ namespace AssetBundleGraph.V2 {
 
 		private Rect m_buttonRect;
 
-		public static ConnectionGUI LoadConnection (ConnectionData data, ConnectionPointData output, ConnectionPointData input) {
+		public static ConnectionGUI LoadConnection (Model.ConnectionData data, Model.ConnectionPointData output, Model.ConnectionPointData input) {
 			return new ConnectionGUI(
 				data,
 				output,
@@ -81,15 +83,15 @@ namespace AssetBundleGraph.V2 {
 			);
 		}
 
-		public static ConnectionGUI CreateConnection (string label, ConnectionPointData output, ConnectionPointData input) {
+		public static ConnectionGUI CreateConnection (string label, Model.ConnectionPointData output, Model.ConnectionPointData input) {
 			return new ConnectionGUI(
-				new ConnectionData(label, output, input),
+				new Model.ConnectionData(label, output, input),
 				output,
 				input
 			);
 		}
 
-		private ConnectionGUI (ConnectionData data, ConnectionPointData output, ConnectionPointData input) {
+		private ConnectionGUI (Model.ConnectionData data, Model.ConnectionPointData output, Model.ConnectionPointData input) {
 
 			UnityEngine.Assertions.Assert.IsTrue(output.IsOutput, "Given Output point is not output.");
 			UnityEngine.Assertions.Assert.IsTrue(input.IsInput,   "Given Input point is not input.");
@@ -130,7 +132,7 @@ namespace AssetBundleGraph.V2 {
 			var centerPointV3 = new Vector3(centerPoint.x, centerPoint.y, 0f);
 
 			var pointDistance = (endPoint.x - startPoint.x) / 3f;
-			if (pointDistance < AssetBundleGraphSettings.GUI.CONNECTION_CURVE_LENGTH) pointDistance = AssetBundleGraphSettings.GUI.CONNECTION_CURVE_LENGTH;
+			if (pointDistance < Model.Settings.GUI.CONNECTION_CURVE_LENGTH) pointDistance = Model.Settings.GUI.CONNECTION_CURVE_LENGTH;
 
 			var startTan = new Vector3(startPoint.x + pointDistance, startPoint.y, 0f);
 			var endTan = new Vector3(endPoint.x - pointDistance, endPoint.y, 0f);
@@ -156,15 +158,15 @@ namespace AssetBundleGraph.V2 {
 				labelStyle.alignment = TextAnchor.MiddleLeft;
 
 				switch (Label){
-					case AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL: {
+				case Model.Settings.DEFAULT_OUTPUTPOINT_LABEL: {
 						// show nothing
 						break;
 					}
 					
-					case AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL: {
-						var labelWidth = labelStyle.CalcSize(new GUIContent(AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL));
+				case Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL: {
+						var labelWidth = labelStyle.CalcSize(new GUIContent(Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL));
 						var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, AssetBundleGraphSettings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL, labelStyle);
+						Handles.Label(labelPointV3, Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL, labelStyle);
 						break;
 					}
 
@@ -214,7 +216,7 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public bool IsEqual (ConnectionPointData from, ConnectionPointData to) {
+		public bool IsEqual (Model.ConnectionPointData from, Model.ConnectionPointData to) {
 			return (m_outputPoint == from && m_inputPoint == to);
 		}
 		
@@ -233,7 +235,7 @@ namespace AssetBundleGraph.V2 {
 	}
 
 	public static class NodeEditor_ConnectionListExtension {
-		public static bool ContainsConnection(this List<ConnectionGUI> connections, ConnectionPointData output, ConnectionPointData input) {
+		public static bool ContainsConnection(this List<ConnectionGUI> connections, Model.ConnectionPointData output, Model.ConnectionPointData input) {
 			foreach (var con in connections) {
 				if (con.IsEqual(output, input)) {
 					return true;

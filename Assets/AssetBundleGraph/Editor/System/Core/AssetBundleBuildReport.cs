@@ -8,10 +8,12 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
 /**
 	static executor for AssetBundleGraph's data.
 */
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleBuildReport {
 
 		private class AssetBundleBuildReportManager {
@@ -71,14 +73,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		private V2.NodeData m_node;
+		private Model.NodeData m_node;
 		private AssetBundleManifest m_manifest;
 		private AssetBundleBuild[] m_bundleBuild;
 		private List<AssetReference> m_builtBundles;
 		private Dictionary<string, List<AssetReference>> m_assetGroups;
 		private Dictionary<string, List<string>> m_bundleNamesAndVariants;
 
-		public V2.NodeData Node {
+		public Model.NodeData Node {
 			get {
 				return m_node;
 			}
@@ -122,7 +124,7 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public AssetBundleBuildReport(
-			V2.NodeData node,
+			Model.NodeData node,
 			AssetBundleManifest m, 
 			AssetBundleBuild[] bb, 
 			List<AssetReference> builtBundles,
@@ -159,7 +161,7 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		private V2.NodeData m_nodeData;
+		private Model.NodeData m_nodeData;
 
 		private List<Entry> m_exportedItems;
 		private List<ErrorEntry> m_failedItems;
@@ -176,13 +178,13 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public V2.NodeData Node {
+		public Model.NodeData Node {
 			get {
 				return m_nodeData;
 			}
 		}
 
-		public ExportReport(V2.NodeData node) {
+		public ExportReport(Model.NodeData node) {
 			m_nodeData = node;
 
 			m_exportedItems = new List<Entry>();

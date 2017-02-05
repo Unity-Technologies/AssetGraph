@@ -6,12 +6,18 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-using AssetBundleGraph.V2;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Exporter", 80)]
 	public class Exporter : INode {
+
+		public enum ExportOption : int {
+			ErrorIfNoExportDirectoryFound,
+			AutomaticallyCreateIfNoExportDirectoryFound,
+			DeleteAndRecreateExportDirectory
+		}
 
 		[SerializeField] private SerializableMultiTargetString m_exportPath;
 		[SerializeField] private SerializableMultiTargetInt m_exportOption;
@@ -28,14 +34,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -47,7 +53,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -94,8 +100,8 @@ namespace AssetBundleGraph.V2 {
 				} );
 
 				using (disabledScope) {
-					ExporterExportOption opt = (ExporterExportOption)m_exportOption[currentEditingGroup];
-					var newOption = (ExporterExportOption)EditorGUILayout.EnumPopup("Export Option", opt);
+					ExportOption opt = (ExportOption)m_exportOption[currentEditingGroup];
+					var newOption = (ExportOption)EditorGUILayout.EnumPopup("Export Option", opt);
 					if(newOption != opt) {
 						using(new RecordUndoScope("Change Export Option", node, true)){
 							m_exportOption[currentEditingGroup] = (int)newOption;
@@ -153,9 +159,9 @@ namespace AssetBundleGraph.V2 {
 		}
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			ValidateExportPath(
@@ -165,7 +171,7 @@ namespace AssetBundleGraph.V2 {
 					throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
 				},
 				() => {
-					if( m_exportOption[target] == (int)ExporterExportOption.ErrorIfNoExportDirectoryFound ) {
+					if( m_exportOption[target] == (int)ExportOption.ErrorIfNoExportDirectoryFound ) {
 						throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + m_exportPath[target], node.Id);
 					}
 				}
@@ -173,20 +179,20 @@ namespace AssetBundleGraph.V2 {
 		}
 		
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			Export(target, node, incoming, connectionsToOutput, progressFunc);
 		}
 
 		private void Export (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
-			Action<NodeData, string, float> progressFunc) 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			if(incoming == null) {
 				return;
@@ -194,13 +200,13 @@ namespace AssetBundleGraph.V2 {
 
 			var exportPath = FileUtility.GetPathWithProjectPath(m_exportPath[target]);
 
-			if(m_exportOption[target] == (int)ExporterExportOption.DeleteAndRecreateExportDirectory) {
+			if(m_exportOption[target] == (int)ExportOption.DeleteAndRecreateExportDirectory) {
 				if (Directory.Exists(exportPath)) {
 					Directory.Delete(exportPath, true);
 				}
 			}
 
-			if(m_exportOption[target] != (int)ExporterExportOption.ErrorIfNoExportDirectoryFound) {
+			if(m_exportOption[target] != (int)ExportOption.ErrorIfNoExportDirectoryFound) {
 				if (!Directory.Exists(exportPath)) {
 					Directory.CreateDirectory(exportPath);
 				}
@@ -216,14 +222,14 @@ namespace AssetBundleGraph.V2 {
 						var destinationSourcePath = source.importFrom;
 
 						// in bundleBulider, use platform-package folder for export destination.
-						if (destinationSourcePath.StartsWith(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE)) {
-							var depth = AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR).Length + 1;
+						if (destinationSourcePath.StartsWith(Model.Settings.BUNDLEBUILDER_CACHE_PLACE)) {
+							var depth = Model.Settings.BUNDLEBUILDER_CACHE_PLACE.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length + 1;
 
-							var splitted = destinationSourcePath.Split(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR);
+							var splitted = destinationSourcePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR);
 							var reducedArray = new string[splitted.Length - depth];
 
 							Array.Copy(splitted, depth, reducedArray, 0, reducedArray.Length);
-							var fromDepthToEnd = string.Join(AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
+							var fromDepthToEnd = string.Join(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
 
 							destinationSourcePath = fromDepthToEnd;
 						}

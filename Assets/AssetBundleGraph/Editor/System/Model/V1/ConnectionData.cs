@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+using UnityEngine.AssetBundles.GraphTool;
+
 namespace AssetBundleGraph {
 
 	/*

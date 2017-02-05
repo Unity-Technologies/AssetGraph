@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class NodeGUIUtility {
 
 		public struct PlatformButton {
@@ -32,7 +33,7 @@ namespace AssetBundleGraph.V2 {
 		public static Texture2D inputPointTex {
 			get {
 				if(NodeSingleton.s.inputPointTex == null) {
-					NodeSingleton.s.inputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_INPUT_BG);
+					NodeSingleton.s.inputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_INPUT_BG);
 				}
 				return NodeSingleton.s.inputPointTex;
 			}
@@ -41,7 +42,7 @@ namespace AssetBundleGraph.V2 {
 		public static Texture2D outputPointTex {
 			get {
 				if(NodeSingleton.s.outputPointTex == null) {
-					NodeSingleton.s.outputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_OUTPUT_BG);
+					NodeSingleton.s.outputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_OUTPUT_BG);
 				}
 				return NodeSingleton.s.outputPointTex;
 			}
@@ -50,7 +51,7 @@ namespace AssetBundleGraph.V2 {
 		public static Texture2D enablePointMarkTex {
 			get {
 				if(NodeSingleton.s.enablePointMarkTex == null) {
-					NodeSingleton.s.enablePointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_ENABLE);
+					NodeSingleton.s.enablePointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_ENABLE);
 				}
 				return NodeSingleton.s.enablePointMarkTex;
 			}
@@ -59,7 +60,7 @@ namespace AssetBundleGraph.V2 {
 		public static Texture2D inputPointMarkTex {
 			get {
 				if(NodeSingleton.s.inputPointMarkTex == null) {
-					NodeSingleton.s.inputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_INPUT);
+					NodeSingleton.s.inputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_INPUT);
 				}
 				return NodeSingleton.s.inputPointMarkTex;
 			}
@@ -68,7 +69,7 @@ namespace AssetBundleGraph.V2 {
 		public static Texture2D outputPointMarkTex {
 			get {
 				if(NodeSingleton.s.outputPointMarkTex == null) {
-					NodeSingleton.s.outputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT);
+					NodeSingleton.s.outputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT);
 				}
 				return NodeSingleton.s.outputPointMarkTex;
 			}
@@ -77,7 +78,7 @@ namespace AssetBundleGraph.V2 {
 		public static Texture2D outputPointMarkConnectedTex {
 			get {
 				if(NodeSingleton.s.outputPointMarkConnectedTex == null) {
-					NodeSingleton.s.outputPointMarkConnectedTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(AssetBundleGraphSettings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
+					NodeSingleton.s.outputPointMarkConnectedTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
 				}
 				return NodeSingleton.s.outputPointMarkConnectedTex;
 			}
@@ -138,43 +139,6 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public static Dictionary<NodeKind, string> SelectedStyle {
-			get {
-				if(NodeSingleton.s.selectedStyle == null) {
-					NodeSingleton.s.selectedStyle = new Dictionary<NodeKind, string>() {
-						{NodeKind.LOADER_GUI, 			"flow node 0 on"},
-						{NodeKind.EXPORTER_GUI, 		"flow node 0 on"},
-						{NodeKind.FILTER_GUI, 			"flow node 1 on"},
-						{NodeKind.IMPORTSETTING_GUI,	"flow node 2 on"},
-						{NodeKind.GROUPING_GUI, 		"flow node 3 on"},
-						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4 on"},
-						{NodeKind.BUNDLECONFIG_GUI, 		"flow node 5 on"},
-						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6 on"},
-						{NodeKind.MODIFIER_GUI, 		"flow node 2 on"}
-					};
-				}
-				return NodeSingleton.s.selectedStyle;
-			}
-		}
-
-		public static Dictionary<NodeKind, string> UnselectedStyle {
-			get {
-				if(NodeSingleton.s.unselectedStyle == null) {
-					NodeSingleton.s.unselectedStyle = new Dictionary<NodeKind, string>() {
-						{NodeKind.LOADER_GUI, 			"flow node 0"},
-						{NodeKind.EXPORTER_GUI, 		"flow node 0"},
-						{NodeKind.FILTER_GUI, 			"flow node 1"},
-						{NodeKind.IMPORTSETTING_GUI,	"flow node 2"},
-						{NodeKind.GROUPING_GUI, 		"flow node 3"},
-						{NodeKind.PREFABBUILDER_GUI, 	"flow node 4"},
-						{NodeKind.BUNDLECONFIG_GUI, 	"flow node 5"},
-						{NodeKind.BUNDLEBUILDER_GUI, 	"flow node 6"},
-						{NodeKind.MODIFIER_GUI, 		"flow node 2"}
-					};
-				}
-				return NodeSingleton.s.unselectedStyle;
-			}
-		}
 
 		private class NodeSingleton {
 			public Action<NodeEvent> emitAction;
@@ -194,9 +158,6 @@ namespace AssetBundleGraph.V2 {
 			public List<BuildTargetGroup> supportedBuildTargetGroups;
 
 			public List<string> allNodeNames;
-
-			public Dictionary<NodeKind, string> selectedStyle;
-			public Dictionary<NodeKind, string> unselectedStyle;
 
 			private static NodeSingleton s_singleton;
 

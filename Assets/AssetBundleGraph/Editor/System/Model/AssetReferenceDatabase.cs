@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetReferenceDatabase : ScriptableObject {
 
 		private const int DB_VERSION = 1;
@@ -37,8 +39,8 @@ namespace AssetBundleGraph.V2 {
 		private static string DBPath {
 			get {
 				return FileUtility.PathCombine("Assets/", 
-					AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH,
-					AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATABASE_NAME);
+					Model.Settings.ASSETNBUNDLEGRAPH_DATA_PATH,
+					Model.Settings.ASSETBUNDLEGRAPH_DATABASE_NAME);
 				
 			}
 		}

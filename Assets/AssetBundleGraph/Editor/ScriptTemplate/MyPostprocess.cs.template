@@ -6,10 +6,12 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 
+using UnityEngine.AssetBundles.GraphTool;
+
 /**
 Example code for asset bundle build postprocess.
 */
-public class MyPostprocess : AssetBundleGraph.IPostprocess {
+public class MyPostprocess : IPostprocess {
 	/* 
 	 * DoPostprocess() is called when build performed.
 	 * @param [in] reports	collection of AssetBundleBuildReport from each BundleBuilders.

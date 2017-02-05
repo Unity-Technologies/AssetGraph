@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph.V2 {
+using UnityEngine.AssetBundles.GraphTool;
+
+namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 	[Serializable]
 	public class ConnectionPointData {
@@ -32,7 +34,7 @@ namespace AssetBundleGraph.V2 {
 //		private int orderPriority;
 //		private bool showLabel;
 
-		public ConnectionPointData(string id, string label, V2.NodeData parent, bool isInput/*, int orderPriority, bool showLabel */) {
+		public ConnectionPointData(string id, string label, NodeData parent, bool isInput/*, int orderPriority, bool showLabel */) {
 			this.id = id;
 			this.label = label;
 			this.parentId = parent.Id;
@@ -41,7 +43,7 @@ namespace AssetBundleGraph.V2 {
 //			this.showLabel = showLabel;
 		}
 
-		public ConnectionPointData(string label, V2.NodeData parent, bool isInput) {
+		public ConnectionPointData(string label, NodeData parent, bool isInput) {
 			this.id = Guid.NewGuid().ToString();
 			this.label = label;
 			this.parentId = parent.Id;
@@ -50,7 +52,7 @@ namespace AssetBundleGraph.V2 {
 //			this.showLabel = pointGui.showLabel;
 		}
 
-		public ConnectionPointData(Dictionary<string, object> dic, V2.NodeData parent, bool isInput) {
+		public ConnectionPointData(Dictionary<string, object> dic, NodeData parent, bool isInput) {
 
 			this.id = dic[ID] as string;
 			this.label = dic[LABEL] as string;
@@ -155,24 +157,24 @@ namespace AssetBundleGraph.V2 {
 			var parentRegion = node.Region;
 			if(IsInput){
 
-				var initialY = yOffset + (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT) / 2f;
-				var marginY  = initialY + AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * (index);
+				var initialY = yOffset + (Settings.GUI.NODE_BASE_HEIGHT - Settings.GUI.INPUT_POINT_HEIGHT) / 2f;
+				var marginY  = initialY + Settings.GUI.FILTER_OUTPUT_SPAN * (index);
 
 				buttonRect = new Rect(
 					0,
 					marginY, 
-					AssetBundleGraphSettings.GUI.INPUT_POINT_WIDTH, 
-					AssetBundleGraphSettings.GUI.INPUT_POINT_HEIGHT);
+					Settings.GUI.INPUT_POINT_WIDTH, 
+					Settings.GUI.INPUT_POINT_HEIGHT);
 			} else {
 
-				var initialY = yOffset + (AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT - AssetBundleGraphSettings.GUI.OUTPUT_POINT_HEIGHT) / 2f;
-				var marginY  = initialY + AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * (index);
+				var initialY = yOffset + (Settings.GUI.NODE_BASE_HEIGHT - Settings.GUI.OUTPUT_POINT_HEIGHT) / 2f;
+				var marginY  = initialY + Settings.GUI.FILTER_OUTPUT_SPAN * (index);
 
 				buttonRect = new Rect(
-					parentRegion.width - AssetBundleGraphSettings.GUI.OUTPUT_POINT_WIDTH + 1f, 
+					parentRegion.width - Settings.GUI.OUTPUT_POINT_WIDTH + 1f, 
 					marginY, 
-					AssetBundleGraphSettings.GUI.OUTPUT_POINT_WIDTH, 
-					AssetBundleGraphSettings.GUI.OUTPUT_POINT_HEIGHT);
+					Settings.GUI.OUTPUT_POINT_WIDTH, 
+					Settings.GUI.OUTPUT_POINT_HEIGHT);
 			}
 		}
 
@@ -181,8 +183,8 @@ namespace AssetBundleGraph.V2 {
 			return new Rect(
 				baseRect.x + baseRect.width - 8f, 
 				baseRect.y + buttonRect.y + 1f, 
-				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE, 
-				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE
+				Settings.GUI.CONNECTION_POINT_MARK_SIZE, 
+				Settings.GUI.CONNECTION_POINT_MARK_SIZE
 			);
 		}
 
@@ -191,8 +193,8 @@ namespace AssetBundleGraph.V2 {
 			return new Rect(
 				baseRect.x - 2f, 
 				baseRect.y + buttonRect.y + 3f, 
-				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE, 
-				AssetBundleGraphSettings.GUI.CONNECTION_POINT_MARK_SIZE
+				Settings.GUI.CONNECTION_POINT_MARK_SIZE, 
+				Settings.GUI.CONNECTION_POINT_MARK_SIZE
 			);
 		}
 

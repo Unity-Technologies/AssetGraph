@@ -6,7 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AssetBundleGraph.V2 {
+using UnityEngine.AssetBundles.GraphTool;
+
+namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 	class SaveDataConstants {
 		/*
@@ -111,19 +113,19 @@ namespace AssetBundleGraph.V2 {
 
 		private static string SaveDataDirectoryPath {
 			get {
-				return FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
+				return FileUtility.PathCombine(Application.dataPath, Settings.ASSETNBUNDLEGRAPH_DATA_PATH);
 			}
 		}
 
 		private static string SaveDataAssetPath {
 			get {
-				return FileUtility.PathCombine("Assets/", AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
+				return FileUtility.PathCombine("Assets/", Settings.ASSETNBUNDLEGRAPH_DATA_PATH, Settings.ASSETBUNDLEGRAPH_DATA_NAME);
 			}
 		}
 
 		private static string SaveDataJsonPath {
 			get {
-				return FileUtility.PathCombine(SaveDataDirectoryPath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
+				return FileUtility.PathCombine(SaveDataDirectoryPath, Settings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
 			}
 		}
 

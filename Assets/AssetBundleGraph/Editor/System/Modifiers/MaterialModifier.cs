@@ -2,9 +2,10 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
-using AssetBundleGraph.V2;
+using UnityEngine.AssetBundles.GraphTool;
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.Modifiers {
+namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
 
 	/*
 	 * Code template for Material modifier.

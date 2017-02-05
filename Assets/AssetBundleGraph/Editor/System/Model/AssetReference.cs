@@ -5,8 +5,9 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	[System.Serializable]
 	public class AssetReference {
 

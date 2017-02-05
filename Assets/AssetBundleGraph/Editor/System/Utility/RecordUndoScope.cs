@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
-using AssetBundleGraph;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 	public class RecordUndoScope : GUI.Scope {
 
 		private string message;

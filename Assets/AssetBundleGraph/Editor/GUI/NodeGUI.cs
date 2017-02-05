@@ -5,8 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 	[Serializable] 
 	public class NodeGUI {
 
@@ -19,7 +20,7 @@ namespace AssetBundleGraph.V2 {
 		[SerializeField] private int m_nodeWindowId;
 		[SerializeField] private Rect m_baseRect;
 
-		[SerializeField] private V2.NodeData m_data;
+		[SerializeField] private Model.NodeData m_data;
 
 		[SerializeField] private string m_nodeSyle;
 		[SerializeField] private NodeGUIInspectorHelper m_nodeInsp;
@@ -53,7 +54,7 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public V2.NodeData Data {
+		public Model.NodeData Data {
 			get {
 				return m_data;
 			}
@@ -97,11 +98,11 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 
-		public NodeGUI (AssetBundleGraph.V2.NodeData data) {
+		public NodeGUI (Model.NodeData data) {
 			m_nodeWindowId = 0;
 			m_data = data;
 
-			m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT);
+			m_baseRect = new Rect(m_data.X, m_data.Y, Model.Settings.GUI.NODE_BASE_WIDTH, Model.Settings.GUI.NODE_BASE_HEIGHT);
 
 			m_nodeSyle = data.Operation.Object.InactiveStyle;
 		}
@@ -151,7 +152,7 @@ namespace AssetBundleGraph.V2 {
 			return scaledVector2;
 		}
 
-		private bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		private bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 
 			return m_data.Operation.Object.IsValidInputConnectionPoint(point);
 //
@@ -194,7 +195,7 @@ namespace AssetBundleGraph.V2 {
 					then emit event.
 				*/
 			case EventType.MouseDown: {
-					ConnectionPointData result = IsOverConnectionPoint(Event.current.mousePosition);
+					Model.ConnectionPointData result = IsOverConnectionPoint(Event.current.mousePosition);
 
 					if (result != null) {
 						if (scaleFactor == SCALE_MAX) {
@@ -213,7 +214,7 @@ namespace AssetBundleGraph.V2 {
 			case EventType.MouseUp: {
 					bool eventRaised = false;
 					// if mouse position is on the connection point, emit mouse raised event.
-					Action<ConnectionPointData> raiseEventIfHit = (ConnectionPointData point) => {
+					Action<Model.ConnectionPointData> raiseEventIfHit = (Model.ConnectionPointData point) => {
 						// Only one connectionPoint raise event at one mouseup event
 						if(eventRaised) {
 							return;
@@ -363,7 +364,7 @@ namespace AssetBundleGraph.V2 {
 			var connectionNodeStyleInput = new GUIStyle(EditorStyles.label);
 			connectionNodeStyleInput.alignment = TextAnchor.MiddleLeft;
 
-			var titleHeight = style.CalcSize(new GUIContent(Name)).y + AssetBundleGraphSettings.GUI.NODE_TITLE_HEIGHT_MARGIN;
+			var titleHeight = style.CalcSize(new GUIContent(Name)).y + Model.Settings.GUI.NODE_TITLE_HEIGHT_MARGIN;
 			var nodeTitleRect = new Rect(0, 0, m_baseRect.width * scaleFactor, titleHeight);
 			GUI.color = textColor;
 			GUI.Label(nodeTitleRect, Name, style);
@@ -381,15 +382,15 @@ namespace AssetBundleGraph.V2 {
 
 			// draw & update connectionPoint button interface.
 			if (scaleFactor == SCALE_MAX) {
-				Action<ConnectionPointData> drawConnectionPoint = (ConnectionPointData point) => 
+				Action<Model.ConnectionPointData> drawConnectionPoint = (Model.ConnectionPointData point) => 
 				{
 					var label = point.Label;
-					if( label != AssetBundleGraphSettings.DEFAULT_INPUTPOINT_LABEL &&
-						label != AssetBundleGraphSettings.DEFAULT_OUTPUTPOINT_LABEL) 
+					if( label != Model.Settings.DEFAULT_INPUTPOINT_LABEL &&
+						label != Model.Settings.DEFAULT_OUTPUTPOINT_LABEL) 
 					{
 						var region = point.Region;
 						// if point is output node, then label position offset is minus. otherwise plus.
-						var xOffset = (point.IsOutput) ? - m_baseRect.width : AssetBundleGraphSettings.GUI.INPUT_POINT_WIDTH;
+						var xOffset = (point.IsOutput) ? - m_baseRect.width : Model.Settings.GUI.INPUT_POINT_WIDTH;
 						var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
 						var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
 
@@ -428,23 +429,23 @@ namespace AssetBundleGraph.V2 {
 				}
 			}
 
-			var titleHeight = GUI.skin.label.CalcSize(new GUIContent(Name)).y + AssetBundleGraphSettings.GUI.NODE_TITLE_HEIGHT_MARGIN;
+			var titleHeight = GUI.skin.label.CalcSize(new GUIContent(Name)).y + Model.Settings.GUI.NODE_TITLE_HEIGHT_MARGIN;
 
 			// update node height by number of output connectionPoint.
 			var nPoints = Mathf.Max(m_data.OutputPoints.Count, m_data.InputPoints.Count);
 			this.m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, 
 				m_baseRect.width, 
-				AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT + titleHeight + (AssetBundleGraphSettings.GUI.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
+				Model.Settings.GUI.NODE_BASE_HEIGHT + titleHeight + (Model.Settings.GUI.FILTER_OUTPUT_SPAN * Mathf.Max(0, (nPoints - 1)))
 			);
 
-			var newWidth = Mathf.Max(AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, outputLabelWidth + inputLabelWidth + AssetBundleGraphSettings.GUI.NODE_WIDTH_MARGIN);
-			newWidth = Mathf.Max(newWidth, labelWidth + AssetBundleGraphSettings.GUI.NODE_WIDTH_MARGIN);
+			var newWidth = Mathf.Max(Model.Settings.GUI.NODE_BASE_WIDTH, outputLabelWidth + inputLabelWidth + Model.Settings.GUI.NODE_WIDTH_MARGIN);
+			newWidth = Mathf.Max(newWidth, labelWidth + Model.Settings.GUI.NODE_WIDTH_MARGIN);
 			m_baseRect = new Rect(m_baseRect.x, m_baseRect.y, newWidth, m_baseRect.height);
 
 			RefreshConnectionPos(titleHeight);
 		}
 
-		private ConnectionPointData IsOverConnectionPoint (Vector2 touchedPoint) {
+		private Model.ConnectionPointData IsOverConnectionPoint (Vector2 touchedPoint) {
 
 			foreach(var p in m_data.InputPoints) {
 				var region = p.Region;
@@ -534,7 +535,7 @@ namespace AssetBundleGraph.V2 {
 			return false;
 		}
 
-		public ConnectionPointData FindConnectionPointByPosition (Vector2 globalPos) {
+		public Model.ConnectionPointData FindConnectionPointByPosition (Vector2 globalPos) {
 
 			foreach (var point in m_data.InputPoints) {
 				if(!IsValidInputConnectionPoint(point)) {

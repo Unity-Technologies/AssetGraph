@@ -7,8 +7,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-namespace AssetBundleGraph.V2 {
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	public class PrefabBuildInfo : ScriptableObject {
 
@@ -59,7 +60,7 @@ namespace AssetBundleGraph.V2 {
 			assets.ForEach(a => m_usedAssets.Add(new UsedAssets(a.importFrom)));
 		}
 
-		static private PrefabBuildInfo GetPrefabBuildInfo(PrefabBuilder builder, V2.NodeData node, BuildTarget target, string groupKey) {
+		static private PrefabBuildInfo GetPrefabBuildInfo(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey) {
 
 			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
@@ -67,7 +68,7 @@ namespace AssetBundleGraph.V2 {
 			return AssetDatabase.LoadAssetAtPath<PrefabBuildInfo>(buildInfoPath);
 		}
 
-		static public bool DoesPrefabNeedRebuilding(PrefabBuilder builder, V2.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
+		static public bool DoesPrefabNeedRebuilding(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
 			var buildInfo = GetPrefabBuildInfo(builder, node, target, groupKey);
 
 			// need rebuilding if no buildInfo found
@@ -114,7 +115,7 @@ namespace AssetBundleGraph.V2 {
 			return false;
 		}
 
-		static public void SavePrefabBuildInfo(PrefabBuilder builder, V2.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
+		static public void SavePrefabBuildInfo(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
 
 			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");

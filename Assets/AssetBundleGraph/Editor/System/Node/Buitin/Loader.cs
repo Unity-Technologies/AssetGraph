@@ -6,7 +6,9 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 
-namespace AssetBundleGraph.V2 {
+using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+
+namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Loader", 10)]
 	public class Loader : INode {
@@ -25,14 +27,14 @@ namespace AssetBundleGraph.V2 {
 			}
 		}
 			
-		public void Initialize(NodeData data) {
+		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
 			return null;
 		}
 
-		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
 			return false;
 		}
 
@@ -44,7 +46,7 @@ namespace AssetBundleGraph.V2 {
 			return string.Empty;
 		}
 
-		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return false;
 		}
 
@@ -92,14 +94,14 @@ namespace AssetBundleGraph.V2 {
 					var path = m_loadPath[editor.CurrentEditingGroup];
 					EditorGUILayout.LabelField("Load Path:");
 
-					var newLoadPath = EditorGUILayout.TextField(AssetBundleGraphSettings.ASSETS_PATH, path);
+					var newLoadPath = EditorGUILayout.TextField(Model.Settings.ASSETS_PATH, path);
 					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							m_loadPath[editor.CurrentEditingGroup] = newLoadPath;
 						}
 					}
 
-					var dirPath = Path.Combine(AssetBundleGraphSettings.ASSETS_PATH,newLoadPath);
+					var dirPath = Path.Combine(Model.Settings.ASSETS_PATH,newLoadPath);
 					bool dirExists = Directory.Exists(dirPath);
 
 					using (new EditorGUILayout.HorizontalScope()) {
@@ -126,9 +128,9 @@ namespace AssetBundleGraph.V2 {
 
 
 		public void Prepare (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 			ValidateLoadPath(
@@ -147,18 +149,18 @@ namespace AssetBundleGraph.V2 {
 		}
 		
 		public void Build (BuildTarget target, 
-			NodeData node, 
+			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output,
-			Action<NodeData, string, float> progressFunc) 
+			Action<Model.NodeData, string, float> progressFunc) 
 		{
 			//Load operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
 		void Load (BuildTarget target, 
-			NodeData node, 
-			IEnumerable<ConnectionData> connectionsToOutput, 
+			Model.NodeData node, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
 
@@ -167,21 +169,21 @@ namespace AssetBundleGraph.V2 {
 			}
 
 			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
-			var assetsFolderPath = Application.dataPath + AssetBundleGraphSettings.UNITY_FOLDER_SEPARATOR;
+			var assetsFolderPath = Application.dataPath + Model.Settings.UNITY_FOLDER_SEPARATOR;
 
 			var outputSource = new List<AssetReference>();
 			var targetFilePaths = FileUtility.GetAllFilePathsInFolder(GetLoaderFullLoadPath(target));
 
 			foreach (var targetFilePath in targetFilePaths) {
 
-				if(targetFilePath.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)) {
+				if(targetFilePath.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)) {
 					continue;
 				}
 
 				// already contained into Assets/ folder.
 				// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 				if (targetFilePath.StartsWith(assetsFolderPath)) {
-					var relativePath = targetFilePath.Replace(assetsFolderPath, AssetBundleGraphSettings.ASSETS_PATH);
+					var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.ASSETS_PATH);
 
 					var r = AssetReferenceDatabase.GetReference(relativePath);
 
