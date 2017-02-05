@@ -2,6 +2,8 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
+using AssetBundleGraph.V2;
+
 namespace AssetBundleGraph.Modifiers {
 
 	/*

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class GraphBackground {
 
 		protected const float kNodeGridSize = 12.0f;

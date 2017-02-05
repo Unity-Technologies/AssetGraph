@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 
 	public class PrefabBuildInfo : ScriptableObject {
 
@@ -42,18 +42,16 @@ namespace AssetBundleGraph {
 		}
 
 		[SerializeField] private string m_groupKey;
-		[SerializeField] private string m_prefabBuilderClass;
-		[SerializeField] private string m_prefabBuilderData;
+		[SerializeField] private SerializedInstance<IPrefabBuilder> m_builder;
 		[SerializeField] private string m_prefabBuilderVersion;
 		[SerializeField] private int m_replacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
 		[SerializeField] private List<UsedAssets> m_usedAssets;
 
 		public PrefabBuildInfo() {}
 
-		public void Initialize(string groupKey, string builderClass, string builderData, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
+		public void Initialize(string groupKey, SerializedInstance<IPrefabBuilder> builder, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
 			m_groupKey = groupKey;
-			m_prefabBuilderClass = builderClass;
-			m_prefabBuilderData = builderData;
+			m_builder = builder;
 			m_prefabBuilderVersion = version;
 			m_replacePrefabOptions = (int)opt;
 
@@ -61,7 +59,7 @@ namespace AssetBundleGraph {
 			assets.ForEach(a => m_usedAssets.Add(new UsedAssets(a.importFrom)));
 		}
 
-		static private PrefabBuildInfo GetPrefabBuildInfo(NodeData node, BuildTarget target, string groupKey) {
+		static private PrefabBuildInfo GetPrefabBuildInfo(PrefabBuilder builder, V2.NodeData node, BuildTarget target, string groupKey) {
 
 			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
@@ -69,8 +67,8 @@ namespace AssetBundleGraph {
 			return AssetDatabase.LoadAssetAtPath<PrefabBuildInfo>(buildInfoPath);
 		}
 
-		static public bool DoesPrefabNeedRebuilding(NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
-			var buildInfo = GetPrefabBuildInfo(node, target, groupKey);
+		static public bool DoesPrefabNeedRebuilding(PrefabBuilder builder, V2.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
+			var buildInfo = GetPrefabBuildInfo(builder, node, target, groupKey);
 
 			// need rebuilding if no buildInfo found
 			if(buildInfo == null) {
@@ -78,21 +76,16 @@ namespace AssetBundleGraph {
 			}
 
 			// need rebuilding if given builder is changed
-			if(buildInfo.m_prefabBuilderClass != node.ScriptClassName) {
-				return true;
-			}
-
-			// need rebuilding if given builder is changed
-			if(buildInfo.m_prefabBuilderData != node.InstanceData[target]) {
+			if(buildInfo.m_builder != builder.Builder[target]) {
 				return true;
 			}
 
 			// need rebuilding if replace prefab option is changed
-			if(buildInfo.m_replacePrefabOptions != (int)node.ReplacePrefabOptions) {
+			if(buildInfo.m_replacePrefabOptions != (int)builder.Options) {
 				return true;
 			}
 
-			var builderVersion = PrefabBuilderUtility.GetPrefabBuilderVersion(node.ScriptClassName);
+			var builderVersion = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder[target].ClassName);
 
 			// need rebuilding if given builder version is changed
 			if(buildInfo.m_prefabBuilderVersion != builderVersion) {
@@ -121,15 +114,15 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
-		static public void SavePrefabBuildInfo(NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
+		static public void SavePrefabBuildInfo(PrefabBuilder builder, V2.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
 
 			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
 
-			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(node.ScriptClassName);
+			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder[target].ClassName);
 
 			var buildInfo = ScriptableObject.CreateInstance<PrefabBuildInfo>();
-			buildInfo.Initialize(groupKey, node.ScriptClassName, node.InstanceData[target], version, node.ReplacePrefabOptions, assets);
+			buildInfo.Initialize(groupKey, builder.Builder[target], version, builder.Options, assets);
 
 			AssetDatabase.CreateAsset(buildInfo, buildInfoPath);		
 		}

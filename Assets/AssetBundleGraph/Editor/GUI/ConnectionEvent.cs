@@ -1,4 +1,4 @@
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class ConnectionEvent {
 		public enum EventType : int {
 			EVENT_NONE,

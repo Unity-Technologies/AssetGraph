@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	/*
 	 * AssetBundleGraphController executes operations based on graph 
 	 */
@@ -59,7 +59,7 @@ namespace AssetBundleGraph {
 			BuildTarget target,
 			bool isRun,
 			bool forceVisitAll,
-			Action<NodeData, string, float> updateHandler) 
+			Action<V2.NodeData, string, float> updateHandler) 
 		{
 			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
@@ -68,7 +68,7 @@ namespace AssetBundleGraph {
 				AssetBundleBuildReport.ClearReports();
 			}
 
-			var saveData = SaveData.Data;
+			var saveData = V2.SaveData.Data;
 			foreach(var e in m_nodeExceptions) {
 				var errorNode = saveData.Nodes.Find(n => n.Id == e.Id);
 				// errorNode may not be found if user delete it on graph
@@ -87,7 +87,7 @@ namespace AssetBundleGraph {
 			newGraph.BuildGraphFromSaveData(target, oldGraph);
 
 			PerformGraph.Perform performFunc =
-				(NodeData data, 
+				(V2.NodeData data, 
 					IEnumerable<PerformGraph.AssetGroups> incoming, 
 					IEnumerable<ConnectionData> connectionsToOutput, 
 					PerformGraph.Output outputFunc) =>
@@ -132,26 +132,23 @@ namespace AssetBundleGraph {
 		*/
 		private void DoNodeOperation (
 			BuildTarget target,
-			NodeData currentNodeData,
+			V2.NodeData currentNodeData,
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
 			bool isActualRun,
-			Action<NodeData, string, float> updateHandler) 
+			Action<V2.NodeData, string, float> updateHandler) 
 		{
 			try {
 				if (updateHandler != null) {
 					updateHandler(currentNodeData, "Starting...", 0f);
 				}
 
-				INodeOperation executor = CreateOperation(currentNodeData);
-				if(executor != null) {
-					if(isActualRun) {
-						executor.Run(target, currentNodeData, incoming, connectionsToOutput, outputFunc, updateHandler);
-					}
-					else {
-						executor.Setup(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
-					}
+				if(isActualRun) {
+					currentNodeData.Operation.Object.Build(target, currentNodeData, incoming, connectionsToOutput, outputFunc, updateHandler);
+				}
+				else {
+					currentNodeData.Operation.Object.Prepare(target, currentNodeData, incoming, connectionsToOutput, outputFunc);
 				}
 
 				if (updateHandler != null) {
@@ -165,64 +162,6 @@ namespace AssetBundleGraph {
 				m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1} (See Console for detail)", e.GetType().ToString(), e.Message), currentNodeData.Id));
 				LogUtility.Logger.LogException(e);
 			}
-		}
-
-		private INodeOperation CreateOperation(NodeData currentNodeData) {
-			INodeOperation executor = null;
-
-			try {
-				switch (currentNodeData.Kind) {
-				case NodeKind.LOADER_GUI: {
-						executor = new IntegratedGUILoader();
-						break;
-					}
-				case NodeKind.FILTER_GUI: {
-						executor = new IntegratedGUIFilter();
-						break;
-					}
-
-				case NodeKind.IMPORTSETTING_GUI: {
-						executor = new IntegratedGUIImportSetting();
-						break;
-					}
-				case NodeKind.MODIFIER_GUI: {
-						executor = new IntegratedGUIModifier();
-						break;
-					}
-				case NodeKind.GROUPING_GUI: {
-						executor = new IntegratedGUIGrouping();
-						break;
-					}
-				case NodeKind.PREFABBUILDER_GUI: {
-						executor = new IntegratedPrefabBuilder();
-						break;
-					}
-
-				case NodeKind.BUNDLECONFIG_GUI: {
-						executor = new IntegratedGUIBundleConfigurator();
-						break;
-					}
-
-				case NodeKind.BUNDLEBUILDER_GUI: {
-						executor = new IntegratedGUIBundleBuilder();
-						break;
-					}
-
-				case NodeKind.EXPORTER_GUI: {
-						executor = new IntegratedGUIExporter();
-						break;
-					}
-
-				default: {
-						LogUtility.Logger.LogError(LogUtility.kTag, currentNodeData.Name + " is defined as unknown kind of node. value:" + currentNodeData.Kind);
-						break;
-					}
-				} 
-			} catch (NodeException e) {
-				m_nodeExceptions.Add(e);
-			}
-
-			return executor;
 		}
 
 		private void Postprocess () 
@@ -248,7 +187,7 @@ namespace AssetBundleGraph {
 				return;
 			}
 
-			var saveData = SaveData.Data;
+			var saveData = V2.SaveData.Data;
 
 			if(saveData.Nodes == null) {
 				return;
@@ -256,79 +195,82 @@ namespace AssetBundleGraph {
 
 			bool isAnyNodeAffected = false;
 
-			Regex importSettingsIdMatch = new Regex("ImportSettings\\/([0-9a-z\\-]+)\\/");
-
-			foreach(var imported in importedAssets) {
-				Match m = importSettingsIdMatch.Match(imported);
-				if(m.Success) {
-					Group id = m.Groups[1];
-					NodeData n = saveData.Nodes.Find(v => v.Id == id.ToString());
-					UnityEngine.Assertions.Assert.IsNotNull(n);
-					UnityEngine.Assertions.Assert.IsTrue(n.Kind == NodeKind.IMPORTSETTING_GUI);
-
-					n.NeedsRevisit = true;
-					isAnyNodeAffected = true;
-				}
+			foreach(var n in saveData.Nodes) {
+				isAnyNodeAffected |= n.Operation.Object.OnAssetsReimported(target, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 			}
 
-			foreach(var node in saveData.Nodes) {
-				if(node.Kind == NodeKind.LOADER_GUI) {
-					var loadPath = node.LoaderLoadPath[target];
-					if(string.IsNullOrEmpty(loadPath)) {
-						// ignore config file path update
-						var notConfigFilePath = importedAssets.Where( path => !path.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
-						if(!string.IsNullOrEmpty(notConfigFilePath)) {
-							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-							node.NeedsRevisit = true;
-							isAnyNodeAffected = true;
-						}
-					}
-
-					var connOut = saveData.Connections.Find(c => c.FromNodeId == node.Id);
-
-					if( connOut != null ) {
-
-						var assetGroup = m_streamManager.FindAssetGroup(connOut);
-						var importPath = "Assets/" + node.LoaderLoadPath[target];
-
-						foreach(var path in importedAssets) {
-							if(path.StartsWith(importPath)) {
-								// if this is reimport, we don't need to redo Loader
-								if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
-									LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-									node.NeedsRevisit = true;
-									isAnyNodeAffected = true;
-									break;
-								}
-							}
-						}
-						foreach(var path in deletedAssets) {
-							if(path.StartsWith(importPath)) {
-								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-								node.NeedsRevisit = true;
-								isAnyNodeAffected = true;
-								break;
-							}
-						}
-						foreach(var path in movedAssets) {
-							if(path.StartsWith(importPath)) {
-								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-								node.NeedsRevisit = true;
-								isAnyNodeAffected = true;
-								break;
-							}
-						}
-						foreach(var path in movedFromAssetPaths) {
-							if(path.StartsWith(importPath)) {
-								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-								node.NeedsRevisit = true;
-								isAnyNodeAffected = true;
-								break;
-							}
-						}
-					}
-				}
-			}
+//			Regex importSettingsIdMatch = new Regex("ImportSettings\\/([0-9a-z\\-]+)\\/");
+//
+//			foreach(var imported in importedAssets) {
+//				Match m = importSettingsIdMatch.Match(imported);
+//				if(m.Success) {
+//					Group id = m.Groups[1];
+//					V2.NodeData n = saveData.Nodes.Find(v => v.Id == id.ToString());
+//					UnityEngine.Assertions.Assert.IsNotNull(n);
+//
+//					n.NeedsRevisit = true;
+//					isAnyNodeAffected = true;
+//				}
+//			}
+//
+//			foreach(var node in saveData.Nodes) {
+//				if(node.Kind == NodeKind.LOADER_GUI) {
+//					var loadPath = node.LoaderLoadPath[target];
+//					if(string.IsNullOrEmpty(loadPath)) {
+//						// ignore config file path update
+//						var notConfigFilePath = importedAssets.Where( path => !path.Contains(AssetBundleGraphSettings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
+//						if(!string.IsNullOrEmpty(notConfigFilePath)) {
+//							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+//							node.NeedsRevisit = true;
+//							isAnyNodeAffected = true;
+//						}
+//					}
+//
+//					var connOut = saveData.Connections.Find(c => c.FromNodeId == node.Id);
+//
+//					if( connOut != null ) {
+//
+//						var assetGroup = m_streamManager.FindAssetGroup(connOut);
+//						var importPath = "Assets/" + node.LoaderLoadPath[target];
+//
+//						foreach(var path in importedAssets) {
+//							if(path.StartsWith(importPath)) {
+//								// if this is reimport, we don't need to redo Loader
+//								if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
+//									LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+//									node.NeedsRevisit = true;
+//									isAnyNodeAffected = true;
+//									break;
+//								}
+//							}
+//						}
+//						foreach(var path in deletedAssets) {
+//							if(path.StartsWith(importPath)) {
+//								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+//								node.NeedsRevisit = true;
+//								isAnyNodeAffected = true;
+//								break;
+//							}
+//						}
+//						foreach(var path in movedAssets) {
+//							if(path.StartsWith(importPath)) {
+//								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+//								node.NeedsRevisit = true;
+//								isAnyNodeAffected = true;
+//								break;
+//							}
+//						}
+//						foreach(var path in movedFromAssetPaths) {
+//							if(path.StartsWith(importPath)) {
+//								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
+//								node.NeedsRevisit = true;
+//								isAnyNodeAffected = true;
+//								break;
+//							}
+//						}
+//					}
+//				}
+//			}
 
 			if(isAnyNodeAffected) {
 				Perform(m_lastTarget, false, false, null);

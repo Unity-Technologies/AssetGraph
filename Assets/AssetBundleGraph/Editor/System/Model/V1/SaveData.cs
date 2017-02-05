@@ -151,19 +151,19 @@ namespace AssetBundleGraph {
 
 		private static string SaveDataDirectoryPath {
 			get {
-				return FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
+				return V2.FileUtility.PathCombine(Application.dataPath, AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH);
 			}
 		}
 
 		private static string SaveDataAssetPath {
 			get {
-				return FileUtility.PathCombine("Assets/", AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
+				return V2.FileUtility.PathCombine("Assets/", AssetBundleGraphSettings.ASSETNBUNDLEGRAPH_DATA_PATH, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_NAME);
 			}
 		}
 
 		private static string SaveDataJsonPath {
 			get {
-				return FileUtility.PathCombine(SaveDataDirectoryPath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
+				return V2.FileUtility.PathCombine(SaveDataDirectoryPath, AssetBundleGraphSettings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
 			}
 		}
 
@@ -205,26 +205,6 @@ namespace AssetBundleGraph {
 			EditorUtility.SetDirty(Data);
 		}
 
-
-		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
-
-			List<NodeData> n = nodes.Select(v => v.Data).ToList();
-			List<ConnectionData> c = connections.Select(v => v.Data).ToList();
-
-			if( !Enumerable.SequenceEqual(n.OrderBy(v => v.Id), m_allNodes.OrderBy(v => v.Id)) ||
-				!Enumerable.SequenceEqual(c.OrderBy(v => v.Id), m_allConnections.OrderBy(v => v.Id)) ) 
-			{
-				LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
-
-				m_version = ABG_FILE_VERSION;
-				m_lastModified = GetFileTimeUtcString();
-				m_allNodes = n;
-				m_allConnections = c;
-				EditorUtility.SetDirty(this);
-			} else {
-				LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
-			}
-		}
 
 		public static SaveData Reload() {
 			s_saveData = null;

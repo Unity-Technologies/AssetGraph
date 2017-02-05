@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	/**
 		GUI Inspector to ConnectionGUI (Through ConnectionGUIInspectorHelper)
 	*/

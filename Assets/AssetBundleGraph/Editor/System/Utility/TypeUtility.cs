@@ -7,7 +7,7 @@ using UnityEditor.Animations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public static class TypeUtility {
 		public static readonly List<string> KeyTypes = new List<string>{
 			// empty
@@ -162,6 +162,25 @@ namespace AssetBundleGraph {
 
 			if(assets.Any()) {
 				return assets.First().filterType;
+			}
+
+			return null;
+		}
+
+		public static Type FindFirstIncomingAssetType(ConnectionPointData inputPoint) {
+			var assetGroupEnum = AssetBundleGraphEditorWindow.EnumurateIncomingAssetGroups(inputPoint);
+			if(assetGroupEnum == null) {
+				return null;
+			}
+
+			if(assetGroupEnum.Any()) {
+				var ag = assetGroupEnum.First();
+				if(ag.Values.Any()) {
+					var assets = ag.Values.First();
+					if(assets.Count > 0) {
+						return assets[0].filterType;
+					}
+				}
 			}
 
 			return null;

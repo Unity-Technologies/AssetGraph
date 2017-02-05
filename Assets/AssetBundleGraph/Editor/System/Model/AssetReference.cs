@@ -6,7 +6,7 @@ using System.IO;
 using System.Security.Cryptography;
 
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	[System.Serializable]
 	public class AssetReference {
 

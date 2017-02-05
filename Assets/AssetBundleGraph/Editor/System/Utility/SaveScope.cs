@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections;
 using AssetBundleGraph;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class SaveScope : GUI.Scope {
 
 		private NodeGUI node;

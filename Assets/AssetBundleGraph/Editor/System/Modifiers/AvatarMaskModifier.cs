@@ -4,6 +4,8 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
+using AssetBundleGraph.V2;
+
 namespace AssetBundleGraph.Modifiers {
 	
 	/*

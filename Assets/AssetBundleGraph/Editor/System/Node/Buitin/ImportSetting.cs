@@ -6,14 +6,116 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+
+namespace AssetBundleGraph.V2 {
 	
 	/**
-		IntegratedGUIImportSetting is the class for apply specific setting to already imported files.
+		ImportSetting is the class for apply specific setting to already imported files.
 	*/
-	public class IntegratedGUIImportSetting : INodeOperation {
+	[CustomNode("Import Setting", 30)]
+	public class ImportSetting : INode {
 		
-		public void Setup (BuildTarget target, 
+		public string ActiveStyle {
+			get {
+				return string.Empty;
+			}
+		}
+
+		public string InactiveStyle {
+			get {
+				return string.Empty;
+			}
+		}
+
+		public void Initialize(NodeData data) {
+		}
+
+		public INode Clone() {
+			return null;
+		}
+
+		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+			return false;
+		}
+
+		public bool IsEqual(INode node) {
+			return false;
+		}
+
+		public string Serialize() {
+			return string.Empty;
+		}
+
+		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+			return false;
+		}
+
+		public bool CanConnectFrom(INode fromNode) {
+			return false;
+		}
+
+		public bool OnAssetsReimported(BuildTarget target, 
+			string[] importedAssets, 
+			string[] deletedAssets, 
+			string[] movedAssets, 
+			string[] movedFromAssetPaths)
+		{
+			return false;
+		}
+
+		public void OnNodeGUI(NodeGUI node) {
+		}
+
+		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+			
+			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
+			editor.UpdateNodeName(node);
+
+			GUILayout.Space(10f);
+
+			/*
+				importer node has no platform key. 
+				platform key is contained by Unity's importer inspector itself.
+			*/
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				Type incomingType = TypeUtility.FindFirstIncomingAssetType(node.Data.InputPoints[0]);
+				ImportSetting.ConfigStatus status = 
+					ImportSetting.GetConfigStatus(node.Data);
+
+				if(incomingType == null) {
+					// try to retrieve incoming type from configuration
+					if(status == ImportSetting.ConfigStatus.GoodSampleFound) {
+						incomingType = ImportSetting.GetReferenceAssetImporter(node.Data).GetType();
+					} else {
+						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
+						return;
+					}
+				}
+
+				switch(status) {
+				case ImportSetting.ConfigStatus.NoSampleFound:
+					// ImportSetting.Setup() must run to grab another sample to configure.
+					EditorGUILayout.HelpBox("Press Refresh to configure.", MessageType.Info);
+					node.Data.NeedsRevisit = true;
+					break;
+				case ImportSetting.ConfigStatus.GoodSampleFound:
+					if (GUILayout.Button("Configure Import Setting")) {
+						Selection.activeObject = ImportSetting.GetReferenceAssetImporter(node.Data);
+					}
+					if (GUILayout.Button("Reset Import Setting")) {
+						ImportSetting.ResetConfig(node.Data);
+					}
+					break;
+				case ImportSetting.ConfigStatus.TooManySamplesFound:
+					if (GUILayout.Button("Reset Import Setting")) {
+						ImportSetting.ResetConfig(node.Data);
+					}
+					break;
+				}
+			}
+		}
+
+		public void Prepare (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
@@ -70,7 +172,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (BuildTarget target, 
+		public void Build (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 

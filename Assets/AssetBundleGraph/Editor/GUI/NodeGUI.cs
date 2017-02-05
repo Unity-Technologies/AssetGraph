@@ -6,7 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	[Serializable] 
 	public class NodeGUI {
 
@@ -19,7 +19,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private int m_nodeWindowId;
 		[SerializeField] private Rect m_baseRect;
 
-		[SerializeField] private NodeData m_data;
+		[SerializeField] private V2.NodeData m_data;
 
 		[SerializeField] private string m_nodeSyle;
 		[SerializeField] private NodeGUIInspectorHelper m_nodeInsp;
@@ -53,13 +53,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public NodeKind Kind {
-			get {
-				return m_data.Kind;
-			}
-		}
-
-		public NodeData Data {
+		public V2.NodeData Data {
 			get {
 				return m_data;
 			}
@@ -103,13 +97,13 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public NodeGUI (NodeData data) {
+		public NodeGUI (AssetBundleGraph.V2.NodeData data) {
 			m_nodeWindowId = 0;
 			m_data = data;
 
 			m_baseRect = new Rect(m_data.X, m_data.Y, AssetBundleGraphSettings.GUI.NODE_BASE_WIDTH, AssetBundleGraphSettings.GUI.NODE_BASE_HEIGHT);
 
-			m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
+			m_nodeSyle = data.Operation.Object.InactiveStyle;
 		}
 
 		public NodeGUI Duplicate (float newX, float newY) {
@@ -122,11 +116,11 @@ namespace AssetBundleGraph {
 		public void SetActive () {
 			Inspector.UpdateNode(this);
 			Selection.activeObject = Inspector;
-			m_nodeSyle = NodeGUIUtility.SelectedStyle[m_data.Kind];
+			m_nodeSyle = m_data.Operation.Object.ActiveStyle;
 		}
 
 		public void SetInactive () {
-			m_nodeSyle = NodeGUIUtility.UnselectedStyle[m_data.Kind];
+			m_nodeSyle = m_data.Operation.Object.InactiveStyle;
 		}
 			
 		private void RefreshConnectionPos (float yOffset) {
@@ -159,14 +153,16 @@ namespace AssetBundleGraph {
 
 		private bool IsValidInputConnectionPoint(ConnectionPointData point) {
 
-			if(m_data.Kind == NodeKind.BUNDLECONFIG_GUI && !m_data.BundleConfigUseGroupAsVariants) {
-				if(m_data.Variants.Count > 0 && m_data.Variants.Find(v => v.ConnectionPointId == point.Id) == null) 
-				{
-					return false;
-				}
-			}
-
-			return true;
+			return m_data.Operation.Object.IsValidInputConnectionPoint(point);
+//
+//			if(m_data.Kind == NodeKind.BUNDLECONFIG_GUI && !m_data.BundleConfigUseGroupAsVariants) {
+//				if(m_data.Variants.Count > 0 && m_data.Variants.Find(v => v.ConnectionPointId == point.Id) == null) 
+//				{
+//					return false;
+//				}
+//			}
+//
+//			return true;
 		}
 
 		/**
@@ -253,16 +249,16 @@ namespace AssetBundleGraph {
 				{
 					var menu = new GenericMenu();
 
-					MonoScript s = TypeUtility.LoadMonoScript(Data.ScriptClassName);
-					if(s != null) {
-						menu.AddItem(
-							new GUIContent("Edit Script"),
-							false, 
-							() => {
-								AssetDatabase.OpenAsset(s, 0);
-							}
-						);
-					}
+//					MonoScript s = TypeUtility.LoadMonoScript(Data.ScriptClassName);
+//					if(s != null) {
+//						menu.AddItem(
+//							new GUIContent("Edit Script"),
+//							false, 
+//							() => {
+//								AssetDatabase.OpenAsset(s, 0);
+//							}
+//						);
+//					}
 
 					menu.AddItem(
 						new GUIContent("Delete"),
@@ -283,7 +279,7 @@ namespace AssetBundleGraph {
 			var defaultPointTex = NodeGUIUtility.inputPointMarkTex;
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
-					!ConnectionData.CanConnect(eventSource.eventSourceNode.Data, m_data)
+					!m_data.Operation.Object.CanConnectFrom(eventSource.eventSourceNode.Data.Operation.Object)
 				);
 
 			if (shouldDrawEnable && justConnecting && eventSource != null) {
@@ -308,7 +304,7 @@ namespace AssetBundleGraph {
 			var defaultPointTex = NodeGUIUtility.outputPointMarkConnectedTex;
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
-					!ConnectionData.CanConnect(m_data, eventSource.eventSourceNode.Data)
+					!eventSource.eventSourceNode.Data.Operation.Object.CanConnectFrom(m_data.Operation.Object)
 				);
 
 			if (shouldDrawEnable && justConnecting && eventSource != null) {

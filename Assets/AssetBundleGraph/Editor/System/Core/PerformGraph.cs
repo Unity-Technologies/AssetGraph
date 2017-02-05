@@ -9,20 +9,20 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class PerformGraph {
 
 		public delegate void Output(ConnectionData destination, Dictionary<string, List<AssetReference>> outputGroupAsset);
-		public delegate void Perform(NodeData data, IEnumerable<PerformGraph.AssetGroups> incoming, IEnumerable<ConnectionData> connectionsToOutput, Output outputFunc);
+		public delegate void Perform(V2.NodeData data, IEnumerable<PerformGraph.AssetGroups> incoming, IEnumerable<ConnectionData> connectionsToOutput, Output outputFunc);
 
 		public class Node {
-			public NodeData data;
-			public NodeData originalData;
+			public V2.NodeData data;
+			public V2.NodeData originalData;
 			public List<AssetStream> streamFrom;
 			public List<AssetStream> streamTo;
 			public bool dirty;
 
-			public Node(NodeData d) {
+			public Node(V2.NodeData d) {
 				data = d;
 				// data instance may be modified over time, so keep the state of data to detect changes
 				originalData = d.Duplicate(true);
@@ -184,7 +184,7 @@ namespace AssetBundleGraph {
 
 		public void BuildGraphFromSaveData(BuildTarget target, PerformGraph old) {
 
-			var saveData = SaveData.Data;
+			var saveData = V2.SaveData.Data;
 
 			m_target = target;
 
@@ -211,7 +211,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private void SetupNode (NodeData node) {
+		private void SetupNode (V2.NodeData node) {
 			Node n = new Node(node);
 			m_nodes.Add(n);
 		}
@@ -398,14 +398,14 @@ namespace AssetBundleGraph {
 		/*
 		 * Verify nodes does not create cycle
 		 */
-		private void ValidateLoopConnection(SaveData saveData) {
+		private void ValidateLoopConnection(V2.SaveData saveData) {
 			var leaf = saveData.CollectAllLeafNodes();
 			foreach (var leafNode in leaf) {
-				MarkAndTraverseParent(saveData, leafNode, new List<ConnectionData>(), new List<NodeData>());
+				MarkAndTraverseParent(saveData, leafNode, new List<ConnectionData>(), new List<V2.NodeData>());
 			}
 		}
 
-		private void MarkAndTraverseParent(SaveData saveData, NodeData current, List<ConnectionData> visitedConnections, List<NodeData> visitedNode) {
+		private void MarkAndTraverseParent(V2.SaveData saveData, V2.NodeData current, List<ConnectionData> visitedConnections, List<V2.NodeData> visitedNode) {
 
 //			Assert.IsNotNull(current);
 			if(current == null) {

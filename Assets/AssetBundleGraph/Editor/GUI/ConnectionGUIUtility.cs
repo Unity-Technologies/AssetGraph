@@ -7,7 +7,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class ConnectionGUIUtility {
 
 		public static Action<ConnectionEvent> ConnectionEventHandler {

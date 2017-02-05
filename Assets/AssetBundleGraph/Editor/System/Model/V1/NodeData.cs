@@ -659,7 +659,7 @@ namespace AssetBundleGraph {
 		}
 
 		public string GetLoaderFullLoadPath(BuildTarget g) {
-			return FileUtility.PathCombine(Application.dataPath, LoaderLoadPath[g]);
+			return V2.FileUtility.PathCombine(Application.dataPath, LoaderLoadPath[g]);
 		}
 
 		public bool ValidateOverlappingFilterCondition(bool throwException) {

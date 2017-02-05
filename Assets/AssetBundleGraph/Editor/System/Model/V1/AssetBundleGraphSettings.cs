@@ -98,18 +98,6 @@ namespace AssetBundleGraph {
 		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
 		public const string MENU_EXPORTER_NAME = "Exporter";
 
-		public static Dictionary<string, NodeKind> GUI_Menu_Item_TargetGUINodeDict = new Dictionary<string, NodeKind>{
-			{"Create " + MENU_LOADER_NAME + " Node", NodeKind.LOADER_GUI},
-			{"Create " + MENU_FILTER_NAME + " Node", NodeKind.FILTER_GUI},
-			{"Create " + MENU_IMPORTSETTING_NAME + " Node", NodeKind.IMPORTSETTING_GUI},
-			{"Create " + MENU_MODIFIER_NAME + " Node", NodeKind.MODIFIER_GUI},
-			{"Create " + MENU_GROUPING_NAME + " Node", NodeKind.GROUPING_GUI},
-			{"Create " + MENU_PREFABBUILDER_NAME + " Node", NodeKind.PREFABBUILDER_GUI},
-			{"Create " + MENU_BUNDLECONFIG_NAME + " Node", NodeKind.BUNDLECONFIG_GUI},
-			{"Create " + MENU_BUNDLEBUILDER_NAME + " Node", NodeKind.BUNDLEBUILDER_GUI},
-			{"Create " + MENU_EXPORTER_NAME + " Node", NodeKind.EXPORTER_GUI}
-		};
-
 		public static Dictionary<NodeKind, string> DEFAULT_NODE_NAME = new Dictionary<NodeKind, string>{
 			{NodeKind.LOADER_GUI, "Loader"},
 			{NodeKind.FILTER_GUI, "Filter"},

@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 /**
 	static executor for AssetBundleGraph's data.
 */
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class SystemDataUtility {
 
 		/**
@@ -40,7 +40,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public static T CreateNodeOperationInstance<T> (string typeStr, NodeData node) where T : INodeOperation {
+		public static T CreateNodeOperationInstance<T> (string typeStr, V2.NodeData node) where T : INodeOperation {
 			var nodeScriptInstance = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp-Editor.dll").CreateInstance(typeStr);
 			if (nodeScriptInstance == null) {
 				throw new NodeException(node.Name + ": Failed to create instance:" + typeStr + " derived from:" + typeof(T), node.Id);

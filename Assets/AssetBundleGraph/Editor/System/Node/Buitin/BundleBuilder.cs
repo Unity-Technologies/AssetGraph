@@ -6,13 +6,129 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 
-	public class IntegratedGUIBundleBuilder : INodeOperation {
+	[CustomNode("Bundle Builder", 70)]
+	public class BundleBuilder : INode {
 
 		private static readonly string key = "0";
 
-		public void Setup (BuildTarget target, 
+		public string ActiveStyle {
+			get {
+				return string.Empty;
+			}
+		}
+
+		public string InactiveStyle {
+			get {
+				return string.Empty;
+			}
+		}
+
+		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
+
+		public void Initialize(NodeData data) {
+		}
+
+		public INode Clone() {
+			return null;
+		}
+
+		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+			return false;
+		}
+
+		public bool IsEqual(INode node) {
+			return false;
+		}
+
+		public string Serialize() {
+			return string.Empty;
+		}
+
+		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+			return false;
+		}
+
+		public bool CanConnectFrom(INode fromNode) {
+			return false;
+		}
+
+		public bool OnAssetsReimported(BuildTarget target, 
+			string[] importedAssets, 
+			string[] deletedAssets, 
+			string[] movedAssets, 
+			string[] movedFromAssetPaths) 
+		{
+			return false;
+		}
+
+		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+			if (m_enabledBundleOptions == null) {
+				return;
+			}
+
+			EditorGUILayout.HelpBox("BundleBuilder: Build asset bundles with given asset bundle settings.", MessageType.Info);
+			editor.UpdateNodeName(node);
+
+			GUILayout.Space(10f);
+
+			//Show target configuration tab
+			editor.DrawPlatformSelector(node);
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				var disabledScope = editor.DrawOverrideTargetToggle(node, m_enabledBundleOptions.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
+					using(new RecordUndoScope("Remove Target Bundle Options", node, true)){
+						if(enabled) {
+							m_enabledBundleOptions[editor.CurrentEditingGroup] = m_enabledBundleOptions.DefaultValue;
+						}  else {
+							m_enabledBundleOptions.Remove(editor.CurrentEditingGroup);
+						}
+					}
+				} );
+
+				using (disabledScope) {
+					int bundleOptions = m_enabledBundleOptions[editor.CurrentEditingGroup];
+
+					bool isDisableWriteTypeTreeEnabled  = 0 < (bundleOptions & (int)BuildAssetBundleOptions.DisableWriteTypeTree);
+					bool isIgnoreTypeTreeChangesEnabled = 0 < (bundleOptions & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
+
+					// buildOptions are validated during loading. Two flags should not be true at the same time.
+					UnityEngine.Assertions.Assert.IsFalse(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled);
+
+					bool isSomethingDisabled = isDisableWriteTypeTreeEnabled || isIgnoreTypeTreeChangesEnabled;
+
+					foreach (var option in AssetBundleGraphSettings.BundleOptionSettings) {
+
+						// contains keyword == enabled. if not, disabled.
+						bool isEnabled = (bundleOptions & (int)option.option) != 0;
+
+						bool isToggleDisabled = 
+							(option.option == BuildAssetBundleOptions.DisableWriteTypeTree  && isIgnoreTypeTreeChangesEnabled) ||
+							(option.option == BuildAssetBundleOptions.IgnoreTypeTreeChanges && isDisableWriteTypeTreeEnabled);
+
+						using(new EditorGUI.DisabledScope(isToggleDisabled)) {
+							var result = EditorGUILayout.ToggleLeft(option.description, isEnabled);
+							if (result != isEnabled) {
+								using(new RecordUndoScope("Change Bundle Options", node, true)){
+									bundleOptions = (result) ? 
+										((int)option.option | bundleOptions) : 
+										(((~(int)option.option)) & bundleOptions);
+									m_enabledBundleOptions[editor.CurrentEditingGroup] = bundleOptions;
+								}
+							}
+						}
+					}
+					if(isSomethingDisabled) {
+						EditorGUILayout.HelpBox("'Disable Write Type Tree' and 'Ignore Type Tree Changes' can not be used together.", MessageType.Info);
+					}
+				}
+			}
+		}
+
+		public void OnNodeGUI(NodeGUI node) {
+		}
+
+		public void Prepare (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
@@ -70,7 +186,7 @@ namespace AssetBundleGraph {
 			}
 		}
 		
-		public void Run (BuildTarget target, 
+		public void Build (BuildTarget target, 
 			NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<ConnectionData> connectionsToOutput, 
@@ -145,7 +261,7 @@ namespace AssetBundleGraph {
 
 			if(progressFunc != null) progressFunc(node, "Building Asset Bundles...", 0.7f);
 
-			AssetBundleManifest m = BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)node.BundleBuilderBundleOptions[target], target);
+			AssetBundleManifest m = BuildPipeline.BuildAssetBundles(bundleOutputDir, bundleBuild, (BuildAssetBundleOptions)m_enabledBundleOptions[target], target);
 
 			var output = new Dictionary<string, List<AssetReference>>();
 			output[key] = new List<AssetReference>();

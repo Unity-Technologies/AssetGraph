@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class AssetBundleGraphEditorWindow : EditorWindow {
 
 		[Serializable] 
@@ -264,7 +264,7 @@ namespace AssetBundleGraph {
 
 			this.titleContent = new GUIContent("AssetBundle");
 
-			SaveData.Reload();
+			V2.SaveData.Reload();
 
 			Undo.undoRedoPerformed += () => {
 				Setup(ActiveBuildTarget);
@@ -319,11 +319,11 @@ namespace AssetBundleGraph {
 			/*
 				do nothing if json does not modified after first load.
 			*/
-			if (SaveData.Data.LastModified == lastLoaded) {
+			if (V2.SaveData.Data.LastModified == lastLoaded) {
 				return;
 			}
 				
-			lastLoaded = SaveData.Data.LastModified;
+			lastLoaded = V2.SaveData.Data.LastModified;
 
 			minSize = new Vector2(600f, 300f);
 			
@@ -355,7 +355,7 @@ namespace AssetBundleGraph {
 		 * Creates Graph structure with NodeGUI and ConnectionGUI from SaveData
 		 */ 
 		private static void ConstructGraphFromSaveData (out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
-			var saveData = SaveData.Data;
+			var saveData = V2.SaveData.Data;
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
@@ -387,7 +387,7 @@ namespace AssetBundleGraph {
 		}
 
 		private void SaveGraph () {
-			SaveData.Data.ApplyGraph(nodes, connections);
+			V2.SaveData.Data.ApplyGraph(nodes, connections);
 		}
 
 		/**
@@ -456,9 +456,9 @@ namespace AssetBundleGraph {
 
 				float currentCount = 0f;
 				float totalCount = (float)currentNodes.Count;
-				NodeData lastNode = null;
+				V2.NodeData lastNode = null;
 
-				Action<NodeData, string, float> updateHandler = (node, message, progress) => {
+				Action<V2.NodeData, string, float> updateHandler = (node, message, progress) => {
 
 					if(lastNode != node) {
 						// do not add count on first node visit to 
@@ -816,7 +816,7 @@ namespace AssetBundleGraph {
 
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
-			SaveData.SetSavedataDirty();
+			V2.SaveData.SetSavedataDirty();
 		}
 
 		public void OnGUI () {
@@ -864,26 +864,26 @@ namespace AssetBundleGraph {
 						var refe = DragAndDrop.objectReferences[i];
 						pathAndRefs[path] = refe;
 					}
-					var shouldSave = false;
-					foreach (var item in pathAndRefs) {
-						var refe = (MonoScript)item.Value;
-						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-							Type scriptTypeInfo = refe.GetClass();
-							Type inheritedTypeInfo = GetDragAndDropAcceptableScriptType(scriptTypeInfo);
-
-							if (inheritedTypeInfo != null) {
-								var dropPos = Event.current.mousePosition;
-								var scriptName = refe.name;
-								var scriptClassName = scriptName;
-								AddNodeFromCode(scriptName, scriptClassName, inheritedTypeInfo, dropPos.x, dropPos.y);
-								shouldSave = true;
-							}
-						}
-					}
-
-					if (shouldSave) {
-						Setup(ActiveBuildTarget);
-					}
+//					var shouldSave = false;
+//					foreach (var item in pathAndRefs) {
+//						var refe = (MonoScript)item.Value;
+//						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
+//							Type scriptTypeInfo = refe.GetClass();
+//							Type inheritedTypeInfo = GetDragAndDropAcceptableScriptType(scriptTypeInfo);
+//
+//							if (inheritedTypeInfo != null) {
+//								var dropPos = Event.current.mousePosition;
+//								var scriptName = refe.name;
+//								var scriptClassName = scriptName;
+//								AddNodeFromCode(scriptName, scriptClassName, inheritedTypeInfo, dropPos.x, dropPos.y);
+//								shouldSave = true;
+//							}
+//						}
+//					}
+//
+//					if (shouldSave) {
+//						Setup(ActiveBuildTarget);
+//					}
 					break;
 				}
 
@@ -891,18 +891,18 @@ namespace AssetBundleGraph {
 				case EventType.ContextClick: {
 					var rightClickPos = Event.current.mousePosition;
 					var menu = new GenericMenu();
-					foreach (var menuItemStr in AssetBundleGraphSettings.GUI_Menu_Item_TargetGUINodeDict.Keys) {
-						var kind = AssetBundleGraphSettings.GUI_Menu_Item_TargetGUINodeDict[menuItemStr];
+					foreach(var n in V2.NodeUtility.CustomNodeTypes) {
 						menu.AddItem(
-							new GUIContent(menuItemStr),
+							new GUIContent(string.Format("Create {0} Node", n.node.Name)),
 							false, 
 							() => {
-								AddNodeFromGUI(kind, rightClickPos.x, rightClickPos.y);
+								AddNodeFromGUI(n.CreateInstance(), n.node.Name, rightClickPos.x, rightClickPos.y);
 								Setup(ActiveBuildTarget);
 								Repaint();
 							}
 						);
 					}
+
 					menu.ShowAsContext();
 					break;
 				}
@@ -1035,40 +1035,44 @@ namespace AssetBundleGraph {
 						}
 
 						case "Copy": {
-							if (!activeObject.idPosDict.ReadonlyDict().Any()) {
-								break;
-							}
+//							if (!activeObject.idPosDict.ReadonlyDict().Any()) {
+//								break;
+//							}
+//
+//							Undo.RecordObject(this, "Copy Selection");
+//
+//							var targetNodeIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
+//							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
+//							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_COPY);
 
-							Undo.RecordObject(this, "Copy Selection");
-
-							var targetNodeIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
-							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_COPY);
+							LogUtility.Logger.LogWarning("Command", "TODO: implemente Copy");
 
 							Event.current.Use();
 							break;
 						}
 
 						case "Cut": {
-							if (!activeObject.idPosDict.ReadonlyDict().Any()) {
-								break;
-							}
+//							if (!activeObject.idPosDict.ReadonlyDict().Any()) {
+//								break;
+//							}
+//
+//							Undo.RecordObject(this, "Cut Selection");
+//							var targetNodeIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
+//							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
+//							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_CUT);
+//
+//							foreach (var targetId in activeObject.idPosDict.ReadonlyDict().Keys) {
+//								DeleteNode(targetId);
+//								DeleteConnectionById(targetId);
+//							}
+//
+//							Setup(ActiveBuildTarget);
+//							InitializeGraph();
+//
+//							activeObject = RenewActiveObject(new List<string>());
+//							UpdateActivationOfObjects(activeObject);
 
-							Undo.RecordObject(this, "Cut Selection");
-							var targetNodeIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
-							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_CUT);
-
-							foreach (var targetId in activeObject.idPosDict.ReadonlyDict().Keys) {
-								DeleteNode(targetId);
-								DeleteConnectionById(targetId);
-							}
-
-							Setup(ActiveBuildTarget);
-							InitializeGraph();
-
-							activeObject = RenewActiveObject(new List<string>());
-							UpdateActivationOfObjects(activeObject);
+							LogUtility.Logger.LogWarning("Command","TODO: implemente Cut");
 
 							Event.current.Use();
 							break;
@@ -1076,73 +1080,77 @@ namespace AssetBundleGraph {
 
 						case "Paste": {
 
-							if(copyField.datas == null)  {
-								break;
-							}
+//							if(copyField.datas == null)  {
+//								break;
+//							}
+//
+//							var nodeNames = nodes.Select(node => node.Name).ToList();
+//							var duplicatingData = new List<NodeGUI>();
+//
+//							if (copyField.datas.Any()) {
+//								var pasteType = copyField.type;
+//								foreach (var copyFieldData in copyField.datas) {
+//									var nodeJsonDict = AssetBundleGraph.Json.Deserialize(copyFieldData) as Dictionary<string, object>;
+//									var pastingNode = new NodeGUI(new V2.NodeData(nodeJsonDict));
+//									var pastingNodeName = pastingNode.Name;
+//
+//									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
+//
+//  									switch (pasteType) {
+//  										case CopyType.COPYTYPE_COPY: {
+//											if (2 <= nameOverlapping.Count) {
+//												continue;
+//											}
+//  											break;
+//  										}
+//  										case CopyType.COPYTYPE_CUT: {
+//											if (1 <= nameOverlapping.Count) {
+//												continue;
+//											}
+//  											break;
+//  										}
+//  									}
+//
+//  									duplicatingData.Add(pastingNode);
+//								}
+//							}
+//							// consume copyField
+//							copyField.datas = null;
+//
+//							if (!duplicatingData.Any()) {
+//								break;
+//							}
+//
+//							Undo.RecordObject(this, "Paste");
+//							foreach (var newNode in duplicatingData) {
+//								DuplicateNode(newNode);
+//							}
+//
+//							Setup(ActiveBuildTarget);
+//							InitializeGraph();
 
-							var nodeNames = nodes.Select(node => node.Name).ToList();
-							var duplicatingData = new List<NodeGUI>();
-
-							if (copyField.datas.Any()) {
-								var pasteType = copyField.type;
-								foreach (var copyFieldData in copyField.datas) {
-									var nodeJsonDict = AssetBundleGraph.Json.Deserialize(copyFieldData) as Dictionary<string, object>;
-									var pastingNode = new NodeGUI(new NodeData(nodeJsonDict));
-									var pastingNodeName = pastingNode.Name;
-
-									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
-
-  									switch (pasteType) {
-  										case CopyType.COPYTYPE_COPY: {
-											if (2 <= nameOverlapping.Count) {
-												continue;
-											}
-  											break;
-  										}
-  										case CopyType.COPYTYPE_CUT: {
-											if (1 <= nameOverlapping.Count) {
-												continue;
-											}
-  											break;
-  										}
-  									}
-
-  									duplicatingData.Add(pastingNode);
-								}
-							}
-							// consume copyField
-							copyField.datas = null;
-
-							if (!duplicatingData.Any()) {
-								break;
-							}
-
-							Undo.RecordObject(this, "Paste");
-							foreach (var newNode in duplicatingData) {
-								DuplicateNode(newNode);
-							}
-
-							Setup(ActiveBuildTarget);
-							InitializeGraph();
+							LogUtility.Logger.LogWarning("Command","TODO: implemente Paste");
 
 							Event.current.Use();
 							break;
 						}
 
 						case "SelectAll": {
-							Undo.RecordObject(this, "Select All Objects");
+//							Undo.RecordObject(this, "Select All Objects");
+//
+//							var nodeIds = nodes.Select(node => node.Id).ToList();
+//							activeObject = RenewActiveObject(nodeIds);
+//
+//							// select all.
+//							foreach (var node in nodes) {
+//								node.SetActive();
+//							}
+//							foreach (var connection in connections) {
+//								connection.SetActive();
+//							}
 
-							var nodeIds = nodes.Select(node => node.Id).ToList();
-							activeObject = RenewActiveObject(nodeIds);
+							LogUtility.Logger.LogWarning("Command","TODO: Implement SelectAll");
 
-							// select all.
-							foreach (var node in nodes) {
-								node.SetActive();
-							}
-							foreach (var connection in connections) {
-								connection.SetActive();
-							}
-							
 							Event.current.Use();
 							break;
 						}
@@ -1156,10 +1164,6 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private List<string> JsonRepresentations (List<string> nodeIds) {
-			return nodes.Where(nodeGui => nodeIds.Contains(nodeGui.Id)).Select(nodeGui => nodeGui.Data.ToJsonString()).ToList();
-		}
-
 		private Type GetDragAndDropAcceptableScriptType (Type type) {
 			if (typeof(IPrefabBuilder).IsAssignableFrom(type) && !type.IsInterface && PrefabBuilderUtility.HasValidCustomPrefabBuilderAttribute(type)) {
 				return typeof(IPrefabBuilder);
@@ -1171,41 +1175,43 @@ namespace AssetBundleGraph {
 			return null;
 		}
 
-		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
-			NodeGUI newNode = null;
+		//TODO: Deprecate This
 
-			if (scriptBaseType == typeof(IModifier)) {
-				var modifier = ModifierUtility.CreateModifier(scriptClassName);
-				UnityEngine.Assertions.Assert.IsNotNull(modifier);
+//		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
+//			NodeGUI newNode = null;
+//
+//			if (scriptBaseType == typeof(IModifier)) {
+//				var modifier = ModifierUtility.CreateModifier(scriptClassName);
+//				UnityEngine.Assertions.Assert.IsNotNull(modifier);
+//
+//				newNode = new NodeGUI(new NodeData(name, NodeKind.MODIFIER_GUI, x, y));
+//				newNode.Data.ScriptClassName = scriptClassName;
+//				newNode.Data.InstanceData.DefaultValue = modifier.Serialize();
+//			}
+//			if (scriptBaseType == typeof(IPrefabBuilder)) {
+//				var builder = PrefabBuilderUtility.CreatePrefabBuilderByClassName(scriptClassName);
+//				UnityEngine.Assertions.Assert.IsNotNull(builder);
+//
+//				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
+//				newNode.Data.ScriptClassName = scriptClassName;
+//				newNode.Data.InstanceData.DefaultValue = builder.Serialize();
+//			}
+//
+//			if (newNode == null) {
+//				LogUtility.Logger.LogError(LogUtility.kTag, "Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
+//					") is not supported to create from code.");
+//				return;
+//			}
+//
+//			AddNodeGUI(newNode);
+//		}
 
-				newNode = new NodeGUI(new NodeData(name, NodeKind.MODIFIER_GUI, x, y));
-				newNode.Data.ScriptClassName = scriptClassName;
-				newNode.Data.InstanceData.DefaultValue = modifier.Serialize();
-			}
-			if (scriptBaseType == typeof(IPrefabBuilder)) {
-				var builder = PrefabBuilderUtility.CreatePrefabBuilderByClassName(scriptClassName);
-				UnityEngine.Assertions.Assert.IsNotNull(builder);
+		private void AddNodeFromGUI (V2.INode n, string guiName, float x, float y) {
 
-				newNode = new NodeGUI(new NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
-				newNode.Data.ScriptClassName = scriptClassName;
-				newNode.Data.InstanceData.DefaultValue = builder.Serialize();
-			}
+			string nodeName = string.Format("New {0} Node", guiName);
+			NodeGUI newNode = new NodeGUI(new V2.NodeData(nodeName, n, x, y));
 
-			if (newNode == null) {
-				LogUtility.Logger.LogError(LogUtility.kTag, "Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
-					") is not supported to create from code.");
-				return;
-			}
-
-			AddNodeGUI(newNode);
-		}
-
-		private void AddNodeFromGUI (NodeKind kind, float x, float y) {
-
-			string nodeName = AssetBundleGraphSettings.DEFAULT_NODE_NAME[kind] + nodes.Where(node => node.Kind == kind).ToList().Count;
-			NodeGUI newNode = new NodeGUI(new NodeData(nodeName, kind, x, y));
-
-			Undo.RecordObject(this, "Add " + AssetBundleGraphSettings.DEFAULT_NODE_NAME[kind] + " Node");
+			Undo.RecordObject(this, "Add " + guiName + " Node");
 
 			AddNodeGUI(newNode);
 		}
@@ -1276,7 +1282,7 @@ namespace AssetBundleGraph {
 						var label = startConnectionPoint.Label;
 
 						// if two nodes are not supposed to connect, dismiss
-						if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+						if(!endNode.Data.Operation.Object.CanConnectFrom(startNode.Data.Operation.Object)) {
 							break;
 						}
 
@@ -1327,7 +1333,7 @@ namespace AssetBundleGraph {
 						var label = startConnectionPoint.Label;
 
 						// if two nodes are not supposed to connect, dismiss
-						if(!ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
+						if(!startNode.Data.Operation.Object.CanConnectFrom(endNode.Data.Operation.Object)) {
 							break;
 						}
 

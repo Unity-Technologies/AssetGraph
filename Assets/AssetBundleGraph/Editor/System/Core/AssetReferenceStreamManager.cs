@@ -9,7 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 
 	public class AssetReferenceStreamManager {
 
@@ -24,7 +24,7 @@ namespace AssetBundleGraph {
 			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
 			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
 
-			var connections = SaveData.Data.Connections;
+			var connections = V2.SaveData.Data.Connections;
 
 			return m_connectionStreamMap.Where(v => { 
 				var conn = connections.Find(c => c.Id == v.Key);

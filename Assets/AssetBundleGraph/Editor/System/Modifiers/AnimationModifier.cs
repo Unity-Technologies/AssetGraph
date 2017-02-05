@@ -3,6 +3,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+using AssetBundleGraph.V2;
+
 namespace AssetBundleGraph.Modifiers {
 	
 	[Serializable] 

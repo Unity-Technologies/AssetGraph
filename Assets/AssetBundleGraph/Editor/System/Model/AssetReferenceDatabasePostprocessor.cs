@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	class AssetReferenceDatabasePostprocessor : AssetPostprocessor 
 	{
 		static void OnPostprocessAllAssets (string[] importedAssets, 

@@ -7,7 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class FileUtility {
 		public static void RemakeDirectory (string localFolderPath) {
 			if (Directory.Exists(localFolderPath)) Directory.Delete(localFolderPath, true);
@@ -154,7 +154,7 @@ namespace AssetBundleGraph {
 			return false;
 		}
 
-		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, NodeData node) {
+		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, V2.NodeData node) {
 			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.PREFABBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 
 			if (!Directory.Exists(cacheDir)) {
@@ -167,7 +167,7 @@ namespace AssetBundleGraph {
 		}
 
 
-		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, NodeData node, bool remake = false) {
+		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, V2.NodeData node, bool remake = false) {
 			var cacheDir = FileUtility.PathCombine(AssetBundleGraphSettings.BUNDLEBUILDER_CACHE_PLACE, node.Id, BuildTargetUtility.TargetToAssetBundlePlatformName(t));
 
 			if (!Directory.Exists(cacheDir)) {

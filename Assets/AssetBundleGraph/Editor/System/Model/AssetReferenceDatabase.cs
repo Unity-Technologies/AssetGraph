@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class AssetReferenceDatabase : ScriptableObject {
 
 		private const int DB_VERSION = 1;

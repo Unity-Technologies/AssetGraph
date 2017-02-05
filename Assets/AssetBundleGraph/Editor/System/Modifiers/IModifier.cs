@@ -7,13 +7,15 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace AssetBundleGraph {
+using AssetBundleGraph.V2;
+
+namespace AssetBundleGraph.V2 {
 
 	/**
 	 * IModifier is an interface which modifies incoming assets.
 	 * Subclass of IModifier must have CustomModifier attribute.
 	 */
-	public interface IModifier {
+	public interface IModifier : IJSONSerializable {
 		/**
 		 * Test if incoming assset is different from this IModifier's setting.
 		 * asset is always type of object defined
@@ -29,11 +31,6 @@ namespace AssetBundleGraph {
 		 * Draw Inspector GUI for this Modifier.
 		 */ 
 		void OnInspectorGUI (Action onValueChanged);
-
-		/**
-		 * Serialize this Modifier to JSON using JsonUtility.
-		 */ 
-		string Serialize();
 	}
 
 	/**
@@ -166,14 +163,6 @@ namespace AssetBundleGraph {
 				return !string.IsNullOrEmpty(attr.Name) && attr.For != null;
 			}
 			return false;
-		}
-
-		public static IModifier CreateModifier(NodeData node, BuildTarget target) {
-			return CreateModifier(node, BuildTargetUtility.TargetToGroup(target));
-		}
-
-		public static IModifier CreateModifier(NodeData node, BuildTargetGroup targetGroup) {
-			return InstanceDataUtility<IModifier>.CreateInstance(node, targetGroup);
 		}
 
 		public static IModifier CreateModifier(string guiName, Type targetType) {

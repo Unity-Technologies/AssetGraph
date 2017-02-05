@@ -7,13 +7,13 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 
 	/**
 	 * IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.
 	 * Subclass of IPrefabBuilder must have CUstomPrefabBuilder attribute.
 	 */
-	public interface IPrefabBuilder {
+	public interface IPrefabBuilder : IJSONSerializable {
 		/**
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.
@@ -29,11 +29,6 @@ namespace AssetBundleGraph {
 		 * Draw Inspector GUI for this PrefabBuilder.
 		 */ 
 		void OnInspectorGUI (Action onValueChanged);
-
-		/**
-		 * Serialize this PrefabBuilder to JSON using JsonUtility.
-		 */ 
-		string Serialize();
 	}
 
 	[AttributeUsage(AttributeTargets.Class)] 
@@ -173,14 +168,6 @@ namespace AssetBundleGraph {
 			}
 
 			return null;
-		}
-
-		public static IPrefabBuilder CreatePrefabBuilder(NodeData node, BuildTarget target) {
-			return CreatePrefabBuilder(node, BuildTargetUtility.TargetToGroup(target));
-		}
-
-		public static IPrefabBuilder CreatePrefabBuilder(NodeData node, BuildTargetGroup targetGroup) {
-			return InstanceDataUtility<IPrefabBuilder>.CreateInstance(node, targetGroup);
 		}
 
 		public static IPrefabBuilder CreatePrefabBuilder(string guiName) {

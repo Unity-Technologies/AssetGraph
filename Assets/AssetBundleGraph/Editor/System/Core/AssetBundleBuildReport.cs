@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 /**
 	static executor for AssetBundleGraph's data.
 */
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class AssetBundleBuildReport {
 
 		private class AssetBundleBuildReportManager {
@@ -71,14 +71,14 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private NodeData m_node;
+		private V2.NodeData m_node;
 		private AssetBundleManifest m_manifest;
 		private AssetBundleBuild[] m_bundleBuild;
 		private List<AssetReference> m_builtBundles;
 		private Dictionary<string, List<AssetReference>> m_assetGroups;
 		private Dictionary<string, List<string>> m_bundleNamesAndVariants;
 
-		public NodeData Node {
+		public V2.NodeData Node {
 			get {
 				return m_node;
 			}
@@ -122,7 +122,7 @@ namespace AssetBundleGraph {
 		}
 
 		public AssetBundleBuildReport(
-			NodeData node,
+			V2.NodeData node,
 			AssetBundleManifest m, 
 			AssetBundleBuild[] bb, 
 			List<AssetReference> builtBundles,
@@ -159,7 +159,7 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		private NodeData m_nodeData;
+		private V2.NodeData m_nodeData;
 
 		private List<Entry> m_exportedItems;
 		private List<ErrorEntry> m_failedItems;
@@ -176,13 +176,13 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public NodeData Node {
+		public V2.NodeData Node {
 			get {
 				return m_nodeData;
 			}
 		}
 
-		public ExportReport(NodeData node) {
+		public ExportReport(V2.NodeData node) {
 			m_nodeData = node;
 
 			m_exportedItems = new List<Entry>();

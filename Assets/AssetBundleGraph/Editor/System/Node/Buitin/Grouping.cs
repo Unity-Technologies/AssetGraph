@@ -1,0 +1,182 @@
+
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using UnityEngine;
+using UnityEditor;
+
+namespace AssetBundleGraph.V2
+{
+	[CustomNode("Grouping", 50)]
+	public class Grouping : INode {
+
+		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
+
+		public string ActiveStyle {
+			get {
+				return string.Empty;
+			}
+		}
+
+		public string InactiveStyle {
+			get {
+				return string.Empty;
+			}
+		}
+
+		public void Initialize(NodeData data) {
+		}
+
+		public INode Clone() {
+			return null;
+		}
+
+		public bool Validate(List<NodeData> allNodes, List<ConnectionData> allConnections) {
+			return false;
+		}
+
+		public bool IsEqual(INode node) {
+			return false;
+		}
+
+		public string Serialize() {
+			return string.Empty;
+		}
+
+		public bool IsValidInputConnectionPoint(ConnectionPointData point) {
+			return false;
+		}
+
+		public bool CanConnectFrom(INode fromNode) {
+			return false;
+		}
+
+		public bool OnAssetsReimported(BuildTarget target, 
+			string[] importedAssets, 
+			string[] deletedAssets, 
+			string[] movedAssets, 
+			string[] movedFromAssetPaths)
+		{
+			return false;
+		}
+
+		public void OnNodeGUI(NodeGUI node) {
+		}
+
+		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			if (m_groupingKeyword == null) {
+				return;
+			}
+
+			EditorGUILayout.HelpBox("Grouping: Create group of assets.", MessageType.Info);
+			editor.UpdateNodeName(node);
+
+			GUILayout.Space(10f);
+
+			//Show target configuration tab
+			editor.DrawPlatformSelector(node);
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				var disabledScope = editor.DrawOverrideTargetToggle(node, m_groupingKeyword.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
+					using(new RecordUndoScope("Remove Target Grouping Keyword Settings", node, true)){
+						if(enabled) {
+							m_groupingKeyword[editor.CurrentEditingGroup] = m_groupingKeyword.DefaultValue;
+						} else {
+							m_groupingKeyword.Remove(editor.CurrentEditingGroup);
+						}
+					}
+				});
+
+				using (disabledScope) {
+					var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",m_groupingKeyword[editor.CurrentEditingGroup]);
+					EditorGUILayout.HelpBox(
+						"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
+						MessageType.Info);
+
+					if (newGroupingKeyword != m_groupingKeyword[editor.CurrentEditingGroup]) {
+						using(new RecordUndoScope("Change Grouping Keywords", node, true)){
+							m_groupingKeyword[editor.CurrentEditingGroup] = newGroupingKeyword;
+						}
+					}
+				}
+			}
+		}
+
+		public void Prepare (BuildTarget target, 
+			NodeData node, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
+			PerformGraph.Output Output) 
+		{
+			GroupingOutput(target, node, incoming, connectionsToOutput, Output);
+		}
+
+		public void Build (BuildTarget target, 
+			NodeData node, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
+			PerformGraph.Output Output,
+			Action<NodeData, string, float> progressFunc) 
+		{
+			//Operation is completed furing Setup() phase, so do nothing in Run.
+		}
+
+
+		private void GroupingOutput (BuildTarget target, 
+			NodeData node, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<ConnectionData> connectionsToOutput, 
+			PerformGraph.Output Output) 
+		{
+
+			ValidateGroupingKeyword(
+				m_groupingKeyword[target],
+				() => {
+					throw new NodeException("Grouping Keyword can not be empty.", node.Id);
+				},
+				() => {
+					throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", AssetBundleGraphSettings.KEYWORD_WILDCARD, m_groupingKeyword[target]), node.Id);
+				}
+			);
+
+			if(incoming == null || connectionsToOutput == null || Output == null) {
+				return;
+			}
+
+			var outputDict = new Dictionary<string, List<AssetReference>>();
+			var groupingKeyword = m_groupingKeyword[target];
+			var split = groupingKeyword.Split(AssetBundleGraphSettings.KEYWORD_WILDCARD);
+			var groupingKeywordPrefix  = split[0];
+			var groupingKeywordPostfix = split[1];
+			var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
+
+			foreach(var ag in incoming) {
+				foreach (var assets in ag.assetGroups.Values) {
+					foreach(var a in assets) {
+						var targetPath = a.path;
+
+						var match = regex.Match(targetPath);
+
+						if (match.Success) {
+							var newGroupingKey = match.Groups[1].Value;
+							if (!outputDict.ContainsKey(newGroupingKey)) {
+								outputDict[newGroupingKey] = new List<AssetReference>();
+							}
+							outputDict[newGroupingKey].Add(a);
+						}
+					}
+				}
+			}
+
+			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+				null : connectionsToOutput.First();
+			Output(dst, outputDict);
+		}
+
+		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {
+			if (string.IsNullOrEmpty(currentGroupingKeyword)) NullOrEmpty();
+			if (!currentGroupingKeyword.Contains(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString())) ShouldContainWildCardKey();
+		}
+	}
+}

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
-namespace AssetBundleGraph {
+namespace AssetBundleGraph.V2 {
 	public class CUIUtility {
 
 		private static readonly string kCommandMethod = "AssetBundleGraph.CUIUtility.BuildFromCommandline";
@@ -72,7 +72,7 @@ namespace AssetBundleGraph {
 
 				LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
-				if (!SaveData.IsSaveDataAvailableAtDisk()) {
+				if (!V2.SaveData.IsSaveDataAvailableAtDisk()) {
 					LogUtility.Logger.Log("AssetBundleGraph save data not found. Aborting...");
 					return;
 				}
@@ -91,10 +91,10 @@ namespace AssetBundleGraph {
 					return;
 				}
 
-				NodeData lastNodeData = null;
+				V2.NodeData lastNodeData = null;
 				float lastProgress = 0.0f;
 
-				Action<NodeData, string, float> updateHandler = (NodeData node, string message, float progress) => {
+				Action<V2.NodeData, string, float> updateHandler = (V2.NodeData node, string message, float progress) => {
 					if(node != null && lastNodeData != node) {
 						lastNodeData = node;
 						lastProgress = progress;
