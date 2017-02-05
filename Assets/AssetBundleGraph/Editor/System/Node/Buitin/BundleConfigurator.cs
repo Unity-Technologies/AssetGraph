@@ -96,7 +96,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return false;
+			if(!m_useGroupAsVariants) {
+				if(m_variants.Count > 0 && m_variants.Find(v => v.ConnectionPointId == point.Id) == null) 
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 
 		public bool CanConnectFrom(INode fromNode) {

@@ -153,17 +153,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-
 			return m_data.Operation.Object.IsValidInputConnectionPoint(point);
-//
-//			if(m_data.Kind == NodeKind.BUNDLECONFIG_GUI && !m_data.BundleConfigUseGroupAsVariants) {
-//				if(m_data.Variants.Count > 0 && m_data.Variants.Find(v => v.ConnectionPointId == point.Id) == null) 
-//				{
-//					return false;
-//				}
-//			}
-//
-//			return true;
 		}
 
 		/**

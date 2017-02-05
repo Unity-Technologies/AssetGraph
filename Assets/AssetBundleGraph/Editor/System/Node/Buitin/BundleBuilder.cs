@@ -54,7 +54,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return false;
+			return true;
 		}
 
 		public bool CanConnectFrom(INode fromNode) {
