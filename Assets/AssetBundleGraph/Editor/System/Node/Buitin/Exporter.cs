@@ -50,7 +50,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			Exporter rhs = node as Exporter;
+			return rhs != null && 
+				m_exportPath == rhs.m_exportPath &&
+				m_exportOption == rhs.m_exportOption;
 		}
 
 		public string Serialize() {

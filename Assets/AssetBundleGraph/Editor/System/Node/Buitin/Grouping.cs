@@ -42,7 +42,9 @@ namespace UnityEngine.AssetBundles.GraphTool
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			Grouping rhs = node as Grouping;
+			return rhs != null && 
+				m_groupingKeyword == rhs.m_groupingKeyword;
 		}
 
 		public string Serialize() {

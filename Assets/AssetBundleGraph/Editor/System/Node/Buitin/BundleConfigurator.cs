@@ -76,7 +76,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			BundleConfigurator rhs = node as BundleConfigurator;
+			return rhs != null && 
+				m_bundleNameTemplate == rhs.m_bundleNameTemplate &&
+				m_useGroupAsVariants == rhs.m_useGroupAsVariants &&
+				m_variants.SequenceEqual(rhs.m_variants);
 		}
 
 		public string Serialize() {

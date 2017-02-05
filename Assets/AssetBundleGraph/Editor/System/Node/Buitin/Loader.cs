@@ -42,7 +42,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			Loader rhs = node as Loader;
+			return rhs != null && 
+				m_loadPath == rhs.m_loadPath;
 		}
 
 		public string Serialize() {

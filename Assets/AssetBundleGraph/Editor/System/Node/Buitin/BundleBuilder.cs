@@ -45,7 +45,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			BundleBuilder rhs = node as BundleBuilder;
+			return rhs != null && 
+				m_enabledBundleOptions == rhs.m_enabledBundleOptions;
 		}
 
 		public string Serialize() {

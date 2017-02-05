@@ -43,7 +43,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			Filter rhs = node as Filter;
+			return rhs != null && 
+				m_filter.SequenceEqual(rhs.m_filter);
 		}
 
 		public string Serialize() {

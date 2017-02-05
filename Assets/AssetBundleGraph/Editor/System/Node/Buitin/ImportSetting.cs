@@ -42,7 +42,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			ImportSetting rhs = node as ImportSetting;
+			return rhs != null;
 		}
 
 		public string Serialize() {

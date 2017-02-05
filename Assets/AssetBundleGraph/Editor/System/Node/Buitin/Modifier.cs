@@ -42,7 +42,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			Modifier rhs = node as Modifier;
+			return rhs != null && 
+				m_instance == rhs.m_instance;
 		}
 
 		public string Serialize() {

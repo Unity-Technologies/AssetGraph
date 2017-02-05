@@ -57,7 +57,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public bool IsEqual(INode node) {
-			return false;
+			PrefabBuilder rhs = node as PrefabBuilder;
+			return rhs != null && 
+				m_instance == rhs.m_instance &&
+				m_replacePrefabOptions == rhs.m_replacePrefabOptions;
 		}
 
 		public string Serialize() {
