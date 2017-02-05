@@ -31,7 +31,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public INode Clone() {
-			return null;
+			var newNode = new Modifier();
+			newNode.m_instance = m_instance;
+
+			return newNode;
 		}
 
 		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
@@ -43,7 +46,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public string Serialize() {
-			return string.Empty;
+			return JsonUtility.ToJson(this);
 		}
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {

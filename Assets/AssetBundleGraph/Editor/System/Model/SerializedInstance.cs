@@ -31,6 +31,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_instanceData = null;
 		}
 
+		public SerializedInstance(SerializedInstance<T> instance) {
+			m_className = instance.m_className;
+			m_instanceData = instance.m_instanceData;
+		}
+
 		public SerializedInstance(T obj) {
 			UnityEngine.Assertions.Assert.IsNotNull((IJSONSerializable)obj);
 

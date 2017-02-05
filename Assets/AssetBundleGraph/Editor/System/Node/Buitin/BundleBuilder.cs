@@ -15,6 +15,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private static readonly string key = "0";
 
+		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
+
 		public string ActiveStyle {
 			get {
 				return "flow node 6 on";
@@ -27,13 +29,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
 
 		public void Initialize(Model.NodeData data) {
 		}
 
 		public INode Clone() {
-			return null;
+			var newNode = new BundleBuilder();
+			newNode.m_enabledBundleOptions = m_enabledBundleOptions;
+
+			return newNode;
 		}
 
 		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
@@ -45,7 +49,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public string Serialize() {
-			return string.Empty;
+			return JsonUtility.ToJson(this);
 		}
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {

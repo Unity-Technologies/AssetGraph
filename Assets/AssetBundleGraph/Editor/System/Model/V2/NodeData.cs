@@ -16,13 +16,18 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 	public class FilterEntry {
 		[SerializeField] private string m_filterKeyword;
 		[SerializeField] private string m_filterKeytype;
-		[SerializeField] private ConnectionPointData m_point; // deprecated. it is here for compatibility
 		[SerializeField] private string m_pointId;
 
 		public FilterEntry(string keyword, string keytype, ConnectionPointData point) {
 			m_filterKeyword = keyword;
 			m_filterKeytype = keytype;
 			m_pointId = point.Id;
+		}
+
+		public FilterEntry(FilterEntry e) {
+			m_filterKeyword = e.m_filterKeyword;
+			m_filterKeytype = e.m_filterKeytype;
+			m_pointId = e.m_pointId;
 		}
 
 		public string FilterKeyword {
@@ -43,9 +48,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 		public string ConnectionPointId {
 			get {
-				if(m_pointId == null && m_point != null) {
-					m_pointId = m_point.Id;
-				}
 				return m_pointId; 
 			}
 		}

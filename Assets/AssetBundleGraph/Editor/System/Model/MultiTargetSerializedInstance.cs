@@ -23,6 +23,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		[SerializeField] private List<Entry> m_values;
 
+		public MultiTargetSerializedInstance(MultiTargetSerializedInstance<T> rhs) {
+			m_values = new List<Entry>();
+			foreach(var v in rhs.m_values) {
+				m_values.Add(new Entry(v.targetGroup, v.value));
+			}
+		}
+
 		public MultiTargetSerializedInstance(SerializedInstance<T> value) {
 			m_values = new List<Entry>();
 			this[BuildTargetUtility.DefaultTarget] = value;

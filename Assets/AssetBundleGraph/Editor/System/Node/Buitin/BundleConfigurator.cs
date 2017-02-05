@@ -16,12 +16,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[Serializable]
 		public class Variant {
 			[SerializeField] private string m_name;
-			[SerializeField] private Model.ConnectionPointData m_point; // deprecated. it is here for compatibility
 			[SerializeField] private string m_pointId;
 
 			public Variant(string name, Model.ConnectionPointData point) {
 				m_name = name;
 				m_pointId = point.Id;
+			}
+			public Variant(Variant v) {
+				m_name = v.m_name;
+				m_pointId = v.m_pointId;
 			}
 
 			public string Name {
@@ -34,9 +37,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 			public string ConnectionPointId {
 				get {
-					if(m_pointId == null && m_point != null) {
-						m_pointId = m_point.Id;
-					}
 					return m_pointId; 
 				}
 			}
@@ -62,7 +62,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public INode Clone() {
-			return null;
+			var newNode = new BundleConfigurator();
+			newNode.m_bundleNameTemplate = m_bundleNameTemplate;
+			newNode.m_variants = new List<Variant>(m_variants.Count);
+			m_variants.ForEach(v => newNode.m_variants.Add(new Variant(v)));
+			newNode.m_useGroupAsVariants = m_useGroupAsVariants;
+
+			return newNode;
 		}
 
 		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
@@ -74,7 +80,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public string Serialize() {
-			return string.Empty;
+			return JsonUtility.ToJson(this);
 		}
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
