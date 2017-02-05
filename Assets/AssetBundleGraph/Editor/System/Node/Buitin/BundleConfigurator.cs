@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Bundle Configurator", 60)]
-	public class BundleConfigurator : INode {
+	public class BundleConfigurator : Node {
 
 		[Serializable]
 		public class Variant {
@@ -46,31 +46,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private List<Variant> m_variants;
 		[SerializeField] private bool m_useGroupAsVariants;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 5 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 5";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public Model.NodeOutputSemantics NodeOutputType {
+		public override Model.NodeOutputSemantics NodeOutputType {
 			get {
 				return Model.NodeOutputSemantics.AssetBundleConfigurations;
 			}
 		}
 
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			m_bundleNameTemplate = new SerializableMultiTargetString(Model.Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 			m_useGroupAsVariants = false;
 			m_variants = new List<Variant>();
@@ -79,7 +74,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new BundleConfigurator();
 			newNode.m_bundleNameTemplate = new SerializableMultiTargetString(m_bundleNameTemplate);
 			newNode.m_variants = new List<Variant>(m_variants.Count);
@@ -95,7 +90,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			BundleConfigurator rhs = node as BundleConfigurator;
 			return rhs != null && 
 				m_bundleNameTemplate == rhs.m_bundleNameTemplate &&
@@ -103,11 +98,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_variants.SequenceEqual(rhs.m_variants);
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
+		public override bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			if(!m_useGroupAsVariants) {
 				if(m_variants.Count > 0 && m_variants.Find(v => v.ConnectionPointId == point.Id) == null) 
 				{
@@ -115,15 +110,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
 		}
 
 		private void AddVariant(Model.NodeData n, string name) {
@@ -152,12 +138,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			p.Label = variant.Name;
 		}
 
-
-
-		public void OnNodeGUI(NodeGUI node) {
-		}
-			
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			if (m_bundleNameTemplate == null) return;
 
 			EditorGUILayout.HelpBox("BundleConfigurator: Create asset bundle settings with given group of assets.", MessageType.Info);
@@ -256,7 +237,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -363,7 +344,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 		
-		public void Build (BuildTarget target, 
+		public override void Build (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

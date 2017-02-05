@@ -198,81 +198,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool isAnyNodeAffected = false;
 
 			foreach(var n in saveData.Nodes) {
-				isAnyNodeAffected |= n.Operation.Object.OnAssetsReimported(target, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+				bool affected = n.Operation.Object.OnAssetsReimported(m_streamManager, target, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+				if(affected) {
+					n.NeedsRevisit = true;
+				}
+				isAnyNodeAffected |= affected;
 			}
-
-//			Regex importSettingsIdMatch = new Regex("ImportSettings\\/([0-9a-z\\-]+)\\/");
-//
-//			foreach(var imported in importedAssets) {
-//				Match m = importSettingsIdMatch.Match(imported);
-//				if(m.Success) {
-//					Group id = m.Groups[1];
-//					Model.NodeData n = saveData.Nodes.Find(v => v.Id == id.ToString());
-//					UnityEngine.Assertions.Assert.IsNotNull(n);
-//
-//					n.NeedsRevisit = true;
-//					isAnyNodeAffected = true;
-//				}
-//			}
-//
-//			foreach(var node in saveData.Nodes) {
-//				if(node.Kind == NodeKind.LOADER_GUI) {
-//					var loadPath = node.LoaderLoadPath[target];
-//					if(string.IsNullOrEmpty(loadPath)) {
-//						// ignore config file path update
-//						var notConfigFilePath = importedAssets.Where( path => !path.Contains(Settings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
-//						if(!string.IsNullOrEmpty(notConfigFilePath)) {
-//							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-//							node.NeedsRevisit = true;
-//							isAnyNodeAffected = true;
-//						}
-//					}
-//
-//					var connOut = saveData.Connections.Find(c => c.FromNodeId == node.Id);
-//
-//					if( connOut != null ) {
-//
-//						var assetGroup = m_streamManager.FindAssetGroup(connOut);
-//						var importPath = "Assets/" + node.LoaderLoadPath[target];
-//
-//						foreach(var path in importedAssets) {
-//							if(path.StartsWith(importPath)) {
-//								// if this is reimport, we don't need to redo Loader
-//								if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
-//									LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-//									node.NeedsRevisit = true;
-//									isAnyNodeAffected = true;
-//									break;
-//								}
-//							}
-//						}
-//						foreach(var path in deletedAssets) {
-//							if(path.StartsWith(importPath)) {
-//								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-//								node.NeedsRevisit = true;
-//								isAnyNodeAffected = true;
-//								break;
-//							}
-//						}
-//						foreach(var path in movedAssets) {
-//							if(path.StartsWith(importPath)) {
-//								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-//								node.NeedsRevisit = true;
-//								isAnyNodeAffected = true;
-//								break;
-//							}
-//						}
-//						foreach(var path in movedFromAssetPaths) {
-//							if(path.StartsWith(importPath)) {
-//								LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", node.Name);
-//								node.NeedsRevisit = true;
-//								isAnyNodeAffected = true;
-//								break;
-//							}
-//						}
-//					}
-//				}
-//			}
 
 			if(isAnyNodeAffected) {
 				Perform(m_lastTarget, false, false, null);

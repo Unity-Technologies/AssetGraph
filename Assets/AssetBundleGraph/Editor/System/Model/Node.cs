@@ -10,59 +10,78 @@ using System.Linq;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
-	public interface INode : IJSONSerializable {
+	public abstract class Node : IJSONSerializable {
 
-		string ActiveStyle {
-			get;
+		protected Model.NodeData m_node;
+
+		public virtual Model.NodeOutputSemantics NodeInputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
 		}
 
-		string InactiveStyle {
-			get;
+		public virtual Model.NodeOutputSemantics NodeOutputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
 		}
 
-		Model.NodeOutputSemantics NodeInputType {
-			get;
+		public abstract string ActiveStyle 	 { get; }
+		public abstract string InactiveStyle { get; }
+		public abstract Node Clone();
+		public abstract bool IsEqual(Node node);
+		public abstract string Serialize();
+
+		public virtual void Initialize(Model.NodeData data) {
+			m_node = data;
 		}
 
-		Model.NodeOutputSemantics NodeOutputType {
-			get;
+		public virtual bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
+			return true;
 		}
 
 		/**
 			Prepare is the method which validates and perform necessary setups in order to build.
 		*/
-		void Prepare (BuildTarget target, 
+		public virtual void Prepare (BuildTarget target, 
 			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
-			PerformGraph.Output outputFunc);
+			PerformGraph.Output outputFunc) 
+		{
+			// Do nothing
+		}
 
 		/**
 			Build is the method which actualy performs the build. It is always called after Setup() is performed.
 		*/
-		void Build (BuildTarget target, 
+		public virtual void Build (BuildTarget target, 
 			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output outputFunc,
-			Action<Model.NodeData, string, float> progressFunc);
+			Action<Model.NodeData, string, float> progressFunc)
+		{
+			// Do nothing
+		}
 
-		void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor);
-		void OnNodeGUI(NodeGUI node);
+		public virtual void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor) {
+			// Do nothing
+		}
+		public virtual void OnNodeGUI(NodeGUI node) {
+			// Do nothing
+		}
 
-		void Initialize(Model.NodeData data);
-
-		INode Clone();
-
-		bool IsEqual(INode node);
-
-		bool IsValidInputConnectionPoint(Model.ConnectionPointData point);
-
-		bool OnAssetsReimported(BuildTarget target, 
+		public virtual bool OnAssetsReimported(
+			AssetReferenceStreamManager streamManager,
+			BuildTarget target, 
 			string[] importedAssets, 
 			string[] deletedAssets, 
 			string[] movedAssets, 
-			string[] movedFromAssetPaths);
+			string[] movedFromAssetPaths)
+		{
+			return false;
+		}
 	}
 
 	[AttributeUsage(AttributeTargets.Class)] 
@@ -105,8 +124,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			type = t;
 		}
 
-		public INode CreateInstance() {
-			return (INode) type.Assembly.CreateInstance(type.AssemblyQualifiedName);
+		public Node CreateInstance() {
+			return (Node) type.Assembly.CreateInstance(type.AssemblyQualifiedName);
 		}
 	}
 
@@ -129,8 +148,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var nodes = Assembly
 				.GetExecutingAssembly()
 				.GetTypes()
-				.Where(t => t != typeof(INode))
-				.Where(t => typeof(INode).IsAssignableFrom(t));
+				.Where(t => t != typeof(Node))
+				.Where(t => typeof(Node).IsAssignableFrom(t));
 
 			foreach (var type in nodes) {
 				CustomNode attr = 
@@ -150,7 +169,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return attr != null && !string.IsNullOrEmpty(attr.Name);
 		}
 
-		public static string GetNodeGUIName(INode node) {
+		public static string GetNodeGUIName(Node node) {
 			CustomNode attr = 
 				node.GetType().GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
 			if(attr != null) {
@@ -183,9 +202,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return CustomNode.kDEFAULT_PRIORITY;
 		}
 
-		public static INode CreateNodeInstance(string className) {
+		public static Node CreateNodeInstance(string className) {
 			if(className != null) {
-				return (INode) Assembly.GetExecutingAssembly().CreateInstance(className);
+				return (Node) Assembly.GetExecutingAssembly().CreateInstance(className);
 			}
 			return null;
 		}

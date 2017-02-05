@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Exporter", 80)]
-	public class Exporter : INode {
+	public class Exporter : Node {
 
 		public enum ExportOption : int {
 			ErrorIfNoExportDirectoryFound,
@@ -22,31 +22,32 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private SerializableMultiTargetString m_exportPath;
 		[SerializeField] private SerializableMultiTargetInt m_exportOption;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 0 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 0";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
+		public override Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.Any;
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeOutputType {
+		public override Model.NodeOutputSemantics NodeOutputType {
 			get {
 				return Model.NodeOutputSemantics.None;
 			}
 		}
 
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			//Take care of this with Initialize(NodeData)
 			m_exportPath = new SerializableMultiTargetString();
 			m_exportOption = new SerializableMultiTargetInt();
@@ -54,7 +55,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new Exporter();
 			newNode.m_exportPath = new SerializableMultiTargetString(m_exportPath);
 			newNode.m_exportOption = new SerializableMultiTargetInt(m_exportOption);
@@ -62,34 +63,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			Exporter rhs = node as Exporter;
 			return rhs != null && 
 				m_exportPath == rhs.m_exportPath &&
 				m_exportOption == rhs.m_exportOption;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
-		}
-
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			
 			if (m_exportPath == null) {
 				return;
@@ -174,7 +159,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -194,7 +179,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			);
 		}
 		
-		public void Build (BuildTarget target, 
+		public override void Build (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

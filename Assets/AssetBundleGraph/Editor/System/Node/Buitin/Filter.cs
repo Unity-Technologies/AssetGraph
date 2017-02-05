@@ -11,41 +11,30 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Filter", 20)]
-	public class Filter : INode {
+	public class Filter : Node {
 
 		[SerializeField] private List<Model.FilterEntry> m_filter;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 1 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 1";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public Model.NodeOutputSemantics NodeOutputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			m_filter = new List<Model.FilterEntry>();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new Filter();
 			newNode.m_filter = new List<Model.FilterEntry>(m_filter.Count);
 			m_filter.ForEach(e => newNode.m_filter.Add(new Model.FilterEntry(e)));
@@ -53,7 +42,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			Filter rhs = node as Filter;
 			return rhs != null && 
 				m_filter.SequenceEqual(rhs.m_filter);
@@ -65,23 +54,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
-
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
-		}
-
+			
 		private void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
 			var menu = new GenericMenu();
 
@@ -104,7 +80,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			menu.ShowAsContext();
 		}
 
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
@@ -180,10 +156,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -193,7 +166,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			FilterAssets(node, incoming, connectionsToOutput, Output);
 		}
 
-		public void Build (BuildTarget target, 
+		public override void Build (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

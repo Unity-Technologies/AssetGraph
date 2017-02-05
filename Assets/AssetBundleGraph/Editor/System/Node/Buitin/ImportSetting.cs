@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
@@ -14,69 +15,61 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		ImportSetting is the class for apply specific setting to already imported files.
 	*/
 	[CustomNode("Import Setting", 30)]
-	public class ImportSetting : INode {
-		
-		public string ActiveStyle {
+	public class ImportSetting : Node {
+
+		public override string ActiveStyle {
 			get {
 				return "flow node 2 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 2";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public Model.NodeOutputSemantics NodeOutputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new ImportSetting();
 
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			ImportSetting rhs = node as ImportSetting;
 			return rhs != null;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
+		public override bool OnAssetsReimported(
+			AssetReferenceStreamManager streamManager,
+			BuildTarget target, 
 			string[] importedAssets, 
 			string[] deletedAssets, 
 			string[] movedAssets, 
 			string[] movedFromAssetPaths)
 		{
+			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, m_node.Id);
+
+			foreach(var imported in importedAssets) {
+				if(imported.StartsWith(samplingDirectoryPath)) {
+					return true;
+				}
+			}
+
 			return false;
 		}
 
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			
 			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -125,7 +118,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -182,16 +175,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 		
-		public void Build (BuildTarget target, 
-			Model.NodeData node, 
-			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<Model.ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
-			Action<Model.NodeData, string, float> progressFunc) 
-		{
-			//Operation is completed furing Setup() phase, so do nothing in Run.
-		}
-
 		private void SaveSampleFile(Model.NodeData node, AssetReference asset) {
 			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 			if (!Directory.Exists(samplingDirectoryPath)) {

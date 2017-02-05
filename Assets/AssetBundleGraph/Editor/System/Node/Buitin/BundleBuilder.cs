@@ -11,74 +11,63 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Bundle Builder", 70)]
-	public class BundleBuilder : INode {
+	public class BundleBuilder : Node {
 
 		private static readonly string key = "0";
 
 		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 6 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 6";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
+		public override Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.AssetBundleConfigurations;
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeOutputType {
+		public override Model.NodeOutputSemantics NodeOutputType {
 			get {
 				return Model.NodeOutputSemantics.AssetBundles;
 			}
 		}
 
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
+
 			m_enabledBundleOptions = new SerializableMultiTargetInt();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new BundleBuilder();
 			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);
 
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			BundleBuilder rhs = node as BundleBuilder;
 			return rhs != null && 
 				m_enabledBundleOptions == rhs.m_enabledBundleOptions;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths) 
-		{
-			return false;
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			if (m_enabledBundleOptions == null) {
 				return;
 			}
@@ -140,10 +129,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -201,7 +187,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 		
-		public void Build (BuildTarget target, 
+		public override void Build (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

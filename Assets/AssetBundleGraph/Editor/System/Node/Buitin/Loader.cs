@@ -11,74 +11,111 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Loader", 10)]
-	public class Loader : INode {
+	public class Loader : Node {
 
 		[SerializeField] private SerializableMultiTargetString m_loadPath;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 0 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 0";
 			}
 		}
 			
-		public Model.NodeOutputSemantics NodeInputType {
+		public override Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.None;
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeOutputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			m_loadPath = new SerializableMultiTargetString();
 
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new Loader();
 			newNode.m_loadPath = new SerializableMultiTargetString(m_loadPath);
 
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			Loader rhs = node as Loader;
 			return rhs != null && 
 				m_loadPath == rhs.m_loadPath;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
+		public override bool OnAssetsReimported(
+			AssetReferenceStreamManager streamManager,
+			BuildTarget target, 
 			string[] importedAssets, 
 			string[] deletedAssets, 
 			string[] movedAssets, 
 			string[] movedFromAssetPaths)
 		{
+			var loadPath = m_loadPath[target];
+			// if loadPath is null/empty, loader load everything except for settings
+			if(string.IsNullOrEmpty(loadPath)) {
+				// ignore config file path update
+				var notConfigFilePath = importedAssets.Where( path => !path.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
+				if(!string.IsNullOrEmpty(notConfigFilePath)) {
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+					return true;
+				}
+			}
+
+			var saveData = Model.SaveData.Data;
+			var connOut = saveData.Connections.Find(c => c.FromNodeId == m_node.Id);
+
+			if( connOut != null ) {
+
+				var assetGroup = streamManager.FindAssetGroup(connOut);
+				var importPath = string.Format("Assets/{0}", m_loadPath[target]);
+
+				foreach(var path in importedAssets) {
+					if(path.StartsWith(importPath)) {
+						// if this is reimport, we don't need to redo Loader
+						if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
+							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+							return true;
+						}
+					}
+				}
+				foreach(var path in deletedAssets) {
+					if(path.StartsWith(importPath)) {
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+						return true;
+					}
+				}
+				foreach(var path in movedAssets) {
+					if(path.StartsWith(importPath)) {
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+						return true;
+					}
+				}
+				foreach(var path in movedFromAssetPaths) {
+					if(path.StartsWith(importPath)) {
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+						return true;
+					}
+				}
+			}
 			return false;
 		}
 
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			
 			if (m_loadPath == null) {
 				return;
@@ -139,7 +176,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -160,16 +197,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			Load(target, node, connectionsToOutput, Output);
 		}
 		
-		public void Build (BuildTarget target, 
-			Model.NodeData node, 
-			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<Model.ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
-			Action<Model.NodeData, string, float> progressFunc) 
-		{
-			//Load operation is completed furing Setup() phase, so do nothing in Run.
-		}
-
 		void Load (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

@@ -12,7 +12,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Prefab Builder", 70)]
-	public class PrefabBuilder : INode {
+	public class PrefabBuilder : Node {
 
 		[SerializeField] private MultiTargetSerializedInstance<IPrefabBuilder> m_instance;
 		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
@@ -29,38 +29,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 4 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 4";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public Model.NodeOutputSemantics NodeOutputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			m_instance = new MultiTargetSerializedInstance<IPrefabBuilder>();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new PrefabBuilder();
 			newNode.m_instance = new MultiTargetSerializedInstance<IPrefabBuilder>(m_instance);
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
@@ -68,34 +57,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			PrefabBuilder rhs = node as PrefabBuilder;
 			return rhs != null && 
 				m_instance == rhs.m_instance &&
 				m_replacePrefabOptions == rhs.m_replacePrefabOptions;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
-		}
-
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
@@ -202,7 +175,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -287,7 +260,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			assets.ForEach(a => a.ReleaseData());
 		}
 
-		public void Build (BuildTarget target, 
+		public override void Build (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

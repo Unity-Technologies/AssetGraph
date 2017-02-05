@@ -11,75 +11,48 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Modifier", 40)]
-	public class Modifier : INode {
+	public class Modifier : Node {
 
 		[SerializeField] private MultiTargetSerializedInstance<IModifier> m_instance;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 2 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 2";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public Model.NodeOutputSemantics NodeOutputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			m_instance = new MultiTargetSerializedInstance<IModifier>();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new Modifier();
 			newNode.m_instance = new MultiTargetSerializedInstance<IModifier>(m_instance);
 
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			Modifier rhs = node as Modifier;
 			return rhs != null && 
 				m_instance == rhs.m_instance;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
-		}
-
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 			
 			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -192,7 +165,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -228,7 +201,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		
-		public void Build (BuildTarget target, 
+		public override void Build (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 

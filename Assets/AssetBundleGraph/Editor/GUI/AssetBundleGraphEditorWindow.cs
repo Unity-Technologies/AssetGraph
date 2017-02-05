@@ -1208,7 +1208,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 //			AddNodeGUI(newNode);
 //		}
 
-		private void AddNodeFromGUI (INode n, string guiName, float x, float y) {
+		private void AddNodeFromGUI (Node n, string guiName, float x, float y) {
 
 			string nodeName = string.Format("New {0} Node", guiName);
 			NodeGUI newNode = new NodeGUI(new Model.NodeData(nodeName, n, x, y));

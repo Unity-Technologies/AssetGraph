@@ -11,75 +11,48 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool
 {
 	[CustomNode("Grouping", 50)]
-	public class Grouping : INode {
+	public class Grouping : Node {
 
 		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
 
-		public string ActiveStyle {
+		public override string ActiveStyle {
 			get {
 				return "flow node 3 on";
 			}
 		}
 
-		public string InactiveStyle {
+		public override string InactiveStyle {
 			get {
 				return "flow node 3";
 			}
 		}
 
-		public Model.NodeOutputSemantics NodeInputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public Model.NodeOutputSemantics NodeOutputType {
-			get {
-				return Model.NodeOutputSemantics.Assets;
-			}
-		}
-
-		public void Initialize(Model.NodeData data) {
+		public override void Initialize(Model.NodeData data) {
+			base.Initialize(data);
 			m_groupingKeyword = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
-		public INode Clone() {
+		public override Node Clone() {
 			var newNode = new Grouping();
 			newNode.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
 
 			return newNode;
 		}
 
-		public bool IsEqual(INode node) {
+		public override bool IsEqual(Node node) {
 			Grouping rhs = node as Grouping;
 			return rhs != null && 
 				m_groupingKeyword == rhs.m_groupingKeyword;
 		}
 
-		public string Serialize() {
+		public override string Serialize() {
 			return JsonUtility.ToJson(this);
 		}
 
-		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
-			return true;
-		}
-
-		public bool OnAssetsReimported(BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
-		}
-
-		public void OnNodeGUI(NodeGUI node) {
-		}
-
-		public void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
 
 			if (m_groupingKeyword == null) {
 				return;
@@ -118,7 +91,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 			}
 		}
 
-		public void Prepare (BuildTarget target, 
+		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
@@ -126,17 +99,6 @@ namespace UnityEngine.AssetBundles.GraphTool
 		{
 			GroupingOutput(target, node, incoming, connectionsToOutput, Output);
 		}
-
-		public void Build (BuildTarget target, 
-			Model.NodeData node, 
-			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<Model.ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
-			Action<Model.NodeData, string, float> progressFunc) 
-		{
-			//Operation is completed furing Setup() phase, so do nothing in Run.
-		}
-
 
 		private void GroupingOutput (BuildTarget target, 
 			Model.NodeData node, 

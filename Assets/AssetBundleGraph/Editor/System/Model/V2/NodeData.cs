@@ -68,7 +68,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		[SerializeField] private string m_id;
 		[SerializeField] private float m_x;
 		[SerializeField] private float m_y;
-		[SerializeField] private SerializedInstance<INode> m_nodeInstance;
+		[SerializeField] private SerializedInstance<Node> m_nodeInstance;
 		[SerializeField] private List<ConnectionPointData> m_inputPoints; 
 		[SerializeField] private List<ConnectionPointData> m_outputPoints;
 
@@ -100,7 +100,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				return m_id;
 			}
 		}
-		public SerializedInstance<INode> Operation {
+		public SerializedInstance<Node> Operation {
 			get {
 				return m_nodeInstance;
 			}
@@ -140,13 +140,13 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		/*
 		 * Constructor used to create new node from GUI
 		 */ 
-		public NodeData(string name, INode node, float x, float y) {
+		public NodeData(string name, Node node, float x, float y) {
 
 			m_id = Guid.NewGuid().ToString();
 			m_name = name;
 			m_x = x;
 			m_y = y;
-			m_nodeInstance = new SerializedInstance<INode>(node);
+			m_nodeInstance = new SerializedInstance<Node>(node);
 			m_nodeNeedsRevisit = false;
 
 			m_inputPoints  = new List<ConnectionPointData>();
