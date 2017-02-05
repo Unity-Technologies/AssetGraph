@@ -28,6 +28,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public Model.NodeOutputSemantics NodeInputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
+		}
+
+		public Model.NodeOutputSemantics NodeOutputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
+		}
+
 		public void Initialize(Model.NodeData data) {
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
@@ -50,10 +62,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
-		}
-
-		public bool CanConnectFrom(INode fromNode) {
-			return false;
 		}
 
 		public bool OnAssetsReimported(BuildTarget target, 

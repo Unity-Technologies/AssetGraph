@@ -41,6 +41,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public Model.NodeOutputSemantics NodeInputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
+		}
+
+		public Model.NodeOutputSemantics NodeOutputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
+		}
+
 		public void Initialize(Model.NodeData data) {
 			m_instance = new MultiTargetSerializedInstance<IPrefabBuilder>();
 
@@ -69,10 +81,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
-		}
-
-		public bool CanConnectFrom(INode fromNode) {
-			return false;
 		}
 
 		public bool OnAssetsReimported(BuildTarget target, 

@@ -1231,7 +1231,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		*/
 		private void HandleNodeEvent (NodeEvent e) {
 			switch (modifyMode) {
-			case ModifyMode.CONNECTING: {
+			case ModifyMode.CONNECTING: 
 				switch (e.eventType) {
 					/*
 						handling
@@ -1284,7 +1284,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						var label = startConnectionPoint.Label;
 
 						// if two nodes are not supposed to connect, dismiss
-						if(!endNode.Data.Operation.Object.CanConnectFrom(startNode.Data.Operation.Object)) {
+						if(!Model.ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
 							break;
 						}
 
@@ -1335,7 +1335,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						var label = startConnectionPoint.Label;
 
 						// if two nodes are not supposed to connect, dismiss
-						if(!startNode.Data.Operation.Object.CanConnectFrom(endNode.Data.Operation.Object)) {
+						if(!Model.ConnectionData.CanConnect(startNode.Data, endNode.Data)) {
 							break;
 						}
 
@@ -1350,8 +1350,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 				break;
-			}
-			case ModifyMode.NONE: {
+			case ModifyMode.NONE:
 				switch (e.eventType) {
 					/*
 						node move detected.
@@ -1515,7 +1514,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 				break;
-				}
 			}
 
 			switch (e.eventType) {

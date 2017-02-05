@@ -58,6 +58,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public Model.NodeOutputSemantics NodeInputType {
+			get {
+				return Model.NodeOutputSemantics.Assets;
+			}
+		}
+
+		public Model.NodeOutputSemantics NodeOutputType {
+			get {
+				return Model.NodeOutputSemantics.AssetBundleConfigurations;
+			}
+		}
+
 		public void Initialize(Model.NodeData data) {
 			m_bundleNameTemplate = new SerializableMultiTargetString(Model.Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 			m_useGroupAsVariants = false;
@@ -103,10 +115,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 			return true;
-		}
-
-		public bool CanConnectFrom(INode fromNode) {
-			return false;
 		}
 
 		public bool OnAssetsReimported(BuildTarget target, 

@@ -12,6 +12,14 @@ using UnityEngine.AssetBundles.GraphTool;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
+	public enum NodeOutputSemantics : uint {
+		None 						= 0,
+		Any  						= 0xFFFFFFFF,
+		Assets						= 1,
+		AssetBundleConfigurations 	= 2,
+		AssetBundles 				= 4
+	}
+
 	/*
 	 * connection data saved in/to Json
 	 */ 
@@ -123,61 +131,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return json;
 		}
 
-//		public static bool CanConnect (NodeData from, NodeData to) {
-//			switch (from.Kind) {
-//			case NodeKind.GROUPING_GUI:
-//				{
-//					switch (to.Kind) {
-//					case NodeKind.GROUPING_GUI:
-//					case NodeKind.PREFABBUILDER_GUI:
-//					case NodeKind.BUNDLECONFIG_GUI:
-//						return true;
-//					}
-//					return false;
-//				}
-//
-//			case NodeKind.LOADER_GUI:
-//			case NodeKind.FILTER_GUI:
-//			case NodeKind.IMPORTSETTING_GUI:			
-//			case NodeKind.MODIFIER_GUI:
-//			case NodeKind.PREFABBUILDER_GUI:
-//				{
-//					switch (to.Kind) {
-//					case NodeKind.BUNDLEBUILDER_GUI:
-//						return false;
-//					}
-//					return true;
-//				}
-//
-//			case NodeKind.EXPORTER_GUI:
-//				{
-//					// there is no output from exporter
-//					return false;
-//				}
-//
-//			case NodeKind.BUNDLEBUILDER_GUI: 
-//				{
-//					switch (to.Kind) {
-//					case NodeKind.FILTER_GUI:
-//					case NodeKind.GROUPING_GUI:
-//					case NodeKind.EXPORTER_GUI:
-//					case NodeKind.BUNDLECONFIG_GUI:
-//						return true;
-//					}
-//					return false;
-//				}
-//			case NodeKind.BUNDLECONFIG_GUI: 
-//				{
-//					switch (to.Kind) {
-//					case NodeKind.BUNDLEBUILDER_GUI: 
-//						return true;
-//					}
-//					return false;
-//				}
-//			}
-//			return true;
-//		}
-
 		/*
 		 * Checks deserialized ConnectionData, and make some changes if necessary
 		 * return false if any changes are perfomed.
@@ -212,6 +165,14 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 
 			return true;
+		}
+
+		public static bool CanConnect (NodeData from, NodeData to) {
+
+			var inType  = (uint)to.Operation.Object.NodeInputType;
+			var outType = (uint)from.Operation.Object.NodeOutputType;
+
+			return (inType & outType) > 0;
 		}
 	}
 }

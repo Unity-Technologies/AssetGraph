@@ -20,6 +20,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			get;
 		}
 
+		Model.NodeOutputSemantics NodeInputType {
+			get;
+		}
+
+		Model.NodeOutputSemantics NodeOutputType {
+			get;
+		}
+
 		/**
 			Prepare is the method which validates and perform necessary setups in order to build.
 		*/
@@ -46,13 +54,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		INode Clone();
 
-//		bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections);
-//
 		bool IsEqual(INode node);
 
 		bool IsValidInputConnectionPoint(Model.ConnectionPointData point);
-
-		bool CanConnectFrom(INode fromNode);
 
 		bool OnAssetsReimported(BuildTarget target, 
 			string[] importedAssets, 

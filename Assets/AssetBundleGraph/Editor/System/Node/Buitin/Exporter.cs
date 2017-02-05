@@ -34,6 +34,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public Model.NodeOutputSemantics NodeInputType {
+			get {
+				return Model.NodeOutputSemantics.Any;
+			}
+		}
+
+		public Model.NodeOutputSemantics NodeOutputType {
+			get {
+				return Model.NodeOutputSemantics.None;
+			}
+		}
+
 		public void Initialize(Model.NodeData data) {
 			//Take care of this with Initialize(NodeData)
 			m_exportPath = new SerializableMultiTargetString();
@@ -63,10 +75,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
-		}
-
-		public bool CanConnectFrom(INode fromNode) {
-			return false;
 		}
 
 		public bool OnAssetsReimported(BuildTarget target, 

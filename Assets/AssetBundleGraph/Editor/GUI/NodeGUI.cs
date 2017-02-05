@@ -270,7 +270,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var defaultPointTex = NodeGUIUtility.inputPointMarkTex;
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
-					!m_data.Operation.Object.CanConnectFrom(eventSource.eventSourceNode.Data.Operation.Object)
+					!Model.ConnectionData.CanConnect(eventSource.eventSourceNode.Data, m_data)
 				);
 
 			if (shouldDrawEnable && justConnecting && eventSource != null) {
@@ -295,7 +295,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var defaultPointTex = NodeGUIUtility.outputPointMarkConnectedTex;
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
-					!eventSource.eventSourceNode.Data.Operation.Object.CanConnectFrom(m_data.Operation.Object)
+					!Model.ConnectionData.CanConnect(m_data, eventSource.eventSourceNode.Data)
 				);
 
 			if (shouldDrawEnable && justConnecting && eventSource != null) {
