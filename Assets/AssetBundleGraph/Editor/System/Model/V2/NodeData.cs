@@ -225,53 +225,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				newData.m_id = m_id;
 			}
 
-//			switch(m_kind) {
-//			case NodeKind.IMPORTSETTING_GUI:
-//				break;
-//			case NodeKind.PREFABBUILDER_GUI:
-//				newData.m_prefabBuilderReplacePrefabOptions = m_prefabBuilderReplacePrefabOptions;
-//				newData.m_scriptInstanceData = new SerializableMultiTargetString(m_scriptInstanceData);
-//				break;
-//
-//			case NodeKind.MODIFIER_GUI:
-//				newData.m_scriptInstanceData = new SerializableMultiTargetString(m_scriptInstanceData);
-//				break;
-//
-//			case NodeKind.FILTER_GUI:
-//				foreach(var f in m_filter) {
-//					newData.AddFilterCondition(f.FilterKeyword, f.FilterKeytype);
-//				}
-//				break;
-//
-//			case NodeKind.LOADER_GUI:
-//				newData.m_loaderLoadPath = new SerializableMultiTargetString(m_loaderLoadPath);
-//				break;
-//
-//			case NodeKind.GROUPING_GUI:
-//				newData.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
-//				break;
-//
-//			case NodeKind.BUNDLECONFIG_GUI:
-//				newData.m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(m_bundleConfigBundleNameTemplate);
-//				newData.m_bundleConfigUseGroupAsVariants = m_bundleConfigUseGroupAsVariants;
-//				foreach(var v in m_variants) {
-//					newData.AddVariant(v.Name);
-//				}
-//				break;
-//
-//			case NodeKind.BUNDLEBUILDER_GUI:
-//				newData.m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt(m_bundleBuilderEnabledBundleOptions);
-//				break;
-//
-//			case NodeKind.EXPORTER_GUI:
-//				newData.m_exporterExportPath = new SerializableMultiTargetString(m_exporterExportPath);
-//				newData.m_exporterExportOption = new SerializableMultiTargetInt(m_exporterExportOption);
-//				break;
-//
-//			default:
-//				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
-//			}
-
 			return newData;
 		}
 
@@ -303,108 +256,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return FindOutputPoint(id);
 		}
 
-//		public string GetLoaderFullLoadPath(BuildTarget g) {
-//			return FileUtility.PathCombine(Application.dataPath, LoaderLoadPath[g]);
-//		}
-//
-//		public bool ValidateOverlappingFilterCondition(bool throwException) {
-//			ValidateAccess(NodeKind.FILTER_GUI);
-//
-//			var conditionGroup = FilterConditions.Select(v => v).GroupBy(v => v.Hash).ToList();
-//			var overlap = conditionGroup.Find(v => v.Count() > 1);
-//
-//			if( overlap != null && throwException ) {
-//				var element = overlap.First();
-//				throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", element.FilterKeyword, element.FilterKeytype), Id);
-//			}
-//			return overlap != null;
-//		}
-//
-//		public void AddFilterCondition(string keyword, string keytype) {
-//			ValidateAccess(
-//				NodeKind.FILTER_GUI
-//			);
-//
-//			var point = new ConnectionPointData(keyword, this, false);
-//			m_outputPoints.Add(point);
-//			var newEntry = new FilterEntry(keyword, keytype, point);
-//			m_filter.Add(newEntry);
-//			UpdateFilterEntry(newEntry);
-//		}
-//
-//		public void RemoveFilterCondition(FilterEntry f) {
-//			ValidateAccess(
-//				NodeKind.FILTER_GUI
-//			);
-//
-//			m_filter.Remove(f);
-//			m_outputPoints.Remove(GetConnectionPoint(f));
-//		}
-//
-//		public ConnectionPointData GetConnectionPoint(FilterEntry f) {
-//			ConnectionPointData p = m_outputPoints.Find(v => v.Id == f.ConnectionPointId);
-//			UnityEngine.Assertions.Assert.IsNotNull(p);
-//			return p;
-//		}
-//
-//		public void UpdateFilterEntry(FilterEntry f) {
-//
-//			ConnectionPointData p = m_outputPoints.Find(v => v.Id == f.ConnectionPointId);
-//			UnityEngine.Assertions.Assert.IsNotNull(p);
-//
-//			if(f.FilterKeytype == Settings.DEFAULT_FILTER_KEYTYPE) {
-//				p.Label = f.FilterKeyword;
-//			} else {
-//				var pointIndex = f.FilterKeytype.LastIndexOf('.');
-//				var keytypeName = (pointIndex > 0)? f.FilterKeytype.Substring(pointIndex+1):f.FilterKeytype;
-//				p.Label = string.Format("{0}[{1}]", f.FilterKeyword, keytypeName);
-//			}
-//		}
-//
-//		public void AddVariant(string name) {
-//			ValidateAccess(
-//				NodeKind.BUNDLECONFIG_GUI
-//			);
-//
-//			var point = new ConnectionPointData(name, this, true);
-//			m_inputPoints.Add(point);
-//			var newEntry = new Variant(name, point);
-//			m_variants.Add(newEntry);
-//			UpdateVariant(newEntry);
-//		}
-//
-//		public void RemoveVariant(Variant v) {
-//			ValidateAccess(
-//				NodeKind.BUNDLECONFIG_GUI
-//			);
-//
-//			m_variants.Remove(v);
-//			m_inputPoints.Remove(GetConnectionPoint(v));
-//		}
-//
-//		public ConnectionPointData GetConnectionPoint(Variant v) {
-//			ConnectionPointData p = m_inputPoints.Find(point => point.Id == v.ConnectionPointId);
-//			UnityEngine.Assertions.Assert.IsNotNull(p);
-//			return p;
-//		}
-//
-//		public void UpdateVariant(Variant variant) {
-//
-//			ConnectionPointData p = m_inputPoints.Find(v => v.Id == variant.ConnectionPointId);
-//			UnityEngine.Assertions.Assert.IsNotNull(p);
-//
-//			p.Label = variant.Name;
-//		}
-//
-//		private void ValidateAccess(params NodeKind[] allowedKind) {
-//			foreach(var k in allowedKind) {
-//				if (k == m_kind) {
-//					return;
-//				}
-//			}
-//			throw new AssetBundleGraphException(m_name + ": Tried to access invalid method or property.");
-//		}
-//
 		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
 
 			bool allGood = true;
@@ -414,36 +265,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 
 			return allGood;
-
-//			switch(m_kind) {
-//			case NodeKind.BUNDLEBUILDER_GUI:
-//				{
-//					foreach(var v in m_bundleBuilderEnabledBundleOptions.Values) {
-//						bool isDisableWriteTypeTreeEnabled  = 0 < (v.value & (int)BuildAssetBundleOptions.DisableWriteTypeTree);
-//						bool isIgnoreTypeTreeChangesEnabled = 0 < (v.value & (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
-//
-//						// If both are marked something is wrong. Clear both flag and save.
-//						if(isDisableWriteTypeTreeEnabled && isIgnoreTypeTreeChangesEnabled) {
-//							int flag = ~((int)BuildAssetBundleOptions.DisableWriteTypeTree + (int)BuildAssetBundleOptions.IgnoreTypeTreeChanges);
-//							v.value = v.value & flag;
-//							LogUtility.Logger.LogWarning(LogUtility.kTag, m_name + ": DisableWriteTypeTree and IgnoreTypeTreeChanges can not be used together. Settings overwritten.");
-//						}
-//					}
-//				}
-//				break;
-//			}
-//
-//			return true;
 		}
 
-//		private bool TestCreateScriptInstance() {
-//			if(string.IsNullOrEmpty(ScriptClassName)) {
-//				return false;
-//			}
-//			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(m_scriptClassName);
-//			return nodeScriptInstance != null;
-//		}
-//
 		public bool CompareIgnoreGUIChanges (NodeData rhs) {
 
 			if(m_nodeInstance != rhs.m_nodeInstance) {

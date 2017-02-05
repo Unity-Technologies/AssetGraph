@@ -52,10 +52,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
-			return false;
-		}
-
 		public bool IsEqual(INode node) {
 			PrefabBuilder rhs = node as PrefabBuilder;
 			return rhs != null && 

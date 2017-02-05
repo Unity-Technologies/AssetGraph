@@ -38,14 +38,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
-			return false;
-		}
-
 		public bool IsEqual(INode node) {
 			Filter rhs = node as Filter;
 			return rhs != null && 
 				m_filter.SequenceEqual(rhs.m_filter);
+
+			//					if(null == rhs.m_filter.Find(x => x.FilterKeytype == f.FilterKeytype && x.FilterKeyword == f.FilterKeyword)) {
+			//						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Filter entry not found");
+			//						return false;
+			//					}
+		
 		}
 
 		public string Serialize() {

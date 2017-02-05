@@ -37,10 +37,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
-			return false;
-		}
-
 		public bool IsEqual(INode node) {
 			Loader rhs = node as Loader;
 			return rhs != null && 

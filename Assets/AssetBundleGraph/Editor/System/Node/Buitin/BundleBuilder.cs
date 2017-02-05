@@ -29,7 +29,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-
 		public void Initialize(Model.NodeData data) {
 		}
 
@@ -38,10 +37,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);
 
 			return newNode;
-		}
-
-		public bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections) {
-			return false;
 		}
 
 		public bool IsEqual(INode node) {

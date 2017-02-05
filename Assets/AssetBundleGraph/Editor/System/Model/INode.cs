@@ -46,8 +46,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		INode Clone();
 
-		bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections);
-
+//		bool Validate(List<Model.NodeData> allNodes, List<Model.ConnectionData> allConnections);
+//
 		bool IsEqual(INode node);
 
 		bool IsValidInputConnectionPoint(Model.ConnectionPointData point);
