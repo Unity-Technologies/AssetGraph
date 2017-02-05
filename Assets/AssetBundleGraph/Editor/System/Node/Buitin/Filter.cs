@@ -28,6 +28,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void Initialize(Model.NodeData data) {
+			m_filter = new List<Model.FilterEntry>();
+
+			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 		}
 
 		public INode Clone() {

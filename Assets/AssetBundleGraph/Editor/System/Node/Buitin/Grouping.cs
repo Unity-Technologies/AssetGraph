@@ -28,6 +28,10 @@ namespace UnityEngine.AssetBundles.GraphTool
 		}
 
 		public void Initialize(Model.NodeData data) {
+			m_groupingKeyword = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
+
+			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
+			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
 		public INode Clone() {

@@ -30,6 +30,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void Initialize(Model.NodeData data) {
+			m_enabledBundleOptions = new SerializableMultiTargetInt();
+
+			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
+			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
 		public INode Clone() {

@@ -28,6 +28,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 			
 		public void Initialize(Model.NodeData data) {
+			m_loadPath = new SerializableMultiTargetString();
+
+			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
 		public INode Clone() {

@@ -59,6 +59,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void Initialize(Model.NodeData data) {
+			m_bundleNameTemplate = new SerializableMultiTargetString(Model.Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
+			m_useGroupAsVariants = false;
+			m_variants = new List<Variant>();
+
+			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
+			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
 
 		public INode Clone() {

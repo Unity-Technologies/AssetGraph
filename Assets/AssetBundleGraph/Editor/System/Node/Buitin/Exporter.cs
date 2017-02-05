@@ -35,6 +35,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void Initialize(Model.NodeData data) {
+			//Take care of this with Initialize(NodeData)
+			m_exportPath = new SerializableMultiTargetString();
+			m_exportOption = new SerializableMultiTargetInt();
+
+			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 		}
 
 		public INode Clone() {

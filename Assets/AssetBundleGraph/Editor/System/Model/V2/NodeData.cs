@@ -69,8 +69,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		[SerializeField] private float m_x;
 		[SerializeField] private float m_y;
 		[SerializeField] private SerializedInstance<INode> m_nodeInstance;
-		[SerializeField] private List<ConnectionPointData> 	m_inputPoints; 
-		[SerializeField] private List<ConnectionPointData> 	m_outputPoints;
+		[SerializeField] private List<ConnectionPointData> m_inputPoints; 
+		[SerializeField] private List<ConnectionPointData> m_outputPoints;
 
 		private bool m_nodeNeedsRevisit;
 
@@ -153,64 +153,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_outputPoints = new List<ConnectionPointData>();
 
 			m_nodeInstance.Object.Initialize(this);
-
-			//Take care of this with Initialize(NodeData)
-
-//			// adding defalut input point.
-//			// Loader does not take input
-//			if(kind != NodeKind.LOADER_GUI) {
-//				m_inputPoints.Add(new ConnectionPointData(Settings.DEFAULT_INPUTPOINT_LABEL, this, true));
-//			}
-//
-//			// adding default output point.
-//			// Filter and Exporter does not have output.
-//			if(kind != NodeKind.FILTER_GUI && kind != NodeKind.EXPORTER_GUI) {
-//				m_outputPoints.Add(new ConnectionPointData(Settings.DEFAULT_OUTPUTPOINT_LABEL, this, false));
-//			}
-//
-//			switch(m_kind) {
-//			case NodeKind.PREFABBUILDER_GUI:
-//				m_prefabBuilderReplacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
-//				m_scriptInstanceData = new SerializableMultiTargetString();
-//				break;
-//
-//			case NodeKind.MODIFIER_GUI:
-//				m_scriptInstanceData = new SerializableMultiTargetString();
-//				break;
-//			
-//			case NodeKind.IMPORTSETTING_GUI:
-//				break;
-//
-//			case NodeKind.FILTER_GUI:
-//				m_filter = new List<FilterEntry>();
-//				break;
-//
-//			case NodeKind.LOADER_GUI:
-//				m_loaderLoadPath = new SerializableMultiTargetString();
-//				break;
-//
-//			case NodeKind.GROUPING_GUI:
-//				m_groupingKeyword = new SerializableMultiTargetString(Settings.GROUPING_KEYWORD_DEFAULT);
-//				break;
-//
-//			case NodeKind.BUNDLECONFIG_GUI:
-//				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
-//				m_bundleConfigUseGroupAsVariants = false;
-//				m_variants = new List<Variant>();
-//				break;
-//
-//			case NodeKind.BUNDLEBUILDER_GUI:
-//				m_bundleBuilderEnabledBundleOptions = new SerializableMultiTargetInt();
-//				break;
-//
-//			case NodeKind.EXPORTER_GUI:
-//				m_exporterExportPath = new SerializableMultiTargetString();
-//				m_exporterExportOption = new SerializableMultiTargetInt();
-//				break;
-//
-//			default:
-//				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
-//			}
 		}
 
 		/**
@@ -298,90 +240,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				}
 			}
 
-//			switch (m_kind) {
-//			case NodeKind.PREFABBUILDER_GUI:
-//				if(m_prefabBuilderReplacePrefabOptions != rhs.m_prefabBuilderReplacePrefabOptions) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ReplacePrefabOptions different");
-//					return false;
-//				}
-//				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
-//					return false;
-//				}
-//				break;
-//
-//			case NodeKind.MODIFIER_GUI:
-//				if(m_scriptInstanceData != rhs.m_scriptInstanceData) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Script instance data different");
-//					return false;
-//				}
-//				break;
-//
-//			case NodeKind.LOADER_GUI:
-//				if(m_loaderLoadPath != rhs.m_loaderLoadPath) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Loader load path different");
-//					return false;
-//				}
-//				break;
-//
-//			case NodeKind.FILTER_GUI:
-//				foreach(var f in m_filter) {
-//					if(null == rhs.m_filter.Find(x => x.FilterKeytype == f.FilterKeytype && x.FilterKeyword == f.FilterKeyword)) {
-//						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Filter entry not found");
-//						return false;
-//					}
-//				}
-//				break;
-//
-//			case NodeKind.GROUPING_GUI:
-//				if(m_groupingKeyword != rhs.m_groupingKeyword) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Grouping keyword different");
-//					return false;
-//				}
-//				break;
-//
-//			case NodeKind.BUNDLECONFIG_GUI:
-//				if(m_bundleConfigBundleNameTemplate != rhs.m_bundleConfigBundleNameTemplate) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "BundleNameTemplate different");
-//					return false;
-//				}
-//				if(m_bundleConfigUseGroupAsVariants != rhs.m_bundleConfigUseGroupAsVariants) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "UseGroupAsVariants different");
-//					return false;
-//				}
-//				foreach(var v in m_variants) {
-//					if(null == rhs.m_variants.Find(x => x.Name == v.Name && x.ConnectionPointId == v.ConnectionPointId)) {
-//						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Variants not found");
-//						return false;
-//					}
-//				}
-//				break;
-//
-//			case NodeKind.BUNDLEBUILDER_GUI:
-//				if(m_bundleBuilderEnabledBundleOptions != rhs.m_bundleBuilderEnabledBundleOptions) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "EnabledBundleOptions different");
-//					return false;
-//				}
-//				break;
-//
-//			case NodeKind.EXPORTER_GUI:
-//				if(m_exporterExportPath != rhs.m_exporterExportPath) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ExporterPath different");
-//					return false;
-//				}
-//				if(m_exporterExportOption != rhs.m_exporterExportOption) {
-//					LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "ExporterOption different");
-//					return false;
-//				}
-//				break;
-//
-//			case NodeKind.IMPORTSETTING_GUI:
-//				// nothing to do
-//				break;
-//
-//			default:
-//				throw new ArgumentOutOfRangeException ();
-//			}
 
 			return true;
 		}
