@@ -32,7 +32,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public INode Clone() {
 			var newNode = new Loader();
-			newNode.m_loadPath = m_loadPath;
+			newNode.m_loadPath = new SerializableMultiTargetString(m_loadPath);
 
 			return newNode;
 		}

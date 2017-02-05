@@ -32,7 +32,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public INode Clone() {
 			var newNode = new Modifier();
-			newNode.m_instance = m_instance;
+			newNode.m_instance = new MultiTargetSerializedInstance<IModifier>(m_instance);
 
 			return newNode;
 		}

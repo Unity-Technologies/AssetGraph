@@ -46,7 +46,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public INode Clone() {
 			var newNode = new PrefabBuilder();
-			newNode.m_instance = m_instance;
+			newNode.m_instance = new MultiTargetSerializedInstance<IPrefabBuilder>(m_instance);
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
 
 			return newNode;

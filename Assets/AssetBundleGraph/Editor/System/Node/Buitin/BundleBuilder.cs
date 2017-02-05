@@ -35,7 +35,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public INode Clone() {
 			var newNode = new BundleBuilder();
-			newNode.m_enabledBundleOptions = m_enabledBundleOptions;
+			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);
 
 			return newNode;
 		}

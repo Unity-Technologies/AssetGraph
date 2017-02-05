@@ -39,8 +39,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public INode Clone() {
 			var newNode = new Exporter();
-			newNode.m_exportPath = m_exportPath;
-			newNode.m_exportOption = m_exportOption;
+			newNode.m_exportPath = new SerializableMultiTargetString(m_exportPath);
+			newNode.m_exportOption = new SerializableMultiTargetInt(m_exportOption);
 
 			return newNode;
 		}

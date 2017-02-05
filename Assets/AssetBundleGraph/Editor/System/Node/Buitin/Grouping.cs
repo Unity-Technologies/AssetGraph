@@ -32,7 +32,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 		public INode Clone() {
 			var newNode = new Grouping();
-			newNode.m_groupingKeyword = m_groupingKeyword;
+			newNode.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
 
 			return newNode;
 		}

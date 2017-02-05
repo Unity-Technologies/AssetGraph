@@ -63,7 +63,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public INode Clone() {
 			var newNode = new BundleConfigurator();
-			newNode.m_bundleNameTemplate = m_bundleNameTemplate;
+			newNode.m_bundleNameTemplate = new SerializableMultiTargetString(m_bundleNameTemplate);
 			newNode.m_variants = new List<Variant>(m_variants.Count);
 			m_variants.ForEach(v => newNode.m_variants.Add(new Variant(v)));
 			newNode.m_useGroupAsVariants = m_useGroupAsVariants;
