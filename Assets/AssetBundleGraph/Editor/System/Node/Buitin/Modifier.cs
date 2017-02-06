@@ -13,7 +13,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Modifier", 40)]
 	public class Modifier : Node {
 
-		[SerializeField] private MultiTargetSerializedInstance<IModifier> m_instance;
+		[SerializeField] private MultiTargetModifierInstance m_instance;
 
 		public override string ActiveStyle {
 			get {
@@ -29,7 +29,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override void Initialize(Model.NodeData data) {
 			base.Initialize(data);
-			m_instance = new MultiTargetSerializedInstance<IModifier>();
+			m_instance = new MultiTargetModifierInstance();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
@@ -37,7 +37,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override Node Clone() {
 			var newNode = new Modifier();
-			newNode.m_instance = new MultiTargetSerializedInstance<IModifier>(m_instance);
+			newNode.m_instance = new MultiTargetModifierInstance(m_instance);
 
 			return newNode;
 		}
@@ -52,8 +52,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return JsonUtility.ToJson(this);
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-			
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
 			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
@@ -72,7 +74,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					if(incomingType == null) {
 						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
-						return;
+						return modified;
 					}
 				}
 
@@ -90,9 +92,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 										using(new RecordUndoScope("Change Modifier class", node, true)) {
 											var newModifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
 											if(newModifier != null) {
-												modifier = new SerializedInstance<IModifier>(newModifier);
+												modifier = new ModifierInstance(newModifier);
 												m_instance[editor.CurrentEditingGroup] = modifier;
 											}
+											modified = true;
 										}
 									}  
 								);
@@ -121,10 +124,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				GUILayout.Space(10f);
 
-				if(editor.DrawPlatformSelector(node)) {
-					// if platform tab is changed, renew modifierModifierInstance for that tab.
-					// m_modifier = null;
-				}
+				editor.DrawPlatformSelector(node);
 				using (new EditorGUILayout.VerticalScope()) {
 					var disabledScope = editor.DrawOverrideTargetToggle(node, m_instance.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
 						if(enabled) {
@@ -132,29 +132,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_instance.Remove(editor.CurrentEditingGroup);
 						}
-//						m_modifier = null;						
+						modified = true;
 					});
 
 					using (disabledScope) {
-						//reload modifierModifier instance from saved modifierModifier data.
-//						if (modifier.Object == null) {
-//							m_modifier = ModifierUtility.CreateModifier(node.Data, editor.CurrentEditingGroup);
-//							if(m_modifier != null) {
-//								m_className = m_modifier.GetType().FullName;
-//								if(m_instanceData.ContainsValueOf(editor.CurrentEditingGroup)) {
-//									m_instanceData[editor.CurrentEditingGroup] = m_modifier.Serialize();
-//								}
-//							}
-//						}
-
 						if (modifier.Object != null) {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change Modifier Setting", node)) {
 									modifier.Save();
-//									m_className = m_modifier.GetType().FullName;
-//									if(m_instanceData.ContainsValueOf(editor.CurrentEditingGroup)) {
-//										m_instanceData[editor.CurrentEditingGroup] = m_modifier.Serialize();
-//									}
+									modified = true;
 								}
 							};
 
@@ -163,6 +149,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

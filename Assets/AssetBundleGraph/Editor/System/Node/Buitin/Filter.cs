@@ -80,7 +80,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			menu.ShowAsContext();
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
 			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
@@ -111,6 +114,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 											using(new RecordUndoScope("Modify Filter Type", node, true)){
 												m_filter[ind].FilterKeytype = selectedTypeStr;
 												UpdateFilterEntry(node.Data, m_filter[ind]);
+												modified = true;
 											}
 											// event must raise to propagate change to connection associated with point
 											NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
@@ -123,6 +127,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
 									cond.FilterKeyword = keyword;
 									UpdateFilterEntry(node.Data, cond);
+									modified = true;
 								}
 								// event must raise to propagate change to connection associated with point
 								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
@@ -143,6 +148,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						AddFilterCondition(node.Data,
 							Model.Settings.DEFAULT_FILTER_KEYWORD, 
 							Model.Settings.DEFAULT_FILTER_KEYTYPE);
+						modified = true;
 					}
 				}
 
@@ -151,9 +157,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						// event must raise to remove connection associated with point
 						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, removing)));
 						RemoveFilterCondition(node.Data, removing);
+						modified = true;
 					}
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

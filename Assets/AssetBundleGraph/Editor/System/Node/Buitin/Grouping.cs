@@ -52,10 +52,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 			return JsonUtility.ToJson(this);
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
 
 			if (m_groupingKeyword == null) {
-				return;
+				return modified;
 			}
 
 			EditorGUILayout.HelpBox("Grouping: Create group of assets.", MessageType.Info);
@@ -73,6 +75,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 						} else {
 							m_groupingKeyword.Remove(editor.CurrentEditingGroup);
 						}
+						modified = true;
 					}
 				});
 
@@ -85,10 +88,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 					if (newGroupingKeyword != m_groupingKeyword[editor.CurrentEditingGroup]) {
 						using(new RecordUndoScope("Change Grouping Keywords", node, true)){
 							m_groupingKeyword[editor.CurrentEditingGroup] = newGroupingKeyword;
+							modified = true;
 						}
 					}
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

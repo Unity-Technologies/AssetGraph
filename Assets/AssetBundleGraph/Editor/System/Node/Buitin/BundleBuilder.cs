@@ -67,9 +67,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return JsonUtility.ToJson(this);
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
 			if (m_enabledBundleOptions == null) {
-				return;
+				return modified;
 			}
 
 			EditorGUILayout.HelpBox("BundleBuilder: Build asset bundles with given asset bundle settings.", MessageType.Info);
@@ -87,6 +90,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}  else {
 							m_enabledBundleOptions.Remove(editor.CurrentEditingGroup);
 						}
+						modified = true;
 					}
 				} );
 
@@ -118,6 +122,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 										((int)option.option | bundleOptions) : 
 										(((~(int)option.option)) & bundleOptions);
 									m_enabledBundleOptions[editor.CurrentEditingGroup] = bundleOptions;
+									modified = true;
 								}
 							}
 						}
@@ -127,6 +132,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

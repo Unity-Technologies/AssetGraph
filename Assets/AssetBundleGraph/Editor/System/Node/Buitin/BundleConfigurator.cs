@@ -138,8 +138,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			p.Label = variant.Name;
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-			if (m_bundleNameTemplate == null) return;
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
+			if (m_bundleNameTemplate == null) return modified;
 
 			EditorGUILayout.HelpBox("BundleConfigurator: Create asset bundle settings with given group of assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -159,6 +162,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, v)));
 							RemoveVariant(node.Data, v);
 						}
+						modified = true;
 					}
 				}
 
@@ -189,6 +193,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 									using(new RecordUndoScope("Change Variant Name", node, true)){
 										v.Name = variantName;
 										UpdateVariant(node.Data, v);
+										modified = true;
 									}
 								}
 							}
@@ -200,6 +205,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT, node, Vector2.zero, node.Data.InputPoints[0]));
 							}
 							AddVariant(node.Data, Model.Settings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
+							modified = true;
 						}
 					}
 					if(removing != null) {
@@ -207,6 +213,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							// event must raise to remove connection associated with point
 							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, removing)));
 							RemoveVariant(node.Data, removing);
+							modified = true;
 						}
 					}
 				}
@@ -222,6 +229,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_bundleNameTemplate.Remove(editor.CurrentEditingGroup);
 						}
+						modified = true;
 					}
 				});
 
@@ -231,10 +239,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if (bundleNameTemplate != m_bundleNameTemplate[editor.CurrentEditingGroup]) {
 						using(new RecordUndoScope("Change Bundle Name Template", node, true)){
 							m_bundleNameTemplate[editor.CurrentEditingGroup] = bundleNameTemplate;
+							modified = true;
 						}
 					}
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

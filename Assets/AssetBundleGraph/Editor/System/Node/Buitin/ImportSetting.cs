@@ -69,8 +69,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-			
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
 			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
@@ -91,7 +93,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						incomingType = ImportSetting.GetReferenceAssetImporter(node.Data).GetType();
 					} else {
 						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
-						return;
+						return modified;
 					}
 				}
 
@@ -116,6 +118,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					break;
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

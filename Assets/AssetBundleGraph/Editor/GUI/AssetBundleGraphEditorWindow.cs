@@ -893,12 +893,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				case EventType.ContextClick: {
 					var rightClickPos = Event.current.mousePosition;
 					var menu = new GenericMenu();
-					foreach(var n in NodeUtility.CustomNodeTypes) {
+					var customNodes = NodeUtility.CustomNodeTypes;
+					for(int i = 0; i < customNodes.Count; ++i) {
+						// workaround: avoiding compilier closure bug
+						var index = i;
 						menu.AddItem(
-							new GUIContent(string.Format("Create {0} Node", n.node.Name)),
+							new GUIContent(string.Format("Create {0} Node", customNodes[i].node.Name)),
 							false, 
 							() => {
-								AddNodeFromGUI(n.CreateInstance(), n.node.Name, rightClickPos.x, rightClickPos.y);
+								AddNodeFromGUI(customNodes[index].CreateInstance(), customNodes[index].node.Name, rightClickPos.x, rightClickPos.y);
 								Setup(ActiveBuildTarget);
 								Repaint();
 							}

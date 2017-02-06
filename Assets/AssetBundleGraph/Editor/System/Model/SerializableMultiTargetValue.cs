@@ -8,34 +8,34 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[Serializable] 
-	public class MultiTargetSerializedInstance<T> where T: IJSONSerializable {
+	public class SerializableMultiTargetValue<T> {
 
 		[Serializable]
 		public class Entry {
 			[SerializeField] public BuildTargetGroup targetGroup;
-			[SerializeField] public SerializedInstance<T> value;
+			[SerializeField] public T value;
 
-			public Entry(BuildTargetGroup g, SerializedInstance<T> v) {
+			public Entry(BuildTargetGroup g, T v) {
 				targetGroup = g;
 				value = v;
 			}
 		}
 
-		[SerializeField] private List<Entry> m_values;
+		[SerializeField] protected List<Entry> m_values;
 
-		public MultiTargetSerializedInstance(MultiTargetSerializedInstance<T> rhs) {
+		public SerializableMultiTargetValue(SerializableMultiTargetValue<T> rhs) {
 			m_values = new List<Entry>();
 			foreach(var v in rhs.m_values) {
 				m_values.Add(new Entry(v.targetGroup, v.value));
 			}
 		}
 
-		public MultiTargetSerializedInstance(SerializedInstance<T> value) {
+		public SerializableMultiTargetValue(T value) {
 			m_values = new List<Entry>();
 			this[BuildTargetUtility.DefaultTarget] = value;
 		}
 
-		public MultiTargetSerializedInstance() {
+		public SerializableMultiTargetValue() {
 			m_values = new List<Entry>();
 		}
 
@@ -45,7 +45,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public SerializedInstance<T> this[BuildTargetGroup g] {
+		public T this[BuildTargetGroup g] {
 			get {
 				int i = m_values.FindIndex(v => v.targetGroup == g);
 				if(i >= 0) {
@@ -64,7 +64,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public SerializedInstance<T> this[BuildTarget index] {
+		public T this[BuildTarget index] {
 			get {
 				return this[BuildTargetUtility.TargetToGroup(index)];
 			}
@@ -73,13 +73,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public SerializedInstance<T> DefaultValue {
+		public T DefaultValue {
 			get {
 				int i = m_values.FindIndex(v => v.targetGroup == BuildTargetUtility.DefaultTarget);
 				if(i >= 0) {
 					return m_values[i].value;
 				} else {
-					var defaultValue = new SerializedInstance<T>();
+					var defaultValue = default(T);
 					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue));
 					return defaultValue;
 				}
@@ -89,7 +89,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public SerializedInstance<T> CurrentPlatformValue {
+		public T CurrentPlatformValue {
 			get {
 				return this[EditorUserBuildSettings.selectedBuildTargetGroup];
 			}
@@ -108,7 +108,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override bool Equals(object rhs)
 		{
-			MultiTargetSerializedInstance<T> other = rhs as MultiTargetSerializedInstance<T>; 
+			SerializableMultiTargetValue<T> other = rhs as SerializableMultiTargetValue<T>; 
 			if (other == null) {
 				return false;
 			} else {
@@ -121,7 +121,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return this.m_values.GetHashCode(); 
 		}
 
-		public static bool operator == (MultiTargetSerializedInstance<T> lhs, MultiTargetSerializedInstance<T> rhs) {
+		public static bool operator == (SerializableMultiTargetValue<T> lhs, SerializableMultiTargetValue<T> rhs) {
 
 			object lobj = lhs;
 			object robj = rhs;
@@ -138,7 +138,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			foreach(var l in lhs.m_values) {
-				if(rhs[l.targetGroup] != l.value) {
+				if(!rhs[l.targetGroup].Equals(l.value)) {
 					return false;
 				}
 			}
@@ -146,7 +146,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return true;
 		}
 
-		public static bool operator != (MultiTargetSerializedInstance<T> lhs, MultiTargetSerializedInstance<T> rhs) {
+		public static bool operator != (SerializableMultiTargetValue<T> lhs, SerializableMultiTargetValue<T> rhs) {
 			return !(lhs == rhs);
 		}
 	}

@@ -6,8 +6,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[System.Serializable]
 	public class SerializedInstance<T> where T: IJSONSerializable {
 
-		[SerializeField] private string m_className;
-		[SerializeField] private string m_instanceData;
+		[SerializeField] protected string m_className;
+		[SerializeField] protected string m_instanceData;
 
 		private T m_object;
 

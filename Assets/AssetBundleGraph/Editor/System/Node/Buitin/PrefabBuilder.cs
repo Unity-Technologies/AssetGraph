@@ -14,7 +14,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Prefab Builder", 70)]
 	public class PrefabBuilder : Node {
 
-		[SerializeField] private MultiTargetSerializedInstance<IPrefabBuilder> m_instance;
+		[SerializeField] private MultiTargetPrefabBuilderInstance m_instance;
 		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
 
 		public UnityEditor.ReplacePrefabOptions Options {
@@ -23,7 +23,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public MultiTargetSerializedInstance<IPrefabBuilder> Builder {
+		public MultiTargetPrefabBuilderInstance Builder {
 			get {
 				return m_instance;
 			}
@@ -43,7 +43,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override void Initialize(Model.NodeData data) {
 			base.Initialize(data);
-			m_instance = new MultiTargetSerializedInstance<IPrefabBuilder>();
+			m_instance = new MultiTargetPrefabBuilderInstance();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
@@ -51,7 +51,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override Node Clone() {
 			var newNode = new PrefabBuilder();
-			newNode.m_instance = new MultiTargetSerializedInstance<IPrefabBuilder>(m_instance);
+			newNode.m_instance = new MultiTargetPrefabBuilderInstance(m_instance);
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
 
 			return newNode;
@@ -68,7 +68,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return JsonUtility.ToJson(this);
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
@@ -91,9 +94,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 										using(new RecordUndoScope("Change PrefabBuilder class", node, true)) {
 											var prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(selectedGUIName);
 											if(prefabBuilder != null) {
-												builder = new SerializedInstance<IPrefabBuilder>(prefabBuilder);
+												builder = new PrefabBuilderInstance(prefabBuilder);
 												m_instance[editor.CurrentEditingGroup] = builder;
 											}
+											modified = true;
 										}
 									} 
 								);
@@ -112,6 +116,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(m_replacePrefabOptions != opt) {
 						using(new RecordUndoScope("Change Prefab Replace Option", node, true)) {
 							m_replacePrefabOptions = opt;
+							modified = true;
 						}
 					}
 				} else {
@@ -131,10 +136,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				GUILayout.Space(10f);
 
-				if(editor.DrawPlatformSelector(node)) {
-					// if platform tab is changed, renew prefabBuilder for that tab.
-					//m_prefabBuilder = null;
-				}
+				editor.DrawPlatformSelector(node);
 				using (new EditorGUILayout.VerticalScope()) {
 					var disabledScope = editor.DrawOverrideTargetToggle(node, m_instance.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
 						if(enabled) {
@@ -142,29 +144,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_instance.Remove(editor.CurrentEditingGroup);
 						}
-						//m_prefabBuilder = null;
+						modified = true;
 					});
 
 					using (disabledScope) {
-						//reload prefabBuilder instance from saved instance data.
-//						if (m_prefabBuilder == null) {
-//							m_prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(node.Data, editor.CurrentEditingGroup);
-//							if(m_prefabBuilder != null) {
-//								m_className = m_prefabBuilder.GetType().FullName;
-//								if(m_instanceData.ContainsValueOf(editor.CurrentEditingGroup)) {
-//									m_instanceData[editor.CurrentEditingGroup] = m_prefabBuilder.Serialize();
-//								}
-//							}
-//						}
-
 						if (builder.Object != null) {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change PrefabBuilder Setting", node)) {
 									builder.Save();
-//									m_className = m_prefabBuilder.GetType().FullName;
-//									if(m_instanceData.ContainsValueOf(editor.CurrentEditingGroup)) {
-//										m_instanceData[editor.CurrentEditingGroup] = m_prefabBuilder.Serialize();
-//									}
+									modified = true;
 								}
 							};
 
@@ -173,6 +161,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
+			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

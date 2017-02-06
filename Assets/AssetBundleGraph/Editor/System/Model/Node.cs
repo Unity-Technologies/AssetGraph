@@ -41,8 +41,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		/**
-			Prepare is the method which validates and perform necessary setups in order to build.
-		*/
+		 *	Prepare is the method which validates and perform necessary setups in order to build.
+		 */
 		public virtual void Prepare (BuildTarget target, 
 			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
@@ -53,8 +53,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		/**
-			Build is the method which actualy performs the build. It is always called after Setup() is performed.
-		*/
+		 * Build is the method which actualy performs the build. It is always called after Setup() is performed.
+		 */
 		public virtual void Build (BuildTarget target, 
 			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
@@ -65,11 +65,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// Do nothing
 		}
 
-		public virtual void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor) {
-			// Do nothing
-		}
-		public virtual void OnNodeGUI(NodeGUI node) {
-			// Do nothing
+		/**
+		 * Provide Editing interface on Inspector Window.
+		 * @result return true if node is modified from Inspector. 
+		 */ 
+		public virtual bool OnInspectorGUI(NodeGUI node, NodeGUIEditor editor) {
+			return false;
 		}
 
 		public virtual bool OnAssetsReimported(
@@ -115,7 +116,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 	}
 
-	public struct CustomNodeInfo {
+	public struct CustomNodeInfo : IComparable {
 		public CustomNode node;
 		public Type type;
 
@@ -125,25 +126,37 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public Node CreateInstance() {
-			return (Node) type.Assembly.CreateInstance(type.AssemblyQualifiedName);
+			string typeName = type.FullName;
+
+			object o = Assembly.GetExecutingAssembly().CreateInstance(typeName);
+			return (Node) o;
+		}
+
+		public int CompareTo(object obj) {
+			if (obj == null) {
+				return 1;
+			}
+
+			CustomNodeInfo rhs = (CustomNodeInfo)obj;
+			return node.OrderPriority - rhs.node.OrderPriority;
 		}
 	}
 
 	public class NodeUtility {
 
-		private static SortedList<int, CustomNodeInfo> s_customNodes;
+		private static List<CustomNodeInfo> s_customNodes;
 
-		public static IEnumerable<CustomNodeInfo> CustomNodeTypes {
+		public static List<CustomNodeInfo> CustomNodeTypes {
 			get {
 				if(s_customNodes == null) {
 					s_customNodes = BuildCustomNodeList();
 				}
-				return s_customNodes.Values.AsEnumerable();
+				return s_customNodes;
 			}
 		}
 
-		private static SortedList<int, CustomNodeInfo> BuildCustomNodeList() {
-			var list = new SortedList<int, CustomNodeInfo>();
+		private static List<CustomNodeInfo> BuildCustomNodeList() {
+			var list = new List<CustomNodeInfo>();
 
 			var nodes = Assembly
 				.GetExecutingAssembly()
@@ -156,9 +169,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					type.GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
 
 				if (attr != null) {
-					list.Add(attr.OrderPriority, new CustomNodeInfo(type, attr));
+					list.Add(new CustomNodeInfo(type, attr));
 				}
 			}
+
+			list.Sort();
 
 			return list;
 		}

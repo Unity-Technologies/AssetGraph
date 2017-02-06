@@ -33,6 +33,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public Loader() {
+		}
+
 		public override void Initialize(Model.NodeData data) {
 			base.Initialize(data);
 			m_loadPath = new SerializableMultiTargetString();
@@ -115,10 +118,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		public override void OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-			
+		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+
+			bool modified = false;
+
 			if (m_loadPath == null) {
-				return;
+				return modified;
 			}
 
 			EditorGUILayout.HelpBox("Loader: Load assets in given directory path.", MessageType.Info);
@@ -136,6 +141,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_loadPath.Remove(editor.CurrentEditingGroup);
 						}
+						modified = true;
 					}
 				});
 
@@ -147,6 +153,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							m_loadPath[editor.CurrentEditingGroup] = newLoadPath;
+							modified = true;
 						}
 					}
 
@@ -173,6 +180,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
+			return modified;
 		}
 
 

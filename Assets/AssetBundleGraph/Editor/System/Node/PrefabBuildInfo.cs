@@ -43,14 +43,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		[SerializeField] private string m_groupKey;
-		[SerializeField] private SerializedInstance<IPrefabBuilder> m_builder;
+		[SerializeField] private PrefabBuilderInstance m_builder;
 		[SerializeField] private string m_prefabBuilderVersion;
 		[SerializeField] private int m_replacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
 		[SerializeField] private List<UsedAssets> m_usedAssets;
 
 		public PrefabBuildInfo() {}
 
-		public void Initialize(string groupKey, SerializedInstance<IPrefabBuilder> builder, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
+		public void Initialize(string groupKey, PrefabBuilderInstance builder, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
 			m_groupKey = groupKey;
 			m_builder = builder;
 			m_prefabBuilderVersion = version;

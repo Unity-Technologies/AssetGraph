@@ -68,7 +68,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		[SerializeField] private string m_id;
 		[SerializeField] private float m_x;
 		[SerializeField] private float m_y;
-		[SerializeField] private SerializedInstance<Node> m_nodeInstance;
+		[SerializeField] private NodeInstance m_nodeInstance;
 		[SerializeField] private List<ConnectionPointData> m_inputPoints; 
 		[SerializeField] private List<ConnectionPointData> m_outputPoints;
 
@@ -100,7 +100,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				return m_id;
 			}
 		}
-		public SerializedInstance<Node> Operation {
+		public NodeInstance Operation {
 			get {
 				return m_nodeInstance;
 			}
@@ -146,7 +146,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_name = name;
 			m_x = x;
 			m_y = y;
-			m_nodeInstance = new SerializedInstance<Node>(node);
+			m_nodeInstance = new NodeInstance(node);
 			m_nodeNeedsRevisit = false;
 
 			m_inputPoints  = new List<ConnectionPointData>();
