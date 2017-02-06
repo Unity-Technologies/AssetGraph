@@ -123,12 +123,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 		}
 
-		private static string SaveDataJsonPath {
-			get {
-				return FileUtility.PathCombine(SaveDataDirectoryPath, Settings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
-			}
-		}
-
 		public static SaveData Data {
 			get {
 				if(s_saveData == null) {
@@ -173,7 +167,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 			
 		public static bool IsSaveDataAvailableAtDisk() {
-			return File.Exists(SaveDataAssetPath) || File.Exists(SaveDataJsonPath);
+			return File.Exists(SaveDataAssetPath);
 		}
 
 		private static void CreateNewSaveData () {

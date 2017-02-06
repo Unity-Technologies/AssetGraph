@@ -24,7 +24,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
-		public const string ASSETBUNDLEGRAPH_DATA_JSON_NAME = "AssetBundleGraph.json";
 		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph_v2.asset";
 		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
 		
@@ -46,14 +45,11 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string SETTINGTEMPLATE_FILE_TEXTURE	= SETTING_TEMPLATE_PATH + "setting.png";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
-		public const string UNITY_LOCAL_DATAPATH = "Assets";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
 		public const string MANIFEST_FOOTER = ".manifest";
-		public const string IMPORTER_RECORDFILE = ".importedRecord";
 		public const char UNITY_FOLDER_SEPARATOR = '/';// Mac/Windows/Linux can use '/' in Unity.
 
 		public const string BASE64_IDENTIFIER = "B64|";
-
 
 		public const char KEYWORD_WILDCARD = '*';
 
@@ -82,27 +78,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			#endif
 		};
 
-		//public const string PLATFORM_DEFAULT_NAME = "Default";
-		//public const string PLATFORM_STANDALONE = "Standalone";
-
 		public const float WINDOW_SPAN = 20f;
-
-		/*
-			node generation from GUI
-		*/
-		public const string MENU_LOADER_NAME = "Loader";
-		public const string MENU_FILTER_NAME = "Filter";
-		public const string MENU_IMPORTSETTING_NAME = "ImportSetting";
-		public const string MENU_MODIFIER_NAME = "Modifier";
-		public const string MENU_GROUPING_NAME = "Grouping";
-		public const string MENU_PREFABBUILDER_NAME = "PrefabBuilder";
-		public const string MENU_BUNDLECONFIG_NAME = "BundleConfig";
-		public const string MENU_BUNDLEBUILDER_NAME = "BundleBuilder";
-		public const string MENU_EXPORTER_NAME = "Exporter";
-
-		/*
-			data key for AssetBundleGraph.json
-		*/
 
 		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
 		public const string BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT = "bundle_*";

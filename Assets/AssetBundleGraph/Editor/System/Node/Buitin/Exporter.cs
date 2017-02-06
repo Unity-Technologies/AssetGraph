@@ -36,7 +36,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override Model.NodeOutputSemantics NodeInputType {
 			get {
-				return Model.NodeOutputSemantics.Any;
+				return 
+					(Model.NodeOutputSemantics) 
+					((uint)Model.NodeOutputSemantics.Assets | 
+					 (uint)Model.NodeOutputSemantics.AssetBundles);
 			}
 		}
 

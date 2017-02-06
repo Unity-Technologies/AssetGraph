@@ -19,6 +19,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return data;
 		}
 		public static string EncodeString(string data) {
+
 			return Model.Settings.BASE64_IDENTIFIER + 
 				Convert.ToBase64String( System.Text.Encoding.UTF8.GetBytes(data));
 		}

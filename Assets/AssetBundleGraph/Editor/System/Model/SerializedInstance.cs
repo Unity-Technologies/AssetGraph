@@ -60,7 +60,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void Save() {
 			if(m_object != null) {
 				UnityEngine.Assertions.Assert.AreEqual(m_className, m_object.GetType().AssemblyQualifiedName);
-				CustomScriptUtility.EncodeString(m_object.Serialize());
+				m_instanceData = CustomScriptUtility.EncodeString(m_object.Serialize());
 			}
 		}
 

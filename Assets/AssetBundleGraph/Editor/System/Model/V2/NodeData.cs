@@ -199,14 +199,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 
 		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
-
-			bool allGood = true;
-
-			foreach(var n in allNodes) {
-				allGood &= n.Validate(allNodes, allConnections);
-			}
-
-			return allGood;
+			return m_nodeInstance.Object != null;
 		}
 
 		public bool CompareIgnoreGUIChanges (NodeData rhs) {
