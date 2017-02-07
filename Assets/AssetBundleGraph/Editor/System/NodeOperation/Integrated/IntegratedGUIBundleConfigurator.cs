@@ -167,7 +167,7 @@ namespace AssetBundleGraph {
 		public void ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
 
 			foreach(var a in assets) {
-				a.variantName = (string.IsNullOrEmpty(variantName))? null : variantName.ToLower();;
+				a.variantName = (string.IsNullOrEmpty(variantName))? null : variantName;
 			}
 		}
 
@@ -209,9 +209,9 @@ namespace AssetBundleGraph {
 			var bundleName = node.BundleNameTemplate[target];
 
 			if(node.BundleConfigUseGroupAsVariants) {
-				return bundleName;
+				return bundleName.ToLower();
 			} else {
-				return bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey);
+				return bundleName.Replace(AssetBundleGraphSettings.KEYWORD_WILDCARD.ToString(), groupKey).ToLower();
 			}
 		}
 	}
