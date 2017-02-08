@@ -37,7 +37,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			m_loadPath = new SerializableMultiTargetString();
 
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
@@ -61,6 +60,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override bool OnAssetsReimported(
+			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
 			string[] importedAssets, 
@@ -74,13 +74,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				// ignore config file path update
 				var notConfigFilePath = importedAssets.Where( path => !path.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
 				if(!string.IsNullOrEmpty(notConfigFilePath)) {
-					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 					return true;
 				}
 			}
 
 			var saveData = Model.SaveData.Data;
-			var connOut = saveData.Connections.Find(c => c.FromNodeId == m_node.Id);
+			var connOut = saveData.Connections.Find(c => c.FromNodeId == nodeData.Id);
 
 			if( connOut != null ) {
 
@@ -91,26 +91,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(path.StartsWith(importPath)) {
 						// if this is reimport, we don't need to redo Loader
 						if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
-							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 							return true;
 						}
 					}
 				}
 				foreach(var path in deletedAssets) {
 					if(path.StartsWith(importPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 						return true;
 					}
 				}
 				foreach(var path in movedAssets) {
 					if(path.StartsWith(importPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 						return true;
 					}
 				}
 				foreach(var path in movedFromAssetPaths) {
 					if(path.StartsWith(importPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", m_node.Name);
+						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 						return true;
 					}
 				}
@@ -118,12 +118,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-
-			bool modified = false;
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_loadPath == null) {
-				return modified;
+				return;
 			}
 
 			EditorGUILayout.HelpBox("Loader: Load assets in given directory path.", MessageType.Info);
@@ -141,7 +139,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_loadPath.Remove(editor.CurrentEditingGroup);
 						}
-						modified = true;
+						onValueChanged();
 					}
 				});
 
@@ -153,7 +151,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							m_loadPath[editor.CurrentEditingGroup] = newLoadPath;
-							modified = true;
+							onValueChanged();
 						}
 					}
 
@@ -180,7 +178,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
-			return modified;
 		}
 
 

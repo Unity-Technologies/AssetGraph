@@ -59,14 +59,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		 */
 		public void Perform (
 			BuildTarget target,
-			bool isRun,
+			bool isBuild,
 			bool forceVisitAll,
 			Action<Model.NodeData, string, float> updateHandler) 
 		{
-			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build BEGIN---" : "---Setup BEGIN---");
+			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
 
-			if(isRun) {
+			if(isBuild) {
 				AssetBundleBuildReport.ClearReports();
 			}
 
@@ -94,17 +94,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					IEnumerable<Model.ConnectionData> connectionsToOutput, 
 					PerformGraph.Output outputFunc) =>
 			{
-				DoNodeOperation(target, data, incoming, connectionsToOutput, outputFunc, isRun, updateHandler);
+				DoNodeOperation(target, data, incoming, connectionsToOutput, outputFunc, isBuild, updateHandler);
 			};
 
 			newGraph.VisitAll(performFunc, forceVisitAll);
 
-			if(isRun && m_nodeExceptions.Count == 0) {
+			if(isBuild && m_nodeExceptions.Count == 0) {
 				Postprocess();
 			}
 
 			m_isBuilding = false;
-			LogUtility.Logger.Log(LogType.Log, (isRun) ? "---Build END---" : "---Setup END---");
+			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build END---" : "---Setup END---");
 		}
 
 		public void Validate (
@@ -198,7 +198,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool isAnyNodeAffected = false;
 
 			foreach(var n in saveData.Nodes) {
-				bool affected = n.Operation.Object.OnAssetsReimported(m_streamManager, target, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+				bool affected = n.Operation.Object.OnAssetsReimported(n, m_streamManager, target, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 				if(affected) {
 					n.NeedsRevisit = true;
 				}

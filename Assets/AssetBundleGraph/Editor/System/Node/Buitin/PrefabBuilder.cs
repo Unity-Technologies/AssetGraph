@@ -42,7 +42,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			m_instance = new MultiTargetPrefabBuilderInstance();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
@@ -68,9 +67,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return JsonUtility.ToJson(this);
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-
-			bool modified = false;
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -97,7 +94,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 												builder = new PrefabBuilderInstance(prefabBuilder);
 												m_instance[editor.CurrentEditingGroup] = builder;
 											}
-											modified = true;
+											onValueChanged();
 										}
 									} 
 								);
@@ -116,7 +113,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(m_replacePrefabOptions != opt) {
 						using(new RecordUndoScope("Change Prefab Replace Option", node, true)) {
 							m_replacePrefabOptions = opt;
-							modified = true;
+							onValueChanged();
 						}
 					}
 				} else {
@@ -144,7 +141,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_instance.Remove(editor.CurrentEditingGroup);
 						}
-						modified = true;
+						onValueChanged();
 					});
 
 					using (disabledScope) {
@@ -152,7 +149,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change PrefabBuilder Setting", node)) {
 									builder.Save();
-									modified = true;
+									onValueChanged();
 								}
 							};
 
@@ -161,7 +158,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
-			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

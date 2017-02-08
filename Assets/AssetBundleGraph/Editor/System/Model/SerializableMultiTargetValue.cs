@@ -8,7 +8,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[Serializable] 
-	public class SerializableMultiTargetValue<T> {
+	public class SerializableMultiTargetValue<T> where T: class {
 
 		[Serializable]
 		public class Entry {
@@ -79,7 +79,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if(i >= 0) {
 					return m_values[i].value;
 				} else {
-					var defaultValue = default(T);
+					var defaultValue = Activator.CreateInstance<T>();
 					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue));
 					return defaultValue;
 				}

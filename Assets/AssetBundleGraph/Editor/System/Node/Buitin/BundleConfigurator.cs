@@ -65,7 +65,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			m_bundleNameTemplate = new SerializableMultiTargetString(Model.Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 			m_useGroupAsVariants = false;
 			m_variants = new List<Variant>();
@@ -138,11 +137,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			p.Label = variant.Name;
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
-			bool modified = false;
-
-			if (m_bundleNameTemplate == null) return modified;
+			if (m_bundleNameTemplate == null) return;
 
 			EditorGUILayout.HelpBox("BundleConfigurator: Create asset bundle settings with given group of assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -162,7 +159,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, v)));
 							RemoveVariant(node.Data, v);
 						}
-						modified = true;
+						onValueChanged();
 					}
 				}
 
@@ -193,7 +190,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 									using(new RecordUndoScope("Change Variant Name", node, true)){
 										v.Name = variantName;
 										UpdateVariant(node.Data, v);
-										modified = true;
+										onValueChanged();
 									}
 								}
 							}
@@ -205,7 +202,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT, node, Vector2.zero, node.Data.InputPoints[0]));
 							}
 							AddVariant(node.Data, Model.Settings.BUNDLECONFIG_VARIANTNAME_DEFAULT);
-							modified = true;
+							onValueChanged();
 						}
 					}
 					if(removing != null) {
@@ -213,7 +210,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							// event must raise to remove connection associated with point
 							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, removing)));
 							RemoveVariant(node.Data, removing);
-							modified = true;
+							onValueChanged();
 						}
 					}
 				}
@@ -229,7 +226,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_bundleNameTemplate.Remove(editor.CurrentEditingGroup);
 						}
-						modified = true;
+						onValueChanged();
 					}
 				});
 
@@ -239,12 +236,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if (bundleNameTemplate != m_bundleNameTemplate[editor.CurrentEditingGroup]) {
 						using(new RecordUndoScope("Change Bundle Name Template", node, true)){
 							m_bundleNameTemplate[editor.CurrentEditingGroup] = bundleNameTemplate;
-							modified = true;
+							onValueChanged();
 						}
 					}
 				}
 			}
-			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

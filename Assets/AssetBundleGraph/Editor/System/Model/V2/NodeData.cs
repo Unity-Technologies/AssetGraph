@@ -198,7 +198,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return FindOutputPoint(id);
 		}
 
-		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
+		public bool Validate () {
 			return m_nodeInstance.Object != null;
 		}
 

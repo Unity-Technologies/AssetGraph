@@ -107,6 +107,10 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return m_allNodes.Except(nodesWithChild).ToList();
 		}
 
+		public void Save() {
+			m_allNodes.ForEach(n => n.Operation.Save());
+		}
+			
 		//
 		// Save/Load to disk
 		//
@@ -137,6 +141,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 
 		public static void SetSavedataDirty() {
+			Data.Save();
 			EditorUtility.SetDirty(Data);
 		}
 
@@ -165,7 +170,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			s_saveData = null;
 			return Data;
 		}
-			
+
 		public static bool IsSaveDataAvailableAtDisk() {
 			return File.Exists(SaveDataAssetPath);
 		}
@@ -230,7 +235,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				delete undetectable node.
 			*/
 			foreach (var n in m_allNodes) {
-				if(!n.Validate(m_allNodes, m_allConnections)) {
+				if(!n.Validate()) {
 					removingNodes.Add(n);
 					changed = true;
 				}

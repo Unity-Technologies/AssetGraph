@@ -30,7 +30,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
 		}
@@ -51,6 +50,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override bool OnAssetsReimported(
+			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
 			string[] importedAssets, 
@@ -58,7 +58,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			string[] movedAssets, 
 			string[] movedFromAssetPaths)
 		{
-			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, m_node.Id);
+			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, nodeData.Id);
 
 			foreach(var imported in importedAssets) {
 				if(imported.StartsWith(samplingDirectoryPath)) {
@@ -69,9 +69,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-
-			bool modified = false;
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -93,7 +91,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						incomingType = ImportSetting.GetReferenceAssetImporter(node.Data).GetType();
 					} else {
 						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
-						return modified;
+						return;
 					}
 				}
 
@@ -118,7 +116,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					break;
 				}
 			}
-			return modified;
+			return;
 		}
 
 		public override void Prepare (BuildTarget target, 
@@ -168,12 +166,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
-			if(incoming != null && Output != null) {
+			if(Output != null) {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
 
-				foreach(var ag in incoming) {
-					Output(dst, ag.assetGroups);
+				if(incoming != null) {
+					foreach(var ag in incoming) {
+						Output(dst, ag.assetGroups);
+					}
+				} else {
+					Output(dst, new Dictionary<string, List<AssetReference>>());
 				}
 			}
 		}

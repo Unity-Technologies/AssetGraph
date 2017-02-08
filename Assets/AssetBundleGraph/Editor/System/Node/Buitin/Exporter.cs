@@ -50,7 +50,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			//Take care of this with Initialize(NodeData)
 			m_exportPath = new SerializableMultiTargetString();
 			m_exportOption = new SerializableMultiTargetInt();
@@ -77,12 +76,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return JsonUtility.ToJson(this);
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 			
-			bool modified = false;
-
 			if (m_exportPath == null) {
-				return modified;
+				return;
 			}
 
 			var currentEditingGroup = editor.CurrentEditingGroup;
@@ -102,7 +99,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}  else {
 							m_exportPath.Remove(currentEditingGroup);
 						}
-						modified = true;
+						onValueChanged();
 					}
 				} );
 
@@ -112,7 +109,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(newOption != opt) {
 						using(new RecordUndoScope("Change Export Option", node, true)){
 							m_exportOption[currentEditingGroup] = (int)newOption;
-							modified = true;
+							onValueChanged();
 						}
 					}
 
@@ -134,7 +131,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								if(GUILayout.Button("Create directory")) {
 									Directory.CreateDirectory(exporterNodePath);
 								}
-								modified = true;
+								onValueChanged();
 							}
 							EditorGUILayout.Space();
 
@@ -161,12 +158,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if (newExportPath != m_exportPath[currentEditingGroup]) {
 						using(new RecordUndoScope("Change Export Path", node, true)){
 							m_exportPath[currentEditingGroup] = newExportPath;
-							modified = true;
+							onValueChanged();
 						}
 					}
 				}
 			}
-			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

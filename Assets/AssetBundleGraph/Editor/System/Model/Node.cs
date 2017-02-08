@@ -12,8 +12,6 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public abstract class Node : IJSONSerializable {
 
-		protected Model.NodeData m_node;
-
 		public virtual Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.Assets;
@@ -32,9 +30,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public abstract bool IsEqual(Node node);
 		public abstract string Serialize();
 
-		public virtual void Initialize(Model.NodeData data) {
-			m_node = data;
-		}
+		public abstract void Initialize(Model.NodeData data);
 
 		public virtual bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
@@ -67,13 +63,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		/**
 		 * Provide Editing interface on Inspector Window.
-		 * @result return true if node is modified from Inspector. 
 		 */ 
-		public virtual bool OnInspectorGUI(NodeGUI node, NodeGUIEditor editor) {
-			return false;
-		}
+		public abstract void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged);
 
 		public virtual bool OnAssetsReimported(
+			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
 			string[] importedAssets, 

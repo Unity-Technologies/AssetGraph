@@ -28,7 +28,6 @@ namespace UnityEngine.AssetBundles.GraphTool
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			m_groupingKeyword = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
@@ -52,12 +51,10 @@ namespace UnityEngine.AssetBundles.GraphTool
 			return JsonUtility.ToJson(this);
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-
-			bool modified = false;
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_groupingKeyword == null) {
-				return modified;
+				return;
 			}
 
 			EditorGUILayout.HelpBox("Grouping: Create group of assets.", MessageType.Info);
@@ -75,7 +72,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 						} else {
 							m_groupingKeyword.Remove(editor.CurrentEditingGroup);
 						}
-						modified = true;
+						onValueChanged();
 					}
 				});
 
@@ -88,12 +85,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 					if (newGroupingKeyword != m_groupingKeyword[editor.CurrentEditingGroup]) {
 						using(new RecordUndoScope("Change Grouping Keywords", node, true)){
 							m_groupingKeyword[editor.CurrentEditingGroup] = newGroupingKeyword;
-							modified = true;
+							onValueChanged();
 						}
 					}
 				}
 			}
-			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 
@@ -122,30 +118,33 @@ namespace UnityEngine.AssetBundles.GraphTool
 				}
 			);
 
-			if(incoming == null || connectionsToOutput == null || Output == null) {
+			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
 
 			var outputDict = new Dictionary<string, List<AssetReference>>();
-			var groupingKeyword = m_groupingKeyword[target];
-			var split = groupingKeyword.Split(Model.Settings.KEYWORD_WILDCARD);
-			var groupingKeywordPrefix  = split[0];
-			var groupingKeywordPostfix = split[1];
-			var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
 
-			foreach(var ag in incoming) {
-				foreach (var assets in ag.assetGroups.Values) {
-					foreach(var a in assets) {
-						var targetPath = a.path;
+			if(incoming != null) {
+				var groupingKeyword = m_groupingKeyword[target];
+				var split = groupingKeyword.Split(Model.Settings.KEYWORD_WILDCARD);
+				var groupingKeywordPrefix  = split[0];
+				var groupingKeywordPostfix = split[1];
+				var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
 
-						var match = regex.Match(targetPath);
+				foreach(var ag in incoming) {
+					foreach (var assets in ag.assetGroups.Values) {
+						foreach(var a in assets) {
+							var targetPath = a.path;
 
-						if (match.Success) {
-							var newGroupingKey = match.Groups[1].Value;
-							if (!outputDict.ContainsKey(newGroupingKey)) {
-								outputDict[newGroupingKey] = new List<AssetReference>();
+							var match = regex.Match(targetPath);
+
+							if (match.Success) {
+								var newGroupingKey = match.Groups[1].Value;
+								if (!outputDict.ContainsKey(newGroupingKey)) {
+									outputDict[newGroupingKey] = new List<AssetReference>();
+								}
+								outputDict[newGroupingKey].Add(a);
 							}
-							outputDict[newGroupingKey].Add(a);
 						}
 					}
 				}

@@ -28,7 +28,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			m_instance = new MultiTargetModifierInstance();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
@@ -52,9 +51,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return JsonUtility.ToJson(this);
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-
-			bool modified = false;
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -70,11 +67,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if(incomingType == null) {
 					// if there is no asset input to determine incomingType,
 					// retrieve from assigned Modifier.
-					incomingType = ModifierUtility.GetModifierTargetType(modifier.ClassName);
+					if(modifier.ClassName != null) {
+						incomingType = ModifierUtility.GetModifierTargetType(modifier.ClassName);
+					}
 
 					if(incomingType == null) {
 						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
-						return modified;
+						onValueChanged();
 					}
 				}
 
@@ -95,7 +94,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 												modifier = new ModifierInstance(newModifier);
 												m_instance[editor.CurrentEditingGroup] = modifier;
 											}
-											modified = true;
+											onValueChanged();
 										}
 									}  
 								);
@@ -132,7 +131,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						} else {
 							m_instance.Remove(editor.CurrentEditingGroup);
 						}
-						modified = true;
+						onValueChanged();
 					});
 
 					using (disabledScope) {
@@ -140,7 +139,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change Modifier Setting", node)) {
 									modifier.Save();
-									modified = true;
+									onValueChanged();
 								}
 							};
 
@@ -149,7 +148,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 			}
-			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 

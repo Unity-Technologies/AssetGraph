@@ -28,7 +28,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			base.Initialize(data);
 			m_filter = new List<Model.FilterEntry>();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
@@ -80,9 +79,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			menu.ShowAsContext();
 		}
 
-		public override bool OnInspectorGUI (NodeGUI node, NodeGUIEditor editor) {
-
-			bool modified = false;
+		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -114,7 +111,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 											using(new RecordUndoScope("Modify Filter Type", node, true)){
 												m_filter[ind].FilterKeytype = selectedTypeStr;
 												UpdateFilterEntry(node.Data, m_filter[ind]);
-												modified = true;
+												onValueChanged();
 											}
 											// event must raise to propagate change to connection associated with point
 											NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
@@ -127,7 +124,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
 									cond.FilterKeyword = keyword;
 									UpdateFilterEntry(node.Data, cond);
-									modified = true;
+									onValueChanged();
 								}
 								// event must raise to propagate change to connection associated with point
 								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
@@ -148,7 +145,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						AddFilterCondition(node.Data,
 							Model.Settings.DEFAULT_FILTER_KEYWORD, 
 							Model.Settings.DEFAULT_FILTER_KEYTYPE);
-						modified = true;
+						onValueChanged();
 					}
 				}
 
@@ -157,11 +154,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						// event must raise to remove connection associated with point
 						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, removing)));
 						RemoveFilterCondition(node.Data, removing);
-						modified = true;
+						onValueChanged();
 					}
 				}
 			}
-			return modified;
 		}
 
 		public override void Prepare (BuildTarget target, 
@@ -189,7 +185,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			if(connectionsToOutput == null || incoming == null || Output == null) {
+			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
 
@@ -198,31 +194,32 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			foreach(var outPoints in node.OutputPoints) {
 				allOutput[outPoints.Id] = new Dictionary<string, List<AssetReference>>();
 			}
+			if(incoming != null) {
+				foreach(var ag in incoming) {
+					foreach(var groupKey in ag.assetGroups.Keys) {
 
-			foreach(var ag in incoming) {
-				foreach(var groupKey in ag.assetGroups.Keys) {
+						foreach(var a in ag.assetGroups[groupKey]) {
+							foreach(var filter in m_filter) {
+								bool keywordMatch = Regex.IsMatch(a.importFrom, filter.FilterKeyword, 
+									RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
-					foreach(var a in ag.assetGroups[groupKey]) {
-						foreach(var filter in m_filter) {
-							bool keywordMatch = Regex.IsMatch(a.importFrom, filter.FilterKeyword, 
-								RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+								bool match = keywordMatch;
 
-							bool match = keywordMatch;
-
-							if(keywordMatch && filter.FilterKeytype != Model.Settings.DEFAULT_FILTER_KEYTYPE) 
-							{
-								var assumedType = a.filterType;
-								match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
-							}
-
-							if(match) {
-								var output = allOutput[filter.ConnectionPointId];
-								if(!output.ContainsKey(groupKey)) {
-									output[groupKey] = new List<AssetReference>();
+								if(keywordMatch && filter.FilterKeytype != Model.Settings.DEFAULT_FILTER_KEYTYPE) 
+								{
+									var assumedType = a.filterType;
+									match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
 								}
-								output[groupKey].Add(a);
-								// consume this asset with this output
-								break;
+
+								if(match) {
+									var output = allOutput[filter.ConnectionPointId];
+									if(!output.ContainsKey(groupKey)) {
+										output[groupKey] = new List<AssetReference>();
+									}
+									output[groupKey].Add(a);
+									// consume this asset with this output
+									break;
+								}
 							}
 						}
 					}
