@@ -80,12 +80,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_variants.ForEach(v => newNode.m_variants.Add(new Variant(v)));
 			newNode.m_useGroupAsVariants = m_useGroupAsVariants;
 
-			//				foreach(var v in m_variants) {
-			//					if(null == rhs.m_variants.Find(x => x.Name == v.Name && x.ConnectionPointId == v.ConnectionPointId)) {
-			//						LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Variants not found");
-			//						return false;
-			//					}
-			//				}
 			return newNode;
 		}
 
