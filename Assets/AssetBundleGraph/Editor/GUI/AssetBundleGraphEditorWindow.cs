@@ -112,21 +112,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		// hold scale start data.
-		public struct ScalePoint {
-			public readonly float x;
-			public readonly float y;
-			public readonly float startScale;
-			public readonly int scaledDistance;
-
-			public ScalePoint (Vector2 point, float scaleFactor, int scaledDistance) {
-				this.x = point.x;
-				this.y = point.y;
-				this.startScale = scaleFactor;
-				this.scaledDistance = scaledDistance;
-			}
-		}
-
 		public enum ModifyMode : int {
 			NONE,
 			CONNECTING,
@@ -158,7 +143,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private Vector2 errorScrollPos = new Vector2(0,0);
 		private Rect graphRegion = new Rect();
 		private SelectPoint selectStartMousePosition;
-		private ScalePoint scaleStartMousePosition;
 		private GraphBackground background = new GraphBackground();
 		private AssetBundleGraphController controller = new AssetBundleGraphController();
 
@@ -717,8 +701,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					case ModifyMode.NONE: {
 							switch (Event.current.button) {
 							case 0:{// left click
-									selectStartMousePosition = new SelectPoint(Event.current.mousePosition);
-									modifyMode = ModifyMode.SELECTING;
+									if(graphRegion.Contains(Event.current.mousePosition)) {
+										selectStartMousePosition = new SelectPoint(Event.current.mousePosition);
+										modifyMode = ModifyMode.SELECTING;
+									}
 									break;
 								}
 							}
