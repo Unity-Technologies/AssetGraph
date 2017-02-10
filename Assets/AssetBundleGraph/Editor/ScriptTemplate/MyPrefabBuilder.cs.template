@@ -57,11 +57,4 @@ public class MyPrefabBuilder : IPrefabBuilder {
 			onValueChanged();
 		}
 	}
-
-	/**
-	 * Serialize this PrefabBuilder to JSON using JsonUtility.
-	 */ 
-	public string Serialize() {
-		return JsonUtility.ToJson(this);
-	}
 }

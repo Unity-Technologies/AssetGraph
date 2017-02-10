@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using UnityEngine.AssetBundles.GraphTool;
 
 [CustomModifier("MyModifier", typeof(RenderTexture))]
-public class MyModifier : AssetBundleGraph.IModifier {
+public class MyModifier : IModifier {
 
 	[SerializeField] private bool doSomething;
 
@@ -30,10 +30,5 @@ public class MyModifier : AssetBundleGraph.IModifier {
 			doSomething = newValue;
 			onValueChanged();
 		}
-	}
-
-	// serialize this class to JSON 
-	public string Serialize() {
-		return JsonUtility.ToJson(this);
 	}
 }
