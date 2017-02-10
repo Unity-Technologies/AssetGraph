@@ -10,7 +10,7 @@ using System.Linq;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
-	public abstract class Node : IJSONSerializable {
+	public abstract class Node {
 
 		public virtual Model.NodeOutputSemantics NodeInputType {
 			get {
@@ -28,7 +28,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public abstract string InactiveStyle { get; }
 		public abstract Node Clone();
 		public abstract bool IsEqual(Node node);
-		public abstract string Serialize();
 
 		public abstract void Initialize(Model.NodeData data);
 

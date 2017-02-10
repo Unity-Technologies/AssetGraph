@@ -47,10 +47,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_instance == rhs.m_instance;
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);

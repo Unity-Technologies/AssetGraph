@@ -16,7 +16,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	 * IModifier is an interface which modifies incoming assets.
 	 * Subclass of IModifier must have CustomModifier attribute.
 	 */
-	public interface IModifier : IJSONSerializable {
+	public interface IModifier {
 		/**
 		 * Test if incoming assset is different from this IModifier's setting.
 		 * asset is always type of object defined

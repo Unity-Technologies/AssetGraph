@@ -72,10 +72,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_exportOption == rhs.m_exportOption;
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 			
 			if (m_exportPath == null) {

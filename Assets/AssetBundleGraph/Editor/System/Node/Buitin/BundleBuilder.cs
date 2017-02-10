@@ -61,10 +61,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_enabledBundleOptions == rhs.m_enabledBundleOptions;
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_enabledBundleOptions == null) {

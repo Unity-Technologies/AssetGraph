@@ -53,10 +53,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-			
 		private void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
 			var menu = new GenericMenu();
 

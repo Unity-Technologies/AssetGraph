@@ -45,10 +45,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return rhs != null;
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		public override bool OnAssetsReimported(
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,

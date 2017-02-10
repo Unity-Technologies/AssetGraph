@@ -4,7 +4,7 @@ using System.Collections;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 	[System.Serializable]
-	public class SerializedInstance<T> where T: IJSONSerializable {
+	public class SerializedInstance<T> where T: class {
 
 		[SerializeField] private string m_className;
 		[SerializeField] private string m_instanceData;
@@ -37,10 +37,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public SerializedInstance(T obj) {
-			UnityEngine.Assertions.Assert.IsNotNull((IJSONSerializable)obj);
+			UnityEngine.Assertions.Assert.IsNotNull(obj);
 
 			m_className = obj.GetType().FullName;
-			m_instanceData = CustomScriptUtility.EncodeString(obj.Serialize());
+			m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(obj));
 		}
 
 		private T Deserialize() {
@@ -61,7 +61,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if(m_object != null) {
 				m_className = m_object.GetType().FullName;
 				//UnityEngine.Assertions.Assert.AreEqual(m_className, m_object.GetType().FullName);
-				m_instanceData = CustomScriptUtility.EncodeString(m_object.Serialize());
+				m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(m_object));
 			}
 		}
 

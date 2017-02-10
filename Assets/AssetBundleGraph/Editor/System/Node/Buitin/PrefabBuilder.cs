@@ -63,10 +63,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_replacePrefabOptions == rhs.m_replacePrefabOptions;
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);

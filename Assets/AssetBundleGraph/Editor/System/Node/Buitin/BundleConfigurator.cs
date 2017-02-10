@@ -97,10 +97,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_variants.SequenceEqual(rhs.m_variants);
 		}
 
-		public override string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		public override bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			if(!m_useGroupAsVariants) {
 				if(m_variants.Count > 0 && m_variants.Find(v => v.ConnectionPointId == point.Id) == null) 

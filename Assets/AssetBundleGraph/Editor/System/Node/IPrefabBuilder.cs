@@ -15,7 +15,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	 * IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.
 	 * Subclass of IPrefabBuilder must have CUstomPrefabBuilder attribute.
 	 */
-	public interface IPrefabBuilder : IJSONSerializable {
+	public interface IPrefabBuilder {
 		/**
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.
