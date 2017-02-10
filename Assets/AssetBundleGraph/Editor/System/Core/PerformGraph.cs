@@ -430,7 +430,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				var parentNode = saveData.Nodes.Find(node => node.Id == c.FromNodeId);
 				if(parentNode != null) {
 					// parentNode may be null while deleting node
-					//				UnityEngine.Assertions.Assert.IsNotNull(parentNode);
 					MarkAndTraverseParent(saveData, parentNode, visitedConnections, visitedNode);
 				}
 			}

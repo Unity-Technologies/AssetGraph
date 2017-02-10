@@ -122,10 +122,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			var startPoint = NodeGUI.ScaleEffect(m_outputPoint.GetGlobalPosition(startNode));
+			var startPoint = m_outputPoint.GetGlobalPosition(startNode);
 			var startV3 = new Vector3(startPoint.x, startPoint.y, 0f);
 
-			var endPoint = NodeGUI.ScaleEffect(m_inputPoint.GetGlobalPosition(endNode));
+			var endPoint = m_inputPoint.GetGlobalPosition(endNode);
 			var endV3 = new Vector3(endPoint.x, endPoint.y + 1f, 0f);
 			
 			var centerPoint = startPoint + ((endPoint - startPoint) / 2);
@@ -152,30 +152,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 
 			// draw connection label if connection's label is not normal.
-			if (NodeGUI.scaleFactor == NodeGUI.SCALE_MAX) {
+			GUIStyle labelStyle = new GUIStyle("WhiteMiniLabel");
+			labelStyle.alignment = TextAnchor.MiddleLeft;
 
-				GUIStyle labelStyle = new GUIStyle("WhiteMiniLabel");
-				labelStyle.alignment = TextAnchor.MiddleLeft;
+			switch (Label){
+			case Model.Settings.DEFAULT_OUTPUTPOINT_LABEL: {
+					// show nothing
+					break;
+				}
+				
+			case Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL: {
+					var labelWidth = labelStyle.CalcSize(new GUIContent(Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL));
+					var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
+					Handles.Label(labelPointV3, Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL, labelStyle);
+					break;
+				}
 
-				switch (Label){
-				case Model.Settings.DEFAULT_OUTPUTPOINT_LABEL: {
-						// show nothing
-						break;
-					}
-					
-				case Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL: {
-						var labelWidth = labelStyle.CalcSize(new GUIContent(Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL));
-						var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, Model.Settings.BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL, labelStyle);
-						break;
-					}
-
-					default: {
-						var labelWidth = labelStyle.CalcSize(new GUIContent(Label));
-						var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
-						Handles.Label(labelPointV3, Label, labelStyle);
-						break;
-					}
+				default: {
+					var labelWidth = labelStyle.CalcSize(new GUIContent(Label));
+					var labelPointV3 = new Vector3(centerPointV3.x - (labelWidth.x / 2), centerPointV3.y - 24f, 0f) ;
+					Handles.Label(labelPointV3, Label, labelStyle);
+					break;
 				}
 			}
 
@@ -219,16 +216,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public bool IsEqual (Model.ConnectionPointData from, Model.ConnectionPointData to) {
 			return (m_outputPoint == from && m_inputPoint == to);
 		}
-		
-		public void SetActive () {
-			Selection.activeObject = Inspector;
-			connectionButtonStyle = "sv_label_1";
-		}
 
-		public void SetInactive () {
-			connectionButtonStyle = "sv_label_0";
-		}
 
+		public void SetActive (bool active) {
+			if(active) {
+				Selection.activeObject = Inspector;
+				connectionButtonStyle = "sv_label_1";
+			} else {
+				connectionButtonStyle = "sv_label_0";
+			}
+		}
+			
 		public void Delete () {
 			ConnectionGUIUtility.ConnectionEventHandler(new ConnectionEvent(ConnectionEvent.EventType.EVENT_CONNECTION_DELETED, this));
 		}

@@ -8,21 +8,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			EVENT_NONE,
 
 			EVENT_NODE_MOVING,
+			EVENT_NODE_MOVE_END,
 
-			EVENT_NODE_CONNECT_STARTED,
-			EVENT_NODE_CONNECTION_OVERED,
-			EVENT_NODE_CONNECTION_RAISED,
+			EVENT_CONNECTING_BEGIN,
+			EVENT_CONNECTING_END,
+			EVENT_CONNECTION_ESTABLISHED,
 
 			EVENT_NODE_UPDATED,
 
-			EVENT_NODE_TOUCHED,
+			EVENT_NODE_CLICKED,
 
 			EVENT_CONNECTIONPOINT_DELETED,
 			EVENT_CONNECTIONPOINT_LABELCHANGED,
 
 			EVENT_DELETE_ALL_CONNECTIONS_TO_POINT,
 			
-			EVENT_CLOSE_TAPPED,
+			EVENT_NODE_DELETE,
 
 			EVENT_RECORDUNDO,
 			EVENT_SAVE,
@@ -31,6 +32,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public readonly EventType eventType;
 		public readonly NodeGUI eventSourceNode;
 		public readonly Model.ConnectionPointData point;
+		public readonly Vector2 position;
 		public readonly Vector2 globalMousePosition;
 		public readonly string message;
 
@@ -38,6 +40,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			this.eventType = type;
 			this.eventSourceNode = node;
 			this.point = point;
+			this.position = localMousePos;
 			this.globalMousePosition = new Vector2(localMousePos.x + node.GetX(), localMousePos.y + node.GetY());
 		}
 

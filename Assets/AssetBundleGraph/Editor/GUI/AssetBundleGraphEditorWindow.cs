@@ -13,41 +13,100 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleGraphEditorWindow : EditorWindow {
 
-		[Serializable] 
-		public struct KeyObject {
-			public string key;
+		[Serializable]
+		public class SavedSelection {
+			[SerializeField] public List<NodeGUI> nodes;
+			[SerializeField] public List<ConnectionGUI> connections;
+			[SerializeField] private float m_pasteOffset = kPasteOffset;
 
-			public KeyObject (string val) {
-				key = val;
+			static readonly float kPasteOffset = 20.0f;
+
+			public SavedSelection (SavedSelection s) {
+				nodes = new List<NodeGUI>(s.nodes);
+				connections = new List<ConnectionGUI>(s.connections);
 			}
-		}
 
-		[Serializable] 
-		public struct ActiveObject {
-			[SerializeField] public SerializableVector2Dictionary idPosDict;
-
-			public ActiveObject (Dictionary<string, Vector2> idPosDict) {
-				this.idPosDict = new SerializableVector2Dictionary(idPosDict);
+			public SavedSelection () {
+				nodes = new List<NodeGUI>();
+				connections = new List<ConnectionGUI>();
 			}
-		}
 
-		[Serializable] 
-		public struct CopyField {
-			[SerializeField] public List<string> datas;
-			[SerializeField] public CopyType type;
+			public SavedSelection (IEnumerable<NodeGUI> n, IEnumerable<ConnectionGUI> c) {
+				nodes = new List<NodeGUI>(n);
+				connections = new List<ConnectionGUI>(c);
+			}
 
-			public CopyField (List<string> datas, CopyType type) {
-				this.datas = datas;
-				this.type = type;
+			public bool IsSelected {
+				get {
+					return (nodes.Count + connections.Count) > 0;
+				}
+			}
+
+			public float PasteOffset {
+				get {
+					return m_pasteOffset;
+				}
+			}
+
+			public void IncrementPasteOffset() {
+				m_pasteOffset += kPasteOffset;
+			}
+
+			public void Add(NodeGUI n) {
+				nodes.Add(n);
+			}
+
+			public void Add(ConnectionGUI c) {
+				connections.Add(c);
+			}
+
+			public void Remove(NodeGUI n) {
+				nodes.Remove(n);
+			}
+
+			public void Remove(ConnectionGUI c) {
+				connections.Remove(c);
+			}
+
+			public void Toggle(NodeGUI n) {
+				if(nodes.Contains(n)) {
+					nodes.Remove(n);
+				} else {
+					nodes.Add(n);
+				}
+			}
+
+			public void Toggle(ConnectionGUI c) {
+				if(connections.Contains(c)) {
+					connections.Remove(c);
+				} else {
+					connections.Add(c);
+				}
+			}
+
+			public void Clear(bool deactivate = false) {
+
+				if(deactivate) {
+					foreach(var n in nodes) {
+						n.SetActive(false);
+					}
+
+					foreach(var c in connections) {
+						c.SetActive(false);
+					}
+				}
+
+				nodes.Clear();
+				connections.Clear();
 			}
 		}
 
 		// hold selection start data.
-		public struct AssetBundleGraphSelection {
+		public class SelectPoint {
 			public readonly float x;
 			public readonly float y;
 
-			public AssetBundleGraphSelection (Vector2 position) {
+			public SelectPoint (Vector2 position) {
 				this.x = position.x;
 				this.y = position.y;
 			}
@@ -72,12 +131,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			NONE,
 			CONNECTING,
 			SELECTING,
-			SCALING,
-		}
-
-		public enum CopyType : int {
-			COPYTYPE_COPY,
-			COPYTYPE_CUT
 		}
 
 		public enum ScriptType : int {
@@ -89,7 +142,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
 		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
-		[SerializeField] private ActiveObject activeObject = new ActiveObject(new Dictionary<string, Vector2>());
+
+		[SerializeField] private SavedSelection activeSelection = null;
+		[SerializeField] private SavedSelection copiedSelection = null;
 
 		private bool showErrors;
 		private bool showVerboseLog;
@@ -102,9 +157,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private Vector2 scrollPos = new Vector2(1500,0);
 		private Vector2 errorScrollPos = new Vector2(0,0);
 		private Rect graphRegion = new Rect();
-		private CopyField copyField = new CopyField();		
-		private AssetBundleGraphSelection selection;
-		private ScalePoint scalePoint;
+		private SelectPoint selectStartMousePosition;
+		private ScalePoint scaleStartMousePosition;
 		private GraphBackground background = new GraphBackground();
 		private AssetBundleGraphController controller = new AssetBundleGraphController();
 
@@ -249,12 +303,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public void SelectNode(string nodeId) {
 			var selectObject = nodes.Find(node => node.Id == nodeId);
-			// set deactive for all nodes.
 			foreach (var node in nodes) {
-				node.SetInactive();
-			}
-			if(selectObject != null) {
-				selectObject.SetActive();
+				node.SetActive( node == selectObject );
 			}
 		}
 
@@ -300,17 +350,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             texture.LoadImage(File.ReadAllBytes(path));
             return texture;
         }
-
-		private ActiveObject RenewActiveObject (List<string> ids) {
-			var idPosDict = new Dictionary<string, Vector2>();
-			foreach (var node in nodes) {
-				if (ids.Contains(node.Id)) idPosDict[node.Id] = node.GetPos();
-			}
-			foreach (var connection in connections) {
-				if (ids.Contains(connection.Id)) idPosDict[connection.Id] = Vector2.zero;
-			}
-			return new ActiveObject(idPosDict);
-		}
 
 		/**
 			node graph initializer.
@@ -646,7 +685,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						break;
 					}
 				case ModifyMode.SELECTING: {
-						GUI.DrawTexture(new Rect(selection.x, selection.y, Event.current.mousePosition.x - selection.x, Event.current.mousePosition.y - selection.y), selectionTex);
+						GUI.DrawTexture(new Rect(selectStartMousePosition.x, selectStartMousePosition.y, Event.current.mousePosition.x - selectStartMousePosition.x, Event.current.mousePosition.y - selectStartMousePosition.y), selectionTex);
 						break;
 					}
 				}
@@ -678,19 +717,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					case ModifyMode.NONE: {
 							switch (Event.current.button) {
 							case 0:{// left click
-									if (Event.current.command) {
-										scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
-										modifyMode = ModifyMode.SCALING;
-										break;
-									}
-
-									selection = new AssetBundleGraphSelection(Event.current.mousePosition);
+									selectStartMousePosition = new SelectPoint(Event.current.mousePosition);
 									modifyMode = ModifyMode.SELECTING;
-									break;
-								}
-							case 2:{// middle click.
-									scalePoint = new ScalePoint(Event.current.mousePosition, NodeGUI.scaleFactor, 0);
-									modifyMode = ModifyMode.SCALING;
 									break;
 								}
 							}
@@ -698,20 +726,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 					case ModifyMode.SELECTING: {
 							// do nothing.
-							break;
-						}
-					case ModifyMode.SCALING: {
-							var baseDistance = (int)Vector2.Distance(Event.current.mousePosition, new Vector2(scalePoint.x, scalePoint.y));
-							var distance = baseDistance / NodeGUI.SCALE_WIDTH;
-							var direction = (0 < Event.current.mousePosition.y - scalePoint.y);
-
-							if (!direction) distance = -distance;
-
-							// var before = NodeGUI.scaleFactor;
-							NodeGUI.scaleFactor = scalePoint.startScale + (distance * NodeGUI.SCALE_RATIO);
-
-							if (NodeGUI.scaleFactor < NodeGUI.SCALE_MIN) NodeGUI.scaleFactor = NodeGUI.SCALE_MIN;
-							if (NodeGUI.SCALE_MAX < NodeGUI.scaleFactor) NodeGUI.scaleFactor = NodeGUI.SCALE_MAX;
 							break;
 						}
 					}
@@ -728,82 +742,70 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case EventType.MouseUp: {
 					switch (modifyMode) {
 					/*
-								select contained nodes & connections.
-							*/
+						select contained nodes & connections.
+					*/
 					case ModifyMode.SELECTING: {
+
+							if(selectStartMousePosition == null) {
+								break;
+							}
+
 							var x = 0f;
 							var y = 0f;
 							var width = 0f;
 							var height = 0f;
 
-							if (Event.current.mousePosition.x < selection.x) {
+							if (Event.current.mousePosition.x < selectStartMousePosition.x) {
 								x = Event.current.mousePosition.x;
-								width = selection.x - Event.current.mousePosition.x;
+								width = selectStartMousePosition.x - Event.current.mousePosition.x;
 							}
-							if (selection.x < Event.current.mousePosition.x) {
-								x = selection.x;
-								width = Event.current.mousePosition.x - selection.x;
+							if (selectStartMousePosition.x < Event.current.mousePosition.x) {
+								x = selectStartMousePosition.x;
+								width = Event.current.mousePosition.x - selectStartMousePosition.x;
 							}
 
-							if (Event.current.mousePosition.y < selection.y) {
+							if (Event.current.mousePosition.y < selectStartMousePosition.y) {
 								y = Event.current.mousePosition.y;
-								height = selection.y - Event.current.mousePosition.y;
+								height = selectStartMousePosition.y - Event.current.mousePosition.y;
 							}
-							if (selection.y < Event.current.mousePosition.y) {
-								y = selection.y;
-								height = Event.current.mousePosition.y - selection.y;
+							if (selectStartMousePosition.y < Event.current.mousePosition.y) {
+								y = selectStartMousePosition.y;
+								height = Event.current.mousePosition.y - selectStartMousePosition.y;
 							}
 
+							Undo.RecordObject(this, "Select Objects");
 
-							var activeObjectIds = new List<string>();
+							if(activeSelection == null) {
+								activeSelection = new SavedSelection();
+							}
+
+							// if shift key is not pressed, clear current selection
+							if(!Event.current.shift) {
+								activeSelection.Clear();
+							}
 
 							var selectedRect = new Rect(x, y, width, height);
 
-
 							foreach (var node in nodes) {
-								var nodeRect = new Rect(node.GetRect());
-								nodeRect.x = nodeRect.x * NodeGUI.scaleFactor;
-								nodeRect.y = nodeRect.y * NodeGUI.scaleFactor;
-								nodeRect.width = nodeRect.width * NodeGUI.scaleFactor;
-								nodeRect.height = nodeRect.height * NodeGUI.scaleFactor;
-								// get containd nodes,
-								if (nodeRect.Overlaps(selectedRect)) {
-									activeObjectIds.Add(node.Id);
+								if (node.GetRect().Overlaps(selectedRect)) {
+									activeSelection.Add(node);
 								}
 							}
 
 							foreach (var connection in connections) {
 								// get contained connection badge.
 								if (connection.GetRect().Overlaps(selectedRect)) {
-									activeObjectIds.Add(connection.Id);
+									activeSelection.Add(connection);
 								}
 							}
 
-							if (Event.current.shift) {
-								// add current active object ids to new list.
-								foreach (var alreadySelectedObjectId in activeObject.idPosDict.ReadonlyDict().Keys) {
-									if (!activeObjectIds.Contains(alreadySelectedObjectId)) activeObjectIds.Add(alreadySelectedObjectId);
-								}
-							} else {
-								// do nothing, means cancel selections if nodes are not contained by selection.
-							}
+							UpdateActiveObjects(activeSelection);
 
-
-							Undo.RecordObject(this, "Select Objects");
-
-							activeObject = RenewActiveObject(activeObjectIds);
-							UpdateActivationOfObjects(activeObject);
-
-							selection = new AssetBundleGraphSelection(Vector2.zero);
+							selectStartMousePosition = null;
 							modifyMode = ModifyMode.NONE;
 
 							HandleUtility.Repaint();
 							Event.current.Use();
-							break;
-						}
-
-					case ModifyMode.SCALING: {
-							modifyMode = ModifyMode.NONE;
 							break;
 						}
 					}
@@ -831,6 +833,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
+			var isValidSelection = activeSelection != null && activeSelection.IsSelected;
+			var isValidCopy      = copiedSelection != null && copiedSelection.IsSelected;
+
 			/*
 				Event Handling:
 				- Supporting dragging script into window to create node.
@@ -839,56 +844,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				- Command(Delete, Copy, etc...)
 			*/
 			switch (Event.current.type) {
-				// detect dragging script then change interface to "(+)" icon.
-				case EventType.DragUpdated: {
-					var refs = DragAndDrop.objectReferences;
-
-					foreach (var refe in refs) {
-						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-							Type scriptTypeInfo = ((MonoScript)refe).GetClass();							
-							Type inheritedTypeInfo = GetDragAndDropAcceptableScriptType(scriptTypeInfo);
-
-							if (inheritedTypeInfo != null) {
-								// at least one asset is script. change interface.
-								DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-								break;
-							}
-						}
-					}
-					break;
-				}
-
-				// script drop on editor.
-				case EventType.DragPerform: {
-					var pathAndRefs = new Dictionary<string, object>();
-					for (var i = 0; i < DragAndDrop.paths.Length; i++) {
-						var path = DragAndDrop.paths[i];
-						var refe = DragAndDrop.objectReferences[i];
-						pathAndRefs[path] = refe;
-					}
-//					var shouldSave = false;
-//					foreach (var item in pathAndRefs) {
-//						var refe = (MonoScript)item.Value;
-//						if (refe.GetType() == typeof(UnityEditor.MonoScript)) {
-//							Type scriptTypeInfo = refe.GetClass();
-//							Type inheritedTypeInfo = GetDragAndDropAcceptableScriptType(scriptTypeInfo);
-//
-//							if (inheritedTypeInfo != null) {
-//								var dropPos = Event.current.mousePosition;
-//								var scriptName = refe.name;
-//								var scriptClassName = scriptName;
-//								AddNodeFromCode(scriptName, scriptClassName, inheritedTypeInfo, dropPos.x, dropPos.y);
-//								shouldSave = true;
-//							}
-//						}
-//					}
-//
-//					if (shouldSave) {
-//						Setup(ActiveBuildTarget);
-//					}
-					break;
-				}
-
 				// show context menu
 				case EventType.ContextClick: {
 					var rightClickPos = Event.current.mousePosition;
@@ -919,25 +874,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					modifyMode = ModifyMode.NONE;
 					HandleUtility.Repaint();
 					
-					if (activeObject.idPosDict.ReadonlyDict().Any()) {
+					if (activeSelection != null && activeSelection.IsSelected) {
 						Undo.RecordObject(this, "Unselect");
 
-						foreach (var activeObjectId in activeObject.idPosDict.ReadonlyDict().Keys) {
-							// unselect all.
-							foreach (var node in nodes) {
-								if (activeObjectId == node.Id) {
-									node.SetInactive();
-								}
-							}
-							foreach (var connection in connections) {
-								if (activeObjectId == connection.Id) {
-									connection.SetInactive();
-								}
-							}
-						}
-
-						activeObject = RenewActiveObject(new List<string>());
-
+						activeSelection.Clear();
+						UpdateActiveObjects(activeSelection);
 					}
 
 					// clear inspector
@@ -947,62 +888,33 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					break;
 				}
-
-				/*
-					scale up or down by command & + or command & -.
-				*/
-				case EventType.KeyDown: {
-					if (Event.current.command) {
-						if (Event.current.shift && Event.current.keyCode == KeyCode.Semicolon) {
-							NodeGUI.scaleFactor = NodeGUI.scaleFactor + 0.1f;
-							if (NodeGUI.scaleFactor < NodeGUI.SCALE_MIN) NodeGUI.scaleFactor = NodeGUI.SCALE_MIN;
-							if (NodeGUI.SCALE_MAX < NodeGUI.scaleFactor) NodeGUI.scaleFactor = NodeGUI.SCALE_MAX;
-							Event.current.Use();
-							break;
-						}
-
-						if (Event.current.keyCode == KeyCode.Minus) {
-							NodeGUI.scaleFactor = NodeGUI.scaleFactor - 0.1f;
-							if (NodeGUI.scaleFactor < NodeGUI.SCALE_MIN) NodeGUI.scaleFactor = NodeGUI.SCALE_MIN;
-							if (NodeGUI.SCALE_MAX < NodeGUI.scaleFactor) NodeGUI.scaleFactor = NodeGUI.SCALE_MAX;
-							Event.current.Use();
-							break;
-						}
-					}
-					break;
-				}
-
+					
 				case EventType.ValidateCommand: 
 				{
 					switch (Event.current.commandName) {
-					// Delete active node or connection.
 					case "Delete": {
-							if (activeObject.idPosDict.ReadonlyDict().Any()) {
+							if (isValidSelection) {
 								Event.current.Use();
 							}
 							break;
 						}
 
 					case "Copy": {
-							if (activeObject.idPosDict.ReadonlyDict().Any()) {
+							if (isValidSelection) {
 								Event.current.Use();
 							}
 							break;
 						}
 
 					case "Cut": {
-							if (activeObject.idPosDict.ReadonlyDict().Any()) {
+							if (isValidSelection) {
 								Event.current.Use();
 							}
 							break;
 						}
 
 					case "Paste": {
-							if(copyField.datas == null)  {
-								break;
-							}
-
-							if (copyField.datas.Any()) {
+							if(isValidCopy) {
 								Event.current.Use();
 							}
 							break;
@@ -1021,140 +933,97 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					switch (Event.current.commandName) {
 						// Delete active node or connection.
 						case "Delete": {
-
-							if (!activeObject.idPosDict.ReadonlyDict().Any()) break;
+							if (!isValidSelection) {
+								break;
+							}
 							Undo.RecordObject(this, "Delete Selection");
 
-							foreach (var targetId in activeObject.idPosDict.ReadonlyDict().Keys) {
-								DeleteNode(targetId);
-								DeleteConnectionById(targetId);
+							foreach (var n in activeSelection.nodes) {
+								DeleteNode(n.Id);
 							}
 
-							Setup(ActiveBuildTarget);
+							foreach (var c in activeSelection.connections) {
+								DeleteConnection(c.Id);
+							}
 
-							activeObject = RenewActiveObject(new List<string>());
-							UpdateActivationOfObjects(activeObject);
+							activeSelection.Clear();
+							UpdateActiveObjects(activeSelection);
+
+							Setup(ActiveBuildTarget);
 
 							Event.current.Use();
 							break;
 						}
 
 						case "Copy": {
-//							if (!activeObject.idPosDict.ReadonlyDict().Any()) {
-//								break;
-//							}
-//
-//							Undo.RecordObject(this, "Copy Selection");
-//
-//							var targetNodeIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-//							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
-//							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_COPY);
+							if (!isValidSelection) {
+								break;
+							}
 
-							LogUtility.Logger.LogWarning("Command", "TODO: implemente Copy");
+							Undo.RecordObject(this, "Copy Selection");
+
+							copiedSelection = new SavedSelection(activeSelection);
 
 							Event.current.Use();
 							break;
 						}
 
 						case "Cut": {
-//							if (!activeObject.idPosDict.ReadonlyDict().Any()) {
-//								break;
-//							}
-//
-//							Undo.RecordObject(this, "Cut Selection");
-//							var targetNodeIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-//							var targetNodeJsonRepresentations = JsonRepresentations(targetNodeIds);
-//							copyField = new CopyField(targetNodeJsonRepresentations, CopyType.COPYTYPE_CUT);
-//
-//							foreach (var targetId in activeObject.idPosDict.ReadonlyDict().Keys) {
-//								DeleteNode(targetId);
-//								DeleteConnectionById(targetId);
-//							}
-//
-//							Setup(ActiveBuildTarget);
-//							InitializeGraph();
-//
-//							activeObject = RenewActiveObject(new List<string>());
-//							UpdateActivationOfObjects(activeObject);
+							if (!isValidSelection) {
+								break;
+							}
 
-							LogUtility.Logger.LogWarning("Command","TODO: implemente Cut");
+							Undo.RecordObject(this, "Cut Selection");
+
+							copiedSelection = new SavedSelection(activeSelection);
+
+							foreach (var n in activeSelection.nodes) {
+								DeleteNode(n.Id);
+							}
+
+							foreach (var c in activeSelection.connections) {
+								DeleteConnection(c.Id);
+							}
+							activeSelection.Clear();
+							UpdateActiveObjects(activeSelection);
+
+							Setup(ActiveBuildTarget);
+							InitializeGraph();
 
 							Event.current.Use();
 							break;
 						}
 
 						case "Paste": {
+							if(!isValidCopy)  {
+								break;
+							}
 
-//							if(copyField.datas == null)  {
-//								break;
-//							}
-//
-//							var nodeNames = nodes.Select(node => node.Name).ToList();
-//							var duplicatingData = new List<NodeGUI>();
-//
-//							if (copyField.datas.Any()) {
-//								var pasteType = copyField.type;
-//								foreach (var copyFieldData in copyField.datas) {
-//									var nodeJsonDict = AssetBundleGraph.Json.Deserialize(copyFieldData) as Dictionary<string, object>;
-//									var pastingNode = new NodeGUI(new Model.NodeData(nodeJsonDict));
-//									var pastingNodeName = pastingNode.Name;
-//
-//									var nameOverlapping = nodeNames.Where(name => name == pastingNodeName).ToList();
-//
-//  									switch (pasteType) {
-//  										case CopyType.COPYTYPE_COPY: {
-//											if (2 <= nameOverlapping.Count) {
-//												continue;
-//											}
-//  											break;
-//  										}
-//  										case CopyType.COPYTYPE_CUT: {
-//											if (1 <= nameOverlapping.Count) {
-//												continue;
-//											}
-//  											break;
-//  										}
-//  									}
-//
-//  									duplicatingData.Add(pastingNode);
-//								}
-//							}
-//							// consume copyField
-//							copyField.datas = null;
-//
-//							if (!duplicatingData.Any()) {
-//								break;
-//							}
-//
-//							Undo.RecordObject(this, "Paste");
-//							foreach (var newNode in duplicatingData) {
-//								DuplicateNode(newNode);
-//							}
-//
-//							Setup(ActiveBuildTarget);
-//							InitializeGraph();
+							Undo.RecordObject(this, "Paste");
+							foreach (var newNode in copiedSelection.nodes) {
+								DuplicateNode(newNode, copiedSelection.PasteOffset);
+							}
+							copiedSelection.IncrementPasteOffset();
 
-							LogUtility.Logger.LogWarning("Command","TODO: implemente Paste");
+							Setup(ActiveBuildTarget);
+							InitializeGraph();
 
 							Event.current.Use();
 							break;
 						}
 
 						case "SelectAll": {
-//							Undo.RecordObject(this, "Select All Objects");
-//
-//							var nodeIds = nodes.Select(node => node.Id).ToList();
-//							activeObject = RenewActiveObject(nodeIds);
-//
-//							// select all.
-//							foreach (var node in nodes) {
-//								node.SetActive();
-//							}
-//							foreach (var connection in connections) {
-//								connection.SetActive();
-//							}
+							Undo.RecordObject(this, "Select All Objects");
 
-							LogUtility.Logger.LogWarning("Command","TODO: Implement SelectAll");
+							if(activeSelection == null) {
+								activeSelection = new SavedSelection();
+							}
+
+							activeSelection.Clear();
+							nodes.ForEach(n => activeSelection.Add(n));
+							connections.ForEach(c => activeSelection.Add(c));
+
+							UpdateActiveObjects(activeSelection);
 
 							Event.current.Use();
 							break;
@@ -1168,48 +1037,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 		}
-
-		private Type GetDragAndDropAcceptableScriptType (Type type) {
-			if (typeof(IPrefabBuilder).IsAssignableFrom(type) && !type.IsInterface && PrefabBuilderUtility.HasValidCustomPrefabBuilderAttribute(type)) {
-				return typeof(IPrefabBuilder);
-			}
-			if (typeof(IModifier).IsAssignableFrom(type) && !type.IsInterface && ModifierUtility.HasValidCustomModifierAttribute(type)) {
-				return typeof(IModifier);
-			}
-
-			return null;
-		}
-
-		//TODO: Deprecate This
-
-//		private void AddNodeFromCode (string name, string scriptClassName, Type scriptBaseType, float x, float y) {
-//			NodeGUI newNode = null;
-//
-//			if (scriptBaseType == typeof(IModifier)) {
-//				var modifier = ModifierUtility.CreateModifier(scriptClassName);
-//				UnityEngine.Assertions.Assert.IsNotNull(modifier);
-//
-//				newNode = new NodeGUI(new Model.NodeData(name, NodeKind.MODIFIER_GUI, x, y));
-//				newNode.Data.ScriptClassName = scriptClassName;
-//				newNode.Data.InstanceData.DefaultValue = modifier.Serialize();
-//			}
-//			if (scriptBaseType == typeof(IPrefabBuilder)) {
-//				var builder = PrefabBuilderUtility.CreatePrefabBuilderByClassName(scriptClassName);
-//				UnityEngine.Assertions.Assert.IsNotNull(builder);
-//
-//				newNode = new NodeGUI(new Model.NodeData(name, NodeKind.PREFABBUILDER_GUI, x, y));
-//				newNode.Data.ScriptClassName = scriptClassName;
-//				newNode.Data.InstanceData.DefaultValue = builder.Serialize();
-//			}
-//
-//			if (newNode == null) {
-//				LogUtility.Logger.LogError(LogUtility.kTag, "Could not add node from code. " + scriptClassName + "(base:" + scriptBaseType + 
-//					") is not supported to create from code.");
-//				return;
-//			}
-//
-//			AddNodeGUI(newNode);
-//		}
 
 		private void AddNodeFromGUI (Node n, string guiName, float x, float y) {
 
@@ -1233,21 +1060,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		 * Handle Node Event
 		*/
 		private void HandleNodeEvent (NodeEvent e) {
+
 			switch (modifyMode) {
+			/*
+			 * During Mouse-drag opration to connect to other node
+			 */
 			case ModifyMode.CONNECTING: 
 				switch (e.eventType) {
-					/*
-						handling
-					*/
 					case NodeEvent.EventType.EVENT_NODE_MOVING: {
-						// do nothing.
 						break;
 					}
 
 					/*
-						connection drop detected from toward node.
+						connection established between 2 nodes
 					*/
-					case NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED: {
+					case NodeEvent.EventType.EVENT_CONNECTION_ESTABLISHED: {
 						// finish connecting mode.
 						modifyMode = ModifyMode.NONE;
 						
@@ -1297,9 +1124,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					/*
-						connection drop detected by started node.
+						connecting operation ended.
 					*/
-					case NodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED: {
+					case NodeEvent.EventType.EVENT_CONNECTING_END: {
 						// finish connecting mode.
 						modifyMode = ModifyMode.NONE;
 						
@@ -1353,206 +1180,121 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 				break;
+			/*
+			 * 
+			 */ 
 			case ModifyMode.NONE:
 				switch (e.eventType) {
-					/*
-						node move detected.
-					*/
-					case NodeEvent.EventType.EVENT_NODE_MOVING: {
-						var tappedNode = e.eventSourceNode;
-						var tappedNodeId = tappedNode.Id;
-						
-						if (activeObject.idPosDict.ContainsKey(tappedNodeId)) {
-							// already active, do nothing for this node.
-							var distancePos = tappedNode.GetPos() - activeObject.idPosDict.ReadonlyDict()[tappedNodeId];
+				case NodeEvent.EventType.EVENT_NODE_MOVING: 
+					if (activeSelection != null && activeSelection.nodes.Contains(e.eventSourceNode)) 
+					{
+						var moveDistance = e.position;
 
-							foreach (var node in nodes) {
-								if (node.Id == tappedNodeId) continue;
-								if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
-								var relativePos = activeObject.idPosDict.ReadonlyDict()[node.Id] + distancePos;
-								node.SetPos(relativePos);
+						foreach(var n in activeSelection.nodes) {
+							// skipping eventSourceNode because the movement is already done by GUI.DragWindow()
+							if(n != e.eventSourceNode) {
+								n.MoveBy(moveDistance);
 							}
-							break;
 						}
+					}
+					break;
 
-						if (Event.current.shift) {
-							Undo.RecordObject(this, "Select Objects");
+				/*
+					start connection handling.
+				*/
+				case NodeEvent.EventType.EVENT_CONNECTING_BEGIN: 
+					modifyMode = ModifyMode.CONNECTING;
+					currentEventSource = e;
+					break;
 
-							var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
+				case NodeEvent.EventType.EVENT_NODE_DELETE: 
+					
+					Undo.RecordObject(this, "Delete Node");
+					
+					var deletingNodeId = e.eventSourceNode.Id;
+					DeleteNode(deletingNodeId);
+					if(activeSelection != null) {
+						activeSelection.Remove(e.eventSourceNode);
+					}
 
-							additiveIds.Add(tappedNodeId);
-							
-							activeObject = RenewActiveObject(additiveIds);
+					Setup(ActiveBuildTarget);
+					InitializeGraph();
+					break;
 
-							UpdateActivationOfObjects(activeObject);
-							UpdateSpacerRect();
-							break;
+				/*
+					node clicked.
+				*/
+				case NodeEvent.EventType.EVENT_NODE_CLICKED: {
+					var clickedNode = e.eventSourceNode;
+
+					Model.SaveData.SetSavedataDirty();
+
+					if(activeSelection != null && activeSelection.nodes.Contains(clickedNode)) {
+						break;
+					}
+
+					if (Event.current.shift) {
+						Undo.RecordObject(this, "Toggle " + clickedNode.Name + " Selection");
+						if(activeSelection == null) {
+							activeSelection = new SavedSelection();
 						}
-
-						Undo.RecordObject(this, "Select " + tappedNode.Name);
-						activeObject = RenewActiveObject(new List<string>{tappedNodeId});
-						UpdateActivationOfObjects(activeObject);
-						break;
-					}
-
-					/*
-						start connection handling.
-					*/
-					case NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED: {
-						modifyMode = ModifyMode.CONNECTING;
-						currentEventSource = e;
-						break;
-					}
-
-					case NodeEvent.EventType.EVENT_CLOSE_TAPPED: {
-						
-						Undo.RecordObject(this, "Delete Node");
-						
-						var deletingNodeId = e.eventSourceNode.Id;
-						DeleteNode(deletingNodeId);
-
-						Setup(ActiveBuildTarget);
-						InitializeGraph();
-						break;
-					}
-
-					/*
-						releasse detected.
-							node move over.
-							node tapped.
-					*/
-					case NodeEvent.EventType.EVENT_NODE_TOUCHED: {
-						var movedNode = e.eventSourceNode;
-						var movedNodeId = movedNode.Id;
-
-						// already active, node(s) are just tapped or moved.
-						if (activeObject.idPosDict.ContainsKey(movedNodeId)) {
-
-							/*
-								active nodes(contains tap released node) are possibly moved.
-							*/
-							var movedIdPosDict = new Dictionary<string, Vector2>();
-							foreach (var node in nodes) {
-								if (!activeObject.idPosDict.ContainsKey(node.Id)) continue;
-
-								var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
-								if (node.GetPos() != startPos) {
-									// moved.
-									movedIdPosDict[node.Id] = node.GetPos();
-								}
-							}
-
-							if (movedIdPosDict.Any()) {
-								
-								foreach (var node in nodes) {
-									if (activeObject.idPosDict.ReadonlyDict().Keys.Contains(node.Id)) {
-										var startPos = activeObject.idPosDict.ReadonlyDict()[node.Id];
-										node.SetPos(startPos);
-									}
-								}
-
-								Undo.RecordObject(this, "Move " + movedNode.Name);
-
-								foreach (var node in nodes) {
-									if (movedIdPosDict.Keys.Contains(node.Id)) {
-										var endPos = movedIdPosDict[node.Id];
-										node.SetPos(endPos);
-									}
-								}
-
-								var activeObjectIds = activeObject.idPosDict.ReadonlyDict().Keys.ToList();
-								activeObject = RenewActiveObject(activeObjectIds);
-							} else {
-								// nothing moved, should cancel selecting this node.
-								var cancelledActivatedIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-								cancelledActivatedIds.Remove(movedNodeId);
-
-								Undo.RecordObject(this, "Select Objects");
-
-								activeObject = RenewActiveObject(cancelledActivatedIds);
-							}
-							
-							UpdateActivationOfObjects(activeObject);
-
-							UpdateSpacerRect();
-							//SaveGraph();
-							break;
+						activeSelection.Toggle(clickedNode);
+					} else {
+						Undo.RecordObject(this, "Select " + clickedNode.Name);
+						if(activeSelection == null) {
+							activeSelection = new SavedSelection();
 						}
-
-						if (Event.current.shift) {
-							Undo.RecordObject(this, "Select Objects");
-
-							var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-
-							// already contained, cancel.
-							if (additiveIds.Contains(movedNodeId)) {
-								additiveIds.Remove(movedNodeId);
-							} else {
-								additiveIds.Add(movedNodeId);
-							}
-
-							activeObject = RenewActiveObject(additiveIds);
-							UpdateActivationOfObjects(activeObject);
-
-							UpdateSpacerRect();
-							//SaveGraph();
-							break;
-						}
-						
-						Undo.RecordObject(this, "Select " + movedNode.Name);
-
-						activeObject = RenewActiveObject(new List<string>{movedNodeId});
-						UpdateActivationOfObjects(activeObject);
-
-						UpdateSpacerRect();
-						//SaveGraph();
-						break;
+						activeSelection.Clear();
+						activeSelection.Add(clickedNode);
 					}
-					case NodeEvent.EventType.EVENT_NODE_UPDATED: {
-						break;
-					}
+					
+					UpdateActiveObjects(activeSelection);
+					UpdateSpacerRect();
+					break;
+				}
+				case NodeEvent.EventType.EVENT_NODE_UPDATED: {
+					break;
+				}
 
-					default: {
-						break;
-					}
+				default: 
+					break;
 				}
 				break;
 			}
 
 			switch (e.eventType) {
-				case NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT: {
-					// deleting all connections to this point
-					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
-					Repaint();
-					break;
-				}
-				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
-					// deleting point is handled by caller, so we are deleting connections associated with it.
-					connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
-					Repaint();
-					break;
-				}
-				case NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
-					// point label change is handled by caller, so we are changing label of connection associated with it.
-					var affectingConnections = connections.FindAll( c=> c.OutputPoint.Id == e.point.Id );
-					affectingConnections.ForEach(c => c.Label = e.point.Label);
-					Repaint();
-					break;
-				}
-				case NodeEvent.EventType.EVENT_NODE_UPDATED: {
-					Validate(ActiveBuildTarget, e.eventSourceNode);
-					break;
-				}
+			case NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT: {
+				// deleting all connections to this point
+				connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+				Repaint();
+				break;
+			}
+			case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
+				// deleting point is handled by caller, so we are deleting connections associated with it.
+				connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+				Repaint();
+				break;
+			}
+			case NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
+				// point label change is handled by caller, so we are changing label of connection associated with it.
+				var affectingConnections = connections.FindAll( c=> c.OutputPoint.Id == e.point.Id );
+				affectingConnections.ForEach(c => c.Label = e.point.Label);
+				Repaint();
+				break;
+			}
+			case NodeEvent.EventType.EVENT_NODE_UPDATED: {
+				Validate(ActiveBuildTarget, e.eventSourceNode);
+				break;
+			}
 
-				case NodeEvent.EventType.EVENT_RECORDUNDO: {
-					Undo.RecordObject(this, e.message);
-					break;
-				}
-				case NodeEvent.EventType.EVENT_SAVE: {
-					Setup(ActiveBuildTarget);
-					Repaint();
-					break;
-				}
+			case NodeEvent.EventType.EVENT_RECORDUNDO: {
+				Undo.RecordObject(this, e.message);
+				break;
+			}
+			case NodeEvent.EventType.EVENT_SAVE: 
+				Setup(ActiveBuildTarget);
+				Repaint();
+				break;
 			}
 		}
 
@@ -1570,10 +1312,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
 		
-		public void DuplicateNode (NodeGUI node) {
+		public void DuplicateNode (NodeGUI node, float offset) {
 			var newNode = node.Duplicate(
-				node.GetX() + 10f,
-				node.GetY() + 10f
+				node.GetX() + offset,
+				node.GetY() + offset
 			);
 			AddNodeGUI(newNode);
 		}
@@ -1596,9 +1338,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void DeleteNode (string deletingNodeId) {
 			var deletedNodeIndex = nodes.FindIndex(node => node.Id == deletingNodeId);
 			if (0 <= deletedNodeIndex) {
-				nodes[deletedNodeIndex].SetInactive();
+				var n = nodes[deletedNodeIndex];
+				n.SetActive(false);
 				nodes.RemoveAt(deletedNodeIndex);
 			}
+
 		}
 
 		public void HandleConnectionEvent (ConnectionEvent e) {
@@ -1607,59 +1351,34 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					switch (e.eventType) {
 						
 						case ConnectionEvent.EventType.EVENT_CONNECTION_TAPPED: {
-							
-							if (Event.current.shift) {
-								Undo.RecordObject(this, "Select Objects");
 
-								var objectId = string.Empty;
-
-								if (e.eventSourceCon != null) {
-									objectId = e.eventSourceCon.Id;
-									if (!activeObject.idPosDict.ReadonlyDict().Any()) {
-										activeObject = RenewActiveObject(new List<string>{objectId});
-									} else {
-										var additiveIds = new List<string>(activeObject.idPosDict.ReadonlyDict().Keys);
-
-										// already contained, cancel.
-										if (additiveIds.Contains(objectId)) {
-											additiveIds.Remove(objectId);
-										} else {
-											additiveIds.Add(objectId);
-										}
-										
-										activeObject = RenewActiveObject(additiveIds);
-									}
+							if(Event.current.shift) {
+								Undo.RecordObject(this, "Toggle Select Connection");
+								if(activeSelection == null) {
+									activeSelection = new SavedSelection();
 								}
-
-								UpdateActivationOfObjects(activeObject);
+								activeSelection.Toggle(e.eventSourceCon);
+								UpdateActiveObjects(activeSelection);
+								break;
+							} else {
+								Undo.RecordObject(this, "Select Connection");
+								if(activeSelection == null) {
+									activeSelection = new SavedSelection();
+								}
+								activeSelection.Clear();
+								activeSelection.Add(e.eventSourceCon);
+								UpdateActiveObjects(activeSelection);
 								break;
 							}
-
-
-							Undo.RecordObject(this, "Select Connection");
-
-							var tappedConnectionId = e.eventSourceCon.Id;
-							foreach (var con in connections) {
-								if (con.Id == tappedConnectionId) {
-									con.SetActive();
-									activeObject = RenewActiveObject(new List<string>{con.Id});
-								} else {
-									con.SetInactive();
-								}
-							}
-
-							// set deactive for all nodes.
-							foreach (var node in nodes) {
-								node.SetInactive();
-							}
-							break;
 						}
 						case ConnectionEvent.EventType.EVENT_CONNECTION_DELETED: {
 							Undo.RecordObject(this, "Delete Connection");
 
 							var deletedConnectionId = e.eventSourceCon.Id;
 
-							DeleteConnectionById(deletedConnectionId);
+							DeleteConnection(deletedConnectionId);
+							activeSelection.Clear();
+							UpdateActiveObjects(activeSelection);
 
 							Setup(ActiveBuildTarget);
 							Repaint();
@@ -1674,23 +1393,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		private void UpdateActivationOfObjects (ActiveObject currentActiveObject) {
-			foreach (var node in nodes) {
-				if (currentActiveObject.idPosDict.ContainsKey(node.Id)) {
-					node.SetActive();
-					continue;
-				}
-				
-				node.SetInactive();
+		private void UpdateActiveObjects (SavedSelection selection) {
+
+			foreach(var n in nodes) {
+				n.SetActive( selection.nodes.Contains(n) );
 			}
 
-			foreach (var connection in connections) {
-				if (currentActiveObject.idPosDict.ContainsKey(connection.Id)) {
-					connection.SetActive();
-					continue;
-				}
-				
-				connection.SetInactive();
+			foreach(var c in connections) {
+				c.SetActive( selection.connections.Contains(c) );
 			}
 		}
 
@@ -1706,7 +1416,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				.ToList();
 			if (connectionsFromThisNode.Any()) {
 				var alreadyExistConnection = connectionsFromThisNode[0];
-				DeleteConnectionById(alreadyExistConnection.Id);
+				DeleteConnection(alreadyExistConnection.Id);
+				if(activeSelection != null) {
+					activeSelection.Remove(alreadyExistConnection);
+				}
 			}
 
 			if (!connections.ContainsConnection(startPoint, endPoint)) {
@@ -1726,10 +1439,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		private void DeleteConnectionById (string id) {
+		private void DeleteConnection (string id) {
 			var deletedConnectionIndex = connections.FindIndex(con => con.Id == id);
 			if (0 <= deletedConnectionIndex) {
-				connections[deletedConnectionIndex].SetInactive();
+				var c = connections[deletedConnectionIndex];
+				c.SetActive(false);
 				connections.RemoveAt(deletedConnectionIndex);
 			}
 		}

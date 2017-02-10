@@ -11,12 +11,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[Serializable] 
 	public class NodeGUI {
 
-		public static float scaleFactor = 1.0f;// 1.0f. 0.7f, 0.4f, 0.3f
-		public const float SCALE_MIN = 0.3f;
-		public const float SCALE_MAX = 1.0f;
-		public const int SCALE_WIDTH = 30;
-		public const float SCALE_RATIO = 0.3f;
-
 		[SerializeField] private int m_nodeWindowId;
 		[SerializeField] private Rect m_baseRect;
 
@@ -35,6 +29,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		*/
 		private float m_progress;
 		private bool m_running;
+
+		private Vector2 m_lastMouseDragPos = Vector2.zero;
 
 		/*
 		 * Properties
@@ -114,16 +110,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return new NodeGUI(data);
 		}
 
-		public void SetActive () {
-			Inspector.UpdateNode(this);
-			Selection.activeObject = Inspector;
-			m_nodeSyle = m_data.Operation.Object.ActiveStyle;
+		public void SetActive (bool active) {
+			if(active) {
+				Inspector.UpdateNode(this);
+				Selection.activeObject = Inspector;
+				m_nodeSyle = m_data.Operation.Object.ActiveStyle;
+			} else {
+				m_nodeSyle = m_data.Operation.Object.InactiveStyle;
+			}
 		}
 
-		public void SetInactive () {
-			m_nodeSyle = m_data.Operation.Object.InactiveStyle;
-		}
-			
 		private void RefreshConnectionPos (float yOffset) {
 			for (int i = 0; i < m_data.InputPoints.Count; i++) {
 				var point = m_data.InputPoints[i];
@@ -136,28 +132,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public static Rect ScaleEffect (Rect nonScaledRect) {
-			var scaledRect = new Rect(nonScaledRect);
-			scaledRect.x = scaledRect.x * scaleFactor;
-			scaledRect.y = scaledRect.y * scaleFactor;
-			scaledRect.width = scaledRect.width * scaleFactor;
-			scaledRect.height = scaledRect.height * scaleFactor;
-			return scaledRect;
-		}
-
-		public static Vector2 ScaleEffect (Vector2 nonScaledVector2) {
-			var scaledVector2 = new Vector2(nonScaledVector2.x, nonScaledVector2.y);
-			scaledVector2.x = scaledVector2.x * scaleFactor;
-			scaledVector2.y = scaledVector2.y * scaleFactor;
-			return scaledVector2;
-		}
-
 		private bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return m_data.Operation.Object.IsValidInputConnectionPoint(point);
 		}
 
 		/**
-			retrieve mouse events for this node in this AssetGraoh window.
+			retrieve mouse events for this node in this GraphEditor window.
 		*/
 		private void HandleNodeEvent () {
 			switch (Event.current.type) {
@@ -168,7 +148,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					only emit event.
 				*/
 			case EventType.Ignore: {
-					NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_CONNECTION_OVERED, this, Event.current.mousePosition, null));
+					NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTING_END, this, Event.current.mousePosition, null));
 					break;
 				}
 
@@ -176,7 +156,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					handling drag.
 				*/
 			case EventType.MouseDrag: {
-					NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_MOVING, this, Event.current.mousePosition, null));
+					NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_MOVING, this, GetPos() - m_lastMouseDragPos, null));
+					m_lastMouseDragPos = GetPos();
 					break;
 				}
 
@@ -185,12 +166,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					then emit event.
 				*/
 			case EventType.MouseDown: {
+					m_lastMouseDragPos = GetPos();
+
 					Model.ConnectionPointData result = IsOverConnectionPoint(Event.current.mousePosition);
 
 					if (result != null) {
-						if (scaleFactor == SCALE_MAX) {
-							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, Event.current.mousePosition, result));
-						}
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTING_BEGIN, this, Event.current.mousePosition, result));
 						break;
 					}
 					break;
@@ -198,34 +179,35 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			/*
-				retrieve mouse events for this node in|out of this AssetGraoh window.
+				retrieve mouse events for this node in|out of this GraphTool window.
 			*/
 			switch (Event.current.rawType) {
 			case EventType.MouseUp: {
-					bool eventRaised = false;
-					// if mouse position is on the connection point, emit mouse raised event.
+					bool eventSent = false;
+					// send EVENT_CONNECTION_ESTABLISHED event if MouseUp performed on ConnectionPoint
 					Action<Model.ConnectionPointData> raiseEventIfHit = (Model.ConnectionPointData point) => {
-						// Only one connectionPoint raise event at one mouseup event
-						if(eventRaised) {
+						// Only one connectionPoint can send NodeEvent.
+						if(eventSent) {
 							return;
 						}
 
+						// If InputConnectionPoint is not valid at this moment, ignore
 						if(!IsValidInputConnectionPoint(point)) {
 							return;
 						}
 
 						if (point.Region.Contains(Event.current.mousePosition)) {
 							NodeGUIUtility.NodeEventHandler(
-								new NodeEvent(NodeEvent.EventType.EVENT_NODE_CONNECTION_RAISED, 
+								new NodeEvent(NodeEvent.EventType.EVENT_CONNECTION_ESTABLISHED, 
 									this, Event.current.mousePosition, point));
-							eventRaised = true;
+							eventSent = true;
 							return;
 						}
 					};
 					m_data.InputPoints.ForEach(raiseEventIfHit);
 					m_data.OutputPoints.ForEach(raiseEventIfHit);
-					if(!eventRaised) {
-						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_TOUCHED, 
+					if(!eventSent) {
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_CLICKED, 
 							this, Event.current.mousePosition, null));
 					}
 					break;
@@ -235,38 +217,25 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			/*
 				right click to open Context menu
 			*/
-			if (scaleFactor == SCALE_MAX) {
-				if (Event.current.type == EventType.ContextClick || (Event.current.type == EventType.MouseUp && Event.current.button == 1)) 
-				{
-					var menu = new GenericMenu();
+			if (Event.current.type == EventType.ContextClick || (Event.current.type == EventType.MouseUp && Event.current.button == 1)) 
+			{
+				var menu = new GenericMenu();
 
-//					MonoScript s = TypeUtility.LoadMonoScript(Data.ScriptClassName);
-//					if(s != null) {
-//						menu.AddItem(
-//							new GUIContent("Edit Script"),
-//							false, 
-//							() => {
-//								AssetDatabase.OpenAsset(s, 0);
-//							}
-//						);
-//					}
+				Data.Operation.Object.OnContextMenuGUI(menu);
 
-					menu.AddItem(
-						new GUIContent("Delete"),
-						false, 
-						() => {
-							NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CLOSE_TAPPED, this, Vector2.zero, null));
-						}
-					);
-					menu.ShowAsContext();
-					Event.current.Use();
-				}
+				menu.AddItem(
+					new GUIContent("Delete"),
+					false, 
+					() => {
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_DELETE, this, Vector2.zero, null));
+					}
+				);
+				menu.ShowAsContext();
+				Event.current.Use();
 			}
 		}
 
 		public void DrawConnectionInputPointMark (NodeEvent eventSource, bool justConnecting) {
-			if (scaleFactor != SCALE_MAX) return;
-
 			var defaultPointTex = NodeGUIUtility.inputPointMarkTex;
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
@@ -290,8 +259,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void DrawConnectionOutputPointMark (NodeEvent eventSource, bool justConnecting, Event current) {
-			if (scaleFactor != SCALE_MAX) return;
-
 			var defaultPointTex = NodeGUIUtility.outputPointMarkConnectedTex;
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
@@ -321,18 +288,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if (pointRegion.Contains(globalMousePosition)) {
 					if (current.type == EventType.MouseDown) {
 						NodeGUIUtility.NodeEventHandler(
-							new NodeEvent(NodeEvent.EventType.EVENT_NODE_CONNECT_STARTED, this, current.mousePosition, point));
+							new NodeEvent(NodeEvent.EventType.EVENT_CONNECTING_BEGIN, this, current.mousePosition, point));
 					}
 				}
 			}
 		}
 
 		public void DrawNode () {
-			var scaledBaseRect = ScaleEffect(m_baseRect);
-
-			var movedRect = GUI.Window(m_nodeWindowId, scaledBaseRect, DrawThisNode, string.Empty, m_nodeSyle);
-
-			m_baseRect.position = m_baseRect.position + (movedRect.position - scaledBaseRect.position);
+			var movedRect = GUI.Window(m_nodeWindowId, m_baseRect, DrawThisNode, string.Empty, m_nodeSyle);
+			SetPos(movedRect.position);
 		}
 
 		private void DrawThisNode(int id) {
@@ -355,7 +319,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			connectionNodeStyleInput.alignment = TextAnchor.MiddleLeft;
 
 			var titleHeight = style.CalcSize(new GUIContent(Name)).y + Model.Settings.GUI.NODE_TITLE_HEIGHT_MARGIN;
-			var nodeTitleRect = new Rect(0, 0, m_baseRect.width * scaleFactor, titleHeight);
+			var nodeTitleRect = new Rect(0, 0, m_baseRect.width, titleHeight);
 			GUI.color = textColor;
 			GUI.Label(nodeTitleRect, Name, style);
 			GUI.color = oldColor;
@@ -371,30 +335,28 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			// draw & update connectionPoint button interface.
-			if (scaleFactor == SCALE_MAX) {
-				Action<Model.ConnectionPointData> drawConnectionPoint = (Model.ConnectionPointData point) => 
+			Action<Model.ConnectionPointData> drawConnectionPoint = (Model.ConnectionPointData point) => 
+			{
+				var label = point.Label;
+				if( label != Model.Settings.DEFAULT_INPUTPOINT_LABEL &&
+					label != Model.Settings.DEFAULT_OUTPUTPOINT_LABEL) 
 				{
-					var label = point.Label;
-					if( label != Model.Settings.DEFAULT_INPUTPOINT_LABEL &&
-						label != Model.Settings.DEFAULT_OUTPUTPOINT_LABEL) 
-					{
-						var region = point.Region;
-						// if point is output node, then label position offset is minus. otherwise plus.
-						var xOffset = (point.IsOutput) ? - m_baseRect.width : Model.Settings.GUI.INPUT_POINT_WIDTH;
-						var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
-						var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
+					var region = point.Region;
+					// if point is output node, then label position offset is minus. otherwise plus.
+					var xOffset = (point.IsOutput) ? - m_baseRect.width : Model.Settings.GUI.INPUT_POINT_WIDTH;
+					var labelStyle = (point.IsOutput) ? connectionNodeStyleOutput : connectionNodeStyleInput;
+					var labelRect = new Rect(region.x + xOffset, region.y - (region.height/2), m_baseRect.width, region.height*2);
 
-						GUI.color = textColor;
-						GUI.Label(labelRect, label, labelStyle);
-						GUI.color = oldColor;
-					}
-					GUI.backgroundColor = Color.clear;
-					Texture2D tex = (point.IsInput)? NodeGUIUtility.inputPointTex : NodeGUIUtility.outputPointTex;
-					GUI.Button(point.Region, tex, "AnimationKeyframeBackground");
-				};
-				m_data.InputPoints.ForEach(drawConnectionPoint);
-				m_data.OutputPoints.ForEach(drawConnectionPoint);
-			}
+					GUI.color = textColor;
+					GUI.Label(labelRect, label, labelStyle);
+					GUI.color = oldColor;
+				}
+				GUI.backgroundColor = Color.clear;
+				Texture2D tex = (point.IsInput)? NodeGUIUtility.inputPointTex : NodeGUIUtility.outputPointTex;
+				GUI.Button(point.Region, tex, "AnimationKeyframeBackground");
+			};
+			m_data.InputPoints.ForEach(drawConnectionPoint);
+			m_data.OutputPoints.ForEach(drawConnectionPoint);
 		}
 
 		public void UpdateNodeRect () {
@@ -497,12 +459,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_data.Y = position.y;
 		}
 
-		public void SetProgress (float val) {
-			m_progress = val;
+		public void MoveBy (Vector2 distance) {
+			m_baseRect.position = m_baseRect.position + distance;
+			m_data.X = m_data.X + distance.x;
+			m_data.Y = m_data.Y + distance.y;
 		}
 
-		public void MoveRelative (Vector2 diff) {
-			m_baseRect.position = m_baseRect.position - diff;
+		public void SetProgress (float val) {
+			m_progress = val;
 		}
 
 		public void ShowProgress () {

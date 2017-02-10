@@ -177,7 +177,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 
 				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
-				// TODO: implement this properly
 				postprocessInstance.DoPostprocess(AssetBundleBuildReport.BuildReports, AssetBundleBuildReport.ExportReports);
 			}
 		}

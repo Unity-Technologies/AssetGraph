@@ -12,6 +12,8 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public abstract class Node {
 
+		#region Node input output types
+
 		public virtual Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.Assets;
@@ -23,17 +25,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return Model.NodeOutputSemantics.Assets;
 			}
 		}
+		#endregion
 
-		public abstract string ActiveStyle 	 { get; }
-		public abstract string InactiveStyle { get; }
-		public abstract Node Clone();
-		public abstract bool IsEqual(Node node);
-
+		#region Initialization, Copy, Comparison, Validation
 		public abstract void Initialize(Model.NodeData data);
+		public abstract bool IsEqual(Node node);
+		public abstract Node Clone();
 
 		public virtual bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
 		}
+		#endregion
+
+		#region Build
 
 		/**
 		 *	Prepare is the method which validates and perform necessary setups in order to build.
@@ -60,10 +64,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// Do nothing
 		}
 
+		#endregion
+
+		#region GUI
+		public abstract string ActiveStyle 	 { get; }
+		public abstract string InactiveStyle { get; }
+
 		/**
 		 * Provide Editing interface on Inspector Window.
 		 */ 
 		public abstract void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged);
+
+		public virtual void OnContextMenuGUI(GenericMenu menu) {
+			// Do nothing
+		}
 
 		public virtual bool OnAssetsReimported(
 			Model.NodeData nodeData,
@@ -76,6 +90,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		{
 			return false;
 		}
+
+		#endregion
 	}
 
 	[AttributeUsage(AttributeTargets.Class)] 
