@@ -153,6 +153,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public override void OnContextMenuGUI(GenericMenu menu) {
+			MonoScript s = TypeUtility.LoadMonoScript(m_instance.ClassName);
+			if(s != null) {
+				menu.AddItem(
+					new GUIContent("Edit Script"),
+					false, 
+					() => {
+						AssetDatabase.OpenAsset(s, 0);
+					}
+				);
+			}
+		}
+
 		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
