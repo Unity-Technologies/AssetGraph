@@ -723,6 +723,8 @@ namespace AssetBundleGraph {
 				NodeKind.BUNDLECONFIG_GUI
 			);
 
+			name = name.ToLower();
+
 			var point = new ConnectionPointData(name, this, true);
 			m_inputPoints.Add(point);
 			var newEntry = new Variant(name, point);

@@ -433,9 +433,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var bundleName = m_bundleNameTemplate[target];
 
 			if(m_useGroupAsVariants) {
-				return bundleName;
+				return bundleName.ToLower();
 			} else {
-				return bundleName.Replace(Model.Settings.KEYWORD_WILDCARD.ToString(), groupKey);
+				return bundleName.Replace(Model.Settings.KEYWORD_WILDCARD.ToString(), groupKey).ToLower();
 			}
 		}
 	}
