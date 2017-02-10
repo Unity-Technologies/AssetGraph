@@ -43,16 +43,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		[SerializeField] private string m_groupKey;
-		[SerializeField] private PrefabBuilderInstance m_builder;
+		[SerializeField] private string m_builderClass;
+		[SerializeField] private string m_instanceData;
 		[SerializeField] private string m_prefabBuilderVersion;
 		[SerializeField] private int m_replacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
 		[SerializeField] private List<UsedAssets> m_usedAssets;
 
 		public PrefabBuildInfo() {}
 
-		public void Initialize(string groupKey, PrefabBuilderInstance builder, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
+		public void Initialize(string groupKey, string className, string instanceData, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
 			m_groupKey = groupKey;
-			m_builder = builder;
+			m_builderClass = className;
+			m_instanceData = instanceData;
 			m_prefabBuilderVersion = version;
 			m_replacePrefabOptions = (int)opt;
 
@@ -77,7 +79,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			// need rebuilding if given builder is changed
-			if(buildInfo.m_builder != builder.Builder[target]) {
+			if(buildInfo.m_builderClass != builder.Builder.ClassName) {
+				return true;
+			}
+
+			// need rebuilding if given builder is changed
+			if(buildInfo.m_instanceData != builder.Builder[target]) {
 				return true;
 			}
 
@@ -86,7 +93,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return true;
 			}
 
-			var builderVersion = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder[target].ClassName);
+			var builderVersion = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder.ClassName);
 
 			// need rebuilding if given builder version is changed
 			if(buildInfo.m_prefabBuilderVersion != builderVersion) {
@@ -120,10 +127,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
 
-			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder[target].ClassName);
+			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder.ClassName);
 
 			var buildInfo = ScriptableObject.CreateInstance<PrefabBuildInfo>();
-			buildInfo.Initialize(groupKey, builder.Builder[target], version, builder.Options, assets);
+			buildInfo.Initialize(groupKey, builder.Builder.ClassName, builder.Builder[target], version, builder.Options, assets);
 
 			AssetDatabase.CreateAsset(buildInfo, buildInfoPath);		
 		}

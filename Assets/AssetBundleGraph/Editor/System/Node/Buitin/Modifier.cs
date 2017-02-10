@@ -13,7 +13,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Modifier", 40)]
 	public class Modifier : Node {
 
-		[SerializeField] private MultiTargetModifierInstance m_instance;
+		[SerializeField] private SerializableMultiTargetInstance m_instance;
 
 		public override string ActiveStyle {
 			get {
@@ -28,7 +28,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			m_instance = new MultiTargetModifierInstance();
+			m_instance = new SerializableMultiTargetInstance();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
@@ -36,7 +36,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override Node Clone() {
 			var newNode = new Modifier();
-			newNode.m_instance = new MultiTargetModifierInstance(m_instance);
+			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
 
 			return newNode;
 		}
@@ -62,26 +62,29 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				Type incomingType = TypeUtility.FindFirstIncomingAssetType(node.Data.InputPoints[0]);
 
-				var modifier = m_instance[editor.CurrentEditingGroup];
+				var modifier = m_instance.Get<IModifier>(editor.CurrentEditingGroup);
 
 				if(incomingType == null) {
 					// if there is no asset input to determine incomingType,
 					// retrieve from assigned Modifier.
-					if(modifier.ClassName != null) {
-						incomingType = ModifierUtility.GetModifierTargetType(modifier.ClassName);
-					}
+					incomingType = ModifierUtility.GetModifierTargetType(m_instance.ClassName);
 
 					if(incomingType == null) {
 						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
-						onValueChanged();
+						return;
 					}
 				}
 
-				var map = ModifierUtility.GetAttributeClassNameMap(incomingType);
-				if(map.Count > 0) {
+				Dictionary<string, string> map = null;
+
+				if(incomingType != null) {
+					map = ModifierUtility.GetAttributeClassNameMap(incomingType);
+				}
+
+				if(map != null  && map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
 						GUILayout.Label("Modifier");
-						var guiName = ModifierUtility.GetModifierGUIName(modifier.ClassName);
+						var guiName = ModifierUtility.GetModifierGUIName(m_instance.ClassName);
 						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
 							var builders = map.Keys.ToList();
 
@@ -89,11 +92,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
 									{
 										using(new RecordUndoScope("Change Modifier class", node, true)) {
-											var newModifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
-											if(newModifier != null) {
-												modifier = new ModifierInstance(newModifier);
-												m_instance[editor.CurrentEditingGroup] = modifier;
-											}
+											modifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
+											m_instance.Set(editor.CurrentEditingGroup,modifier);
 											onValueChanged();
 										}
 									}  
@@ -101,7 +101,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							}
 						}
 
-						MonoScript s = TypeUtility.LoadMonoScript(modifier.ClassName);
+						MonoScript s = TypeUtility.LoadMonoScript(m_instance.ClassName);
 
 						using(new EditorGUI.DisabledScope(s == null)) {
 							if(GUILayout.Button("Edit", GUILayout.Width(50))) {
@@ -111,14 +111,25 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 				} else {
+
 					string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER.Split('/');
-					EditorGUILayout.HelpBox(
-						string.Format(
-							"No CustomModifier found for {3} type. \n" +
-							"You need to create at least one Modifier script to select script for Modifier. " +
-							"To start, select {0}>{1}>{2} menu and create a new script.",
-							menuNames[1],menuNames[2], menuNames[3], incomingType.FullName
-						), MessageType.Info);
+
+					if (incomingType == null) {
+						EditorGUILayout.HelpBox(
+							string.Format(
+								"You need to create at least one Modifier script to select script for Modifier. " +
+								"To start, select {0}>{1}>{2} menu and create a new script.",
+								menuNames[1],menuNames[2], menuNames[3]
+							), MessageType.Info);
+					} else {
+						EditorGUILayout.HelpBox(
+							string.Format(
+								"No CustomModifier found for {3} type. \n" +
+								"You need to create at least one Modifier script to select script for Modifier. " +
+								"To start, select {0}>{1}>{2} menu and create a new script.",
+								menuNames[1],menuNames[2], menuNames[3], incomingType.FullName
+							), MessageType.Info);
+					}
 				}
 
 				GUILayout.Space(10f);
@@ -127,7 +138,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				using (new EditorGUILayout.VerticalScope()) {
 					var disabledScope = editor.DrawOverrideTargetToggle(node, m_instance.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
 						if(enabled) {
-							m_instance[editor.CurrentEditingGroup] = m_instance.DefaultValue;
+							m_instance.CopyDefaultValueTo(editor.CurrentEditingGroup);
 						} else {
 							m_instance.Remove(editor.CurrentEditingGroup);
 						}
@@ -135,15 +146,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					});
 
 					using (disabledScope) {
-						if (modifier.Object != null) {
+						if (modifier != null) {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change Modifier Setting", node)) {
-									modifier.Save();
+									m_instance.Set(editor.CurrentEditingGroup, modifier);
 									onValueChanged();
 								}
 							};
 
-							modifier.Object.OnInspectorGUI(onChangedAction);
+							modifier.OnInspectorGUI(onChangedAction);
 						}
 					}
 				}
@@ -196,7 +207,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if(incoming == null) {
 				return;
 			}
-			var modifier = m_instance[target].Object;
+			var modifier = m_instance.Get<IModifier>(target);
 			UnityEngine.Assertions.Assert.IsNotNull(modifier);
 			bool isAnyAssetModified = false;
 
@@ -263,13 +274,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			if(!m_instance.ContainsValueOf(BuildTargetUtility.TargetToGroup(target))) {
-				noModiferData();
-			}
-
 //			var modifier = ModifierUtility.CreateModifier(node, target);
 //
-			if(m_instance[target].Object == null) {
+			if(m_instance.Get<IModifier>(target) == null) {
 				failedToCreateModifier();
 			}
 
@@ -277,7 +284,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// right type of asset is coming in - so we'll just skip the test
 			// expectedType is not null when there is at least one incoming asset
 			if(incoming != null && expectedType != null) {
-				var targetType = ModifierUtility.GetModifierTargetType(m_instance[target].Object);
+				var targetType = ModifierUtility.GetModifierTargetType(m_instance.Get<IModifier>(target));
 				if( targetType != expectedType ) {
 					incomingTypeMismatch(targetType, expectedType);
 				}

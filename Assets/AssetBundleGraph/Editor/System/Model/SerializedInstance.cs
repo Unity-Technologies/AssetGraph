@@ -6,8 +6,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[System.Serializable]
 	public class SerializedInstance<T> where T: IJSONSerializable {
 
-		[SerializeField] protected string m_className;
-		[SerializeField] protected string m_instanceData;
+		[SerializeField] private string m_className;
+		[SerializeField] private string m_instanceData;
 
 		private T m_object;
 
@@ -27,8 +27,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public SerializedInstance() {
-			m_className = null;
-			m_instanceData = null;
+			m_className = string.Empty;
+			m_instanceData = string.Empty;
 		}
 
 		public SerializedInstance(SerializedInstance<T> instance) {
@@ -39,7 +39,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public SerializedInstance(T obj) {
 			UnityEngine.Assertions.Assert.IsNotNull((IJSONSerializable)obj);
 
-			m_className = obj.GetType().AssemblyQualifiedName;
+			m_className = obj.GetType().FullName;
 			m_instanceData = CustomScriptUtility.EncodeString(obj.Serialize());
 		}
 
@@ -49,7 +49,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				instanceType = Type.GetType(m_className);
 			}
 
-			if(m_instanceData != null && instanceType != null) {
+			if(!string.IsNullOrEmpty(m_instanceData) && instanceType != null) {
 				string data = CustomScriptUtility.DecodeString(m_instanceData);
 				return (T)JsonUtility.FromJson(data, instanceType);
 			}
@@ -59,7 +59,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public void Save() {
 			if(m_object != null) {
-				UnityEngine.Assertions.Assert.AreEqual(m_className, m_object.GetType().AssemblyQualifiedName);
+				m_className = m_object.GetType().FullName;
+				//UnityEngine.Assertions.Assert.AreEqual(m_className, m_object.GetType().FullName);
 				m_instanceData = CustomScriptUtility.EncodeString(m_object.Serialize());
 			}
 		}

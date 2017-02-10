@@ -39,7 +39,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			UnityEngine.Assertions.Assert.IsNotNull(node);
 
-			node.Data.Operation.Object.OnInspectorGUI(node, this, () => { node.Data.Operation.Save(); });
+			node.Data.Operation.Object.OnInspectorGUI(node, this, () => 
+				{ 
+					node.Data.Operation.Save(); 
+					Model.SaveData.SetSavedataDirty(); 
+				});
 
 			var errors = currentTarget.errors;
 			if (errors != null && errors.Any()) {

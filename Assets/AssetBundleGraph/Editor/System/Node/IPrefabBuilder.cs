@@ -127,12 +127,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static string GetPrefabBuilderGUIName(string className) {
-			var type = Type.GetType(className);
-			if(type != null) {
-				CustomPrefabBuilder attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
-				if(attr != null) {
-					return attr.Name;
+			if(className != null) {
+				var type = Type.GetType(className);
+				if(type != null) {
+					CustomPrefabBuilder attr = 
+						Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+					if(attr != null) {
+						return attr.Name;
+					}
 				}
 			}
 			return string.Empty;

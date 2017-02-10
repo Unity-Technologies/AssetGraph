@@ -215,6 +215,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 
 		public static MonoScript LoadMonoScript(string className) {
+			if(className == null) {
+				return null;
+			}
+
 			var t = Type.GetType(className);
 			if(t == null) {
 				return null;

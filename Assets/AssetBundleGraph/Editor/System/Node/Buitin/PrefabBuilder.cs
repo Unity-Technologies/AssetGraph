@@ -14,7 +14,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Prefab Builder", 70)]
 	public class PrefabBuilder : Node {
 
-		[SerializeField] private MultiTargetPrefabBuilderInstance m_instance;
+		[SerializeField] private SerializableMultiTargetInstance m_instance;
 		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
 
 		public UnityEditor.ReplacePrefabOptions Options {
@@ -23,7 +23,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public MultiTargetPrefabBuilderInstance Builder {
+		public SerializableMultiTargetInstance Builder {
 			get {
 				return m_instance;
 			}
@@ -42,7 +42,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			m_instance = new MultiTargetPrefabBuilderInstance();
+			m_instance = new SerializableMultiTargetInstance();
 
 			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
 			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
@@ -50,7 +50,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override Node Clone() {
 			var newNode = new PrefabBuilder();
-			newNode.m_instance = new MultiTargetPrefabBuilderInstance(m_instance);
+			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
 
 			return newNode;
@@ -72,7 +72,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
-			var builder = m_instance[editor.CurrentEditingGroup];
+			var builder = m_instance.Get<IPrefabBuilder>(editor.CurrentEditingGroup);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
@@ -80,7 +80,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if(map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
 						GUILayout.Label("PrefabBuilder");
-						var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(builder.ClassName);
+						var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName);
 
 						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
 							var builders = map.Keys.ToList();
@@ -89,11 +89,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
 									{
 										using(new RecordUndoScope("Change PrefabBuilder class", node, true)) {
-											var prefabBuilder = PrefabBuilderUtility.CreatePrefabBuilder(selectedGUIName);
-											if(prefabBuilder != null) {
-												builder = new PrefabBuilderInstance(prefabBuilder);
-												m_instance[editor.CurrentEditingGroup] = builder;
-											}
+											builder = PrefabBuilderUtility.CreatePrefabBuilder(selectedGUIName);
+											m_instance.Set(editor.CurrentEditingGroup, builder);
 											onValueChanged();
 										}
 									} 
@@ -101,7 +98,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							}
 						}
 
-						MonoScript s = TypeUtility.LoadMonoScript(builder.ClassName);
+						MonoScript s = TypeUtility.LoadMonoScript(m_instance.ClassName);
 
 						using(new EditorGUI.DisabledScope(s == null)) {
 							if(GUILayout.Button("Edit", GUILayout.Width(50))) {
@@ -117,10 +114,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 					}
 				} else {
-					if(!string.IsNullOrEmpty(builder.ClassName)) {
+					if(!string.IsNullOrEmpty(m_instance.ClassName)) {
 						EditorGUILayout.HelpBox(
 							string.Format(
-								"Your PrefabBuilder script {0} is missing from assembly. Did you delete script?", builder.ClassName), MessageType.Info);
+								"Your PrefabBuilder script {0} is missing from assembly. Did you delete script?", m_instance.ClassName), MessageType.Info);
 					} else {
 						string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
 						EditorGUILayout.HelpBox(
@@ -137,7 +134,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				using (new EditorGUILayout.VerticalScope()) {
 					var disabledScope = editor.DrawOverrideTargetToggle(node, m_instance.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
 						if(enabled) {
-							m_instance[editor.CurrentEditingGroup] = m_instance.DefaultValue;
+							m_instance.CopyDefaultValueTo(editor.CurrentEditingGroup);
 						} else {
 							m_instance.Remove(editor.CurrentEditingGroup);
 						}
@@ -145,15 +142,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					});
 
 					using (disabledScope) {
-						if (builder.Object != null) {
+						if (builder != null) {
 							Action onChangedAction = () => {
 								using(new RecordUndoScope("Change PrefabBuilder Setting", node)) {
-									builder.Save();
+									m_instance.Set(editor.CurrentEditingGroup, builder);
 									onValueChanged();
 								}
 							};
 
-							builder.Object.OnInspectorGUI(onChangedAction);
+							builder.OnInspectorGUI(onChangedAction);
 						}
 					}
 				}
@@ -185,8 +182,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			var builder = m_instance[target];
-			UnityEngine.Assertions.Assert.IsNotNull(builder.Object);
+			var builder = m_instance.Get<IPrefabBuilder>(target);
+			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
 
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
@@ -208,15 +205,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			foreach(var key in aggregatedGroups.Keys) {
 
 				var assets = aggregatedGroups[key];
-				var thresold = PrefabBuilderUtility.GetPrefabBuilderAssetThreshold(builder.ClassName);
+				var thresold = PrefabBuilderUtility.GetPrefabBuilderAssetThreshold(m_instance.ClassName);
 				if( thresold < assets.Count ) {
-					var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(builder.ClassName);
+					var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName);
 					throw new NodeException(string.Format("{0} :Too many assets passed to {1} for group:{2}. {3}'s threshold is set to {4}", 
 						node.Name, guiName, key, guiName,thresold), node.Id);
 				}
 
 				List<UnityEngine.Object> allAssets = LoadAllAssets(assets);
-				var prefabFileName = builder.Object.CanCreatePrefab(key, allAssets);
+				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
 				if(output != null && prefabFileName != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
@@ -256,8 +253,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			var builder = m_instance[target];
-			UnityEngine.Assertions.Assert.IsNotNull(builder.Object);
+			var builder = m_instance.Get<IPrefabBuilder>(target);
+			UnityEngine.Assertions.Assert.IsNotNull(builder);
 
 			var prefabOutputDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			Dictionary<string, List<AssetReference>> output = null;
@@ -281,7 +278,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				var allAssets = LoadAllAssets(assets);
 
-				var prefabFileName = builder.Object.CanCreatePrefab(key, allAssets);
+				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
 				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
 
 				if (!Directory.Exists(Path.GetDirectoryName(prefabSavePath))) {
@@ -289,15 +286,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 
 				if(PrefabBuildInfo.DoesPrefabNeedRebuilding(this, node, target, key, assets)) {
-					UnityEngine.GameObject obj = builder.Object.CreatePrefab(key, allAssets);
+					UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets);
 					if(obj == null) {
 						throw new AssetBundleGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
 							node.Name, builder.GetType().FullName, key));
 					}
 
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} is (re)creating Prefab:{1} with {2}({3})", node.Name, prefabFileName,
-						PrefabBuilderUtility.GetPrefabBuilderGUIName(builder.ClassName),
-						PrefabBuilderUtility.GetPrefabBuilderVersion(builder.ClassName));
+						PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName),
+						PrefabBuilderUtility.GetPrefabBuilderVersion(m_instance.ClassName));
 
 					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", prefabFileName), 0.5f);
 
@@ -330,11 +327,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			Action<string> canNotCreatePrefab,
 			Action<AssetReference> canNotImportAsset
 		) {
-			if(!m_instance.ContainsValueOf(BuildTargetUtility.TargetToGroup(target))) {
-				noBuilderData();
-			}
-
-			var builder = m_instance[target].Object;
+			var builder = m_instance.Get<IPrefabBuilder>(target);
 
 			if(null == builder ) {
 				failedToCreateBuilder();
