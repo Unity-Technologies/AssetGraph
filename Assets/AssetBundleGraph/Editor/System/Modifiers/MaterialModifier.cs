@@ -60,10 +60,6 @@ namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
 			}
 		}
 
-		public string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
-
 		private Material GenerateSettingMaterial () {
 			var mat = new Material(this.shader);
 			mat.SetFloat("_Mode", (int)this.blendMode); 

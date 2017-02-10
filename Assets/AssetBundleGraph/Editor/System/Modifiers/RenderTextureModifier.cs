@@ -88,9 +88,5 @@ namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
 			}
 			EditorGUILayout.HelpBox("Aniso Level can be set only when RenderTexture does not have depth buffer.", MessageType.Info);
 		}
-
-		public string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
 	}
 }

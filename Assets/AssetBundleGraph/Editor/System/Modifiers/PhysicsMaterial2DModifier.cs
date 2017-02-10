@@ -56,10 +56,6 @@ namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
 				onValueChanged();
 			}
 		}
-
-		public string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
 	}
 
 }

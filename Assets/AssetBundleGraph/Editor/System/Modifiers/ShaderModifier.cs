@@ -49,10 +49,6 @@ namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
 				}
 			}
 		}
-
-		public string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
 	}
 	
 }

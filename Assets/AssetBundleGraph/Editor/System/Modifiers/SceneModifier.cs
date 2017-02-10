@@ -37,9 +37,5 @@ namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
 		public void OnInspectorGUI (Action onValueChanged) {
 			GUILayout.Label("Implement your modifier for this type.");
 		}
-
-		public string Serialize() {
-			return JsonUtility.ToJson(this);
-		}
 	}	
 }
