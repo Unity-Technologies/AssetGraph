@@ -832,24 +832,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			switch (Event.current.type) {
 				// show context menu
 				case EventType.ContextClick: {
-					var rightClickPos = Event.current.mousePosition;
-					var menu = new GenericMenu();
-					var customNodes = NodeUtility.CustomNodeTypes;
-					for(int i = 0; i < customNodes.Count; ++i) {
-						// workaround: avoiding compilier closure bug
-						var index = i;
-						menu.AddItem(
-							new GUIContent(string.Format("Create {0} Node", customNodes[i].node.Name)),
-							false, 
-							() => {
-								AddNodeFromGUI(customNodes[index].CreateInstance(), customNodes[index].node.Name, rightClickPos.x, rightClickPos.y);
-								Setup(ActiveBuildTarget);
-								Repaint();
-							}
-						);
-					}
-
-					menu.ShowAsContext();
+					ShowNodeCreateContextMenu(Event.current.mousePosition);
 					break;
 				}
 
@@ -922,20 +905,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							if (!isValidSelection) {
 								break;
 							}
-							Undo.RecordObject(this, "Delete Selection");
-
-							foreach (var n in activeSelection.nodes) {
-								DeleteNode(n.Id);
-							}
-
-							foreach (var c in activeSelection.connections) {
-								DeleteConnection(c.Id);
-							}
-
-							activeSelection.Clear();
-							UpdateActiveObjects(activeSelection);
-
-							Setup(ActiveBuildTarget);
+							DeleteSelected();
 
 							Event.current.Use();
 							break;
@@ -946,7 +916,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								break;
 							}
 
-							Undo.RecordObject(this, "Copy Selection");
+							Undo.RecordObject(this, "Copy Selected");
 
 							copiedSelection = new SavedSelection(activeSelection);
 
@@ -959,7 +929,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								break;
 							}
 
-							Undo.RecordObject(this, "Cut Selection");
+							Undo.RecordObject(this, "Cut Selected");
 
 							copiedSelection = new SavedSelection(activeSelection);
 
@@ -1022,6 +992,43 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					break;
 				}
 			}
+		}
+
+		private void DeleteSelected() {
+			Undo.RecordObject(this, "Delete Selected");
+
+			foreach (var n in activeSelection.nodes) {
+				DeleteNode(n.Id);
+			}
+
+			foreach (var c in activeSelection.connections) {
+				DeleteConnection(c.Id);
+			}
+
+			activeSelection.Clear();
+			UpdateActiveObjects(activeSelection);
+
+			Setup(ActiveBuildTarget);
+		}
+
+		private void ShowNodeCreateContextMenu(Vector2 pos) {
+			var menu = new GenericMenu();
+			var customNodes = NodeUtility.CustomNodeTypes;
+			for(int i = 0; i < customNodes.Count; ++i) {
+				// workaround: avoiding compilier closure bug
+				var index = i;
+				menu.AddItem(
+					new GUIContent(string.Format("Create {0} Node", customNodes[i].node.Name)),
+					false, 
+					() => {
+						AddNodeFromGUI(customNodes[index].CreateInstance(), customNodes[index].node.Name, pos.x, pos.y);
+						Setup(ActiveBuildTarget);
+						Repaint();
+					}
+				);
+			}
+
+			menu.ShowAsContext();
 		}
 
 		private void AddNodeFromGUI (Node n, string guiName, float x, float y) {
@@ -1194,17 +1201,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					break;
 
 				case NodeEvent.EventType.EVENT_NODE_DELETE: 
-					
-					Undo.RecordObject(this, "Delete Node");
-					
-					var deletingNodeId = e.eventSourceNode.Id;
-					DeleteNode(deletingNodeId);
-					if(activeSelection != null) {
-						activeSelection.Remove(e.eventSourceNode);
-					}
-
-					Setup(ActiveBuildTarget);
-					InitializeGraph();
+					DeleteSelected();
 					break;
 
 				/*
