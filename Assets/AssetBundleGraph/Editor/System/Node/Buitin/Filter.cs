@@ -6,12 +6,13 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Filter", 20)]
-	public class Filter : Node {
+	public class Filter : Node, Model.NodeDataImporter {
 
 		[SerializeField] private List<Model.FilterEntry> m_filter;
 
@@ -30,7 +31,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public override void Initialize(Model.NodeData data) {
 			m_filter = new List<Model.FilterEntry>();
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+
+			foreach(var f in v1.FilterConditions) {
+				m_filter.Add(new Model.FilterEntry(f.FilterKeyword, f.FilterKeytype, v2.FindOutputPoint(f.ConnectionPointId)));
+			}
 		}
 
 		public override Node Clone() {

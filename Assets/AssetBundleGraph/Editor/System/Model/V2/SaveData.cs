@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine.AssetBundles.GraphTool;
+using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
@@ -68,6 +69,21 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_allNodes = new List<NodeData>();
 			m_allConnections = new List<ConnectionData>();
 			m_version = ABG_FILE_VERSION;
+			EditorUtility.SetDirty(this);
+		}
+
+		private void Import(V1.SaveData v1) {
+			m_lastModified = GetFileTimeUtcString();
+			m_version = ABG_FILE_VERSION;
+
+			foreach(var n in v1.Nodes) {
+				m_allNodes.Add(new NodeData(n));
+			}
+
+			foreach(var c in v1.Connections) {
+				m_allConnections.Add(new ConnectionData(c));
+			}
+
 			EditorUtility.SetDirty(this);
 		}
 
@@ -216,6 +232,18 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				}
 			} catch(Exception e) {
 				LogUtility.Logger.LogWarning(LogUtility.kTag, e);
+			}
+
+			// If there is no asset found, try load from v1.
+			try {
+				V1.SaveData v1 = V1.SaveData.Data;
+
+				CreateNewSaveData ();
+				SaveData.Data.Import(v1);
+				return;
+
+			} catch (Exception e) {
+				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to import settings from version 1." + e );
 			}
 
 			CreateNewSaveData ();

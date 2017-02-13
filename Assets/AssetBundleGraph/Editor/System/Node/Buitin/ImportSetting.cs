@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
@@ -15,7 +16,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		ImportSetting is the class for apply specific setting to already imported files.
 	*/
 	[CustomNode("Import Setting", 30)]
-	public class ImportSetting : Node {
+	public class ImportSetting : Node, Model.NodeDataImporter {
 
 		public override string ActiveStyle {
 			get {
@@ -30,8 +31,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+			data.AddDefaultOutputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			// do nothing
 		}
 
 		public override Node Clone() {

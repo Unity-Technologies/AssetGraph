@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 
 using UnityEngine.AssetBundles.GraphTool;
+using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
@@ -58,9 +59,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 	}
 
-	/*
-	 * node data saved in/to Json
-	 */
 	[Serializable]
 	public class NodeData {
 
@@ -155,6 +153,29 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_nodeInstance.Object.Initialize(this);
 		}
 
+		public NodeData(V1.NodeData v1) {
+			//TODO:
+			m_id = v1.Id;
+			m_name = v1.Name;
+			m_x = v1.X;
+			m_y = v1.Y;
+			m_nodeNeedsRevisit = false;
+
+			m_inputPoints  = new List<ConnectionPointData>();
+			m_outputPoints = new List<ConnectionPointData>();
+
+			foreach(var input in v1.InputPoints) {
+				m_inputPoints.Add(new ConnectionPointData(input));
+			}
+
+			foreach(var output in v1.OutputPoints) {
+				m_outputPoints.Add(new ConnectionPointData(output));
+			}
+
+			Node n = CreateNodeFromV1NodeData(v1, this);
+			m_nodeInstance = new NodeInstance(n);
+		}
+
 		/**
 		 * Duplicate this node with new guid.
 		 */ 
@@ -179,6 +200,22 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public ConnectionPointData AddOutputPoint(string label) {
 			var p = new ConnectionPointData(label, this, false);
 			m_outputPoints.Add(p);
+			return p;
+		}
+
+		public ConnectionPointData AddDefaultInputPoint() {
+			var p = m_inputPoints.Find(v => v.Label == Settings.DEFAULT_INPUTPOINT_LABEL);
+			if(null == p) {
+				p = AddInputPoint(Settings.DEFAULT_INPUTPOINT_LABEL);
+			}
+			return p;
+		}
+
+		public ConnectionPointData AddDefaultOutputPoint() {
+			var p = m_outputPoints.Find(v => v.Label == Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			if(null == p) {
+				p = AddOutputPoint(Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			}
 			return p;
 		}
 
@@ -235,6 +272,83 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 
 			return true;
+		}
+
+		public static Node CreateNodeFromV1NodeData(V1.NodeData v1, NodeData data) {
+
+			NodeDataImporter imp = null;
+			Node n = null;
+
+			switch(v1.Kind) {
+			case V1.NodeKind.LOADER_GUI:
+				{
+					var v = new Loader();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.FILTER_GUI:
+				{
+					var v = new Filter();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.IMPORTSETTING_GUI:
+				{
+					var v = new ImportSetting();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.MODIFIER_GUI:
+				{
+					var v = new Modifier();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.GROUPING_GUI:
+				{
+					var v = new Grouping();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.PREFABBUILDER_GUI:
+				{
+					var v = new PrefabBuilder();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.BUNDLECONFIG_GUI:
+				{
+					var v = new BundleConfigurator();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.BUNDLEBUILDER_GUI:
+				{
+					var v = new BundleBuilder();
+					imp = v;
+					n   = v;
+				}
+				break;
+			case V1.NodeKind.EXPORTER_GUI:
+				{
+					var v = new Exporter();
+					imp = v;
+					n   = v;
+				}
+				break;
+			}
+
+			n.Initialize(data);
+			imp.Import(v1, data);
+
+			return n;
 		}
 	}
 }

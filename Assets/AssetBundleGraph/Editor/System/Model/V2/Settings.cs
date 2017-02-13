@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 
 using UnityEngine.AssetBundles.GraphTool;
+using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 	public class Settings {

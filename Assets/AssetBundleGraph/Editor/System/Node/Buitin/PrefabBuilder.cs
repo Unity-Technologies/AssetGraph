@@ -7,12 +7,13 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Prefab Builder", 70)]
-	public class PrefabBuilder : Node {
+	public class PrefabBuilder : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
 		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
@@ -44,8 +45,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public override void Initialize(Model.NodeData data) {
 			m_instance = new SerializableMultiTargetInstance();
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+			data.AddDefaultOutputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			m_instance = new SerializableMultiTargetInstance(v1.ScriptClassName, v1.InstanceData);
+			m_replacePrefabOptions = v1.ReplacePrefabOptions;
 		}
 
 		public override Node Clone() {

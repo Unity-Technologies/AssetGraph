@@ -6,12 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Exporter", 80)]
-	public class Exporter : Node {
+	public class Exporter : Node, Model.NodeDataImporter {
 
 		public enum ExportOption : int {
 			ErrorIfNoExportDirectoryFound,
@@ -48,13 +49,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return Model.NodeOutputSemantics.None;
 			}
 		}
-
+			
 		public override void Initialize(Model.NodeData data) {
 			//Take care of this with Initialize(NodeData)
 			m_exportPath = new SerializableMultiTargetString();
 			m_exportOption = new SerializableMultiTargetInt();
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			m_exportPath = new SerializableMultiTargetString (v1.ExporterExportPath);
+			m_exportOption = new SerializableMultiTargetInt(v1.ExporterExportOption);
 		}
 
 		public override Node Clone() {

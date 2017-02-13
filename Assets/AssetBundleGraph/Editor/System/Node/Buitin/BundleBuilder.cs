@@ -6,12 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Bundle Builder", 70)]
-	public class BundleBuilder : Node {
+	public class BundleBuilder : Node, Model.NodeDataImporter {
 
 		private static readonly string key = "0";
 
@@ -44,10 +45,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public override void Initialize(Model.NodeData data) {
 			m_enabledBundleOptions = new SerializableMultiTargetInt();
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+			data.AddDefaultOutputPoint();
 		}
 
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			m_enabledBundleOptions = new SerializableMultiTargetInt(v1.BundleBuilderBundleOptions);
+		}
+			
 		public override Node Clone() {
 			var newNode = new BundleBuilder();
 			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);

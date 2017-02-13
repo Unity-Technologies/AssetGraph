@@ -6,12 +6,13 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Bundle Configurator", 60)]
-	public class BundleConfigurator : Node {
+	public class BundleConfigurator : Node, Model.NodeDataImporter {
 
 		[Serializable]
 		public class Variant {
@@ -65,12 +66,23 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
+			
 			m_bundleNameTemplate = new SerializableMultiTargetString(Model.Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 			m_useGroupAsVariants = false;
 			m_variants = new List<Variant>();
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+			data.AddDefaultOutputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+
+			m_bundleNameTemplate = new SerializableMultiTargetString(v1.BundleNameTemplate);
+			m_useGroupAsVariants = v1.BundleConfigUseGroupAsVariants;
+
+			foreach(var v in v1.Variants) {
+				m_variants.Add(new Variant(v.Name, v2.FindInputPoint(v.ConnectionPointId)));
+			}
 		}
 
 		public override Node Clone() {

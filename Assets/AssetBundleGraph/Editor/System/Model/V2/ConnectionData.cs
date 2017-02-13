@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 
 using UnityEngine.AssetBundles.GraphTool;
+using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
@@ -26,14 +27,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 	[Serializable]
 	public class ConnectionData {
 
-		// connection data
-		private const string CONNECTION_LABEL = "label";
-		private const string CONNECTION_ID = "id";
-		private const string CONNECTION_FROMNODE = "fromNode";
-		private const string CONNECTION_FROMNODE_CONPOINT_ID = "fromNodeConPointId";
-		private const string CONNECTION_TONODE = "toNode";
-		private const string CONNECTION_TONODE_CONPOINT_ID = "toNodeConPointId";
-
 		[SerializeField] private string m_id;
 		[SerializeField] private string m_fromNodeId;
 		[SerializeField] private string m_fromNodeConnectionPointId;
@@ -45,16 +38,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_id = Guid.NewGuid().ToString();
 		}
 
-		public ConnectionData(Dictionary<string, object> jsonData) {
-
-			m_id = jsonData[CONNECTION_ID] as string;
-			m_label = jsonData[CONNECTION_LABEL] as string;
-			m_fromNodeId = jsonData[CONNECTION_FROMNODE] as string;
-			m_fromNodeConnectionPointId = jsonData[CONNECTION_FROMNODE_CONPOINT_ID] as string;
-			m_toNodeId = jsonData[CONNECTION_TONODE] as string;
-			m_toNodeConnectionPoiontId = jsonData[CONNECTION_TONODE_CONPOINT_ID] as string;
-		}
-
 		public ConnectionData(string label, ConnectionPointData output, ConnectionPointData input) {
 			m_id = Guid.NewGuid().ToString();
 			m_label = label;
@@ -62,6 +45,15 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_fromNodeConnectionPointId = output.Id;
 			m_toNodeId = input.NodeId;
 			m_toNodeConnectionPoiontId = input.Id;
+		}
+
+		public ConnectionData(V1.ConnectionData v1) {
+			m_id = v1.Id;
+			m_fromNodeId = v1.FromNodeId;
+			m_fromNodeConnectionPointId = v1.FromNodeConnectionPointId;
+			m_toNodeId = v1.ToNodeId;
+			m_toNodeConnectionPoiontId = v1.ToNodeConnectionPointId;
+			m_label = v1.Label;
 		}
 
 		public string Id {
@@ -116,19 +108,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			newData.m_toNodeConnectionPoiontId = m_toNodeConnectionPoiontId;
 
 			return newData;
-		}
-
-		public Dictionary<string, object> ToJsonDictionary() {
-			Dictionary<string, object> json = new Dictionary<string, object>();
-
-			json[CONNECTION_ID] = m_id;
-			json[CONNECTION_LABEL] = m_label;
-			json[CONNECTION_FROMNODE] = m_fromNodeId;
-			json[CONNECTION_FROMNODE_CONPOINT_ID] = m_fromNodeConnectionPointId;
-			json[CONNECTION_TONODE] = m_toNodeId;
-			json[CONNECTION_TONODE_CONPOINT_ID] = m_toNodeConnectionPoiontId;
-
-			return json;
 		}
 
 		/*

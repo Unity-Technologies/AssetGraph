@@ -6,12 +6,13 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Loader", 10)]
-	public class Loader : Node {
+	public class Loader : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetString m_loadPath;
 
@@ -33,13 +34,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public Loader() {
-		}
-
 		public override void Initialize(Model.NodeData data) {
 			m_loadPath = new SerializableMultiTargetString();
 
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultOutputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			m_loadPath = new SerializableMultiTargetString(v1.LoaderLoadPath);
 		}
 
 		public override Node Clone() {

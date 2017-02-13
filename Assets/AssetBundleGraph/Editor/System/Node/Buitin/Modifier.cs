@@ -6,12 +6,13 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
 	[CustomNode("Modifier", 40)]
-	public class Modifier : Node {
+	public class Modifier : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
 
@@ -30,8 +31,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public override void Initialize(Model.NodeData data) {
 			m_instance = new SerializableMultiTargetInstance();
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+			data.AddDefaultOutputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			m_instance = new SerializableMultiTargetInstance(v1.ScriptClassName, v1.InstanceData);
 		}
 
 		public override Node Clone() {

@@ -6,12 +6,13 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 
+using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool
 {
 	[CustomNode("Grouping", 50)]
-	public class Grouping : Node {
+	public class Grouping : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
 
@@ -30,8 +31,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 		public override void Initialize(Model.NodeData data) {
 			m_groupingKeyword = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
 
-			data.AddInputPoint(Model.Settings.DEFAULT_INPUTPOINT_LABEL);
-			data.AddOutputPoint(Model.Settings.DEFAULT_OUTPUTPOINT_LABEL);
+			data.AddDefaultInputPoint();
+			data.AddDefaultOutputPoint();
+		}
+
+		public void Import(V1.NodeData v1, Model.NodeData v2) {
+			m_groupingKeyword = new SerializableMultiTargetString(v1.GroupingKeywords);
 		}
 
 		public override Node Clone() {

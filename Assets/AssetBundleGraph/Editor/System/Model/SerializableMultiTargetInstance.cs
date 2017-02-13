@@ -37,6 +37,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			Set(BuildTargetUtility.DefaultTarget, value);
 		}
 
+		public SerializableMultiTargetInstance(string classname, SerializableMultiTargetString instanceData) {
+			m_className = classname;
+			m_values = new List<Entry>(instanceData.Values.Count);
+			foreach(var v in instanceData.Values) {
+				m_values.Add(new Entry(v.targetGroup, CustomScriptUtility.EncodeString(v.value)));
+			}
+		}
+
 		public SerializableMultiTargetInstance() {
 			m_className = string.Empty;
 			m_values = new List<Entry>();
