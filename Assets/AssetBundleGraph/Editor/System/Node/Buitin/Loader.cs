@@ -77,12 +77,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			var saveData = Model.SaveData.Data;
-			var connOut = saveData.Connections.Find(c => c.FromNodeId == nodeData.Id);
+			var assetGroup = streamManager.FindAssetGroup(nodeData.OutputPoints[0]);
 
-			if( connOut != null ) {
+			if( assetGroup.Count > 0 ) {
 
-				var assetGroup = streamManager.FindAssetGroup(connOut);
 				var importPath = string.Format("Assets/{0}", m_loadPath[target]);
 
 				foreach(var path in importedAssets) {
@@ -116,7 +114,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_loadPath == null) {
 				return;

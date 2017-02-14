@@ -19,6 +19,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private List<NodeException> m_nodeExceptions;
 		private AssetReferenceStreamManager m_streamManager;
+		private Model.ConfigGraph m_targetGraph;
 		private PerformGraph[] m_performGraph;
 		private int gIndex;
 
@@ -44,9 +45,25 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public AssetBundleGraphController() {
+		public Model.ConfigGraph TargetGraph {
+			get {
+				return m_targetGraph;
+			}
+		}
+
+		public BuildTarget ActiveTarget {
+			get {
+				return m_lastTarget;
+			}
+			set {
+				Perform(value, false, false, null);
+			}
+		}
+
+		public AssetBundleGraphController(Model.ConfigGraph graph) {
+			m_targetGraph = graph;
 			m_nodeExceptions = new List<NodeException>();
-			m_streamManager = new AssetReferenceStreamManager();
+			m_streamManager = new AssetReferenceStreamManager(m_targetGraph);
 			m_performGraph  = new PerformGraph[] { 
 				new PerformGraph(m_streamManager), 
 				new PerformGraph(m_streamManager)
@@ -70,9 +87,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				AssetBundleBuildReport.ClearReports();
 			}
 
-			var saveData = Model.SaveData.Data;
 			foreach(var e in m_nodeExceptions) {
-				var errorNode = saveData.Nodes.Find(n => n.Id == e.Id);
+				var errorNode = m_targetGraph.Nodes.Find(n => n.Id == e.Id);
 				// errorNode may not be found if user delete it on graph
 				if(errorNode != null) {
 					LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} is marked to revisit due to last error", errorNode.Name);
@@ -86,7 +102,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			PerformGraph oldGraph = m_performGraph[gIndex];
 			gIndex = (gIndex+1) %2;
 			PerformGraph newGraph = m_performGraph[gIndex];
-			newGraph.BuildGraphFromSaveData(target, oldGraph);
+			newGraph.BuildGraphFromSaveData(m_targetGraph, target, oldGraph);
 
 			PerformGraph.Perform performFunc =
 				(Model.NodeData data, 
@@ -181,23 +197,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void OnAssetsReimported(BuildTarget target, string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+		public void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 
 			// ignore asset reimport event during build
 			if(m_isBuilding) {
 				return;
 			}
 
-			var saveData = Model.SaveData.Data;
-
-			if(saveData.Nodes == null) {
+			if(m_targetGraph.Nodes == null) {
 				return;
 			}
 
 			bool isAnyNodeAffected = false;
 
-			foreach(var n in saveData.Nodes) {
-				bool affected = n.Operation.Object.OnAssetsReimported(n, m_streamManager, target, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+			foreach(var n in m_targetGraph.Nodes) {
+				bool affected = n.Operation.Object.OnAssetsReimported(n, m_streamManager, m_lastTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 				if(affected) {
 					n.NeedsRevisit = true;
 				}

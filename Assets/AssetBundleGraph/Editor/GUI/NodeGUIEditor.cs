@@ -35,14 +35,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public override void OnInspectorGUI () {
 			var currentTarget = (NodeGUIInspectorHelper)target;
 			var node = currentTarget.node;
-			if (node == null) return;
+			var controller = currentTarget.controller;
+			if (node == null || controller == null) {
+				return;
+			}
 
 			UnityEngine.Assertions.Assert.IsNotNull(node);
 
-			node.Data.Operation.Object.OnInspectorGUI(node, this, () => 
+			node.Data.Operation.Object.OnInspectorGUI(node, controller.StreamManager, this, () => 
 				{ 
 					node.Data.Operation.Save(); 
-					Model.SaveData.SetSavedataDirty(); 
+					node.ParentGraph.SetSavedataDirty(); 
 				});
 
 			var errors = currentTarget.errors;

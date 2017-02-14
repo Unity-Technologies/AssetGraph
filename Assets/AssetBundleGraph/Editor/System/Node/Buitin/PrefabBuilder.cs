@@ -69,7 +69,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_replacePrefabOptions == rhs.m_replacePrefabOptions;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
 			editor.UpdateNodeName(node);

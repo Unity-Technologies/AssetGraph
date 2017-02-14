@@ -15,8 +15,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private Rect m_baseRect;
 
 		[SerializeField] private Model.NodeData m_data;
+		[SerializeField] private Model.ConfigGraph m_graph;
 
 		[SerializeField] private string m_nodeSyle;
+
 		[SerializeField] private NodeGUIInspectorHelper m_nodeInsp;
 
 		/*
@@ -62,11 +64,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public Model.ConfigGraph ParentGraph {
+			get {
+				return m_graph;
+			}
+		}
+
 		private NodeGUIInspectorHelper Inspector {
 			get {
 				if(m_nodeInsp == null) {
 					m_nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
 					m_nodeInsp.hideFlags = HideFlags.DontSave;
+					m_nodeInsp.node = this;
 				}
 				return m_nodeInsp;
 			}
@@ -74,13 +83,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public void ResetErrorStatus () {
 			m_hasErrors = false;
-			Inspector.UpdateNode(this);
 			Inspector.UpdateErrors(new List<string>());
 		}
 
 		public void AppendErrorSources (List<string> errors) {
 			this.m_hasErrors = true;
-			Inspector.UpdateNode(this);
 			Inspector.UpdateErrors(errors);
 		}
 
@@ -94,25 +101,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public NodeGUI (Model.NodeData data) {
+		public NodeGUI (AssetBundleGraphController controller, Model.NodeData data) {
 			m_nodeWindowId = 0;
+			m_graph = controller.TargetGraph;
 			m_data = data;
 
 			m_baseRect = new Rect(m_data.X, m_data.Y, Model.Settings.GUI.NODE_BASE_WIDTH, Model.Settings.GUI.NODE_BASE_HEIGHT);
 
 			m_nodeSyle = data.Operation.Object.InactiveStyle;
+			Inspector.controller = controller;
 		}
 
-		public NodeGUI Duplicate (float newX, float newY) {
+		public NodeGUI Duplicate (AssetBundleGraphController controller, float newX, float newY) {
 			var data = m_data.Duplicate();
 			data.X = newX;
 			data.Y = newY;
-			return new NodeGUI(data);
+			return new NodeGUI(controller, data);
 		}
 
 		public void SetActive (bool active) {
 			if(active) {
-				Inspector.UpdateNode(this);
 				Selection.activeObject = Inspector;
 				m_nodeSyle = m_data.Operation.Object.ActiveStyle;
 			} else {

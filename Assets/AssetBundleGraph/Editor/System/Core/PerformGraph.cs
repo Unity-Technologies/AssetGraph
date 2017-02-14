@@ -184,22 +184,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_target = (BuildTarget)int.MaxValue;
 		}
 
-		public void BuildGraphFromSaveData(BuildTarget target, PerformGraph old) {
-
-			var saveData = Model.SaveData.Data;
+		public void BuildGraphFromSaveData(Model.ConfigGraph graph, BuildTarget target, PerformGraph old) {
 
 			m_target = target;
 
-			ValidateLoopConnection(saveData);
+			ValidateLoopConnection(graph);
 
 			m_nodes.Clear();
 			m_streams.Clear();
 
-			foreach (var n in saveData.Nodes) {
+			foreach (var n in graph.Nodes) {
 				SetupNode(n);
 			}
 
-			foreach (var c in saveData.Connections) {
+			foreach (var c in graph.Connections) {
 				SetupStream(c);
 			}
 
@@ -400,14 +398,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/*
 		 * Verify nodes does not create cycle
 		 */
-		private void ValidateLoopConnection(Model.SaveData saveData) {
+		private void ValidateLoopConnection(Model.ConfigGraph saveData) {
 			var leaf = saveData.CollectAllLeafNodes();
 			foreach (var leafNode in leaf) {
 				MarkAndTraverseParent(saveData, leafNode, new List<Model.ConnectionData>(), new List<Model.NodeData>());
 			}
 		}
 
-		private void MarkAndTraverseParent(Model.SaveData saveData, Model.NodeData current, List<Model.ConnectionData> visitedConnections, List<Model.NodeData> visitedNode) {
+		private void MarkAndTraverseParent(Model.ConfigGraph saveData, Model.NodeData current, List<Model.ConnectionData> visitedConnections, List<Model.NodeData> visitedNode) {
 
 //			Assert.IsNotNull(current);
 			if(current == null) {

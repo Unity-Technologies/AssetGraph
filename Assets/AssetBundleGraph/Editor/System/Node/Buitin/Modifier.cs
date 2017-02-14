@@ -52,7 +52,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_instance == rhs.m_instance;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -61,7 +61,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				Type incomingType = TypeUtility.FindFirstIncomingAssetType(node.Data.InputPoints[0]);
+				Type incomingType = TypeUtility.FindFirstIncomingAssetType(streamManager, node.Data.InputPoints[0]);
 
 				var modifier = m_instance.Get<IModifier>(editor.CurrentEditingGroup);
 

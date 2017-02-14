@@ -73,7 +73,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/**
 		 * Provide Editing interface on Inspector Window.
 		 */ 
-		public abstract void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged);
+		public abstract void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged);
 
 		public virtual void OnContextMenuGUI(GenericMenu menu) {
 			// Do nothing

@@ -17,16 +17,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		// key: connectiondata id
 		private Dictionary<string, Dictionary<string, List<AssetReference>>> m_connectionStreamMap;
+		private Model.ConfigGraph m_targetGraph;
 
-		public AssetReferenceStreamManager() {
+		public AssetReferenceStreamManager(Model.ConfigGraph graph) {
 			m_connectionStreamMap = new Dictionary<string, Dictionary<string, List<AssetReference>>>();
+			m_targetGraph = graph;
 		}
 
 		public IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(Model.ConnectionPointData inputPoint) {
 			UnityEngine.Assertions.Assert.IsNotNull(inputPoint);
 			UnityEngine.Assertions.Assert.IsTrue (inputPoint.IsInput);
 
-			var connections = Model.SaveData.Data.Connections;
+			var connections = m_targetGraph.Connections;
 
 			return m_connectionStreamMap.Where(v => { 
 				var conn = connections.Find(c => c.Id == v.Key);
@@ -50,6 +52,24 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			return m_connectionStreamMap[connection.Id];
 		}
+
+		public Dictionary<string, List<AssetReference>> FindAssetGroup(Model.ConnectionPointData point) {
+
+			var connection = (point.IsInput) ?
+				m_targetGraph.Connections.Find(c => c.ToNodeConnectionPointId == point.Id):
+				m_targetGraph.Connections.Find(c => c.FromNodeConnectionPointId == point.Id);
+
+			if(connection == null) {
+				return new Dictionary<string, List<AssetReference>>();
+			}
+
+			if (!m_connectionStreamMap.ContainsKey(connection.Id)) {
+				m_connectionStreamMap[connection.Id] = new Dictionary<string, List<AssetReference>>();
+			}
+
+			return m_connectionStreamMap[connection.Id];
+		}
+
 
 		public void AssignAssetGroup(Model.ConnectionData connection, Dictionary<string, List<AssetReference>> groups) {
 			m_connectionStreamMap[connection.Id] = groups;

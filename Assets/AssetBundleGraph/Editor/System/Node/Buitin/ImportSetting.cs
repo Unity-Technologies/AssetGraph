@@ -70,7 +70,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
@@ -82,7 +82,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				platform key is contained by Unity's importer inspector itself.
 			*/
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				Type incomingType = TypeUtility.FindFirstIncomingAssetType(node.Data.InputPoints[0]);
+				Type incomingType = TypeUtility.FindFirstIncomingAssetType(streamManager, node.Data.InputPoints[0]);
 				ImportSetting.ConfigStatus status = 
 					ImportSetting.GetConfigStatus(node.Data);
 

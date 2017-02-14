@@ -84,7 +84,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			public void Clear(bool deactivate = false) {
+			public void Clear(AssetBundleGraphController controller, bool deactivate = false) {
 
 				if(deactivate) {
 					foreach(var n in nodes) {
@@ -137,17 +137,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private Texture2D _selectionTex;
 		private GUIContent _reloadButtonTexture;
 		private ModifyMode modifyMode;
-		private string lastLoaded;
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
 		private Vector2 errorScrollPos = new Vector2(0,0);
 		private Rect graphRegion = new Rect();
 		private SelectPoint selectStartMousePosition;
 		private GraphBackground background = new GraphBackground();
-		private AssetBundleGraphController controller = new AssetBundleGraphController();
 
-		private static AssetBundleGraphController s_currentController;
-		private static BuildTarget s_selectedTarget;
+		private AssetBundleGraphController controller;
+		private BuildTarget target;
 
 		private Texture2D selectionTex {
 			get{
@@ -237,21 +235,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			GetWindow<AssetBundleGraphEditorWindow>();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
-		public static bool BuildFromMenuValidator () {
-			// Calling GetWindow<>() will force open window
-			// That's not what we want to do in validator function,
-			// so just reference s_currentController directly
-			return (s_currentController != null && !s_currentController.IsAnyIssueFound);
-		}
-
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
-		public static void BuildFromMenu () {
-			var window = GetWindow<AssetBundleGraphEditorWindow>();
-			window.SaveGraph();
-			window.Run(ActiveBuildTarget);
-		}
-
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
 			FileUtility.RemakeDirectory(Model.Settings.APPLICATIONDATAPATH_CACHE_PATH);
 
@@ -264,17 +247,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			AssetDatabase.Refresh();
 		}
 
-		public static BuildTarget ActiveBuildTarget {
-			get {
-				return s_selectedTarget;
-			}
-		}
-
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
 			modifyMode = ModifyMode.NONE;
 			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
 			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
+
+			HandleSelectionChange();
 		}
 
 		public void OnLostFocus() {
@@ -282,7 +261,34 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void OnProjectChange() {
+			HandleSelectionChange ();
 			Repaint();
+		}
+
+		public void OnSelectionChange ()
+		{
+			HandleSelectionChange();
+			Repaint();
+		}
+
+		public void HandleSelectionChange ()
+		{
+			Model.ConfigGraph selectedGraph = null;
+
+//			if (Selection.activeObject == null)
+//			{
+//				controller = null;
+//			}
+
+			if (Selection.activeObject is Model.ConfigGraph && EditorUtility.IsPersistent(Selection.activeObject))
+			{
+				selectedGraph = Selection.activeObject as Model.ConfigGraph;
+			}
+
+			if (selectedGraph != null && (controller == null || selectedGraph != controller.TargetGraph))
+			{
+				OpenGraph(selectedGraph);
+			}
 		}
 
 		public void SelectNode(string nodeId) {
@@ -293,30 +299,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private void Init() {
-
-			s_currentController = this.controller;
-			s_selectedTarget    = EditorUserBuildSettings.activeBuildTarget;
 			LogUtility.Logger.filterLogType = LogType.Warning;
 
 			this.titleContent = new GUIContent("AssetBundle");
+			this.minSize = new Vector2(600f, 300f);
+			this.wantsMouseMove = true;
 
-			Model.SaveData.Reload();
+			target = EditorUserBuildSettings.activeBuildTarget;
 
 			Undo.undoRedoPerformed += () => {
-				Setup(ActiveBuildTarget);
+				Setup();
 				Repaint();
 			};
 
 			modifyMode = ModifyMode.NONE;
 			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
 			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
-
-			InitializeGraph();
-			Setup(ActiveBuildTarget);
-
-			if (nodes.Any()) {
-				UpdateSpacerRect();
-			}
 		}
 
 		private void ShowErrorOnNodes () {
@@ -336,30 +334,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
         }
 
 		/**
-			node graph initializer.
-			setup nodes, points and connections from saved data.
+			open node graph
 		*/
-		public void InitializeGraph () {
+		private void OpenGraph (Model.ConfigGraph graph) {
 
-			/*
-				do nothing if json does not modified after first load.
-			*/
-			if (Model.SaveData.Data.LastModified == lastLoaded) {
-				return;
-			}
-				
-			lastLoaded = Model.SaveData.Data.LastModified;
-
-			minSize = new Vector2(600f, 300f);
-			
-			wantsMouseMove = true;
 			modifyMode = ModifyMode.NONE;
-						
-			
-			/*
-				load graph data from deserialized data.
-			*/
-			ConstructGraphFromSaveData(out this.nodes, out this.connections);
+
+			controller = new AssetBundleGraphController(graph);
+			ConstructGraphGUI();
+			Setup();
+
+			if (nodes.Any()) {
+				UpdateSpacerRect();
+			}
 		}
 
 		/**
@@ -379,19 +366,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/**
 		 * Creates Graph structure with NodeGUI and ConnectionGUI from SaveData
 		 */ 
-		private static void ConstructGraphFromSaveData (out List<NodeGUI> nodes, out List<ConnectionGUI> connections) {
-			var saveData = Model.SaveData.Data;
+		private void ConstructGraphGUI () {
+
+			var activeGraph = controller.TargetGraph;
+
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
-			foreach (var node in saveData.Nodes) {
-				var newNodeGUI = new NodeGUI(node);
+			foreach (var node in activeGraph.Nodes) {
+				var newNodeGUI = new NodeGUI(controller, node);
 				newNodeGUI.WindowId = GetSafeWindowId(currentNodes);
 				currentNodes.Add(newNodeGUI);
 			}
 
 			// load connections
-			foreach (var c in saveData.Connections) {
+			foreach (var c in activeGraph.Connections) {
 				var startNode = currentNodes.Find(node => node.Id == c.FromNodeId);
 				if (startNode == null) {
 					continue;
@@ -412,15 +401,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private void SaveGraph () {
-			Model.SaveData.Data.ApplyGraph(nodes, connections);
+			Assertions.Assert.IsNotNull(controller);
+			controller.TargetGraph.ApplyGraph(nodes, connections);
 		}
 
 		/**
 		 * Save Graph and update all nodes & connections
 		 */ 
-		private void Setup (BuildTarget target, bool forceVisitAll = false) {
+		private void Setup (bool forceVisitAll = false) {
 
 			EditorUtility.ClearProgressBar();
+			if(controller == null) {
+				return;
+			}
 
 			try {
 				foreach (var node in nodes) {
@@ -443,10 +436,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		private void Validate (BuildTarget target, NodeGUI node) {
+		private void Validate (NodeGUI node) {
 
 			EditorUtility.ClearProgressBar();
-
+			if(controller == null) {
+				return;
+			}
 
 			try {
 				node.ResetErrorStatus();
@@ -469,18 +464,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/**
 		 * Execute the build.
 		 */
-		private void Run (BuildTarget target) {
+		private void Run () {
+
+			if(controller == null) {
+				return;
+			}
 
 			try {
 				AssetDatabase.SaveAssets();
 
-				List<NodeGUI> currentNodes = null;
-				List<ConnectionGUI> currentConnections = null;
-
-				ConstructGraphFromSaveData(out currentNodes, out currentConnections);
-
 				float currentCount = 0f;
-				float totalCount = (float)currentNodes.Count;
+				float totalCount = (float)controller.TargetGraph.Nodes.Count;
 				Model.NodeData lastNode = null;
 
 				Action<Model.NodeData, string, float> updateHandler = (node, message, progress) => {
@@ -544,16 +538,29 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(Model.ConnectionPointData inputPoint) {
-			if(s_currentController != null) {
-				return s_currentController.StreamManager.EnumurateIncomingAssetGroups(inputPoint);
+//		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(Model.ConnectionPointData inputPoint) {
+//
+//
+//			foreach(var w in windows) {
+//				w.Enum;
+//			}
+//			if(controller != null) {
+//				return controller.StreamManager.EnumurateIncomingAssetGroups(inputPoint);
+//			}
+//			return null;
+//		}
+
+		private void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+			if(controller != null) {
+				controller.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 			}
-			return null;
 		}
 
-		public static void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
-			if(s_currentController != null) {
-				s_currentController.OnAssetsReimported(s_selectedTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+		public static void NotifyAssetsReimportedToAllWindows(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+			// Get All open AssetBundleGraphEditorWindows
+			AssetBundleGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetBundleGraphEditorWindow>();
+			foreach(var w in windows) {
+				w.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 			}
 		}
 
@@ -562,7 +569,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
-					Setup(ActiveBuildTarget);
+					Setup();
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
@@ -590,14 +597,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
-				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == s_selectedTarget));
+				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == target));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
 					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
-					s_selectedTarget = supportedTargets[newIndex];
-					Setup(ActiveBuildTarget, true);
+					target = supportedTargets[newIndex];
+					Setup(true);
 				}
 
 				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
@@ -610,7 +617,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// Calling time taking procedure such as asset bundle build inside Scope object 
 			// may throw Exception becuase object state is already invalid by the time to Dispose.
 			if(performBuild) {
-				EditorApplication.ExecuteMenuItem(Model.Settings.GUI_TEXT_MENU_BUILD);
+				SaveGraph();
+				Run();
 			}
 		}
 
@@ -767,7 +775,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 							// if shift key is not pressed, clear current selection
 							if(!Event.current.shift) {
-								activeSelection.Clear();
+								activeSelection.Clear(controller);
 							}
 
 							var selectedRect = new Rect(x, y, width, height);
@@ -806,19 +814,35 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
-			Model.SaveData.SetSavedataDirty();
+			if(controller != null) {
+				controller.TargetGraph.SetSavedataDirty();
+			}
 		}
 
 		public void OnGUI () {
-			DrawGUIToolBar();
 
-			using (new EditorGUILayout.HorizontalScope()) {
-				DrawGUINodeGraph();
-				if(showErrors) {
-					DrawGUINodeErrors();
+			if(controller == null) {
+				EditorGUILayout.BeginHorizontal();
+				GUILayout.FlexibleSpace();
+				if(GUILayout.Button("Create New Graph", GUILayout.Width(400f))) {
+					//TOOD
+					LogUtility.Logger.Log(LogUtility.kTag, "Create Graph!!");
 				}
-			}
+			} else {
+				DrawGUIToolBar();
 
+				using (new EditorGUILayout.HorizontalScope()) {
+					DrawGUINodeGraph();
+					if(showErrors) {
+						DrawGUINodeErrors();
+					}
+				}
+
+				HandleGUIEvent();
+			}
+		}
+
+		private void HandleGUIEvent() {
 			var isValidSelection = activeSelection != null && activeSelection.IsSelected;
 			var isValidCopy      = copiedSelection != null && copiedSelection.IsSelected;
 
@@ -830,8 +854,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				- Command(Delete, Copy, etc...)
 			*/
 			switch (Event.current.type) {
-				// show context menu
-				case EventType.ContextClick: {
+			// show context menu
+			case EventType.ContextClick: {
 					ShowNodeCreateContextMenu(Event.current.mousePosition);
 					break;
 				}
@@ -839,14 +863,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				/*
 					Handling mouseUp at empty space. 
 				*/
-				case EventType.MouseUp: {
+			case EventType.MouseUp: {
 					modifyMode = ModifyMode.NONE;
 					HandleUtility.Repaint();
-					
+
 					if (activeSelection != null && activeSelection.IsSelected) {
 						Undo.RecordObject(this, "Unselect");
 
-						activeSelection.Clear();
+						activeSelection.Clear(controller);
 						UpdateActiveObjects(activeSelection);
 					}
 
@@ -857,8 +881,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					break;
 				}
-					
-				case EventType.ValidateCommand: 
+
+			case EventType.ValidateCommand: 
 				{
 					switch (Event.current.commandName) {
 					case "Delete": {
@@ -897,11 +921,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					break;
 				}
 
-				case EventType.ExecuteCommand: 
+			case EventType.ExecuteCommand: 
 				{
 					switch (Event.current.commandName) {
-						// Delete active node or connection.
-						case "Delete": {
+					// Delete active node or connection.
+					case "Delete": {
 							if (!isValidSelection) {
 								break;
 							}
@@ -911,7 +935,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							break;
 						}
 
-						case "Copy": {
+					case "Copy": {
 							if (!isValidSelection) {
 								break;
 							}
@@ -924,7 +948,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							break;
 						}
 
-						case "Cut": {
+					case "Cut": {
 							if (!isValidSelection) {
 								break;
 							}
@@ -940,17 +964,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							foreach (var c in activeSelection.connections) {
 								DeleteConnection(c.Id);
 							}
-							activeSelection.Clear();
+							activeSelection.Clear(controller);
 							UpdateActiveObjects(activeSelection);
 
-							Setup(ActiveBuildTarget);
-							InitializeGraph();
+							Setup();
+							//InitializeGraph();
 
 							Event.current.Use();
 							break;
 						}
 
-						case "Paste": {
+					case "Paste": {
 							if(!isValidCopy)  {
 								break;
 							}
@@ -961,21 +985,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							}
 							copiedSelection.IncrementPasteOffset();
 
-							Setup(ActiveBuildTarget);
-							InitializeGraph();
+							Setup();
+							//InitializeGraph();
 
 							Event.current.Use();
 							break;
 						}
 
-						case "SelectAll": {
+					case "SelectAll": {
 							Undo.RecordObject(this, "Select All Objects");
 
 							if(activeSelection == null) {
 								activeSelection = new SavedSelection();
 							}
 
-							activeSelection.Clear();
+							activeSelection.Clear(controller);
 							nodes.ForEach(n => activeSelection.Add(n));
 							connections.ForEach(c => activeSelection.Add(c));
 
@@ -985,7 +1009,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							break;
 						}
 
-						default: {
+					default: {
 							break;
 						}
 					}
@@ -1005,10 +1029,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				DeleteConnection(c.Id);
 			}
 
-			activeSelection.Clear();
+			activeSelection.Clear(controller);
 			UpdateActiveObjects(activeSelection);
 
-			Setup(ActiveBuildTarget);
+			Setup();
 		}
 
 		private void ShowNodeCreateContextMenu(Vector2 pos) {
@@ -1022,7 +1046,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					false, 
 					() => {
 						AddNodeFromGUI(customNodes[index].CreateInstance(), customNodes[index].node.Name, pos.x, pos.y);
-						Setup(ActiveBuildTarget);
+						Setup();
 						Repaint();
 					}
 				);
@@ -1034,7 +1058,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void AddNodeFromGUI (Node n, string guiName, float x, float y) {
 
 			string nodeName = string.Format("New {0} Node", guiName);
-			NodeGUI newNode = new NodeGUI(new Model.NodeData(nodeName, n, x, y));
+			NodeGUI newNode = new NodeGUI(controller, new Model.NodeData(nodeName, n, x, y));
 
 			Undo.RecordObject(this, "Add " + guiName + " Node");
 
@@ -1112,7 +1136,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						Setup(ActiveBuildTarget);
+						Setup();
 						break;
 					}
 
@@ -1163,7 +1187,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 
 						AddConnection(label, startNode, outputPoint, endNode, inputPoint);
-						Setup(ActiveBuildTarget);
+						Setup();
 						break;
 					}
 
@@ -1210,8 +1234,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				case NodeEvent.EventType.EVENT_NODE_CLICKED: {
 					var clickedNode = e.eventSourceNode;
 
-					Model.SaveData.SetSavedataDirty();
-
 					if(activeSelection != null && activeSelection.nodes.Contains(clickedNode)) {
 						break;
 					}
@@ -1227,7 +1249,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						if(activeSelection == null) {
 							activeSelection = new SavedSelection();
 						}
-						activeSelection.Clear();
+						activeSelection.Clear(controller);
 						activeSelection.Add(clickedNode);
 					}
 					
@@ -1266,7 +1288,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				break;
 			}
 			case NodeEvent.EventType.EVENT_NODE_UPDATED: {
-				Validate(ActiveBuildTarget, e.eventSourceNode);
+				Validate(e.eventSourceNode);
 				break;
 			}
 
@@ -1275,7 +1297,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				break;
 			}
 			case NodeEvent.EventType.EVENT_SAVE: 
-				Setup(ActiveBuildTarget);
+				Setup();
 				Repaint();
 				break;
 			}
@@ -1297,6 +1319,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		
 		public void DuplicateNode (NodeGUI node, float offset) {
 			var newNode = node.Duplicate(
+				controller,
 				node.GetX() + offset,
 				node.GetY() + offset
 			);
@@ -1348,7 +1371,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								if(activeSelection == null) {
 									activeSelection = new SavedSelection();
 								}
-								activeSelection.Clear();
+								activeSelection.Clear(controller);
 								activeSelection.Add(e.eventSourceCon);
 								UpdateActiveObjects(activeSelection);
 								break;
@@ -1360,10 +1383,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							var deletedConnectionId = e.eventSourceCon.Id;
 
 							DeleteConnection(deletedConnectionId);
-							activeSelection.Clear();
+							activeSelection.Clear(controller);
 							UpdateActiveObjects(activeSelection);
 
-							Setup(ActiveBuildTarget);
+							Setup();
 							Repaint();
 							break;
 						}

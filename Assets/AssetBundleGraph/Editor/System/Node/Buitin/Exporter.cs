@@ -78,7 +78,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_exportOption == rhs.m_exportOption;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 			
 			if (m_exportPath == null) {
 				return;

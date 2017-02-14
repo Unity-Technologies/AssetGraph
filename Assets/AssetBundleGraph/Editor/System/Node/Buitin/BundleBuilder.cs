@@ -66,7 +66,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_enabledBundleOptions == rhs.m_enabledBundleOptions;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_enabledBundleOptions == null) {
 				return;

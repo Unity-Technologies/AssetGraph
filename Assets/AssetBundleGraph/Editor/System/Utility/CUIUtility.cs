@@ -72,15 +72,28 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 
+				int graphIndex = arguments.FindIndex(a => a == "-graph");
+
+				Model.ConfigGraph graph = null;
+
+				if(graphIndex >= 0) {
+					var graphPath = arguments[targetIndex+1];
+					LogUtility.Logger.Log("Graph path:"+ graphPath);
+
+					//TODO: get value from given path
+					graph = Model.ConfigGraph.GetDefaultGraph();
+				}
+
+
 				LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
-				if (!Model.SaveData.IsSaveDataAvailableAtDisk()) {
-					LogUtility.Logger.Log("AssetBundleGraph save data not found. Aborting...");
+				if (graph == null) {
+					LogUtility.Logger.Log("Graph data not found. Aborting...");
 					return;
 				}
 
 				// load data from file.
-				AssetBundleGraphController c = new AssetBundleGraphController();
+				AssetBundleGraphController c = new AssetBundleGraphController(graph);
 
 				// perform setup. Fails if any exception raises.
 				c.Perform(target, false, true, null);

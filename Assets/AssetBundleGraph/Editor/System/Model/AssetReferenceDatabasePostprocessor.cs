@@ -10,7 +10,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
 		{
 			LogUtility.Logger.Log("[OnPostprocessAllAssets]");
-			AssetBundleGraphEditorWindow.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+			AssetBundleGraphEditorWindow.NotifyAssetsReimportedToAllWindows(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 
 			foreach (string str in deletedAssets) 
 			{

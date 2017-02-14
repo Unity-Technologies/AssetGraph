@@ -52,7 +52,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 				m_groupingKeyword == rhs.m_groupingKeyword;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_groupingKeyword == null) {
 				return;

@@ -139,7 +139,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			p.Label = variant.Name;
 		}
 
-		public override void OnInspectorGUI(NodeGUI node, NodeGUIEditor editor, Action onValueChanged) {
+		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_bundleNameTemplate == null) return;
 

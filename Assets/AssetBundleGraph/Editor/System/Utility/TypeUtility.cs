@@ -169,8 +169,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return null;
 		}
 
-		public static Type FindFirstIncomingAssetType(Model.ConnectionPointData inputPoint) {
-			var assetGroupEnum = AssetBundleGraphEditorWindow.EnumurateIncomingAssetGroups(inputPoint);
+		public static Type FindFirstIncomingAssetType(AssetReferenceStreamManager mgr, Model.ConnectionPointData inputPoint) {
+			var assetGroupEnum = mgr.EnumurateIncomingAssetGroups(inputPoint);
 			if(assetGroupEnum == null) {
 				return null;
 			}

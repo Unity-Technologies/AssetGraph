@@ -11,38 +11,11 @@ using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
-	class SaveDataConstants {
-		/*
-			data key for AssetBundleGraph.json
-		*/
-
-		public const string GROUPING_KEYWORD_DEFAULT = "/Group_*/";
-		public const string BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT = "*";
-
-		// by default, AssetBundleGraph's node has only 1 InputPoint. and 
-		// this is only one definition of it's label.
-		public const string DEFAULT_INPUTPOINT_LABEL = "-";
-		public const string DEFAULT_OUTPUTPOINT_LABEL = "+";
-		public const string BUNDLECONFIG_BUNDLE_OUTPUTPOINT_LABEL = "bundles";
-		public const string BUNDLECONFIG_VARIANTNAME_DEFAULT = "";
-
-		public const string DEFAULT_FILTER_KEYWORD = "keyword";
-		public const string DEFAULT_FILTER_KEYTYPE = "Any";
-
-		public const string FILTER_KEYWORD_WILDCARD = "*";
-
-		public const string NODE_INPUTPOINT_FIXED_LABEL = "FIXED_INPUTPOINT_ID";
-	}
-
 	/*
 	 * Save data which holds all AssetBundleGraph settings and configurations.
 	 */ 
-	public class SaveData : ScriptableObject {
-
-		public const string LASTMODIFIED 	= "lastModified";
-		public const string NODES 			= "nodes";
-		public const string CONNECTIONS 	= "connections";
-		public const string VERSION 		= "version";
+	[CreateAssetMenu( fileName = "AssetBundleGraph", menuName = "AssetBundle Graph", order = 1 )]
+	public class ConfigGraph : ScriptableObject {
 
 		/*
 		 * Important: 
@@ -55,9 +28,9 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		[SerializeField] private string m_lastModified;
 		[SerializeField] private int m_version;
 
-		private static SaveData s_saveData;
-
 		void OnEnable() {
+			Initialize();
+			Validate();
 		}
 
 		private string GetFileTimeUtcString() {
@@ -137,28 +110,23 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 		}
 
-		private static string SaveDataAssetPath {
+		private static string DefaultSaveDataAssetPath {
 			get {
 				return FileUtility.PathCombine("Assets/", Settings.ASSETNBUNDLEGRAPH_DATA_PATH, Settings.ASSETBUNDLEGRAPH_DATA_NAME);
 			}
 		}
 
-		public static SaveData Data {
-			get {
-				if(s_saveData == null) {
-					// while AssetDatabase.CreateAsset() invokes OnPostprocessAllAssets where
-					// SaveData.Data is used through AssetReferenceDatabasePostprocessor,
-					// s_saveData must be set carefully in right order inside LoadFromDisk()
-					// so setting s_saveData is handled inside LoadFromDisk()
-					LoadFromDisk();
-				}
-				return s_saveData;
-			}
+		public static ConfigGraph GetDefaultGraph() {
+			// while AssetDatabase.CreateAsset() invokes OnPostprocessAllAssets where
+			// SaveData.Data is used through AssetReferenceDatabasePostprocessor,
+			// s_saveData must be set carefully in right order inside LoadFromDisk()
+			// so setting s_saveData is handled inside LoadFromDisk()
+			return LoadDefaultDataFromDisk();
 		}
 
-		public static void SetSavedataDirty() {
-			Data.Save();
-			EditorUtility.SetDirty(Data);
+		public void SetSavedataDirty() {
+			Save();
+			EditorUtility.SetDirty(this);
 		}
 
 
@@ -176,48 +144,39 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				m_lastModified = GetFileTimeUtcString();
 				m_allNodes = n;
 				m_allConnections = c;
-				EditorUtility.SetDirty(this);
+				SetSavedataDirty();
 			} else {
 				LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
 			}
 		}
 
-		public static SaveData Reload() {
-			s_saveData = null;
-			return Data;
-		}
-
+//		public static SaveData Reload() {
+//			s_saveData = null;
+//			return Data;
+//		}
+//
 		public static bool IsSaveDataAvailableAtDisk() {
-			return File.Exists(SaveDataAssetPath);
+			return File.Exists(DefaultSaveDataAssetPath);
 		}
 
-		private static void CreateNewSaveData () {
+		private static ConfigGraph CreateNewSaveData () {
 
-			var dir = SaveDataDirectoryPath;
+			var data = ScriptableObject.CreateInstance<ConfigGraph>();
+//			data.Initialize();
+//			data.Validate();
 
-			if (!Directory.Exists(dir)) {
-				Directory.CreateDirectory(dir);
-			}
-
-			var data = ScriptableObject.CreateInstance<SaveData>();
-			data.Initialize();
-
-			data.Validate();
-
-			// s_saveData must be set before calling AssetDatabase.CreateAsset() (for OnPostprocessAllAssets())
-			s_saveData = data;
-			AssetDatabase.CreateAsset(data, SaveDataAssetPath);
+			return data;
 		}
 			
-		private static void LoadFromDisk() {
+		private static ConfigGraph LoadDefaultDataFromDisk() {
 
 			// First, try loading from asset.
 			try {
-				var path = SaveDataAssetPath;
+				var path = DefaultSaveDataAssetPath;
 
 				if(File.Exists(path)) 
 				{
-					SaveData data = AssetDatabase.LoadAssetAtPath<SaveData>(path);
+					ConfigGraph data = AssetDatabase.LoadAssetAtPath<ConfigGraph>(path);
 
 					if(data != null) {
 						if(data.m_version > ABG_FILE_VERSION) {
@@ -226,8 +185,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 						}
 
 						data.Validate();
-						s_saveData = data;
-						return;
+						return data;
 					}
 				}
 			} catch(Exception e) {
@@ -238,15 +196,18 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			try {
 				V1.SaveData v1 = V1.SaveData.Data;
 
-				CreateNewSaveData ();
-				SaveData.Data.Import(v1);
-				return;
+				var graph = CreateNewSaveData ();
+				AssetDatabase.CreateAsset(graph, DefaultSaveDataAssetPath);
+				graph.Import(v1);
+				return graph;
 
 			} catch (Exception e) {
 				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to import settings from version 1." + e );
 			}
 
-			CreateNewSaveData ();
+			var newgraph = CreateNewSaveData ();
+			AssetDatabase.CreateAsset(newgraph, DefaultSaveDataAssetPath);
+			return newgraph;
 		}
 
 		/*
