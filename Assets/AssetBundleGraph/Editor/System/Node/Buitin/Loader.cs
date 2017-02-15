@@ -166,10 +166,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					if(!dirExists) {
-						EditorGUILayout.LabelField("Available Directories:");
-						string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(dirPath));
-						foreach(string s in dirs) {
-							EditorGUILayout.LabelField(s);
+						var parentDirPath = Path.GetDirectoryName(dirPath);
+						bool parentDirExists = Directory.Exists(parentDirPath);
+						if(parentDirExists) {
+							EditorGUILayout.LabelField("Available Directories:");
+							string[] dirs = Directory.GetDirectories(parentDirPath);
+							foreach(string s in dirs) {
+								EditorGUILayout.LabelField(s);
+							}
 						}
 					}
 				}
