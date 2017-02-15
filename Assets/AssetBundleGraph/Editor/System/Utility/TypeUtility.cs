@@ -66,6 +66,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			{".csv", typeof(TextAsset)},
 			{".yaml", typeof(TextAsset)},
 			{".fnt", typeof(TextAsset)},
+			{".asset", typeof(Object)},
 			{".prefab", typeof(UnityEngine.GameObject)}
 
 			// {"", typeof(Sprite)},
