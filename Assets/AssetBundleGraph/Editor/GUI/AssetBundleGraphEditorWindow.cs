@@ -878,7 +878,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if(!string.IsNullOrEmpty(graphAssetPath)) {
 					using(new EditorGUILayout.HorizontalScope()) {
 						GUILayout.FlexibleSpace();
-						GUILayout.Label(graphAssetPath);
+						GUILayout.Label(graphAssetPath, "MiniLabel");
 					}
 				}
 
