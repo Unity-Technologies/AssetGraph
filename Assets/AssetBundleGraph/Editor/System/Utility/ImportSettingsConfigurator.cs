@@ -16,14 +16,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			this.referenceImporter = referenceImporter;
 		}
 
-		public bool IsEqual(AssetImporter importer) {
+		public bool IsEqual(AssetImporter importer, bool ignorePackingTagDifference = false) {
 
 			if(importer.GetType() != referenceImporter.GetType()) {
 				throw new AssetBundleGraphException("Importer type does not match.");
 			}
 
 			if(importer.GetType() == typeof(UnityEditor.TextureImporter)) {
-				return IsEqual(importer as UnityEditor.TextureImporter);
+				return IsEqual(importer as UnityEditor.TextureImporter, ignorePackingTagDifference);
 			}
 			else if(importer.GetType() == typeof(UnityEditor.AudioImporter)) {
 				return IsEqual(importer as UnityEditor.AudioImporter);
@@ -112,7 +112,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#endif
 		}
 
-		private bool IsEqual (TextureImporter target) {
+		private bool IsEqual (TextureImporter target, bool ignorePackingTagDifference) {
 			TextureImporter reference = referenceImporter as TextureImporter;
 			UnityEngine.Assertions.Assert.IsNotNull(reference);
 
@@ -135,7 +135,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.npotScale != reference.npotScale) return false;
 			if (target.spriteBorder != reference.spriteBorder) return false;
 			if (target.spriteImportMode != reference.spriteImportMode) return false;
-			if (target.spritePackingTag != reference.spritePackingTag) return false;
+			if (!ignorePackingTagDifference && target.spritePackingTag != reference.spritePackingTag) return false;
 			if (target.spritePivot != reference.spritePivot) return false;
 			if (target.spritePixelsPerUnit != reference.spritePixelsPerUnit) return false;
 

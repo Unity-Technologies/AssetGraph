@@ -18,6 +18,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Import Setting", 30)]
 	public class ImportSetting : Node, Model.NodeDataImporter {
 
+		public enum ConfigStatus {
+			NoSampleFound,
+			TooManySamplesFound,
+			GoodSampleFound
+		}
+
+		[SerializeField] private SerializableMultiTargetString m_spritePackingTagNameTemplate;
+		[SerializeField] private bool m_overwritePackingTag;
+
 		public override string ActiveStyle {
 			get {
 				return "flow node 2 on";
@@ -31,6 +40,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
+			m_spritePackingTagNameTemplate = new SerializableMultiTargetString("*");
+			m_overwritePackingTag = false;
+
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
 		}
@@ -71,6 +83,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);
+
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+
+				m_overwritePackingTag = EditorGUILayout.ToggleLeft("Configure Sprite Packing Tag", m_overwritePackingTag);
+
+				using (new EditorGUI.DisabledScope(!m_overwritePackingTag)) {
+					var val = m_spritePackingTagNameTemplate[editor.CurrentEditingGroup];
+
+					var newValue = EditorGUILayout.TextField("Packing Tag", val);
+					if (newValue != val) {
+						using(new RecordUndoScope("Undo Change Packing Tag", node, true)){
+							m_spritePackingTagNameTemplate[editor.CurrentEditingGroup] = newValue;
+							onValueChanged();
+						}
+					}
+					EditorGUILayout.HelpBox(
+						"You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
+						MessageType.Info);
+				}
+			}
 
 			/*
 				importer node has no platform key. 
@@ -157,10 +189,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, errorInConfig);
 
-			if(incoming != null){
-				ApplyImportSetting(node, incoming);
-			}
-
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
 			if(Output != null) {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
@@ -175,7 +203,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 		}
-		
+
+		public override void Build (BuildTarget target, 
+			Model.NodeData node, 
+			IEnumerable<PerformGraph.AssetGroups> incoming, 
+			IEnumerable<Model.ConnectionData> connectionsToOutput, 
+			PerformGraph.Output Output,
+			Action<Model.NodeData, string, float> progressFunc) 
+		{
+			if(incoming != null){
+				ApplyImportSetting(target, node, incoming);
+			}
+		}
+
 		private void SaveSampleFile(Model.NodeData node, AssetReference asset) {
 			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 			if (!Directory.Exists(samplingDirectoryPath)) {
@@ -231,31 +271,59 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return AssetImporter.GetAtPath(sampleFiles[0]);	
 		}
 
-		private void ApplyImportSetting(Model.NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
+		private void ApplyImportSetting(BuildTarget target, Model.NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
 
 			var referenceImporter = GetReferenceAssetImporter(node);	
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
 
 			foreach(var ag in incoming) {
-				foreach(var assets in ag.assetGroups.Values) {
+				foreach(var groupKey in ag.assetGroups.Keys) {
+					var assets = ag.assetGroups[groupKey];
 					foreach(var asset in assets) {
 						var importer = AssetImporter.GetAtPath(asset.importFrom);
-						if(!configurator.IsEqual(importer)) {
+						bool importerModified = false;
+						if(!configurator.IsEqual(importer, m_overwritePackingTag)) {
 							configurator.OverwriteImportSettings(importer);
+							importerModified = true;
+						}
+						if(m_overwritePackingTag) {
+							if(asset.filterType == typeof(UnityEditor.TextureImporter) ) {
+								var textureImporter = AssetImporter.GetAtPath(asset.importFrom) as TextureImporter;
+								textureImporter.spritePackingTag = GetTagName(target, groupKey);
+								importerModified = true;
+							}
+						}
+
+						if(importerModified) {
 							importer.SaveAndReimport();
 							asset.TouchImportAsset();
 						}
 					}
 				}
 			}
-
-
 		}
 
-		public enum ConfigStatus {
-			NoSampleFound,
-			TooManySamplesFound,
-			GoodSampleFound
+		private string GetTagName(BuildTarget target, string groupName) {
+			return m_spritePackingTagNameTemplate[target].Replace("*", groupName);
+		}
+
+		private void ApplySpriteTag(BuildTarget target, IEnumerable<PerformGraph.AssetGroups> incoming) {
+
+			foreach(var ag in incoming) {
+				foreach(var groupKey in ag.assetGroups.Keys) {
+					var assets = ag.assetGroups[groupKey];
+					foreach(var asset in assets) {
+
+						if(asset.filterType == typeof(UnityEditor.TextureImporter) ) {
+							var importer = AssetImporter.GetAtPath(asset.importFrom) as TextureImporter;
+
+							importer.spritePackingTag = GetTagName(target, groupKey);
+							importer.SaveAndReimport();
+							asset.TouchImportAsset();
+						}
+					}
+				}
+			}
 		}
 
 		public static void ValidateInputSetting (
