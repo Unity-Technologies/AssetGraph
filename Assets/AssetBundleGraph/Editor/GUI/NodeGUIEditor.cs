@@ -45,7 +45,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			node.Data.Operation.Object.OnInspectorGUI(node, controller.StreamManager, this, () => 
 				{ 
 					node.Data.Operation.Save(); 
-					node.ParentGraph.SetSavedataDirty(); 
+					node.ParentGraph.SetGraphDirty(); 
 				});
 
 			var errors = currentTarget.errors;

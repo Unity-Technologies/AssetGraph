@@ -147,7 +147,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private AssetBundleGraphController controller;
 		private BuildTarget target;
 
-		private Texture2D selectionTex {
+		private static AssetBundleGraphEditorWindow s_window;
+
+		private Texture2D SelectionTexture {
 			get{
 				if(_selectionTex == null) {
 					_selectionTex = LoadTextureFromFile(Model.Settings.GUI.RESOURCE_SELECTION);
@@ -156,12 +158,37 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		private GUIContent reloadButtonTexture {
+		private GUIContent ReloadButtonTexture {
 			get {
 				if( _reloadButtonTexture == null ) {
 					_reloadButtonTexture = EditorGUIUtility.IconContent("RotateTool");
 				}
 				return _reloadButtonTexture;
+			}
+		}
+
+		private bool IsAnyIssueFound {
+			get {
+				if(controller == null) {
+					return true;
+				}
+				return controller.IsAnyIssueFound;
+			}
+		}
+
+		/*
+		 * An alternative way to get Window, becuase
+		 * GetWindow<AssetBundleGraphEditorWindow>() forces window to be active and present
+		 */ 
+		private static AssetBundleGraphEditorWindow Window {
+			get {
+				if(s_window == null) {
+					AssetBundleGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetBundleGraphEditorWindow>();
+					if(windows.Length > 0) {
+						s_window = windows[0];
+					}
+				}
+				return s_window;
 			}
 		}
 
@@ -246,6 +273,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			AssetDatabase.Refresh();
 		}
+
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
+		public static bool BuildFromMenuValidator () {
+			// Calling GetWindow<>() will force open window
+			// That's not what we want to do in validator function,
+			// so just reference s_currentController directly
+			var w = Window;
+			if(w == null) {
+				return false;
+			}
+			return !w.IsAnyIssueFound;
+		}
+
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
+		public static void BuildFromMenu () {
+			var window = GetWindow<AssetBundleGraphEditorWindow>();
+			window.SaveGraph();
+			window.Run();
+		}
+
 
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
@@ -538,18 +585,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-//		public static IEnumerable<Dictionary<string, List<AssetReference>>> EnumurateIncomingAssetGroups(Model.ConnectionPointData inputPoint) {
-//
-//
-//			foreach(var w in windows) {
-//				w.Enum;
-//			}
-//			if(controller != null) {
-//				return controller.StreamManager.EnumurateIncomingAssetGroups(inputPoint);
-//			}
-//			return null;
-//		}
-
 		private void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 			if(controller != null) {
 				controller.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
@@ -557,9 +592,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static void NotifyAssetsReimportedToAllWindows(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
-			// Get All open AssetBundleGraphEditorWindows
-			AssetBundleGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetBundleGraphEditorWindow>();
-			foreach(var w in windows) {
+			var w = Window;
+			if(w != null) {
 				w.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 			}
 		}
@@ -568,7 +602,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool performBuild = false;
 
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
-				if (GUILayout.Button(new GUIContent("Refresh", reloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
+				if (GUILayout.Button(new GUIContent("Refresh", ReloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					Setup();
 				}
 				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
@@ -610,15 +644,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
 					performBuild = GUILayout.Button("Build", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 				}
-
-			}		
+			}
 
 			// Workaround:
 			// Calling time taking procedure such as asset bundle build inside Scope object 
 			// may throw Exception becuase object state is already invalid by the time to Dispose.
 			if(performBuild) {
-				SaveGraph();
-				Run();
+				EditorApplication.ExecuteMenuItem(Model.Settings.GUI_TEXT_MENU_BUILD);
 			}
 		}
 
@@ -677,7 +709,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						break;
 					}
 				case ModifyMode.SELECTING: {
-						GUI.DrawTexture(new Rect(selectStartMousePosition.x, selectStartMousePosition.y, Event.current.mousePosition.x - selectStartMousePosition.x, Event.current.mousePosition.y - selectStartMousePosition.y), selectionTex);
+						GUI.DrawTexture(new Rect(selectStartMousePosition.x, selectStartMousePosition.y, Event.current.mousePosition.x - selectStartMousePosition.x, Event.current.mousePosition.y - selectStartMousePosition.y), SelectionTexture);
 						break;
 					}
 				}
@@ -815,7 +847,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
 			if(controller != null) {
-				controller.TargetGraph.SetSavedataDirty();
+				controller.TargetGraph.Save();
 			}
 		}
 

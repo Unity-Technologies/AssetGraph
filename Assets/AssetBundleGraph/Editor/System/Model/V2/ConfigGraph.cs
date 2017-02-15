@@ -14,7 +14,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 	/*
 	 * Save data which holds all AssetBundleGraph settings and configurations.
 	 */ 
-	[CreateAssetMenu( fileName = "AssetBundleGraph", menuName = "AssetBundle Graph", order = 1 )]
+	[CreateAssetMenu( fileName = "AssetBundleGraph", menuName = "AssetBundle Graph", order = 650 )]
 	public class ConfigGraph : ScriptableObject {
 
 		/*
@@ -38,11 +38,13 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 
 		private void Initialize() {
-			m_lastModified = GetFileTimeUtcString();
-			m_allNodes = new List<NodeData>();
-			m_allConnections = new List<ConnectionData>();
-			m_version = ABG_FILE_VERSION;
-			EditorUtility.SetDirty(this);
+			if(string.IsNullOrEmpty(m_lastModified)) {
+				m_lastModified = GetFileTimeUtcString();
+				m_allNodes = new List<NodeData>();
+				m_allConnections = new List<ConnectionData>();
+				m_version = ABG_FILE_VERSION;
+				EditorUtility.SetDirty(this);
+			}
 		}
 
 		private void Import(V1.SaveData v1) {
@@ -98,6 +100,11 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 		public void Save() {
 			m_allNodes.ForEach(n => n.Operation.Save());
+			SetGraphDirty();
+		}
+
+		public void SetGraphDirty() {
+			EditorUtility.SetDirty(this);
 		}
 			
 		//
@@ -124,11 +131,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return LoadDefaultDataFromDisk();
 		}
 
-		public void SetSavedataDirty() {
-			Save();
-			EditorUtility.SetDirty(this);
-		}
-
 
 		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
 
@@ -144,17 +146,12 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				m_lastModified = GetFileTimeUtcString();
 				m_allNodes = n;
 				m_allConnections = c;
-				SetSavedataDirty();
+				Save();
 			} else {
 				LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
 			}
 		}
 
-//		public static SaveData Reload() {
-//			s_saveData = null;
-//			return Data;
-//		}
-//
 		public static bool IsSaveDataAvailableAtDisk() {
 			return File.Exists(DefaultSaveDataAssetPath);
 		}
@@ -162,8 +159,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		private static ConfigGraph CreateNewSaveData () {
 
 			var data = ScriptableObject.CreateInstance<ConfigGraph>();
-//			data.Initialize();
-//			data.Validate();
 
 			return data;
 		}
@@ -217,29 +212,29 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		private bool Validate () {
 			var changed = false;
 
-			List<NodeData> removingNodes = new List<NodeData>();
-			List<ConnectionData> removingConnections = new List<ConnectionData>();
-
-			/*
-				delete undetectable node.
-			*/
-			foreach (var n in m_allNodes) {
-				if(!n.Validate()) {
-					removingNodes.Add(n);
-					changed = true;
+			if(m_allNodes != null) {
+				List<NodeData> removingNodes = new List<NodeData>();
+				foreach (var n in m_allNodes) {
+					if(!n.Validate()) {
+						removingNodes.Add(n);
+						changed = true;
+					}
 				}
+				m_allNodes.RemoveAll(n => removingNodes.Contains(n));
 			}
 
-			foreach (var c in m_allConnections) {
-				if(!c.Validate(m_allNodes, m_allConnections)) {
-					removingConnections.Add(c);
-					changed = true;
+			if(m_allConnections != null) {
+				List<ConnectionData> removingConnections = new List<ConnectionData>();
+				foreach (var c in m_allConnections) {
+					if(!c.Validate(m_allNodes, m_allConnections)) {
+						removingConnections.Add(c);
+						changed = true;
+					}
 				}
+				m_allConnections.RemoveAll(c => removingConnections.Contains(c));
 			}
 
 			if(changed) {
-				Nodes.RemoveAll(n => removingNodes.Contains(n));
-				Connections.RemoveAll(c => removingConnections.Contains(c));
 				m_lastModified = GetFileTimeUtcString();
 			}
 
