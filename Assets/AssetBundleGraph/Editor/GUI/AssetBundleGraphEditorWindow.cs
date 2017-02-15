@@ -694,7 +694,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					GUILayout.FlexibleSpace();
 					var guideline = new GUIContent("To create asset bundle graph, create an AssetBundleGraph.");
 					var size = GUI.skin.label.CalcSize(guideline);
-					GUILayout.Label("To create asset bundle graph, create an AssetBundleGraph.");
+					GUILayout.Label("To configure asset bundle workflow, create an AssetBundleGraph.");
 
 					using(new EditorGUILayout.HorizontalScope()) {
 
