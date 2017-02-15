@@ -289,8 +289,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						if(m_overwritePackingTag) {
 							if(asset.filterType == typeof(UnityEditor.TextureImporter) ) {
 								var textureImporter = AssetImporter.GetAtPath(asset.importFrom) as TextureImporter;
-								textureImporter.spritePackingTag = GetTagName(target, groupKey);
-								importerModified = true;
+								var newTagName = GetTagName(target, groupKey);
+								if(textureImporter.spritePackingTag != newTagName) {
+									textureImporter.spritePackingTag = newTagName;
+									importerModified = true;
+								}
 							}
 						}
 
