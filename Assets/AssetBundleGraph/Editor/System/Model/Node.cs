@@ -56,6 +56,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		/**
 		 *	Prepare is the method which validates and perform necessary setups in order to build.
+		 * @param [in] 	target				target platform
+		 * @param [in]	nodeData			NodeData instance for this node.
+		 * @param [in]	incoming			incoming group of assets for this node on executing graph.
+		 * @param [in]	connectionsToOutput	outgoing connections from this node.
+		 * @param [in]	outputFunc			an interface to set outgoing group of assets.
 		 */
 		public virtual void Prepare (BuildTarget target, 
 			Model.NodeData nodeData, 
@@ -68,6 +73,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		/**
 		 * Build is the method which actualy performs the build. It is always called after Setup() is performed.
+		 * @param [in] 	target				target platform
+		 * @param [in]	nodeData			NodeData instance for this node.
+		 * @param [in]	incoming			incoming group of assets for this node on executing graph.
+		 * @param [in]	connectionsToOutput	outgoing connections from this node.
+		 * @param [in]	outputFunc			an interface to set outgoing group of assets.
+		 * @param [in]	progressFunc		an interface to display progress.
 		 */
 		public virtual void Build (BuildTarget target, 
 			Model.NodeData nodeData, 
@@ -90,11 +101,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		/**
 		 * OnInspectorGUI() is called when drawing Inspector of this Node.
+		 * @param [in]	node			NodeGUI instance for this node.
+		 * @param [in]	streamManager	Manager instance to retrieve graph's incoming/outgoing group of assets.
+		 * @param [in]	editor			helper instance to draw inspector.
+		 * @param [in]	onValueChanged	Action to call when OnInspectorGUI() changed value of this node.
 		 */ 
 		public abstract void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged);
 
 		/*
 		 * OnContextMenuGUI() is called when Node is clicked for context menu.
+		 * @param [in]	menu	Context menu instance.
 		 */
 		public virtual void OnContextMenuGUI(GenericMenu menu) {
 			// Do nothing
@@ -102,6 +118,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		/**
 		 * OnAssetsReimported() is called when there are changes of assets during editing graph.
+		 * @param [in]	node				NodeGUI instance for this node.
+		 * @param [in]	streamManager		Manager instance to retrieve graph's incoming/outgoing group of assets.
+		 * @param [in] 	target				target platform
+		 * @param [in]	importedAssets		Imported asset paths.
+		 * @param [in]	deletedAssets		Deleted asset paths.
+		 * @param [in]	movedAssets			Moved asset paths.
+		 * @param [in]	movedFromAssetPaths	Original paths of moved assets.
 		 */ 
 		public virtual bool OnAssetsReimported(
 			Model.NodeData nodeData,
