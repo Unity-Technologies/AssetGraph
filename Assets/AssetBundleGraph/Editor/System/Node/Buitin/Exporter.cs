@@ -130,10 +130,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							}
 							EditorGUILayout.Space();
 
-							EditorGUILayout.LabelField("Available Directories:");
-							string[] dirs = Directory.GetDirectories(Path.GetDirectoryName(exporterNodePath));
-							foreach(string s in dirs) {
-								EditorGUILayout.LabelField(s);
+							string parentDir = Path.GetDirectoryName(exporterNodePath);
+							if(Directory.Exists(parentDir)) {
+								EditorGUILayout.LabelField("Available Directories:");
+								string[] dirs = Directory.GetDirectories(parentDir);
+								foreach(string s in dirs) {
+									EditorGUILayout.LabelField(s);
+								}
 							}
 						}
 					)) {
