@@ -14,12 +14,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		#region Node input output types
 
+		/**
+		 * NodeInputType returns valid type of input for this node.
+		 */ 
 		public virtual Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.Assets;
 			}
 		}
 
+		/**
+		 * NodeOutputType returns output data type from this node.
+		 */ 
 		public virtual Model.NodeOutputSemantics NodeOutputType {
 			get {
 				return Model.NodeOutputSemantics.Assets;
@@ -28,9 +34,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		#endregion
 
 		#region Initialization, Copy, Comparison, Validation
+		/**
+		 * Initialize Node with given NodeData.
+		 */ 
 		public abstract void Initialize(Model.NodeData data);
+
+		/**
+		 * Create duplicated copy of this Node.
+		 */ 
 		public abstract Node Clone();
 
+		/**
+		 * Test if input point is valid on this Node.
+		 */ 
 		public virtual bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
 		}
@@ -66,18 +82,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		#endregion
 
 		#region GUI
+		/*
+		 * ActiveStyle/InactiveStyle returns GUIStyle
+		 */ 
 		public abstract string ActiveStyle 	 { get; }
 		public abstract string InactiveStyle { get; }
 
 		/**
-		 * Provide Editing interface on Inspector Window.
+		 * OnInspectorGUI() is called when drawing Inspector of this Node.
 		 */ 
 		public abstract void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged);
 
+		/*
+		 * OnContextMenuGUI() is called when Node is clicked for context menu.
+		 */
 		public virtual void OnContextMenuGUI(GenericMenu menu) {
 			// Do nothing
 		}
 
+		/**
+		 * OnAssetsReimported() is called when there are changes of assets during editing graph.
+		 */ 
 		public virtual bool OnAssetsReimported(
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,

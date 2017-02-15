@@ -121,7 +121,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public enum ScriptType : int {
 			SCRIPT_MODIFIER,		
 			SCRIPT_PREFABBUILDER,
-			SCRIPT_POSTPROCESS
+			SCRIPT_POSTPROCESS,
+			SCRIPT_NODE
 		}
 			
 		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
@@ -216,6 +217,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					destinationFileName = "MyPostprocess{0}{1}";
 					break;
 				}
+			case ScriptType.SCRIPT_NODE: {
+					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyNode.cs.template");
+					destinationFileName = "MyNode{0}{1}";
+					break;
+				}
 			default: {
 					LogUtility.Logger.LogError(LogUtility.kTag, "Unknown script type found:" + scriptType);
 					break;
@@ -256,6 +262,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_POSTPROCESS)]
 		public static void GeneratePostprocess () {
 			GenerateScript(ScriptType.SCRIPT_POSTPROCESS);
+		}
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_NODE)]
+		public static void GenerateCustomNode () {
+			GenerateScript(ScriptType.SCRIPT_NODE);
 		}
 			
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_OPEN, false, 1)]
