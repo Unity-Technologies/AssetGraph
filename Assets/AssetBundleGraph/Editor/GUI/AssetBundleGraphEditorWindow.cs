@@ -142,11 +142,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private Rect graphRegion = new Rect();
 		private SelectPoint selectStartMousePosition;
 		private GraphBackground background = new GraphBackground();
+		private string graphAssetPath;
 
 		private AssetBundleGraphController controller;
 		private BuildTarget target;
 
-		private string graphAssetPath;
 
 		private static AssetBundleGraphEditorWindow s_window;
 
@@ -390,6 +390,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			modifyMode = ModifyMode.NONE;
 
+			scrollPos = new Vector2(1500,0);
+			errorScrollPos = new Vector2(0,0);
+
+			selectStartMousePosition = null;
+			activeSelection = null;
+			currentEventSource = null;
+
 			controller = new AssetBundleGraphController(graph);
 			ConstructGraphGUI();
 			Setup();
@@ -397,6 +404,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (nodes.Any()) {
 				UpdateSpacerRect();
 			}
+		}
+
+		private void CloseGraph() {
+
+			modifyMode = ModifyMode.NONE;
+			graphAssetPath = null;
+			controller = null;
+			nodes = null;
+			connections = null;
+
+			selectStartMousePosition = null;
+			activeSelection = null;
+			currentEventSource = null;
 		}
 
 		private Model.ConfigGraph CreateNewGraphFromDialog() {
@@ -619,6 +639,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
 			if(controller != null) {
 				controller.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+			}
+
+			if(!string.IsNullOrEmpty(graphAssetPath)) {
+				if(deletedAssets.Contains(graphAssetPath)) {
+					CloseGraph();
+					return;
+				}
+
+				int moveIndex = Array.FindIndex(movedFromAssetPaths, p => p == graphAssetPath);
+				if(moveIndex >= 0) {
+					graphAssetPath = movedAssets[moveIndex];
+				}
 			}
 		}
 
