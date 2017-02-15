@@ -123,8 +123,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			SCRIPT_PREFABBUILDER,
 			SCRIPT_POSTPROCESS
 		}
-
-
+			
 		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
 		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
 
@@ -687,14 +686,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		static readonly string kGUIDELINETEXT = "To configure asset bundle workflow, create an AssetBundle Graph.";
+		static readonly string kCREATEBUTTON  = "Create";
+		static readonly string kIMPORTBUTTON  = "Import previous version";
+
 		private void DrawNoGraphGUI() {
 			using(new EditorGUILayout.HorizontalScope()) {
 				GUILayout.FlexibleSpace();
 				using(new EditorGUILayout.VerticalScope()) {
 					GUILayout.FlexibleSpace();
-					var guideline = new GUIContent("To create asset bundle graph, create an AssetBundleGraph.");
+					var guideline = new GUIContent(kGUIDELINETEXT);
 					var size = GUI.skin.label.CalcSize(guideline);
-					GUILayout.Label("To configure asset bundle workflow, create an AssetBundleGraph.");
+					GUILayout.Label(kGUIDELINETEXT);
 
 					using(new EditorGUILayout.HorizontalScope()) {
 
@@ -702,16 +705,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						float spaceWidth = (showImport) ? (size.x - 300f)/2f : (size.x - 100f)/2f;
 
 						GUILayout.Space(spaceWidth);
-						if(GUILayout.Button("Create", GUILayout.Width(100f), GUILayout.ExpandWidth(false))) {
+						if(GUILayout.Button(kCREATEBUTTON, GUILayout.Width(100f), GUILayout.ExpandWidth(false))) {
 							var newGraph = CreateNewGraphFromDialog();
-							OpenGraph(newGraph);
+							if(newGraph != null) {
+								OpenGraph(newGraph);
+							}
 						}
 
 						if(showImport) {
 							GUILayout.Space(20f);
-							if(GUILayout.Button("Import previous version", GUILayout.Width(160f), GUILayout.ExpandWidth(false))) {
+							if(GUILayout.Button(kIMPORTBUTTON, GUILayout.Width(160f), GUILayout.ExpandWidth(false))) {
 								var newGraph = CreateNewGraphFromImport();
-								OpenGraph(newGraph);
+								if(newGraph != null) {
+									OpenGraph(newGraph);
+								}
 							}
 						}
 					}
