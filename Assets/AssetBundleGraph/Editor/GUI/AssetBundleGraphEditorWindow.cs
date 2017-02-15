@@ -147,6 +147,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private AssetBundleGraphController controller;
 		private BuildTarget target;
 
+		private string graphAssetPath;
+
 		private static AssetBundleGraphEditorWindow s_window;
 
 		private Texture2D SelectionTexture {
@@ -385,6 +387,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		*/
 		private void OpenGraph (Model.ConfigGraph graph) {
 
+			graphAssetPath = AssetDatabase.GetAssetPath(graph);
+
 			modifyMode = ModifyMode.NONE;
 
 			controller = new AssetBundleGraphController(graph);
@@ -602,6 +606,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool performBuild = false;
 
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
+
 				if (GUILayout.Button(new GUIContent("Refresh", ReloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					Setup();
 				}
@@ -867,6 +872,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					DrawGUINodeGraph();
 					if(showErrors) {
 						DrawGUINodeErrors();
+					}
+				}
+
+				if(!string.IsNullOrEmpty(graphAssetPath)) {
+					using(new EditorGUILayout.HorizontalScope()) {
+						GUILayout.FlexibleSpace();
+						GUILayout.Label(graphAssetPath);
 					}
 				}
 
