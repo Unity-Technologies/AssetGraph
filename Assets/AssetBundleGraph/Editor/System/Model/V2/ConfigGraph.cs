@@ -111,27 +111,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		// Save/Load to disk
 		//
 
-		private static string SaveDataDirectoryPath {
-			get {
-				return FileUtility.PathCombine(Application.dataPath, Settings.ASSETNBUNDLEGRAPH_DATA_PATH);
-			}
-		}
-
-		private static string DefaultSaveDataAssetPath {
-			get {
-				return FileUtility.PathCombine("Assets/", Settings.ASSETNBUNDLEGRAPH_DATA_PATH, Settings.ASSETBUNDLEGRAPH_DATA_NAME);
-			}
-		}
-
-		public static ConfigGraph GetDefaultGraph() {
-			// while AssetDatabase.CreateAsset() invokes OnPostprocessAllAssets where
-			// SaveData.Data is used through AssetReferenceDatabasePostprocessor,
-			// s_saveData must be set carefully in right order inside LoadFromDisk()
-			// so setting s_saveData is handled inside LoadFromDisk()
-			return LoadDefaultDataFromDisk();
-		}
-
-
 		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
 
 			List<NodeData> n = nodes.Select(v => v.Data).ToList();
@@ -152,57 +131,31 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 		}
 
-		public static bool IsSaveDataAvailableAtDisk() {
-			return File.Exists(DefaultSaveDataAssetPath);
+		public static bool IsImportableDataAvailableAtDisk() {
+			return V1.SaveData.IsSaveDataAvailableAtDisk();
 		}
 
-		private static ConfigGraph CreateNewSaveData () {
-
+		public static ConfigGraph CreateNewGraph(string pathToSave) {
 			var data = ScriptableObject.CreateInstance<ConfigGraph>();
-
+			AssetDatabase.CreateAsset(data, pathToSave);
 			return data;
 		}
-			
-		private static ConfigGraph LoadDefaultDataFromDisk() {
 
-			// First, try loading from asset.
-			try {
-				var path = DefaultSaveDataAssetPath;
+		public static ConfigGraph CreateNewGraphFromImport(string pathToSave) {
 
-				if(File.Exists(path)) 
-				{
-					ConfigGraph data = AssetDatabase.LoadAssetAtPath<ConfigGraph>(path);
-
-					if(data != null) {
-						if(data.m_version > ABG_FILE_VERSION) {
-							LogUtility.Logger.LogFormat(LogType.Warning, "AssetBundleGraph Savedata on disk is too new(our version:{0} config version:{1}). Saving project may cause data loss.", 
-								ABG_FILE_VERSION, data.m_version);
-						}
-
-						data.Validate();
-						return data;
-					}
-				}
-			} catch(Exception e) {
-				LogUtility.Logger.LogWarning(LogUtility.kTag, e);
-			}
-
-			// If there is no asset found, try load from v1.
+			// try load from v1.
 			try {
 				V1.SaveData v1 = V1.SaveData.Data;
+				ConfigGraph newGraph = CreateNewGraph(pathToSave);
+				newGraph.Import(v1);
 
-				var graph = CreateNewSaveData ();
-				AssetDatabase.CreateAsset(graph, DefaultSaveDataAssetPath);
-				graph.Import(v1);
-				return graph;
+				return newGraph;
 
 			} catch (Exception e) {
-				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to import settings from version 1." + e );
+				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to import graph from previous version." + e );
 			}
 
-			var newgraph = CreateNewSaveData ();
-			AssetDatabase.CreateAsset(newgraph, DefaultSaveDataAssetPath);
-			return newgraph;
+			return null;
 		}
 
 		/*

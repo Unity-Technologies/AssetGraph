@@ -400,6 +400,34 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		private Model.ConfigGraph CreateNewGraphFromDialog() {
+			string path =
+			EditorUtility.SaveFilePanelInProject(
+				"Create New AssetBundle Graph", 
+				"AssetBundle Graph", "asset", 
+				"Create a new asset bundle graph:");
+			if(string.IsNullOrEmpty(path)) {
+				return null;
+			}
+
+			Model.ConfigGraph graph = Model.ConfigGraph.CreateNewGraph(path);
+			return graph;
+		}
+
+		private Model.ConfigGraph CreateNewGraphFromImport() {
+			string path =
+				EditorUtility.SaveFilePanelInProject(
+					"Import AssetBundle Graph", 
+					"AssetBundle Graph", "asset", 
+					"Create a new asset bundle graph from previous version data:");
+			if(string.IsNullOrEmpty(path)) {
+				return null;
+			}
+
+			Model.ConfigGraph graph = Model.ConfigGraph.CreateNewGraphFromImport(path);
+			return graph;
+		}
+
 		/**
 		 * Get WindowId does not collide with other nodeGUIs
 		 */ 
@@ -659,6 +687,40 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		private void DrawNoGraphGUI() {
+			using(new EditorGUILayout.HorizontalScope()) {
+				GUILayout.FlexibleSpace();
+				using(new EditorGUILayout.VerticalScope()) {
+					GUILayout.FlexibleSpace();
+					var guideline = new GUIContent("To create asset bundle graph, create an AssetBundleGraph.");
+					var size = GUI.skin.label.CalcSize(guideline);
+					GUILayout.Label("To create asset bundle graph, create an AssetBundleGraph.");
+
+					using(new EditorGUILayout.HorizontalScope()) {
+
+						bool showImport = Model.ConfigGraph.IsImportableDataAvailableAtDisk();
+						float spaceWidth = (showImport) ? (size.x - 300f)/2f : (size.x - 100f)/2f;
+
+						GUILayout.Space(spaceWidth);
+						if(GUILayout.Button("Create", GUILayout.Width(100f), GUILayout.ExpandWidth(false))) {
+							var newGraph = CreateNewGraphFromDialog();
+							OpenGraph(newGraph);
+						}
+
+						if(showImport) {
+							GUILayout.Space(20f);
+							if(GUILayout.Button("Import previous version", GUILayout.Width(160f), GUILayout.ExpandWidth(false))) {
+								var newGraph = CreateNewGraphFromImport();
+								OpenGraph(newGraph);
+							}
+						}
+					}
+					GUILayout.FlexibleSpace();
+				}
+				GUILayout.FlexibleSpace();
+			}
+		}
+
 		private void DrawGUINodeErrors() {
 
 			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
@@ -859,12 +921,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void OnGUI () {
 
 			if(controller == null) {
-				EditorGUILayout.BeginHorizontal();
-				GUILayout.FlexibleSpace();
-				if(GUILayout.Button("Create New Graph", GUILayout.Width(400f))) {
-					//TOOD
-					LogUtility.Logger.Log(LogUtility.kTag, "Create Graph!!");
-				}
+				DrawNoGraphGUI();
 			} else {
 				DrawGUIToolBar();
 
