@@ -80,15 +80,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					var graphPath = arguments[targetIndex+1];
 					LogUtility.Logger.Log("Graph path:"+ graphPath);
 
-					//TODO: get value from given path
-					graph = Model.ConfigGraph.GetDefaultGraph();
+					graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphPath);
 				}
 
 
 				LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
 				if (graph == null) {
-					LogUtility.Logger.Log("Graph data not found. Aborting...");
+					LogUtility.Logger.Log("Graph data not found. To specify graph to execute, use -graph [path]. Aborting...");
 					return;
 				}
 
