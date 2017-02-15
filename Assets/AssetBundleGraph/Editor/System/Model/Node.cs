@@ -29,7 +29,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		#region Initialization, Copy, Comparison, Validation
 		public abstract void Initialize(Model.NodeData data);
-		public abstract bool IsEqual(Node node);
 		public abstract Node Clone();
 
 		public virtual bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {

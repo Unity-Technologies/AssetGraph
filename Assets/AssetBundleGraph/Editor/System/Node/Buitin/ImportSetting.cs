@@ -45,11 +45,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			ImportSetting rhs = node as ImportSetting;
-			return rhs != null;
-		}
-
 		public override bool OnAssetsReimported(
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,

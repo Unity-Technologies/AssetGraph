@@ -46,12 +46,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			Modifier rhs = node as Modifier;
-			return rhs != null && 
-				m_instance == rhs.m_instance;
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);

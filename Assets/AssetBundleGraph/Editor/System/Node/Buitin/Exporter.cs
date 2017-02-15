@@ -71,13 +71,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			Exporter rhs = node as Exporter;
-			return rhs != null && 
-				m_exportPath == rhs.m_exportPath &&
-				m_exportOption == rhs.m_exportOption;
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 			
 			if (m_exportPath == null) {

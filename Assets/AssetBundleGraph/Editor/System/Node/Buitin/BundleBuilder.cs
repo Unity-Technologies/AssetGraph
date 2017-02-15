@@ -60,12 +60,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			BundleBuilder rhs = node as BundleBuilder;
-			return rhs != null && 
-				m_enabledBundleOptions == rhs.m_enabledBundleOptions;
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_enabledBundleOptions == null) {

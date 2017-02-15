@@ -51,12 +51,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			Loader rhs = node as Loader;
-			return rhs != null && 
-				m_loadPath == rhs.m_loadPath;
-		}
-
 		public override bool OnAssetsReimported(
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,

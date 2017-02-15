@@ -46,12 +46,6 @@ namespace UnityEngine.AssetBundles.GraphTool
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			Grouping rhs = node as Grouping;
-			return rhs != null && 
-				m_groupingKeyword == rhs.m_groupingKeyword;
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_groupingKeyword == null) {

@@ -95,14 +95,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return newNode;
 		}
 
-		public override bool IsEqual(Node node) {
-			BundleConfigurator rhs = node as BundleConfigurator;
-			return rhs != null && 
-				m_bundleNameTemplate == rhs.m_bundleNameTemplate &&
-				m_useGroupAsVariants == rhs.m_useGroupAsVariants &&
-				m_variants.SequenceEqual(rhs.m_variants);
-		}
-
 		public override bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			if(!m_useGroupAsVariants) {
 				if(m_variants.Count > 0 && m_variants.Find(v => v.ConnectionPointId == point.Id) == null) 
