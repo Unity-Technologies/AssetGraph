@@ -137,7 +137,31 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					var path = m_loadPath[editor.CurrentEditingGroup];
 					EditorGUILayout.LabelField("Load Path:");
 
-					var newLoadPath = EditorGUILayout.TextField(Model.Settings.ASSETS_PATH, path);
+					string newLoadPath = null;
+
+					using(new EditorGUILayout.HorizontalScope()) {
+						newLoadPath = EditorGUILayout.TextField("Assets/", path);
+
+						if(GUILayout.Button("Select", GUILayout.Width(50f))) {
+							var folderSelected = EditorUtility.OpenFolderPanel("Select Asset Folder", "Assets/", "");
+							if(!string.IsNullOrEmpty(folderSelected)) {
+								var dataPath = Application.dataPath;
+								if(dataPath == folderSelected) {
+									folderSelected = string.Empty;
+								} else {
+									var index = folderSelected.IndexOf(dataPath);
+									if(index >= 0 ) {
+										folderSelected = folderSelected.Substring(dataPath.Length + index);
+										if(folderSelected.IndexOf('/') == 0) {
+											folderSelected = folderSelected.Substring(1);
+										}
+									}
+								}
+								newLoadPath = folderSelected;
+							}
+						}
+					}
+
 					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							m_loadPath[editor.CurrentEditingGroup] = newLoadPath;
@@ -148,11 +172,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					var dirPath = Path.Combine(Model.Settings.ASSETS_PATH,newLoadPath);
 					bool dirExists = Directory.Exists(dirPath);
 
+					GUILayout.Space(10f);
+
 					using (new EditorGUILayout.HorizontalScope()) {
 						using(new EditorGUI.DisabledScope(string.IsNullOrEmpty(newLoadPath)||!dirExists)) 
 						{
 							GUILayout.FlexibleSpace();
-							if(GUILayout.Button("Select in Project Window", GUILayout.Width(150))) {
+							if(GUILayout.Button("Select in Project Window", GUILayout.Width(150f))) {
+								// trailing is "/" not good for LoadMainAssetAtPath
+								if(dirPath[dirPath.Length-1] == '/') {
+									dirPath = dirPath.Substring(0, dirPath.Length-1);
+								}
 								var obj = AssetDatabase.LoadMainAssetAtPath(dirPath);
 								EditorGUIUtility.PingObject(obj);
 							}

@@ -109,12 +109,34 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					EditorGUILayout.LabelField("Export Path:");
-					var newExportPath = EditorGUILayout.TextField(
-						SystemDataUtility.GetProjectName(), 
-						m_exportPath[currentEditingGroup]
-					);
 
-					var exporterNodePath = FileUtility.GetPathWithProjectPath(newExportPath);
+					string newExportPath = null;
+
+					using(new EditorGUILayout.HorizontalScope()) {
+						newExportPath = EditorGUILayout.TextField(m_exportPath[currentEditingGroup]);
+
+						if(GUILayout.Button("Select", GUILayout.Width(50f))) {
+							var folderSelected = EditorUtility.OpenFolderPanel("Select Export Folder", "", "");
+							if(!string.IsNullOrEmpty(folderSelected)) {
+								var projectPath = Directory.GetParent(Application.dataPath).ToString();
+
+								if(projectPath == folderSelected) {
+									folderSelected = string.Empty;
+								} else {
+									var index = folderSelected.IndexOf(projectPath);
+									if(index >= 0 ) {
+										folderSelected = folderSelected.Substring(projectPath.Length + index);
+										if(folderSelected.IndexOf('/') == 0) {
+											folderSelected = folderSelected.Substring(1);
+										}
+									}
+								}
+								newExportPath = folderSelected;
+							}
+						}
+					}
+
+					var exporterNodePath = GetExportPath(newExportPath);
 					if(ValidateExportPath(
 						newExportPath,
 						exporterNodePath,
@@ -140,6 +162,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							}
 						}
 					)) {
+						GUILayout.Space(10f);
+
 						using (new EditorGUILayout.HorizontalScope()) {
 							GUILayout.FlexibleSpace();
 							#if UNITY_EDITOR_OSX
@@ -171,7 +195,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		{
 			ValidateExportPath(
 				m_exportPath[target],
-				FileUtility.GetPathWithProjectPath(m_exportPath[target]),
+				GetExportPath(m_exportPath[target]),
 				() => {
 					throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
 				},
@@ -203,7 +227,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			var exportPath = FileUtility.GetPathWithProjectPath(m_exportPath[target]);
+			var exportPath = GetExportPath(m_exportPath[target]);
 
 			if(m_exportOption[target] == (int)ExportOption.DeleteAndRecreateExportDirectory) {
 				if (Directory.Exists(exportPath)) {
@@ -267,6 +291,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			AssetBundleBuildReport.AddExportReport(report);
+		}
+
+		private string GetExportPath(string path) {
+			if(string.IsNullOrEmpty(path)) {
+				return Directory.GetParent(Application.dataPath).ToString();
+			} else if(path[0] == '/') {
+				return path;
+			} else {
+				return FileUtility.GetPathWithProjectPath(path);
+			}
 		}
 
 		public static bool ValidateExportPath (string currentExportFilePath, string combinedPath, Action NullOrEmpty, Action DoesNotExist) {
