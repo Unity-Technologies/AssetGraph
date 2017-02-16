@@ -428,7 +428,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			modifyMode = ModifyMode.NONE;
 
-			scrollPos = new Vector2(1500,0);
+			scrollPos = new Vector2(0,0);
 			errorScrollPos = new Vector2(0,0);
 
 			selectStartMousePosition = null;
@@ -442,6 +442,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (nodes.Any()) {
 				UpdateSpacerRect();
 			}
+
+			Selection.activeObject = graph;
 		}
 
 		private void CloseGraph() {
