@@ -116,7 +116,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						newExportPath = EditorGUILayout.TextField(m_exportPath[currentEditingGroup]);
 
 						if(GUILayout.Button("Select", GUILayout.Width(50f))) {
-							var folderSelected = EditorUtility.OpenFolderPanel("Select Export Folder", "", "");
+							var folderSelected = EditorUtility.OpenFolderPanel("Select Export Folder", 
+								GetExportPath(m_exportPath[currentEditingGroup]), "");
 							if(!string.IsNullOrEmpty(folderSelected)) {
 								var projectPath = Directory.GetParent(Application.dataPath).ToString();
 
