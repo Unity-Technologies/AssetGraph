@@ -14,53 +14,15 @@ using V1=AssetBundleGraph;
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 	[Serializable]
-	public class FilterEntry {
-		[SerializeField] private string m_filterKeyword;
-		[SerializeField] private string m_filterKeytype;
-		[SerializeField] private string m_pointId;
-
-		public FilterEntry(string keyword, string keytype, ConnectionPointData point) {
-			m_filterKeyword = keyword;
-			m_filterKeytype = keytype;
-			m_pointId = point.Id;
-		}
-
-		public FilterEntry(FilterEntry e) {
-			m_filterKeyword = e.m_filterKeyword;
-			m_filterKeytype = e.m_filterKeytype;
-			m_pointId = e.m_pointId;
-		}
-
-		public string FilterKeyword {
-			get {
-				return m_filterKeyword;
-			}
-			set {
-				m_filterKeyword = value;
-			}
-		}
-		public string FilterKeytype {
-			get {
-				return m_filterKeytype; 
-			}
-			set {
-				m_filterKeytype = value;
-			}
-		}
-		public string ConnectionPointId {
-			get {
-				return m_pointId; 
-			}
-		}
-		public string Hash {
-			get {
-				return m_filterKeyword+m_filterKeytype;
-			}
-		}
-	}
-
-	[Serializable]
 	public class NodeData {
+
+		[System.Serializable]
+		public class NodeInstance : SerializedInstance<Node> {
+
+			public NodeInstance() : base() {}
+			public NodeInstance(NodeInstance instance): base(instance) {}
+			public NodeInstance(Node obj) : base(obj) {}
+		}
 
 		[SerializeField] private string m_name;
 		[SerializeField] private string m_id;

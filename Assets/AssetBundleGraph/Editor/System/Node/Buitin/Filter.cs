@@ -4,7 +4,6 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
@@ -14,7 +13,52 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Filter", 20)]
 	public class Filter : Node, Model.NodeDataImporter {
 
-		[SerializeField] private List<Model.FilterEntry> m_filter;
+		[System.Serializable]
+		public class FilterInstance : SerializedInstance<IFilter> {
+
+			public FilterInstance() : base() {}
+			public FilterInstance(FilterInstance instance): base(instance) {}
+			public FilterInstance(IFilter obj) : base(obj) {}
+		}
+
+		[Serializable]
+		public class FilterEntry {
+			[SerializeField] private FilterInstance m_instance;
+			[SerializeField] private string m_pointId;
+
+			public FilterEntry(IFilter filter, Model.ConnectionPointData point) {
+				m_instance = new FilterInstance(filter);
+				m_pointId = point.Id;
+			}
+
+			public FilterEntry(FilterEntry e) {
+				m_instance = new FilterInstance(e.m_instance);
+				m_pointId = e.m_pointId;
+			}
+
+			public string ConnectionPointId {
+				get {
+					return m_pointId; 
+				}
+			}
+
+			public FilterInstance Instance {
+				get {
+					return m_instance;
+				}
+				set {
+					m_instance = value;
+				}
+			}
+
+			public string Hash {
+				get {
+					return m_instance.Data;
+				}
+			}
+		}
+
+		[SerializeField] private List<FilterEntry> m_filter;
 
 		public override string ActiveStyle {
 			get {
@@ -29,7 +73,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			m_filter = new List<Model.FilterEntry>();
+			m_filter = new List<FilterEntry>();
 
 			data.AddDefaultInputPoint();
 		}
@@ -37,14 +81,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 
 			foreach(var f in v1.FilterConditions) {
-				m_filter.Add(new Model.FilterEntry(f.FilterKeyword, f.FilterKeytype, v2.FindOutputPoint(f.ConnectionPointId)));
+				m_filter.Add(new FilterEntry(new FilterByNameAndType(f.FilterKeyword, f.FilterKeytype), v2.FindOutputPoint(f.ConnectionPointId)));
 			}
 		}
 
 		public override Node Clone() {
 			var newNode = new Filter();
-			newNode.m_filter = new List<Model.FilterEntry>(m_filter.Count);
-			m_filter.ForEach(e => newNode.m_filter.Add(new Model.FilterEntry(e)));
+			newNode.m_filter = new List<FilterEntry>(m_filter.Count);
+			m_filter.ForEach(e => newNode.m_filter.Add(new FilterEntry(e)));
 
 			return newNode;
 		}
@@ -78,7 +122,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				GUILayout.Label("Filter Settings:");
-				Model.FilterEntry removing = null;
+				FilterEntry removing = null;
 				for (int i= 0; i < m_filter.Count; ++i) {
 					var cond = m_filter[i];
 
@@ -89,37 +133,33 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							removing = cond;
 						}
 						else {
-							var keyword = cond.FilterKeyword;
-
-							GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
-
-							using (new EditorGUILayout.HorizontalScope()) {
-								keyword = EditorGUILayout.TextField(cond.FilterKeyword, s, GUILayout.Width(120));
-								if (GUILayout.Button(cond.FilterKeytype , "Popup")) {
-									var ind = i;// need this because of closure locality bug in unity C#
-									NodeGUI.ShowFilterKeyTypeMenu(
-										cond.FilterKeytype,
-										(string selectedTypeStr) => {
-											using(new RecordUndoScope("Modify Filter Type", node, true)){
-												m_filter[ind].FilterKeytype = selectedTypeStr;
-												UpdateFilterEntry(node.Data, m_filter[ind]);
-												onValueChanged();
-											}
-											// event must raise to propagate change to connection associated with point
-											NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
-										} 
-									);
+							IFilter filter = cond.Instance.Object;
+							if(filter == null) {
+								using (new GUILayout.VerticalScope()) {
+									EditorGUILayout.HelpBox(string.Format("Failed to deserialize assigned filter({0}). Please select valid class.", cond.Instance.ClassName), MessageType.Error);
+									if (GUILayout.Button(cond.Instance.ClassName, "Popup", GUILayout.MinWidth(150f))) {
+										var map = FilterUtility.GetAttributeClassNameMap();
+										NodeGUI.ShowTypeNamesMenu(cond.Instance.ClassName, map.Keys.ToList(), (string selectedGUIName) => 
+											{
+												using(new RecordUndoScope("Change Filter Setting", node)) {
+													var newFilter = FilterUtility.CreateFilter(selectedGUIName);
+													cond.Instance = new FilterInstance(newFilter);
+													onValueChanged();
+												}
+											}  
+										);
+									}
 								}
-							}
-
-							if (keyword != cond.FilterKeyword) {
-								using(new RecordUndoScope("Modify Filter Keyword", node, true)){
-									cond.FilterKeyword = keyword;
-									UpdateFilterEntry(node.Data, cond);
-									onValueChanged();
-								}
-								// event must raise to propagate change to connection associated with point
-								NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
+							} else {
+								cond.Instance.Object.OnInspectorGUI(() => {
+									using(new RecordUndoScope("Change Filter Setting", node)) {
+										cond.Instance.Save();
+										UpdateFilterEntry(node.Data, cond);
+										// event must raise to propagate change to connection associated with point
+										NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
+										onValueChanged();
+									}
+								});
 							}
 						}
 					}
@@ -133,11 +173,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				// add contains keyword interface.
 				if (GUILayout.Button("+")) {
-					using(new RecordUndoScope("Add Filter Condition", node)){
-						AddFilterCondition(node.Data,
-							Model.Settings.DEFAULT_FILTER_KEYWORD, 
-							Model.Settings.DEFAULT_FILTER_KEYTYPE);
-						onValueChanged();
+
+					var map = FilterUtility.GetAttributeClassNameMap();
+					if(map.Keys.Count > 1) {
+						GenericMenu menu = new GenericMenu();
+						foreach(var name in map.Keys) {
+							var guiName = name;
+							menu.AddItem(new GUIContent(guiName), false, () => {
+								using(new RecordUndoScope("Add Filter Condition", node)){
+									var filter = FilterUtility.CreateFilter(guiName);
+									AddFilterCondition(node.Data, filter);
+									onValueChanged();
+								}
+							});
+						}
+						menu.ShowAsContext();
+					} else {
+						using(new RecordUndoScope("Add Filter Condition", node)){
+							AddFilterCondition(node.Data, new FilterByNameAndType());
+							onValueChanged();
+						}
 					}
 				}
 
@@ -158,18 +213,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
+			ValidateFilters(node);
 			ValidateOverlappingFilterCondition(node, true);
 			FilterAssets(node, incoming, connectionsToOutput, Output);
-		}
-
-		public override void Build (BuildTarget target, 
-			Model.NodeData node, 
-			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<Model.ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
-			Action<Model.NodeData, string, float> progressFunc) 
-		{
-			//Operation is completed furing Setup() phase, so do nothing in Run.
 		}
 
 		private void FilterAssets (Model.NodeData node, 
@@ -192,18 +238,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 						foreach(var a in ag.assetGroups[groupKey]) {
 							foreach(var filter in m_filter) {
-								bool keywordMatch = Regex.IsMatch(a.importFrom, filter.FilterKeyword, 
-									RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
 
-								bool match = keywordMatch;
-
-								if(keywordMatch && filter.FilterKeytype != Model.Settings.DEFAULT_FILTER_KEYTYPE) 
-								{
-									var assumedType = a.filterType;
-									match = assumedType != null && filter.FilterKeytype == assumedType.ToString();
-								}
-
-								if(match) {
+								if(filter.Instance.Object.FilterAsset(a)) {
 									var output = allOutput[filter.ConnectionPointId];
 									if(!output.ContainsKey(groupKey)) {
 										output[groupKey] = new List<AssetReference>();
@@ -225,35 +261,38 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public void AddFilterCondition(Model.NodeData n, string keyword, string keytype) {
-			var point = n.AddOutputPoint(keyword);
-			var newEntry = new Model.FilterEntry(keyword, keytype, point);
+		public void AddFilterCondition(Model.NodeData n, IFilter filter) {
+			var point = n.AddOutputPoint(filter.Label);
+			var newEntry = new FilterEntry(filter, point);
 			m_filter.Add(newEntry);
 			UpdateFilterEntry(n, newEntry);
 		}
 
-		public void RemoveFilterCondition(Model.NodeData n, Model.FilterEntry f) {
+		public void RemoveFilterCondition(Model.NodeData n, FilterEntry f) {
 			m_filter.Remove(f);
 			n.OutputPoints.Remove(GetConnectionPoint(n, f));
 		}
 
-		public Model.ConnectionPointData GetConnectionPoint(Model.NodeData n, Model.FilterEntry f) {
+		public Model.ConnectionPointData GetConnectionPoint(Model.NodeData n, FilterEntry f) {
 			Model.ConnectionPointData p = n.OutputPoints.Find(v => v.Id == f.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 			return p;
 		}
 
-		public void UpdateFilterEntry(Model.NodeData n, Model.FilterEntry f) {
+		public void UpdateFilterEntry(Model.NodeData n, FilterEntry f) {
 
 			Model.ConnectionPointData p = n.OutputPoints.Find(v => v.Id == f.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 
-			if(f.FilterKeytype == Model.Settings.DEFAULT_FILTER_KEYTYPE) {
-				p.Label = f.FilterKeyword;
-			} else {
-				var pointIndex = f.FilterKeytype.LastIndexOf('.');
-				var keytypeName = (pointIndex > 0)? f.FilterKeytype.Substring(pointIndex+1):f.FilterKeytype;
-				p.Label = string.Format("{0}[{1}]", f.FilterKeyword, keytypeName);
+			p.Label = f.Instance.Object.Label;
+		}
+
+		public void ValidateFilters(Model.NodeData n) {
+
+			foreach(var f in m_filter) {
+				if(f.Instance.Object == null) {
+					throw new NodeException(String.Format("Could not deserialize filter with class {0}. Please open graph and fix Filter.", f.Instance.ClassName), n.Id);
+				}
 			}
 		}
 
@@ -264,7 +303,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			if( overlap != null && throwException ) {
 				var element = overlap.First();
-				throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", element.FilterKeyword, element.FilterKeytype), n.Id);
+				throw new NodeException(String.Format("Duplicated filter condition found [Label:{0}]", element.Instance.Object.Label), n.Id);
 			}
 			return overlap != null;
 		}

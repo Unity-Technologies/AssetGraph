@@ -122,7 +122,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			SCRIPT_MODIFIER,		
 			SCRIPT_PREFABBUILDER,
 			SCRIPT_POSTPROCESS,
-			SCRIPT_NODE
+			SCRIPT_NODE,
+			SCRIPT_FILTER
 		}
 			
 		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
@@ -219,6 +220,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					destinationFileName = "MyPostprocess{0}{1}";
 					break;
 				}
+			case ScriptType.SCRIPT_FILTER: {
+					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyFilter.cs.template");
+					destinationFileName = "MyFilter{0}{1}";
+					break;
+				}
 			case ScriptType.SCRIPT_NODE: {
 					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyNode.cs.template");
 					destinationFileName = "MyNode{0}{1}";
@@ -253,6 +259,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/*
 			menu items
 		*/
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_FILTER)]
+		public static void GenerateCustomFilter () {
+			GenerateScript(ScriptType.SCRIPT_FILTER);
+		}
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER)]
 		public static void GenerateModifier () {
 			GenerateScript(ScriptType.SCRIPT_MODIFIER);

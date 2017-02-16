@@ -26,6 +26,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public string Data {
+			get {
+				return m_instanceData;
+			}
+		}
+
 		public SerializedInstance() {
 			m_className = string.Empty;
 			m_instanceData = string.Empty;
