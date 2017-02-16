@@ -144,10 +144,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private SelectPoint selectStartMousePosition;
 		private GraphBackground background = new GraphBackground();
 		private string graphAssetPath;
+		private string graphAssetName;
 
 		private AssetBundleGraphController controller;
 		private BuildTarget target;
 
+		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetBundles.GraphTool.LastEditedGraph";
 
 		private static AssetBundleGraphEditorWindow s_window;
 
@@ -373,6 +375,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			modifyMode = ModifyMode.NONE;
 			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
 			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
+
+			string lastGraphAssetPath = EditorPrefs.GetString(kPREFKEY_LASTEDITEDGRAPH);
+
+			if(!string.IsNullOrEmpty(lastGraphAssetPath)) {
+				var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(lastGraphAssetPath);
+				if(graph != null) {
+					OpenGraph(graph);
+				}
+			}
 		}
 
 		private void ShowErrorOnNodes () {
@@ -391,12 +402,29 @@ namespace UnityEngine.AssetBundles.GraphTool {
             return texture;
         }
 
+		private void SetGraphAssetPath(string newPath) {
+			if(newPath == null) {
+				graphAssetPath = null;
+				graphAssetName = null;
+			} else {
+				graphAssetPath = newPath;
+				graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
+				if(graphAssetName.Length > Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH) {
+					graphAssetName = graphAssetName.Substring(0, Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH) + "...";
+				}
+
+				EditorPrefs.SetString(kPREFKEY_LASTEDITEDGRAPH, graphAssetPath);
+			}
+		}
+
 		/**
 			open node graph
 		*/
 		private void OpenGraph (Model.ConfigGraph graph) {
 
-			graphAssetPath = AssetDatabase.GetAssetPath(graph);
+			CloseGraph();
+
+			SetGraphAssetPath(AssetDatabase.GetAssetPath(graph));
 
 			modifyMode = ModifyMode.NONE;
 
@@ -419,7 +447,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void CloseGraph() {
 
 			modifyMode = ModifyMode.NONE;
-			graphAssetPath = null;
+			SetGraphAssetPath(null);
 			controller = null;
 			nodes = null;
 			connections = null;
@@ -429,32 +457,32 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			currentEventSource = null;
 		}
 
-		private Model.ConfigGraph CreateNewGraphFromDialog() {
+		private void CreateNewGraphFromDialog() {
 			string path =
 			EditorUtility.SaveFilePanelInProject(
 				"Create New AssetBundle Graph", 
 				"AssetBundle Graph", "asset", 
 				"Create a new asset bundle graph:");
 			if(string.IsNullOrEmpty(path)) {
-				return null;
+				return;
 			}
 
 			Model.ConfigGraph graph = Model.ConfigGraph.CreateNewGraph(path);
-			return graph;
+			OpenGraph(graph);
 		}
 
-		private Model.ConfigGraph CreateNewGraphFromImport() {
+		private void CreateNewGraphFromImport() {
 			string path =
 				EditorUtility.SaveFilePanelInProject(
 					"Import AssetBundle Graph", 
 					"AssetBundle Graph", "asset", 
 					"Create a new asset bundle graph from previous version data:");
 			if(string.IsNullOrEmpty(path)) {
-				return null;
+				return;
 			}
 
 			Model.ConfigGraph graph = Model.ConfigGraph.CreateNewGraphFromImport(path);
-			return graph;
+			OpenGraph(graph);
 		}
 
 		/**
@@ -659,7 +687,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				int moveIndex = Array.FindIndex(movedFromAssetPaths, p => p == graphAssetPath);
 				if(moveIndex >= 0) {
-					graphAssetPath = movedAssets[moveIndex];
+					SetGraphAssetPath(movedAssets[moveIndex]);
 				}
 			}
 		}
@@ -675,6 +703,37 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool performBuild = false;
 
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
+
+				if (GUILayout.Button(new GUIContent(graphAssetName, "Select graph"), EditorStyles.toolbarPopup, GUILayout.Width(Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_WIDTH), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
+					GenericMenu menu = new GenericMenu();
+
+					var guids = AssetDatabase.FindAssets("t:UnityEngine.AssetBundles.GraphTool.DataModel.Version2.ConfigGraph");
+
+					foreach(var guid in guids) {
+						string path = AssetDatabase.GUIDToAssetPath(guid);
+						string name = Path.GetFileNameWithoutExtension(path);
+
+						menu.AddItem(new GUIContent(name), false, () => {
+							if(path != graphAssetPath) {
+								var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
+								OpenGraph(graph);
+							}
+						});
+					}
+
+					menu.AddSeparator("");
+					menu.AddItem(new GUIContent("Create New..."), false, () => {
+						CreateNewGraphFromDialog();
+					});
+					menu.AddSeparator("");
+					menu.AddItem(new GUIContent("Import previous version..."), false, () => {
+						CreateNewGraphFromImport();
+					});
+
+					menu.DropDown(new Rect(4f, 8f, 0f, 0f));
+				}
+
+				GUILayout.Space(4);
 
 				if (GUILayout.Button(new GUIContent("Refresh", ReloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					Setup();
@@ -748,19 +807,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 						GUILayout.Space(spaceWidth);
 						if(GUILayout.Button(kCREATEBUTTON, GUILayout.Width(100f), GUILayout.ExpandWidth(false))) {
-							var newGraph = CreateNewGraphFromDialog();
-							if(newGraph != null) {
-								OpenGraph(newGraph);
-							}
+							CreateNewGraphFromDialog();
 						}
 
 						if(showImport) {
 							GUILayout.Space(20f);
 							if(GUILayout.Button(kIMPORTBUTTON, GUILayout.Width(160f), GUILayout.ExpandWidth(false))) {
-								var newGraph = CreateNewGraphFromImport();
-								if(newGraph != null) {
-									OpenGraph(newGraph);
-								}
+								CreateNewGraphFromImport();
 							}
 						}
 					}

@@ -122,6 +122,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			public const float CONNECTION_CURVE_LENGTH = 10f;
 
 			public const float TOOLBAR_HEIGHT = 20f;
+			public const float TOOLBAR_GRAPHNAMEMENU_WIDTH = 150f;
+			public const int TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH = 20;
 
 			public const string RESOURCE_ARROW					= RESOURCE_BASEPATH + "AssetGraph_Arrow.png";
 
