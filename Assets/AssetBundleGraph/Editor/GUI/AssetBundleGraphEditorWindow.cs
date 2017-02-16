@@ -727,10 +727,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					menu.AddItem(new GUIContent("Create New..."), false, () => {
 						CreateNewGraphFromDialog();
 					});
-					menu.AddSeparator("");
-					menu.AddItem(new GUIContent("Import previous version..."), false, () => {
-						CreateNewGraphFromImport();
-					});
+
+					if(Model.ConfigGraph.IsImportableDataAvailableAtDisk()) {
+						menu.AddSeparator("");
+						menu.AddItem(new GUIContent("Import previous version..."), false, () => {
+							CreateNewGraphFromImport();
+						});
+					}
 
 					menu.DropDown(new Rect(4f, 8f, 0f, 0f));
 				}
