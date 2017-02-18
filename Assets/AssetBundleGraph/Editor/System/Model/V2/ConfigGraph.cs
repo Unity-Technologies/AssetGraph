@@ -27,6 +27,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		[SerializeField] private List<ConnectionData> m_allConnections;
 		[SerializeField] private string m_lastModified;
 		[SerializeField] private int m_version;
+		[SerializeField] private string m_graphDescription;
 
 		void OnEnable() {
 			Initialize();
@@ -43,6 +44,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 				m_allNodes = new List<NodeData>();
 				m_allConnections = new List<ConnectionData>();
 				m_version = ABG_FILE_VERSION;
+				m_graphDescription = String.Empty;
 				EditorUtility.SetDirty(this);
 			}
 		}
@@ -62,9 +64,22 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			EditorUtility.SetDirty(this);
 		}
 
-		public string LastModified {
+		public DateTime LastModified {
 			get {
-				return m_lastModified;
+				long utcFileTime = long.Parse(m_lastModified);
+				DateTime d = DateTime.FromFileTimeUtc(utcFileTime);
+
+				return d;
+			}
+		}
+
+		public string Descrption {
+			get{
+				return m_graphDescription;
+			}
+			set {
+				m_graphDescription = value;
+				SetGraphDirty();
 			}
 		}
 

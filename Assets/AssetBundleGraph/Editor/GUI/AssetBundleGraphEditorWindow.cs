@@ -297,7 +297,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			AssetDatabase.Refresh();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 11)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 21)]
 		public static bool BuildFromMenuValidator () {
 			// Calling GetWindow<>() will force open window
 			// That's not what we want to do in validator function,
@@ -309,7 +309,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return !w.IsAnyIssueFound;
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 11)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 21)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
 			window.SaveGraph();
@@ -427,10 +427,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		[UnityEditor.Callbacks.OnOpenAsset()]
+		public static bool OnOpenAsset( int instanceID, int line )
+		{
+			var graph = EditorUtility.InstanceIDToObject( instanceID ) as Model.ConfigGraph;
+			if(graph != null) {
+				var window = GetWindow<AssetBundleGraphEditorWindow>();
+				window.OpenGraph(graph);
+				return true;
+			}
+			return false;
+		}
+
 		/**
 			open node graph
 		*/
-		private void OpenGraph (Model.ConfigGraph graph) {
+		public void OpenGraph (Model.ConfigGraph graph) {
 
 			CloseGraph();
 
