@@ -180,7 +180,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						using(new EditorGUI.DisabledScope(string.IsNullOrEmpty(newLoadPath)||!dirExists)) 
 						{
 							GUILayout.FlexibleSpace();
-							if(GUILayout.Button("Select in Project Window", GUILayout.Width(150f))) {
+							if(GUILayout.Button("Highlight in Project Window", GUILayout.Width(180f))) {
 								// trailing is "/" not good for LoadMainAssetAtPath
 								if(dirPath[dirPath.Length-1] == '/') {
 									dirPath = dirPath.Substring(0, dirPath.Length-1);
