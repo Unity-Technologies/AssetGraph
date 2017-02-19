@@ -52,13 +52,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				// attribute name or class name : class name
 				s_attributeClassNameMap = new Dictionary<string, string>(); 
 
-				var builders = Assembly
+				var filters = Assembly
 					.GetExecutingAssembly()
 					.GetTypes()
 					.Where(t => !t.IsInterface)
 					.Where(t => typeof(IFilter).IsAssignableFrom(t));
 
-				foreach (var type in builders) {
+				foreach (var type in filters) {
 					// set attribute-name as key of dict if atribute is exist.
 					CustomFilter attr = 
 						type.GetCustomAttributes(typeof(CustomFilter), true).FirstOrDefault() as CustomFilter;
