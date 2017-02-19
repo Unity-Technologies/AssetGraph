@@ -13,6 +13,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const bool IGNORE_META = true;
 
 		public const string GUI_TEXT_MENU_OPEN = "Window/AssetBundleGraph/Open Graph Editor";
+		public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = "Window/AssetBundleGraph/Build Multiple Graphs...";
 		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Create Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
@@ -28,7 +29,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
-		
+		public const string ASSETBUNDLEGRAPH_BATCHBUILD_CONFIG_NAME = "BatchBuildConfig.asset";
+
 		public const string ASSETS_PATH = "Assets/";
 		public const string ASSETBUNDLEGRAPH_PATH = ASSETS_PATH + "AssetBundleGraph/";
 		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETBUNDLEGRAPH_PATH + "Cache/";
@@ -36,6 +38,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string SETTING_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/SettingTemplate/";
 		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
 		public const string CUISPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/CUI/";
+
+		public const string GRAPH_SEARCH_CONDITION = "t:UnityEngine.AssetBundles.GraphTool.DataModel.Version2.ConfigGraph";
 
 		public const string PREFABBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabs";
 		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";

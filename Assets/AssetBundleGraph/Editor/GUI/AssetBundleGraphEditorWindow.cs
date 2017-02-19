@@ -731,7 +731,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if (GUILayout.Button(new GUIContent(graphAssetName, "Select graph"), EditorStyles.toolbarPopup, GUILayout.Width(Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_WIDTH), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					GenericMenu menu = new GenericMenu();
 
-					var guids = AssetDatabase.FindAssets("t:UnityEngine.AssetBundles.GraphTool.DataModel.Version2.ConfigGraph");
+					var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
 
 					foreach(var guid in guids) {
 						string path = AssetDatabase.GUIDToAssetPath(guid);

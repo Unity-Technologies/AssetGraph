@@ -11,6 +11,37 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleGraphUtility {
 
+		public static void ExecuteGraphCollection(string collectionName) {
+			ExecuteGraphCollection(EditorUserBuildSettings.activeBuildTarget, collectionName);
+		}
+
+		public static void ExecuteGraphCollection(BuildTarget t, string collectionName) {
+			var c = BatchBuildConfig.GetConfig().Find(collectionName);
+			if(c == null) {
+				throw new AssetBundleGraphException(
+					string.Format("Failed to build with graph collection. Graph collection '{0}' not found. ", collectionName)
+				);
+			}
+
+			ExecuteGraphCollection(t, c);
+		}
+
+		public static void ExecuteGraphCollection(BatchBuildConfig.GraphCollection c) {
+			ExecuteGraphCollection(EditorUserBuildSettings.activeBuildTarget, c);
+		}
+
+		public static void ExecuteGraphCollection(BuildTarget t, BatchBuildConfig.GraphCollection c) {
+			foreach(var guid in c.GraphGUIDs) {
+				string path = AssetDatabase.GUIDToAssetPath(guid);
+				if(path != null) {
+					ExecuteGraph(t, path);
+				} else {
+					LogUtility.Logger.LogFormat(LogType.Warning, "Failed to build graph in collection {0}: graph with guid {1} not found.",
+						c.Name, guid);
+				}
+			}
+		}
+
 		public static void ExecuteGraph(string graphAssetPath) {
 			ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graphAssetPath);
 		}
