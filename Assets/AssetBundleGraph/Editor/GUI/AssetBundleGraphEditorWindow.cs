@@ -774,13 +774,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				GUILayout.FlexibleSpace();
 
-				if(controller.IsAnyIssueFound) {
-					GUIStyle errorStyle = new GUIStyle("ErrorLabel");
-					errorStyle.alignment = TextAnchor.MiddleCenter;
-					GUILayout.Label("All errors needs to be fixed before building", errorStyle);
-					GUILayout.FlexibleSpace();
-				}
-
 				GUIStyle tbLabel = new GUIStyle(EditorStyles.toolbar);
 
 				tbLabel.alignment = TextAnchor.MiddleCenter;
@@ -1066,6 +1059,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						GUILayout.FlexibleSpace();
 						GUILayout.Label(graphAssetPath, "MiniLabel");
 					}
+				}
+
+				if(controller.IsAnyIssueFound) {
+					Rect msgRgn = new Rect((graphRegion.width - 250f)/2f, graphRegion.y + 8f, 250f, 36f);
+					EditorGUI.HelpBox(msgRgn, "All errors needs to be fixed before building.", MessageType.Error);
 				}
 
 				HandleGUIEvent();
