@@ -116,6 +116,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			NONE,
 			CONNECTING,
 			SELECTING,
+			DRAGGING
 		}
 
 		public enum ScriptType : int {
@@ -150,7 +151,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private AssetBundleGraphController controller;
 		private BuildTarget target;
 
+		private Vector2 m_LastMousePosition;
+		private Vector2 m_DragNodeDistance;
+		private readonly Dictionary<NodeGUI, Vector2> m_InitialDragNodePositions = new Dictionary<NodeGUI, Vector2> ();
+
 		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetBundles.GraphTool.LastEditedGraph";
+		static readonly int kDragNodesControlID = "AssetBundleGraphTool.HandleDragNodes".GetHashCode();
 
 		private static AssetBundleGraphEditorWindow s_window;
 
@@ -872,6 +878,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					nodes.ForEach(node => node.DrawNode());
 
+					HandleDragNodes();
+
 					EndWindows();
 				}
 
@@ -1106,7 +1114,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if( Selection.activeObject is NodeGUIInspectorHelper || Selection.activeObject is ConnectionGUIInspectorHelper) {
 						Selection.activeObject = null;
 					}
-
+					Event.current.Use();
 					break;
 				}
 
@@ -1312,10 +1320,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			 */
 			case ModifyMode.CONNECTING: 
 				switch (e.eventType) {
-					case NodeEvent.EventType.EVENT_NODE_MOVING: {
-						break;
-					}
-
 					/*
 						connection established between 2 nodes
 					*/
@@ -1430,20 +1434,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			 */ 
 			case ModifyMode.NONE:
 				switch (e.eventType) {
-				case NodeEvent.EventType.EVENT_NODE_MOVING: 
-					if (activeSelection != null && activeSelection.nodes.Contains(e.eventSourceNode)) 
-					{
-						var moveDistance = e.position;
-
-						foreach(var n in activeSelection.nodes) {
-							// skipping eventSourceNode because the movement is already done by GUI.DragWindow()
-							if(n != e.eventSourceNode) {
-								n.MoveBy(moveDistance);
-							}
-						}
-					}
-					break;
-
 				/*
 					start connection handling.
 				*/
@@ -1530,6 +1520,84 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				break;
 			}
 		}
+
+		private void HandleDragNodes() {
+
+			Event evt = Event.current;
+			int id = GUIUtility.GetControlID(kDragNodesControlID, FocusType.Passive);
+
+			switch (evt.GetTypeForControl (id))
+			{
+			case EventType.MouseDown:
+				if(modifyMode == ModifyMode.NONE) {
+					if (evt.button == 0)
+					{
+						if(activeSelection != null && activeSelection.nodes.Count > 0) {
+							bool mouseInSelectedNode = false;
+							foreach(var n in activeSelection.nodes) {
+								if(n.GetRect().Contains(evt.mousePosition)) {
+									mouseInSelectedNode = true;
+									break;
+								}
+							}
+
+							if(mouseInSelectedNode) {
+								modifyMode = ModifyMode.DRAGGING;
+								m_LastMousePosition = evt.mousePosition;
+								m_DragNodeDistance = Vector2.zero;
+
+								foreach(var n in activeSelection.nodes) {
+									m_InitialDragNodePositions[n] = n.GetPos();
+								}
+
+								GUIUtility.hotControl = id;
+								evt.Use();
+							}
+						}
+					}
+				}
+				break;
+			case EventType.MouseUp:
+				if (GUIUtility.hotControl == id)
+				{
+					m_InitialDragNodePositions.Clear ();
+					GUIUtility.hotControl = 0;
+					modifyMode = ModifyMode.NONE;
+					evt.Use ();
+				}
+				break;
+			case EventType.MouseDrag:
+				if (GUIUtility.hotControl == id)
+				{
+					m_DragNodeDistance += evt.mousePosition - m_LastMousePosition;
+					m_LastMousePosition = evt.mousePosition;
+
+					foreach(var n in activeSelection.nodes) {
+						Vector2 newPosition = n.GetPos();
+						Vector2 initialPosition = m_InitialDragNodePositions[n];
+						newPosition.x = initialPosition.x + m_DragNodeDistance.x;
+						newPosition.y = initialPosition.y + m_DragNodeDistance.y;
+						n.SetPos(SnapPositionToGrid (newPosition));
+					}
+					evt.Use ();
+				}
+				break;
+			}
+		}
+
+		protected static Vector2 SnapPositionToGrid (Vector2 position)
+		{
+			float gridSize = UserPreference.EditorWindowGridSize;
+			
+			int xCell = Mathf.RoundToInt (position.x / gridSize);
+			int yCell = Mathf.RoundToInt (position.y / gridSize);
+
+			position.x = xCell * gridSize;
+			position.y = yCell * gridSize;
+
+			return position;
+		}
+
 
 		/**
 			once expand, keep max size.

@@ -7,9 +7,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public enum EventType : int {
 			EVENT_NONE,
 
-			EVENT_NODE_MOVING,
-			EVENT_NODE_MOVE_END,
-
 			EVENT_CONNECTING_BEGIN,
 			EVENT_CONNECTING_END,
 			EVENT_CONNECTION_ESTABLISHED,

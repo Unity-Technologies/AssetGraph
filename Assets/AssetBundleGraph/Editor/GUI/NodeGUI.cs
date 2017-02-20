@@ -32,8 +32,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private float m_progress;
 		private bool m_running;
 
-		private Vector2 m_lastMouseDragPos = Vector2.zero;
-
 		/*
 		 * Properties
 		 */
@@ -147,7 +145,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/**
 			retrieve mouse events for this node in this GraphEditor window.
 		*/
-		private void HandleNodeEvent () {
+		private void HandleNodeMouseEvent () {
 			switch (Event.current.type) {
 
 			/*
@@ -161,26 +159,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 
 				/*
-					handling drag.
-				*/
-			case EventType.MouseDrag: {
-					NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_MOVING, this, GetPos() - m_lastMouseDragPos, null));
-					m_lastMouseDragPos = GetPos();
-					break;
-				}
-
-				/*
 					check if the mouse-down point is over one of the connectionPoint in this node.
 					then emit event.
 				*/
 			case EventType.MouseDown: {
-					m_lastMouseDragPos = GetPos();
-
 					Model.ConnectionPointData result = IsOverConnectionPoint(Event.current.mousePosition);
 
 					if (result != null) {
 						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTING_BEGIN, this, Event.current.mousePosition, result));
 						break;
+					} else {
+						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_CLICKED, 
+							this, Event.current.mousePosition, null));
 					}
 					break;
 				}
@@ -214,10 +204,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					};
 					m_data.InputPoints.ForEach(raiseEventIfHit);
 					m_data.OutputPoints.ForEach(raiseEventIfHit);
-					if(!eventSent) {
-						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_CLICKED, 
-							this, Event.current.mousePosition, null));
-					}
 					break;
 				}
 			}
@@ -303,15 +289,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void DrawNode () {
-			var movedRect = GUI.Window(m_nodeWindowId, m_baseRect, DrawThisNode, string.Empty, m_nodeSyle);
-			SetPos(movedRect.position);
+			GUI.Window(m_nodeWindowId, m_baseRect, DrawThisNode, string.Empty, m_nodeSyle);
 		}
 
 		private void DrawThisNode(int id) {
 			UpdateNodeRect ();
-			HandleNodeEvent ();
+			HandleNodeMouseEvent ();
 			DrawNodeContents();
-			GUI.DragWindow();
 		}
 			
 		private void DrawNodeContents () {
