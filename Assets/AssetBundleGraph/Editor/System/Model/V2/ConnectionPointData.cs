@@ -41,6 +41,14 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			this.isInput = isInput;
 		}
 
+		public ConnectionPointData(ConnectionPointData p) {
+			this.id 		= p.id;
+			this.label		= p.label;
+			this.parentId 	= p.parentId;
+			this.isInput 	= p.isInput;
+			this.buttonRect = p.buttonRect;
+		}
+
 		public ConnectionPointData(V1.ConnectionPointData v1) {
 			this.id 	= v1.Id;
 			this.label	= v1.Label;

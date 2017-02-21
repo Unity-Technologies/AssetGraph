@@ -117,21 +117,26 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 		public NodeData(NodeData node, bool keepId = false) {
 
-			if(keepId) {
-				m_id = node.m_id;
-			} else {
-				m_id = Guid.NewGuid().ToString();
-			}
 			m_name = node.m_name;
 			m_x = node.m_x;
 			m_y = node.m_y;
 			m_nodeNeedsRevisit = false;
-
 			m_inputPoints  = new List<ConnectionPointData>();
 			m_outputPoints = new List<ConnectionPointData>();
 
-			Node n = node.m_nodeInstance.Object.Clone(this);
-			m_nodeInstance = new NodeInstance(n);
+			if(keepId) {
+				m_id = node.m_id;
+
+				node.InputPoints.ForEach(p => m_inputPoints.Add(new ConnectionPointData(p)));
+				node.OutputPoints.ForEach(p => m_outputPoints.Add(new ConnectionPointData(p)));
+
+				m_nodeInstance = new NodeInstance(node.m_nodeInstance);
+			} else {
+				m_id = Guid.NewGuid().ToString();
+
+				Node n = node.m_nodeInstance.Object.Clone(this);
+				m_nodeInstance = new NodeInstance(n);
+			}
 		}
 
 		public NodeData(V1.NodeData v1) {
@@ -161,7 +166,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		 * Duplicate this node with new guid.
 		 */ 
 		public NodeData Duplicate (bool keepId = false) {
-			return new NodeData(this);
+			return new NodeData(this, keepId);
 		}
 
 		public ConnectionPointData AddInputPoint(string label) {
@@ -214,8 +219,20 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 		public bool CompareIgnoreGUIChanges (NodeData rhs) {
 
-			if(m_nodeInstance != rhs.m_nodeInstance) {
+			if( m_nodeInstance == null && rhs.m_nodeInstance != null || 
+				m_nodeInstance != null && rhs.m_nodeInstance == null ) 
+			{
 				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Node Type");
+				return false;
+			}
+
+			if(m_nodeInstance.ClassName != rhs.m_nodeInstance.ClassName) {
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Node Type");
+				return false;
+			}
+
+			if(m_nodeInstance.Data != rhs.m_nodeInstance.Data) {
+				LogUtility.Logger.LogFormat(LogType.Log, "{0} and {1} was different: {2}", Name, rhs.Name, "Node Variable");
 				return false;
 			}
 
