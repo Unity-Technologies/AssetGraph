@@ -99,24 +99,33 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_nodeExceptions.Clear();
 			m_lastTarget = target;
 
-			PerformGraph oldGraph = m_performGraph[gIndex];
-			gIndex = (gIndex+1) %2;
-			PerformGraph newGraph = m_performGraph[gIndex];
-			newGraph.BuildGraphFromSaveData(m_targetGraph, target, oldGraph);
+			try {
+				PerformGraph oldGraph = m_performGraph[gIndex];
+				gIndex = (gIndex+1) %2;
+				PerformGraph newGraph = m_performGraph[gIndex];
+				newGraph.BuildGraphFromSaveData(m_targetGraph, target, oldGraph);
 
-			PerformGraph.Perform performFunc =
-				(Model.NodeData data, 
-					IEnumerable<PerformGraph.AssetGroups> incoming, 
-					IEnumerable<Model.ConnectionData> connectionsToOutput, 
-					PerformGraph.Output outputFunc) =>
-			{
-				DoNodeOperation(target, data, incoming, connectionsToOutput, outputFunc, isBuild, updateHandler);
-			};
+				PerformGraph.Perform performFunc =
+					(Model.NodeData data, 
+						IEnumerable<PerformGraph.AssetGroups> incoming, 
+						IEnumerable<Model.ConnectionData> connectionsToOutput, 
+						PerformGraph.Output outputFunc) =>
+				{
+					DoNodeOperation(target, data, incoming, connectionsToOutput, outputFunc, isBuild, updateHandler);
+				};
 
-			newGraph.VisitAll(performFunc, forceVisitAll);
+				newGraph.VisitAll(performFunc, forceVisitAll);
 
-			if(isBuild && m_nodeExceptions.Count == 0) {
-				Postprocess();
+				if(isBuild && m_nodeExceptions.Count == 0) {
+					Postprocess();
+				}
+			}
+			catch (NodeException e) {
+				m_nodeExceptions.Add(e);
+			}
+			// Minimize impact of errors happened during node operation
+			catch (Exception e) {
+				LogUtility.Logger.LogException(e);
 			}
 
 			m_isBuilding = false;

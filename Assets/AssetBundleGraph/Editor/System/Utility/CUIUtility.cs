@@ -91,7 +91,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					return;
 				}
 
-				AssetBundleGraphUtility.ExecuteGraph(target, graph);
+				var result = AssetBundleGraphUtility.ExecuteGraph(target, graph);
+
+				if(result.IsAnyIssueFound) {
+					LogUtility.Logger.Log("Building asset bundles terminated because of following errors. Please fix issues by opening editor.");
+					foreach(var e in result.Issues) {
+						LogUtility.Logger.LogError(LogUtility.kTag, e);
+					}
+				}
 
 			} catch(Exception e) {
 				LogUtility.Logger.LogError(LogUtility.kTag, e);

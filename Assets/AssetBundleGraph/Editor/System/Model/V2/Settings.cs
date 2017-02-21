@@ -13,8 +13,9 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const bool IGNORE_META = true;
 
 		public const string GUI_TEXT_MENU_OPEN = "Window/AssetBundleGraph/Open Graph Editor";
-		public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = "Window/AssetBundleGraph/Build Multiple Graphs...";
+		public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = "Window/AssetBundleGraph/Open Batch Build Window";
 		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
+		public const string GUI_TEXT_MENU_BATCHBUILD = "Window/AssetBundleGraph/Build Current Graph Selections";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Create Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
 		public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";

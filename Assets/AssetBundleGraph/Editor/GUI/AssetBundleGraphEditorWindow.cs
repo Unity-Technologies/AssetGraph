@@ -445,6 +445,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
+		public void OpenGraph (string path) {
+			Model.ConfigGraph graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
+			if(graph == null) {
+				throw new AssetBundleGraphException("Could not open graph:" + path);
+			}
+			OpenGraph(graph);
+		}
+
 		/**
 			open node graph
 		*/

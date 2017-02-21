@@ -14,6 +14,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	public class BatchBuildWindow : EditorWindow {
 
 		private static readonly string kPREFKEY_LASTSELECTEDCOLLECTION = "AssetBundles.GraphTool.LastSelectedCollection";
+		private static readonly string kPREFKEY_USECOLLECTIONSTATE     = "AssetBundles.GraphTool.UseCollection";
 
 		private class GraphEntry {
 			private string name;
@@ -57,8 +58,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private BatchBuildConfig.GraphCollection m_currentCollection;
 		private BuildTarget m_activeBuildTarget;
 		private Vector2 scrollPos;
+		private bool m_useGraphCollection;
 
 		private List<GraphEntry> m_graphsInProject;
+
+		private List<ExecuteGraphResult> m_result;
 
 		private static BatchBuildWindow s_window;
 
@@ -66,6 +70,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static void Open () {
 			GetWindow<BatchBuildWindow>();
 		}
+
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, false, 2+21)]
+		public static void BuildFromMenu() {
+			var w = GetWindow<BatchBuildWindow>() as BatchBuildWindow;
+			w.Build();
+		}
+
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, true, 2+21)]
+		public static bool BuildFromMenuValidator() {
+			var windows = Resources.FindObjectsOfTypeAll<BatchBuildWindow>();
+
+			return windows.Length > 0;
+		}
+
 
 		private void Init() {
 			LogUtility.Logger.filterLogType = LogType.Warning;
@@ -77,8 +95,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			m_activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
 
+			m_useGraphCollection = EditorPrefs.GetBool(kPREFKEY_USECOLLECTIONSTATE);
 			string lastCollection = EditorPrefs.GetString(kPREFKEY_LASTSELECTEDCOLLECTION);
-			m_currentCollection = BatchBuildConfig.GetConfig().Find(lastCollection);
+			var newCollection = BatchBuildConfig.GetConfig().Find(lastCollection);
+
+			SelectGraphCollection(newCollection);
 
 			scrollPos = new Vector2(0f,0f);
 			UpdateGraphList();
@@ -109,10 +130,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					for(int i = 0; i < m_graphsInProject.Count; ++i) {
 						var c = m_graphsInProject[i];
-						var v = EditorGUILayout.ToggleLeft(c.Name, c.Selected);
-						if(v != c.Selected) {
-							c.Selected = v;
-							UpdateCollection();
+
+						using(new EditorGUILayout.HorizontalScope()) {
+							var v = EditorGUILayout.ToggleLeft(c.Name, c.Selected);
+							if(v != c.Selected) {
+								c.Selected = v;
+								UpdateCollection();
+							}
+							GUILayout.FlexibleSpace();
+
+							if(m_result != null) {
+								var r = m_result.Find(x => x.GraphAssetPath == c.AssetPath);
+								if(r != null && r.IsAnyIssueFound) {
+									GUILayout.Label("Failed", "ErrorLabel");
+								}
+							}
+
+							if(GUILayout.Button("Edit", GUILayout.Width(40f))) {
+								var w = GetWindow<AssetBundleGraphEditorWindow>();
+								w.OpenGraph(c.AssetPath);
+							}
 						}
 					}
 				}
@@ -126,19 +163,39 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			m_graphsInProject.ForEach(v => v.Selected = false);
 
-			foreach(var guid in c.GraphGUIDs) {
-				var entry = m_graphsInProject.Find(v => v.Guid == guid);
-				entry.Selected = true;
+			if(c != null) {
+				foreach(var guid in c.GraphGUIDs) {
+					var entry = m_graphsInProject.Find(v => v.Guid == guid);
+					entry.Selected = true;
+				}
+				EditorPrefs.SetString(kPREFKEY_LASTSELECTEDCOLLECTION, m_currentCollection.Name);
 			}
 		}
 
-		private BatchBuildConfig.GraphCollection CreateNewCollectionFromCurrent() {
+		private BatchBuildConfig.GraphCollection CreateNewCollection(bool applyCurrent) {
 
-			var collection = new BatchBuildConfig.GraphCollection("New Collection");
+			string newConfigName = null;
+			bool goodNameFound = false;
+			BatchBuildConfig.GraphCollection collection = null;
+			int count = 0;
+			while(!goodNameFound) {
+				string space = count == 0 ? "" : " ";
+				string countName = count == 0 ? "" : count.ToString();
 
-			foreach(var v in m_graphsInProject) {
-				if(v.Selected) {
-					collection.GraphGUIDs.Add(v.Guid);
+				newConfigName = string.Format("New Collection{0}{1}", space, countName);
+				collection = BatchBuildConfig.GetConfig().Find(newConfigName);
+				goodNameFound = collection == null;
+				++count;
+			}
+
+			collection = new BatchBuildConfig.GraphCollection(newConfigName);
+
+
+			if(applyCurrent) {
+				foreach(var v in m_graphsInProject) {
+					if(v.Selected) {
+						collection.GraphGUIDs.Add(v.Guid);
+					}
 				}
 			}
 
@@ -165,42 +222,55 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			string currentCollectionName = (m_currentCollection == null)? "" : m_currentCollection.Name;
 
-			GUILayout.Label("Build Config Settings", new GUIStyle("BoldLabel"));
-			GUILayout.Space(4f);
-			using(new EditorGUI.DisabledScope(m_currentCollection == null)) {
-				var newName = EditorGUILayout.TextField("Name", currentCollectionName);
-				if(newName != currentCollectionName) {
-					currentCollectionName = newName;
-					m_currentCollection.Name = newName;
-				}
+			m_useGraphCollection = EditorGUILayout.ToggleLeft("Use Graph Collection", m_useGraphCollection, new GUIStyle("BoldLabel"));
+
+			if(m_useGraphCollection && m_currentCollection == null) {
+				string lastCollection = EditorPrefs.GetString(kPREFKEY_LASTSELECTEDCOLLECTION);
+				m_currentCollection = BatchBuildConfig.GetConfig().Find(lastCollection);
+			} 
+			if(GUI.changed) {
+				EditorPrefs.SetBool(kPREFKEY_USECOLLECTIONSTATE, m_useGraphCollection);
 			}
-			using(new EditorGUILayout.HorizontalScope()) {
-				if (GUILayout.Button(new GUIContent(currentCollectionName, "Select Collection"), EditorStyles.popup)) {
-					GenericMenu menu = new GenericMenu();
 
-					foreach(var c in BatchBuildConfig.GetConfig().GraphCollections) {
+			using(new EditorGUI.DisabledScope(!m_useGraphCollection)) {
+				GUILayout.Space(4f);
+				using(new EditorGUILayout.HorizontalScope()) {
+					if (GUILayout.Button(new GUIContent(currentCollectionName, "Select Collection"), EditorStyles.popup)) {
+						GenericMenu menu = new GenericMenu();
 
-						menu.AddItem(new GUIContent(c.Name), false, () => {
-							SelectGraphCollection(c);
+						foreach(var c in BatchBuildConfig.GetConfig().GraphCollections) {
+							var collection = c;
+							menu.AddItem(new GUIContent(collection.Name), false, () => {
+								SelectGraphCollection(collection);
+							});
+						}
+
+						menu.AddSeparator("");
+						menu.AddItem(new GUIContent("Create New..."), false, () => {
+
+							var newCollection = CreateNewCollection(false);
+							BatchBuildConfig.GetConfig().GraphCollections.Add(newCollection);
+							BatchBuildConfig.SetConfigDirty();
+							m_currentCollection = newCollection;
 						});
+
+						menu.DropDown(new Rect(4f, 80f, 0f, 0f));
 					}
-
-					menu.AddSeparator("");
-					menu.AddItem(new GUIContent("Create New..."), false, () => {
-
-						var newCollection = CreateNewCollectionFromCurrent();
-						BatchBuildConfig.GetConfig().GraphCollections.Add(newCollection);
-						m_currentCollection = newCollection;
-					});
-
-					menu.DropDown(new Rect(4f, 90f, 0f, 0f));
+					if(GUILayout.Button("Delete", GUILayout.Width(50f))) {
+						BatchBuildConfig.GetConfig().GraphCollections.Remove(m_currentCollection);
+						BatchBuildConfig.SetConfigDirty();
+						m_currentCollection = null;
+					}
 				}
-				if(GUILayout.Button("Delete", GUILayout.Width(50f))) {
-					BatchBuildConfig.GetConfig().GraphCollections.Remove(m_currentCollection);
-					m_currentCollection = null;
+				using(new EditorGUI.DisabledScope(m_currentCollection == null)) {
+					var newName = EditorGUILayout.TextField("Name", currentCollectionName);
+					if(newName != currentCollectionName) {
+						currentCollectionName = newName;
+						m_currentCollection.Name = newName;
+						BatchBuildConfig.SetConfigDirty();
+					}
 				}
 			}
-
 		}
 
 		public void OnEnable () {
@@ -239,15 +309,39 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				GUILayout.Space(10f);
 
-				if(GUILayout.Button("Build")) {
-					var collection = m_currentCollection;
-					if(collection == null) {
-						collection = CreateNewCollectionFromCurrent();
-					}
+				if(DidLastBuildFailed) {
+					EditorGUILayout.HelpBox("Last batch build failed.", MessageType.Error);
+				}
 
-					AssetBundleGraphUtility.ExecuteGraphCollection(m_activeBuildTarget, collection);
+				if(GUILayout.Button("Build")) {
+					EditorApplication.ExecuteMenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD);
 				}
 				GUILayout.Space(8f);
+			}
+		}
+
+		private void Build() {
+			m_result = null;
+			var collection = m_currentCollection;
+			if(!m_useGraphCollection || collection == null) {
+				collection = CreateNewCollection(true);
+			}
+
+			m_result = AssetBundleGraphUtility.ExecuteGraphCollection(m_activeBuildTarget, collection);
+		}
+
+		private bool DidLastBuildFailed {
+			get {
+				if(m_result == null) {
+					return false;
+				}
+
+				foreach(var r in m_result) {
+					if(r.IsAnyIssueFound) {
+						return true;
+					}
+				}
+				return false;
 			}
 		}
 
