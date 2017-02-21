@@ -121,7 +121,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						return;
 					}
 
-					var result = AssetBundleGraphUtility.ExecuteGraphCollection(c, graph);
+					var result = AssetBundleGraphUtility.ExecuteGraphCollection(target, c);
 
 					foreach(var r in result) {
 						if(r.IsAnyIssueFound) {
