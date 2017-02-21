@@ -51,9 +51,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// do nothing
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new ImportSetting();
 
+			newData.AddDefaultInputPoint();
+			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
 

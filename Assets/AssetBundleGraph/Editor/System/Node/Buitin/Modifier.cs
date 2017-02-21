@@ -39,10 +39,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_instance = new SerializableMultiTargetInstance(v1.ScriptClassName, v1.InstanceData);
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Modifier();
 			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
 
+			newData.AddDefaultInputPoint();
+			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
 

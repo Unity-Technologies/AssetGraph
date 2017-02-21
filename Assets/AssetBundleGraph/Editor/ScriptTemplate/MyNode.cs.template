@@ -31,12 +31,16 @@ public class MyNode : Node {
 	}
 
 	public override void Initialize(Model.NodeData data) {
+		m_myValue = new SerializableMultiTargetString();
 		data.AddDefaultInputPoint();
 		data.AddDefaultOutputPoint();
 	}
 
-	public override Node Clone() {
+	public override Node Clone(Model.NodeData newData) {
 		var newNode = new MyNode();
+		newNode.m_myValue = new SerializableMultiTargetString(m_myValue);
+		newData.AddDefaultInputPoint();
+		newData.AddDefaultOutputPoint();
 		return newNode;
 	}
 

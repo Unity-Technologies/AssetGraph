@@ -71,6 +71,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public T Clone() {
+			Save();
 			return Deserialize();
 		}
 

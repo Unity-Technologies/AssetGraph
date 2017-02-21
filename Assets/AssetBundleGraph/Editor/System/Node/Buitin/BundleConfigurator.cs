@@ -85,12 +85,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new BundleConfigurator();
 			newNode.m_bundleNameTemplate = new SerializableMultiTargetString(m_bundleNameTemplate);
 			newNode.m_variants = new List<Variant>(m_variants.Count);
-			m_variants.ForEach(v => newNode.m_variants.Add(new Variant(v)));
 			newNode.m_useGroupAsVariants = m_useGroupAsVariants;
+
+			newData.AddDefaultInputPoint();
+			newData.AddDefaultOutputPoint();
+
+			foreach(var v in m_variants) {
+				newNode.AddVariant(newData, v.Name);
+			}
 
 			return newNode;
 		}

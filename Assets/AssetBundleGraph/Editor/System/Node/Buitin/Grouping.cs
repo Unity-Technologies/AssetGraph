@@ -39,10 +39,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 			m_groupingKeyword = new SerializableMultiTargetString(v1.GroupingKeywords);
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Grouping();
 			newNode.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
 
+			newData.AddDefaultInputPoint();
+			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
 

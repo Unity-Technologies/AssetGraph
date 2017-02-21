@@ -44,10 +44,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_loadPath = new SerializableMultiTargetString(v1.LoaderLoadPath);
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Loader();
 			newNode.m_loadPath = new SerializableMultiTargetString(m_loadPath);
 
+			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
 

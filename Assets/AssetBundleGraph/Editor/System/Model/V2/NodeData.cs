@@ -115,6 +115,25 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_nodeInstance.Object.Initialize(this);
 		}
 
+		public NodeData(NodeData node, bool keepId = false) {
+
+			if(keepId) {
+				m_id = node.m_id;
+			} else {
+				m_id = Guid.NewGuid().ToString();
+			}
+			m_name = node.m_name;
+			m_x = node.m_x;
+			m_y = node.m_y;
+			m_nodeNeedsRevisit = false;
+
+			m_inputPoints  = new List<ConnectionPointData>();
+			m_outputPoints = new List<ConnectionPointData>();
+
+			Node n = node.m_nodeInstance.Object.Clone(this);
+			m_nodeInstance = new NodeInstance(n);
+		}
+
 		public NodeData(V1.NodeData v1) {
 			//TODO:
 			m_id = v1.Id;
@@ -142,15 +161,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		 * Duplicate this node with new guid.
 		 */ 
 		public NodeData Duplicate (bool keepId = false) {
-
-			var newData = new NodeData(m_name, m_nodeInstance.Clone(), m_x, m_y);
-			newData.m_nodeNeedsRevisit = false;
-
-			if(keepId) {
-				newData.m_id = m_id;
-			}
-
-			return newData;
+			return new NodeData(this);
 		}
 
 		public ConnectionPointData AddInputPoint(string label) {

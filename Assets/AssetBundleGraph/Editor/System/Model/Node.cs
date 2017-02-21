@@ -42,7 +42,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		/**
 		 * Create duplicated copy of this Node.
 		 */ 
-		public abstract Node Clone();
+		public abstract Node Clone(Model.NodeData newData);
 
 		/**
 		 * Test if input point is valid on this Node.

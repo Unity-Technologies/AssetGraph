@@ -63,10 +63,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_exportOption = new SerializableMultiTargetInt(v1.ExporterExportOption);
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Exporter();
 			newNode.m_exportPath = new SerializableMultiTargetString(m_exportPath);
 			newNode.m_exportOption = new SerializableMultiTargetInt(m_exportOption);
+
+			newData.AddDefaultInputPoint();
 
 			return newNode;
 		}

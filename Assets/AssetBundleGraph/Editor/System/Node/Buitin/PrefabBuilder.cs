@@ -54,11 +54,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_replacePrefabOptions = v1.ReplacePrefabOptions;
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new PrefabBuilder();
 			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
 
+			newData.AddDefaultInputPoint();
+			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
 

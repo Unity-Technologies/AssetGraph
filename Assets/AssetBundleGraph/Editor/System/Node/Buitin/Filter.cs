@@ -85,10 +85,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Filter();
 			newNode.m_filter = new List<FilterEntry>(m_filter.Count);
-			m_filter.ForEach(e => newNode.m_filter.Add(new FilterEntry(e)));
+
+			newData.AddDefaultInputPoint();
+
+			foreach(var f in m_filter) {
+				newNode.AddFilterCondition(newData, f.Instance.Object);
+			}
 
 			return newNode;
 		}

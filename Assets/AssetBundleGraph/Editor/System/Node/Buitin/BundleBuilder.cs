@@ -53,9 +53,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_enabledBundleOptions = new SerializableMultiTargetInt(v1.BundleBuilderBundleOptions);
 		}
 			
-		public override Node Clone() {
+		public override Node Clone(Model.NodeData newData) {
 			var newNode = new BundleBuilder();
 			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);
+
+			newData.AddDefaultInputPoint();
+			newData.AddDefaultOutputPoint();
 
 			return newNode;
 		}
