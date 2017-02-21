@@ -100,7 +100,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(result.IsAnyIssueFound) {
 						LogUtility.Logger.Log("Building asset bundles terminated because of following errors. Please fix issues by opening editor.");
 						foreach(var e in result.Issues) {
-							LogUtility.Logger.LogError(LogUtility.kTag, e);
+							LogUtility.Logger.LogError(LogUtility.kTag, e.reason);
 						}
 					}
 				}
@@ -126,7 +126,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					foreach(var r in result) {
 						if(r.IsAnyIssueFound) {
 							foreach(var e in r.Issues) {
-								LogUtility.Logger.LogError(LogUtility.kTag, r.Graph.name + ":" + e);
+								LogUtility.Logger.LogError(LogUtility.kTag, r.Graph.name + ":" + e.reason);
 							}
 						}
 					}

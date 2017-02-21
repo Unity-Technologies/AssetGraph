@@ -236,7 +236,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 
 					} catch(Exception e) {
-						LogUtility.Logger.LogError(LogUtility.kTag, e.ToString());
+						LogUtility.Logger.LogError(LogUtility.kTag, e);
 					}
 				}
 			}

@@ -106,6 +106,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private void UpdateGraphList() {
+
+			if(m_graphsInProject == null) {
+				return;
+			}
+
 			var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
 			var newList = new List<GraphEntry>(guids.Length);
 
@@ -328,6 +333,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			m_result = AssetBundleGraphUtility.ExecuteGraphCollection(m_activeBuildTarget, collection);
+
+			foreach(var r in m_result) {
+				if(r.IsAnyIssueFound) {
+					foreach(var e in r.Issues) {
+						
+						LogUtility.Logger.LogError(LogUtility.kTag, r.Graph.name + ":" + e.reason);
+					}
+				}
+			}
 		}
 
 		private bool DidLastBuildFailed {
