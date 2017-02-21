@@ -73,33 +73,64 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 
 				int graphIndex = arguments.FindIndex(a => a == "-graph");
+				int collectionIndex = arguments.FindIndex(a => a == "-collection");
+
+				if(graphIndex >= 0 && collectionIndex >= 0) {
+					LogUtility.Logger.Log("-graph and -collection can not be used at once. Aborting...");
+					return;
+				}
 
 				Model.ConfigGraph graph = null;
 
 				if(graphIndex >= 0) {
-					var graphPath = arguments[targetIndex+1];
+					var graphPath = arguments[graphIndex+1];
 					LogUtility.Logger.Log("Graph path:"+ graphPath);
 
 					graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphPath);
-				}
 
+					LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
 
-				LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
+					if (graph == null) {
+						LogUtility.Logger.Log("Graph data not found. To specify graph to execute, use -graph [path]. Aborting...");
+						return;
+					}
 
-				if (graph == null) {
-					LogUtility.Logger.Log("Graph data not found. To specify graph to execute, use -graph [path]. Aborting...");
-					return;
-				}
+					var result = AssetBundleGraphUtility.ExecuteGraph(target, graph);
 
-				var result = AssetBundleGraphUtility.ExecuteGraph(target, graph);
-
-				if(result.IsAnyIssueFound) {
-					LogUtility.Logger.Log("Building asset bundles terminated because of following errors. Please fix issues by opening editor.");
-					foreach(var e in result.Issues) {
-						LogUtility.Logger.LogError(LogUtility.kTag, e);
+					if(result.IsAnyIssueFound) {
+						LogUtility.Logger.Log("Building asset bundles terminated because of following errors. Please fix issues by opening editor.");
+						foreach(var e in result.Issues) {
+							LogUtility.Logger.LogError(LogUtility.kTag, e);
+						}
 					}
 				}
 
+				if(collectionIndex >= 0) {
+					var collectionName = arguments[collectionIndex+1];
+					LogUtility.Logger.Log("Collection Name:"+ collectionName);
+
+					LogUtility.Logger.Log("AssetReference bundle building for:" + BuildTargetUtility.TargetToHumaneString(target));
+
+					if (collectionName == null) {
+						LogUtility.Logger.Log("Collection name not specified. To specify collection to execute, use -collection [name]. Aborting...");
+						return;
+					}
+					BatchBuildConfig.GraphCollection c = BatchBuildConfig.GetConfig().Find(collectionName);
+					if (c == null) {
+						LogUtility.Logger.Log("Collection not found. Please open project and configure graph collection. Aborting...");
+						return;
+					}
+
+					var result = AssetBundleGraphUtility.ExecuteGraphCollection(c, graph);
+
+					foreach(var r in result) {
+						if(r.IsAnyIssueFound) {
+							foreach(var e in r.Issues) {
+								LogUtility.Logger.LogError(LogUtility.kTag, r.Graph.name + ":" + e);
+							}
+						}
+					}
+				}
 			} catch(Exception e) {
 				LogUtility.Logger.LogError(LogUtility.kTag, e);
 				LogUtility.Logger.LogError(LogUtility.kTag, "Building asset bundles terminated due to unexpected error.");
