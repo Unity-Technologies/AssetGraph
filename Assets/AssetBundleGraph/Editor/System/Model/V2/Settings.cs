@@ -50,6 +50,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string SETTINGTEMPLATE_FILE_MODEL		= SETTING_TEMPLATE_PATH + "setting.fbx";
 		public const string SETTINGTEMPLATE_FILE_AUDIO		= SETTING_TEMPLATE_PATH + "setting.wav";
 		public const string SETTINGTEMPLATE_FILE_TEXTURE	= SETTING_TEMPLATE_PATH + "setting.png";
+		public const string SETTINGTEMPLATE_FILE_VIDEO		= SETTING_TEMPLATE_PATH + "setting.m4v";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";

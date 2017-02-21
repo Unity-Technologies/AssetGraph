@@ -19,6 +19,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			typeof(TextureImporter).ToString(),
 			typeof(ModelImporter).ToString(),
 			typeof(AudioImporter).ToString(),
+			#if UNITY_5_6
+			typeof(VideoClipImporter).ToString(),
+			#endif
 			
 			// others(Assets)
 			typeof(TextAsset).ToString(),
@@ -81,6 +84,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			".cs",
 			".sh",
 			".js",
+			".zip",
+			".tar",
+			".tgz",
+			#if UNITY_5_6
+			#else
+			".m4v",
+			#endif
 		};
 
 		private static readonly List<Type> IgnoreTypes = new List<Type> {
@@ -141,7 +151,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			switch (importerTypeStr) {
 				case "UnityEditor.TextureImporter":
 				case "UnityEditor.ModelImporter":
-				case "UnityEditor.AudioImporter": {
+				case "UnityEditor.AudioImporter": 
+				#if UNITY_5_6
+				case "UnityEditor.VideoClipImporter": 
+				#endif
+				{
 					return assumedImporterType;
 				}
 			}

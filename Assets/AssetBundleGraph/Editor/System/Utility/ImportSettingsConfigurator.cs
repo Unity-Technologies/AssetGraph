@@ -30,7 +30,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 			else if(importer.GetType() == typeof(UnityEditor.ModelImporter)) {
 				return IsEqual(importer as UnityEditor.ModelImporter);
-			} else {
+			}
+			#if UNITY_5_6
+			else if(importer.GetType() == typeof(UnityEditor.VideoClipImporter)) {
+				return IsEqual(importer as UnityEditor.VideoClipImporter);
+			}
+			#endif
+			else {
 				throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
 			}
 		}
@@ -54,10 +60,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 			else if(importer.GetType() == typeof(UnityEditor.ModelImporter)) {
 				OverwriteImportSettings(importer as UnityEditor.ModelImporter);
-			} else {
+			} 
+			#if UNITY_5_6
+			else if(importer.GetType() == typeof(UnityEditor.VideoClipImporter)) {
+				OverwriteImportSettings(importer as UnityEditor.VideoClipImporter);
+			}
+			#endif
+			else {
 				throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
 			}
 		}
+
+		#region TextureImporter
 
 		private void OverwriteImportSettings (TextureImporter importer) {
 			var reference = referenceImporter as TextureImporter;
@@ -176,6 +190,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return true;
 		}
 
+		#endregion
+
+		#region AudioImporter
+
 		private void OverwriteImportSettings (AudioImporter importer) {
 			var reference = referenceImporter as AudioImporter;
 			UnityEngine.Assertions.Assert.IsNotNull(reference);
@@ -203,6 +221,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			return true;
 		}
+
+		#endregion
+
+		#region ModelImporter
 
 		private void OverwriteImportSettings (ModelImporter importer) {
 			var reference = referenceImporter as ModelImporter;
@@ -403,5 +425,82 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			return true;
 		}
+
+		#endregion
+
+		#region VideoClipImporter
+		#if UNITY_5_6
+
+		public bool IsEqual (VideoClipImporter target) {
+			VideoClipImporter reference = referenceImporter as VideoClipImporter;
+			UnityEngine.Assertions.Assert.IsNotNull(reference);
+
+			if (target.defaultTargetSettings	 != reference.defaultTargetSettings) 	return false;
+			if (target.deinterlaceMode			 != reference.deinterlaceMode) 			return false;
+			if (target.flipHorizontal			 != reference.flipHorizontal) 			return false;
+			if (target.flipVertical			 	 != reference.flipVertical) 			return false;
+			if (target.frameCount				 != reference.frameCount) 				return false;
+			if (target.frameRate				 != reference.frameRate) 				return false;
+			if (target.importAudio				 != reference.importAudio) 				return false;
+			if (target.isPlayingPreview		 	 != reference.isPlayingPreview) 		return false;
+			if (target.keepAlpha				 != reference.keepAlpha) 				return false;
+			if (target.linearColor				 != reference.linearColor) 				return false;
+			if (target.outputFileSize			 != reference.outputFileSize) 			return false;
+			if (target.quality					 != reference.quality) 					return false;
+			if (target.sourceAudioTrackCount	 != reference.sourceAudioTrackCount) 	return false;
+			if (target.sourceFileSize			 != reference.sourceFileSize) 			return false;
+			if (target.sourceHasAlpha			 != reference.sourceHasAlpha) 			return false;
+			if (target.useLegacyImporter		 != reference.useLegacyImporter) 		return false;
+
+			return true;
+		}
+
+		private void OverwriteImportSettings (VideoClipImporter importer) {
+			var reference = referenceImporter as VideoClipImporter;
+			UnityEngine.Assertions.Assert.IsNotNull(reference);
+
+			/*
+			defaultTargetSettings	Default values for the platform-specific import settings.
+			deinterlaceMode			Images are deinterlaced during transcode. This tells the importer how to interpret fields in the source, if any.
+			flipHorizontal			Apply a horizontal flip during import.
+			flipVertical			Apply a vertical flip during import.
+			frameCount				Number of frames in the clip.
+			frameRate				Frame rate of the clip.
+			importAudio				Import audio tracks from source file.
+			isPlayingPreview		Whether the preview is currently playing.
+			keepAlpha				Whether to keep the alpha from the source into the transcoded clip.
+			linearColor				Used in legacy import mode. Same as MovieImport.linearTexture.
+			outputFileSize			Size in bytes of the file once imported.
+			quality					Used in legacy import mode. Same as MovieImport.quality.
+			sourceAudioTrackCount	Number of audio tracks in the source file.
+			sourceFileSize			Size in bytes of the file before importing.
+			sourceHasAlpha			True if the source file has a channel for per-pixel transparency.
+			useLegacyImporter		Whether to import a MovieTexture (legacy) or a VideoClip.
+			*/
+
+			importer.defaultTargetSettings	= reference.defaultTargetSettings;
+			importer.deinterlaceMode		= reference.deinterlaceMode;
+			importer.flipHorizontal			= reference.flipHorizontal;
+			importer.flipVertical			= reference.flipVertical;
+			importer.importAudio			= reference.importAudio;
+			importer.keepAlpha				= reference.keepAlpha;
+			importer.linearColor			= reference.linearColor;
+			importer.quality				= reference.quality;
+			importer.useLegacyImporter		= reference.useLegacyImporter;
+
+			/* read only */
+			/* 
+			importer.frameCount				
+			importer.frameRate				
+			importer.isPlayingPreview		
+			importer.outputFileSize			
+			importer.sourceAudioTrackCount	
+			importer.sourceFileSize			
+			importer.sourceHasAlpha			
+			*/
+		}
+
+		#endif
+		#endregion
 	}
 }

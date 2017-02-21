@@ -356,9 +356,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			if(unsupportedType != null) {
 				if(expectedType != null) {
-					if(expectedType == typeof(UnityEditor.TextureImporter) 	||
-						expectedType == typeof(UnityEditor.ModelImporter) 	||
-						expectedType == typeof(UnityEditor.AudioImporter) 
+					if(expectedType == typeof(UnityEditor.TextureImporter) 	
+						|| expectedType == typeof(UnityEditor.ModelImporter) 	
+						|| expectedType == typeof(UnityEditor.AudioImporter) 
+						#if UNITY_5_6
+						|| expectedType == typeof(UnityEditor.VideoClipImporter) 	
+						#endif
 					) {
 						// good. do nothing
 					} else {

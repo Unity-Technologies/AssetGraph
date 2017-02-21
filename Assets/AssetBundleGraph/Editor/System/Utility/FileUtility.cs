@@ -192,6 +192,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if(a.filterType == typeof(TextureImporter)) {
 				return Model.Settings.SETTINGTEMPLATE_FILE_TEXTURE;
 			}
+			if(a.filterType == typeof(VideoClipImporter)) {
+				return Model.Settings.SETTINGTEMPLATE_FILE_VIDEO;
+			}
 			return null;
 		}
 	}
