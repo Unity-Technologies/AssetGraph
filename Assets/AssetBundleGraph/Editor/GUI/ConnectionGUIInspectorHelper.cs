@@ -11,6 +11,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public ConnectionGUI connectionGUI;
 		public Dictionary<string, List<AssetReference>> assetGroups;
 		public List<bool> foldouts;
+		public bool fileNameOnly;
+		public string filterPattern;
 
 		public void UpdateInspector (ConnectionGUI con, Dictionary<string, List<AssetReference>> assetGroups) {
 			this.connectionGUI = con;
