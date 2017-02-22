@@ -1119,7 +1119,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if( Selection.activeObject is NodeGUIInspectorHelper || Selection.activeObject is ConnectionGUIInspectorHelper) {
 						Selection.activeObject = null;
 					}
-					Event.current.Use();
 					break;
 				}
 
