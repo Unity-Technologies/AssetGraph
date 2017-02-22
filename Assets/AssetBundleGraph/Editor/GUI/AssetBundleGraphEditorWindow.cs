@@ -158,8 +158,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetBundles.GraphTool.LastEditedGraph";
 		static readonly int kDragNodesControlID = "AssetBundleGraphTool.HandleDragNodes".GetHashCode();
 
-		private static AssetBundleGraphEditorWindow s_window;
-
 		private Texture2D SelectionTexture {
 			get{
 				if(_selectionTex == null) {
@@ -193,13 +191,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		 */ 
 		private static AssetBundleGraphEditorWindow Window {
 			get {
-				if(s_window == null) {
-					AssetBundleGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetBundleGraphEditorWindow>();
-					if(windows.Length > 0) {
-						s_window = windows[0];
-					}
+				AssetBundleGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetBundleGraphEditorWindow>();
+				if(windows.Length > 0) {
+					return windows[0];
 				}
-				return s_window;
+
+				return null;
 			}
 		}
 

@@ -10,19 +10,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
 		{
 			LogUtility.Logger.Log("[OnPostprocessAllAssets]");
-			AssetBundleGraphEditorWindow.NotifyAssetsReimportedToAllWindows(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 
 			foreach (string str in deletedAssets) 
 			{
-				LogUtility.Logger.Log("Deleted Asset: " + str);
 				AssetReferenceDatabase.DeleteReference(str);
 			}
 
 			for (int i=0; i<movedAssets.Length; i++)
 			{
-				LogUtility.Logger.Log("Moved Asset: " + movedAssets[i] + " from: " + movedFromAssetPaths[i]);
 				AssetReferenceDatabase.MoveReference(movedFromAssetPaths[i], movedAssets[i]);
 			}
+
+			AssetBundleGraphEditorWindow.NotifyAssetsReimportedToAllWindows(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 		}
 	}
 }
