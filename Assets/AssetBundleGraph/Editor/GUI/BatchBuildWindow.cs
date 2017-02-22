@@ -171,7 +171,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if(c != null) {
 				foreach(var guid in c.GraphGUIDs) {
 					var entry = m_graphsInProject.Find(v => v.Guid == guid);
-					entry.Selected = true;
+					if(entry != null) {
+						entry.Selected = true;
+					}
 				}
 				EditorPrefs.SetString(kPREFKEY_LASTSELECTEDCOLLECTION, m_currentCollection.Name);
 			}
