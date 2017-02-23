@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class CUIUtility {
 
-		private static readonly string kCommandMethod = "AssetBundleGraph.CUIUtility.BuildFromCommandline";
+		private static readonly string kCommandMethod = "UnityEngine.AssetBundles.GraphTool.CUIUtility.BuildFromCommandline";
 
 		private static readonly string kCommandStr = 
 			"\"{0}\" -batchmode -quit -projectPath \"{1}\" -logFile abbuild.log -executeMethod {2} {3}";
