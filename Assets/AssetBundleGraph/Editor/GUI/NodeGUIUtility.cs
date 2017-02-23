@@ -196,6 +196,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					{BuildTargetGroup.Nintendo3DS, 	"BuildSettings.N3DS.Small"},
 					{BuildTargetGroup.PS3,			"BuildSettings.PS3.Small"}
 					#endif
+					#if UNITY_5_5_OR_NEWER
+					,
+					{BuildTargetGroup.N3DS, 		"BuildSettings.N3DS.Small"}
+					#endif
+					#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+					,
+					{BuildTargetGroup.Facebook, 	"BuildSettings.Facebook.Small"},
+					{BuildTargetGroup.Switch, 		"BuildSettings.Switch.Small"}
+					#endif
 				};
 
 				buttons.Add(new PlatformButton(new GUIContent("Default", "Default settings"), BuildTargetGroup.Unknown));

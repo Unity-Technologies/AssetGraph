@@ -200,8 +200,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			importer.defaultSampleSettings = reference.defaultSampleSettings;
 			importer.forceToMono = reference.forceToMono;
-			importer.loadInBackground = reference.loadInBackground;
 			importer.preloadAudioData = reference.preloadAudioData;
+
+			// using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
+			#if !UNITY_5_6_OR_NEWER
+			importer.loadInBackground = reference.loadInBackground;
+			#endif
 		}
 
 		private bool IsEqual (AudioImporter target) {
@@ -216,7 +220,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.defaultSampleSettings.sampleRateSetting != reference.defaultSampleSettings.sampleRateSetting) return false;
 
 			if (target.forceToMono != reference.forceToMono) return false;
+			// using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
+			#if !UNITY_5_6_OR_NEWER
 			if (target.loadInBackground != reference.loadInBackground) return false;
+			#endif
 			if (target.preloadAudioData != reference.preloadAudioData) return false;
 
 			return true;

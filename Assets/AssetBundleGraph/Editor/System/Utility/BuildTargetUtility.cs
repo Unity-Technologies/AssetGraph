@@ -68,6 +68,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.XBOX360:
 				return "Xbox 360";
 #endif
+#if UNITY_5_5_OR_NEWER
+				case BuildTarget.N3DS:
+				return "Nintendo 3DS";
+#endif
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+			case BuildTarget.Switch:
+				return "Nintendo Switch";
+#endif
 
 
 			default:
@@ -122,6 +130,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.XBOX360:
 			return "Xbox360";
 #endif
+#if UNITY_5_5_OR_NEWER
+			case BuildTarget.N3DS:
+			return "N3DS";
+#endif
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+			case BuildTarget.Switch:
+			return "Switch";
+#endif
 
 			default:
 			return t.ToString() + "(deprecated)";
@@ -169,6 +185,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return "PlayStation 3";
 			case BuildTargetGroup.XBOX360:
 				return "Xbox 360";
+#endif
+#if UNITY_5_5_OR_NEWER
+			case BuildTargetGroup.N3DS:
+				return "Nintendo 3DS";
+#endif
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+			case BuildTargetGroup.Facebook:
+				return "Facebook";
+			case BuildTargetGroup.Switch:
+				return "Nintendo Switch";
 #endif
 			default:
 				return g.ToString() + "(deprecated)";
@@ -224,6 +250,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.XBOX360:
 				return BuildTargetGroup.XBOX360;
 #endif
+#if UNITY_5_5_OR_NEWER
+			case BuildTarget.N3DS:
+				return BuildTargetGroup.N3DS;
+#endif
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+			case BuildTarget.Switch:
+				return BuildTargetGroup.Switch;
+#endif
 			default:
 				return BuildTargetGroup.Unknown;
 			}
@@ -265,6 +299,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return BuildTarget.PS3;
 			case BuildTargetGroup.XBOX360:
 				return BuildTarget.XBOX360;
+#endif
+#if UNITY_5_5_OR_NEWER
+			case BuildTargetGroup.N3DS:
+				return BuildTarget.N3DS;
+#endif
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+			case BuildTargetGroup.Switch:
+				return BuildTarget.Switch;
+			case BuildTargetGroup.Facebook:
+				return BuildTarget.StandaloneWindows; // TODO: Facebook can be StandardWindows or WebGL
 #endif
 			default:
 				// temporarily assigned for default value (BuildTargetGroup.Unknown)
