@@ -22,6 +22,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		[SerializeField] private SerializableMultiTargetString m_exportPath;
 		[SerializeField] private SerializableMultiTargetInt m_exportOption;
+		[SerializeField] private SerializableMultiTargetInt m_flattenDir;
 
 		public override string ActiveStyle {
 			get {
@@ -54,6 +55,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			//Take care of this with Initialize(NodeData)
 			m_exportPath = new SerializableMultiTargetString();
 			m_exportOption = new SerializableMultiTargetInt();
+			m_flattenDir = new SerializableMultiTargetInt();
 
 			data.AddDefaultInputPoint();
 		}
@@ -61,12 +63,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 			m_exportPath = new SerializableMultiTargetString (v1.ExporterExportPath);
 			m_exportOption = new SerializableMultiTargetInt(v1.ExporterExportOption);
+			m_flattenDir = new SerializableMultiTargetInt();
 		}
 
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Exporter();
 			newNode.m_exportPath = new SerializableMultiTargetString(m_exportPath);
 			newNode.m_exportOption = new SerializableMultiTargetInt(m_exportOption);
+			newNode.m_flattenDir = new SerializableMultiTargetInt(m_flattenDir);
 
 			newData.AddDefaultInputPoint();
 
@@ -93,8 +97,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					using(new RecordUndoScope("Remove Target Export Settings", node, true)){
 						if(enabled) {
 							m_exportPath[currentEditingGroup] = m_exportPath.DefaultValue;
+							m_exportOption[currentEditingGroup] = m_exportOption.DefaultValue;
+							m_flattenDir[currentEditingGroup] = m_flattenDir.DefaultValue;
 						}  else {
 							m_exportPath.Remove(currentEditingGroup);
+							m_exportOption.Remove(currentEditingGroup);
+							m_flattenDir.Remove(currentEditingGroup);
 						}
 						onValueChanged();
 					}
@@ -136,6 +144,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								}
 								newExportPath = folderSelected;
 							}
+						}
+					}
+
+					int flat = m_flattenDir[currentEditingGroup];
+					var newFlat = EditorGUILayout.ToggleLeft("Flatten Directory", flat == 1) ? 1:0;
+					if(newFlat != flat) {
+						using(new RecordUndoScope("Change Flatten Directory", node, true)){
+							m_flattenDir[currentEditingGroup] = newFlat;
+							onValueChanged();
 						}
 					}
 
@@ -245,6 +262,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			var report = new ExportReport(node);
+			var cacheFolderDepth = Model.Settings.BUNDLEBUILDER_CACHE_PLACE.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length + 1;
 
 			foreach(var ag in incoming) {
 				foreach (var groupKey in ag.assetGroups.Keys) {
@@ -253,20 +271,24 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					foreach (var source in inputSources) {					
 						var destinationSourcePath = source.importFrom;
 
-						// in bundleBulider, use platform-package folder for export destination.
-						if (destinationSourcePath.StartsWith(Model.Settings.BUNDLEBUILDER_CACHE_PLACE)) {
-							var depth = Model.Settings.BUNDLEBUILDER_CACHE_PLACE.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length + 1;
+						string destination = null;
 
-							var splitted = destinationSourcePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR);
-							var reducedArray = new string[splitted.Length - depth];
+						if(m_flattenDir[target] == 0) {
+							// in bundleBulider, use platform-package folder for export destination.
+							if (destinationSourcePath.StartsWith(Model.Settings.BUNDLEBUILDER_CACHE_PLACE)) {
 
-							Array.Copy(splitted, depth, reducedArray, 0, reducedArray.Length);
-							var fromDepthToEnd = string.Join(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
+								var splitted = destinationSourcePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR);
+								var reducedArray = new string[splitted.Length - cacheFolderDepth];
 
-							destinationSourcePath = fromDepthToEnd;
+								Array.Copy(splitted, cacheFolderDepth, reducedArray, 0, reducedArray.Length);
+								var fromDepthToEnd = string.Join(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString(), reducedArray);
+
+								destinationSourcePath = fromDepthToEnd;
+							}
+							destination = FileUtility.PathCombine(exportPath, destinationSourcePath);
+						} else {
+							destination = FileUtility.PathCombine(exportPath, source.fileNameAndExtension);
 						}
-
-						var destination = FileUtility.PathCombine(exportPath, destinationSourcePath);
 
 						var parentDir = Directory.GetParent(destination).ToString();
 
