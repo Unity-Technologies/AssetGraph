@@ -11,7 +11,9 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class FileUtility {
 		public static void RemakeDirectory (string localFolderPath) {
-			if (Directory.Exists(localFolderPath)) Directory.Delete(localFolderPath, true);
+			if (Directory.Exists(localFolderPath)) {
+				Directory.Delete(localFolderPath, true);
+			}
 			Directory.CreateDirectory(localFolderPath);
 		}
 

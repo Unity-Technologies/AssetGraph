@@ -295,9 +295,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS)] public static void DeleteImportSettingSample () {
-			FileUtility.RemakeDirectory(Model.Settings.IMPORTER_SETTINGS_PLACE);
 
-			AssetDatabase.Refresh();
+			var result = EditorUtility.DisplayDialog("Erase All Import Settings", "Do you want to erase all saved import settings for all ImportSetting node? " +
+				"This operation is not redoable and it will reset all ImportSettings in ALL graphs.", "Yes", "Cancel");
+
+			if(result) {
+				FileUtility.RemakeDirectory(Model.Settings.IMPORTER_SETTINGS_PLACE);
+				AssetDatabase.Refresh();
+			}
 		}
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 21)]
