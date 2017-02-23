@@ -798,7 +798,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == target));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
-					EditorStyles.toolbarButton, GUILayout.Width(150), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+					EditorStyles.toolbarPopup, GUILayout.Width(150), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
 					target = supportedTargets[newIndex];
