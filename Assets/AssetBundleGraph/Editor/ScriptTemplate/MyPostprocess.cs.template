@@ -16,7 +16,7 @@ public class MyPostprocess : IPostprocess {
 	 * DoPostprocess() is called when build performed.
 	 * @param [in] reports	collection of AssetBundleBuildReport from each BundleBuilders.
 	 */
-	public void DoPostprocess (IEnumerable<AssetBundleGraph.AssetBundleBuildReport> buildReports, IEnumerable<AssetBundleGraph.ExportReport> exportReports) {
+	public void DoPostprocess (IEnumerable<AssetBundleBuildReport> buildReports, IEnumerable<ExportReport> exportReports) {
 
 		foreach (var report in buildReports) {
 
