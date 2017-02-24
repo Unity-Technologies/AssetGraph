@@ -31,7 +31,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			else if(importer.GetType() == typeof(UnityEditor.ModelImporter)) {
 				return IsEqual(importer as UnityEditor.ModelImporter);
 			}
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			else if(importer.GetType() == typeof(UnityEditor.VideoClipImporter)) {
 				return IsEqual(importer as UnityEditor.VideoClipImporter);
 			}
@@ -61,7 +61,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			else if(importer.GetType() == typeof(UnityEditor.ModelImporter)) {
 				OverwriteImportSettings(importer as UnityEditor.ModelImporter);
 			} 
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			else if(importer.GetType() == typeof(UnityEditor.VideoClipImporter)) {
 				OverwriteImportSettings(importer as UnityEditor.VideoClipImporter);
 			}
@@ -269,7 +269,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			importer.importTangents = reference.importTangents;
 
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			importer.keepQuads = reference.keepQuads;
 			importer.weldVertices = reference.weldVertices;
 			#endif
@@ -425,7 +425,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.transformPaths != reference.transformPaths) return false;
 			if (target.useFileUnits != reference.useFileUnits) return false;
 
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			if (target.keepQuads != reference.keepQuads) return false;
 			if (target.weldVertices != reference.weldVertices) return false;
 			#endif
@@ -436,7 +436,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		#endregion
 
 		#region VideoClipImporter
-		#if UNITY_5_6
+		#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 
 		public bool IsEqual (VideoClipImporter target) {
 			VideoClipImporter reference = referenceImporter as VideoClipImporter;

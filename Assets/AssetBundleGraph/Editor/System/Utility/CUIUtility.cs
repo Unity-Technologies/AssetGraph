@@ -63,7 +63,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					if(newTarget != target) {
-						#if UNITY_5_6
+						#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetUtility.TargetToGroup(newTarget), newTarget);
 						#else
 						EditorUserBuildSettings.SwitchActiveBuildTarget(newTarget);

@@ -325,7 +325,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var objType = typeof(UnityEditor.BuildPipeline);
 			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			BuildTargetGroup g = BuildTargetUtility.TargetToGroup(t);
 			//internal static extern bool IsBuildTargetSupported (BuildTargetGroup buildTargetGroup, BuildTarget target);
 			var retval = method.Invoke(null, new object[]{

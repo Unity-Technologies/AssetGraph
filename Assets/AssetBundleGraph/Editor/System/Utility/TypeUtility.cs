@@ -19,7 +19,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			typeof(TextureImporter).ToString(),
 			typeof(ModelImporter).ToString(),
 			typeof(AudioImporter).ToString(),
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			typeof(VideoClipImporter).ToString(),
 			#endif
 			
@@ -87,7 +87,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			".zip",
 			".tar",
 			".tgz",
-			#if UNITY_5_6
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			#else
 			".m4v",
 			#endif
@@ -152,7 +152,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				case "UnityEditor.TextureImporter":
 				case "UnityEditor.ModelImporter":
 				case "UnityEditor.AudioImporter": 
-				#if UNITY_5_6
+				#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 				case "UnityEditor.VideoClipImporter": 
 				#endif
 				{
