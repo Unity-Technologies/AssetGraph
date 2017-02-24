@@ -292,6 +292,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			int lastDotManifestIndex = filename.LastIndexOf(".manifest");
 			filename = (lastDotManifestIndex > 0)? filename.Substring(0, lastDotManifestIndex) : filename;
 
+			// test if given file is not configured as variant
+			if(bundleVariants.ContainsKey(filename)) {
+				var v = bundleVariants[filename];
+				if(v.Contains(null)) {
+					return true;
+				}
+			}
+
 			int lastDotIndex = filename.LastIndexOf('.');
 			var bundleNameFromFile  = (lastDotIndex > 0) ? filename.Substring(0, lastDotIndex): filename;
 			var variantNameFromFile = (lastDotIndex > 0) ? filename.Substring(lastDotIndex+1): null;
