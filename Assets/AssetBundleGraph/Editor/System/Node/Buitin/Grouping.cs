@@ -14,7 +14,14 @@ namespace UnityEngine.AssetBundles.GraphTool
 	[CustomNode("Grouping", 50)]
 	public class Grouping : Node, Model.NodeDataImporter {
 
-		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
+		enum GroupingPatternType : int {
+			WildCard,
+			RegularExpression
+		};
+
+		[SerializeField] private SerializableMultiTargetString m_groupingPattern;
+		[SerializeField] private SerializableMultiTargetInt m_patternType;
+		[SerializeField] private bool m_allowSlash;
 
 		public override string ActiveStyle {
 			get {
@@ -29,19 +36,25 @@ namespace UnityEngine.AssetBundles.GraphTool
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			m_groupingKeyword = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
+			m_groupingPattern = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
+			m_patternType = new SerializableMultiTargetInt((int)GroupingPatternType.WildCard);
+			m_allowSlash = false;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
 		}
 
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
-			m_groupingKeyword = new SerializableMultiTargetString(v1.GroupingKeywords);
+			m_groupingPattern = new SerializableMultiTargetString(v1.GroupingKeywords);
+			m_patternType = new SerializableMultiTargetInt((int)GroupingPatternType.WildCard);
+			m_allowSlash = true;
 		}
 
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Grouping();
-			newNode.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
+			newNode.m_groupingPattern = new SerializableMultiTargetString(m_groupingPattern);
+			newNode.m_patternType = new SerializableMultiTargetInt(m_patternType);
+			newNode.m_allowSlash = m_allowSlash;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -50,7 +63,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
-			if (m_groupingKeyword == null) {
+			if (m_groupingPattern == null) {
 				return;
 			}
 
@@ -58,30 +71,58 @@ namespace UnityEngine.AssetBundles.GraphTool
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);
+			var newSlash = EditorGUILayout.ToggleLeft("Allow directory separator ('/') in group name", m_allowSlash);
+			if(newSlash != m_allowSlash) {
+				using(new RecordUndoScope("Change Allow Slash Setting", node, true)){
+					m_allowSlash = newSlash;
+					onValueChanged();
+				}
+			}
+			if(m_allowSlash) {
+				EditorGUILayout.HelpBox("Allowing directory separator for group name may create incompatible group name with other nodes. Please use this option carefully.", MessageType.Info);
+			}
+			GUILayout.Space(4f);
 
 			//Show target configuration tab
 			editor.DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				var disabledScope = editor.DrawOverrideTargetToggle(node, m_groupingKeyword.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
+				var disabledScope = editor.DrawOverrideTargetToggle(node, m_groupingPattern.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
 					using(new RecordUndoScope("Remove Target Grouping Keyword Settings", node, true)){
 						if(enabled) {
-							m_groupingKeyword[editor.CurrentEditingGroup] = m_groupingKeyword.DefaultValue;
+							m_groupingPattern[editor.CurrentEditingGroup] = m_groupingPattern.DefaultValue;
+							m_patternType[editor.CurrentEditingGroup] = m_patternType.DefaultValue;
 						} else {
-							m_groupingKeyword.Remove(editor.CurrentEditingGroup);
+							m_groupingPattern.Remove(editor.CurrentEditingGroup);
+							m_patternType.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
 				});
 
 				using (disabledScope) {
-					var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",m_groupingKeyword[editor.CurrentEditingGroup]);
-					EditorGUILayout.HelpBox(
-						"Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ", 
-						MessageType.Info);
+					var newType = (GroupingPatternType)EditorGUILayout.EnumPopup("Pattern Type",(GroupingPatternType)m_patternType[editor.CurrentEditingGroup]);
+					if (newType != (GroupingPatternType)m_patternType[editor.CurrentEditingGroup]) {
+						using(new RecordUndoScope("Change Grouping Pattern Type", node, true)){
+							m_patternType[editor.CurrentEditingGroup] = (int)newType;
+							onValueChanged();
+						}
+					}
 
-					if (newGroupingKeyword != m_groupingKeyword[editor.CurrentEditingGroup]) {
+					var newGroupingKeyword = EditorGUILayout.TextField("Grouping Keyword",m_groupingPattern[editor.CurrentEditingGroup]);
+					string helpText = null;
+					switch((GroupingPatternType)m_patternType[editor.CurrentEditingGroup]) {
+					case GroupingPatternType.WildCard:
+						helpText = "Grouping Keyword requires \"*\" in itself. It assumes there is a pattern such as \"ID_0\" in incoming paths when configured as \"ID_*\" ";
+						break;
+					case GroupingPatternType.RegularExpression:
+						helpText = "Grouping Keyword requires pattern definition with \"()\" in Regular Expression manner.";
+						break;
+					}
+					EditorGUILayout.HelpBox(helpText, MessageType.Info);
+
+					if (newGroupingKeyword != m_groupingPattern[editor.CurrentEditingGroup]) {
 						using(new RecordUndoScope("Change Grouping Keywords", node, true)){
-							m_groupingKeyword[editor.CurrentEditingGroup] = newGroupingKeyword;
+							m_groupingPattern[editor.CurrentEditingGroup] = newGroupingKeyword;
 							onValueChanged();
 						}
 					}
@@ -106,12 +147,13 @@ namespace UnityEngine.AssetBundles.GraphTool
 		{
 
 			ValidateGroupingKeyword(
-				m_groupingKeyword[target],
+				m_groupingPattern[target],
+				(GroupingPatternType)m_patternType[target],
 				() => {
 					throw new NodeException("Grouping Keyword can not be empty.", node.Id);
 				},
 				() => {
-					throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", Model.Settings.KEYWORD_WILDCARD, m_groupingKeyword[target]), node.Id);
+					throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", Model.Settings.KEYWORD_WILDCARD, m_groupingPattern[target]), node.Id);
 				}
 			);
 
@@ -122,11 +164,23 @@ namespace UnityEngine.AssetBundles.GraphTool
 			var outputDict = new Dictionary<string, List<AssetReference>>();
 
 			if(incoming != null) {
-				var groupingKeyword = m_groupingKeyword[target];
-				var split = groupingKeyword.Split(Model.Settings.KEYWORD_WILDCARD);
-				var groupingKeywordPrefix  = split[0];
-				var groupingKeywordPostfix = split[1];
-				var regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
+				Regex regex = null;
+				switch((GroupingPatternType)m_patternType[target]) {
+				case GroupingPatternType.WildCard: 
+					{
+						var groupingKeyword = m_groupingPattern[target];
+						var split = groupingKeyword.Split(Model.Settings.KEYWORD_WILDCARD);
+						var groupingKeywordPrefix  = split[0];
+						var groupingKeywordPostfix = split[1];
+						regex = new Regex(groupingKeywordPrefix + "(.*?)" + groupingKeywordPostfix);
+					}
+					break;
+				case GroupingPatternType.RegularExpression:
+					{
+						regex = new Regex(m_groupingPattern[target]);
+					}
+					break;
+				}
 
 				foreach(var ag in incoming) {
 					foreach (var assets in ag.assetGroups.Values) {
@@ -137,6 +191,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 							if (match.Success) {
 								var newGroupingKey = match.Groups[1].Value;
+
+								if(!m_allowSlash && newGroupingKey.Contains("/")) {
+									throw new NodeException(String.Format("Grouping Keyword with directory separator('/') found: \"{0}\" from asset: {1}", 
+										newGroupingKey, targetPath), node.Id);
+								}
+
 								if (!outputDict.ContainsKey(newGroupingKey)) {
 									outputDict[newGroupingKey] = new List<AssetReference>();
 								}
@@ -152,9 +212,17 @@ namespace UnityEngine.AssetBundles.GraphTool
 			Output(dst, outputDict);
 		}
 
-		public static void ValidateGroupingKeyword (string currentGroupingKeyword, Action NullOrEmpty, Action ShouldContainWildCardKey) {
+		private void ValidateGroupingKeyword (string currentGroupingKeyword, 
+			GroupingPatternType currentType,
+			Action NullOrEmpty, 
+			Action ShouldContainWildCardKey
+		) {
 			if (string.IsNullOrEmpty(currentGroupingKeyword)) NullOrEmpty();
-			if (!currentGroupingKeyword.Contains(Model.Settings.KEYWORD_WILDCARD.ToString())) ShouldContainWildCardKey();
+			if (currentType == GroupingPatternType.WildCard && 
+				!currentGroupingKeyword.Contains(Model.Settings.KEYWORD_WILDCARD.ToString())) 
+			{
+				ShouldContainWildCardKey();
+			}
 		}
 	}
 }
