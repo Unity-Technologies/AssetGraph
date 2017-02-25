@@ -30,57 +30,30 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public static Texture2D inputPointTex {
+		public static Texture2D inputPointBG {
 			get {
-				if(NodeSingleton.s.inputPointTex == null) {
-					NodeSingleton.s.inputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_INPUT_BG);
+				if(NodeSingleton.s.inputPointBG == null) {
+					NodeSingleton.s.inputPointBG = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_INPUT_BG);
 				}
-				return NodeSingleton.s.inputPointTex;
+				return NodeSingleton.s.inputPointBG;
 			}
 		}
 
-		public static Texture2D outputPointTex {
+		public static Texture2D outputPointBG {
 			get {
-				if(NodeSingleton.s.outputPointTex == null) {
-					NodeSingleton.s.outputPointTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_OUTPUT_BG);
+				if(NodeSingleton.s.outputPointBG == null) {
+					NodeSingleton.s.outputPointBG = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_OUTPUT_BG);
 				}
-				return NodeSingleton.s.outputPointTex;
+				return NodeSingleton.s.outputPointBG;
 			}
 		}
 
-		public static Texture2D enablePointMarkTex {
+		public static Texture2D pointMark {
 			get {
-				if(NodeSingleton.s.enablePointMarkTex == null) {
-					NodeSingleton.s.enablePointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_ENABLE);
+				if(NodeSingleton.s.pointMark == null) {
+					NodeSingleton.s.pointMark = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT);
 				}
-				return NodeSingleton.s.enablePointMarkTex;
-			}
-		}
-
-		public static Texture2D inputPointMarkTex {
-			get {
-				if(NodeSingleton.s.inputPointMarkTex == null) {
-					NodeSingleton.s.inputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_INPUT);
-				}
-				return NodeSingleton.s.inputPointMarkTex;
-			}
-		}
-
-		public static Texture2D outputPointMarkTex {
-			get {
-				if(NodeSingleton.s.outputPointMarkTex == null) {
-					NodeSingleton.s.outputPointMarkTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT);
-				}
-				return NodeSingleton.s.outputPointMarkTex;
-			}
-		}
-
-		public static Texture2D outputPointMarkConnectedTex {
-			get {
-				if(NodeSingleton.s.outputPointMarkConnectedTex == null) {
-					NodeSingleton.s.outputPointMarkConnectedTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED);
-				}
-				return NodeSingleton.s.outputPointMarkConnectedTex;
+				return NodeSingleton.s.pointMark;
 			}
 		}
 
@@ -143,14 +116,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private class NodeSingleton {
 			public Action<NodeEvent> emitAction;
 
-			public Texture2D inputPointTex;
-			public Texture2D outputPointTex;
+			public Texture2D inputPointBG;
+			public Texture2D outputPointBG;
 
-			public Texture2D enablePointMarkTex;
-
-			public Texture2D inputPointMarkTex;
-			public Texture2D outputPointMarkTex;
-			public Texture2D outputPointMarkConnectedTex;
+			public Texture2D pointMark;
 			public PlatformButton[] platformButtons;
 
 			public List<BuildTarget> supportedBuildTargets;

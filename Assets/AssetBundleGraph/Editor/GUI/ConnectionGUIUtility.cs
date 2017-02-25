@@ -20,20 +20,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public static Texture2D connectionArrowTex {
-			get {
-				// load shared connection textures
-				if( ConnectionGUISingleton.s.connectionArrowTex == null ) {
-					ConnectionGUISingleton.s.connectionArrowTex = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_ARROW);
-				}
-				return ConnectionGUISingleton.s.connectionArrowTex;
-			}
-		}
-
 		private class ConnectionGUISingleton {
 			public Action<ConnectionEvent> emitAction;
-
-			public Texture2D connectionArrowTex;
 
 			private static ConnectionGUISingleton s_singleton;
 

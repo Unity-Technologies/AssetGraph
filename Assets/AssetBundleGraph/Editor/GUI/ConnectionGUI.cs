@@ -73,6 +73,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public bool IsSelected {
+			get {
+				return (m_inspector != null && Selection.activeObject == m_inspector && m_inspector.connectionGUI == this);
+			}
+		}
+
 		private Rect m_buttonRect;
 
 		public static ConnectionGUI LoadConnection (Model.ConnectionData data, Model.ConnectionPointData output, Model.ConnectionPointData input) {
@@ -126,16 +132,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var startV3 = new Vector3(startPoint.x, startPoint.y, 0f);
 
 			var endPoint = m_inputPoint.GetGlobalPosition(endNode);
-			var endV3 = new Vector3(endPoint.x, endPoint.y + 1f, 0f);
+			var endV3 = new Vector3(endPoint.x, endPoint.y, 0f);
 			
 			var centerPoint = startPoint + ((endPoint - startPoint) / 2);
 			var centerPointV3 = new Vector3(centerPoint.x, centerPoint.y, 0f);
 
-			var pointDistance = (endPoint.x - startPoint.x) / 3f;
-			if (pointDistance < Model.Settings.GUI.CONNECTION_CURVE_LENGTH) pointDistance = Model.Settings.GUI.CONNECTION_CURVE_LENGTH;
+			var pointDistanceX = Model.Settings.GUI.CONNECTION_CURVE_LENGTH;
 
-			var startTan = new Vector3(startPoint.x + pointDistance, startPoint.y, 0f);
-			var endTan = new Vector3(endPoint.x - pointDistance, endPoint.y, 0f);
+			var startTan = new Vector3(startPoint.x + pointDistanceX, centerPoint.y, 0f);
+			var endTan = new Vector3(endPoint.x - pointDistanceX, centerPoint.y, 0f);
 
 			var totalAssets = 0;
 			var totalGroups = 0;
@@ -144,12 +149,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				totalGroups = assetGroups.Keys.Count;
 			}
 
-			if(m_inspector != null && Selection.activeObject == m_inspector && m_inspector.connectionGUI == this) {
-				Handles.DrawBezier(startV3, endV3, startTan, endTan, new Color(0.43f, 0.65f, 0.90f, 1.0f), null, 2f);
+			Color lineColor;
+			var lineWidth = (totalAssets > 0) ? 3f : 2f;
+
+			if(IsSelected) {
+				lineColor = Model.Settings.GUI.COLOR_ENABLED;
 			} else {
-				Handles.DrawBezier(startV3, endV3, startTan, endTan, ((totalAssets > 0) ? Color.white : Color.gray), null, 2f);
+				lineColor = (totalAssets > 0) ? Model.Settings.GUI.COLOR_CONNECTED : Model.Settings.GUI.COLOR_NOT_CONNECTED;
 			}
 
+			Handles.DrawBezier(startV3, endV3, startTan, endTan, lineColor, null, lineWidth);
 
 			// draw connection label if connection's label is not normal.
 			GUIStyle labelStyle = new GUIStyle("WhiteMiniLabel");

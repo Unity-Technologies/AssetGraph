@@ -123,7 +123,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			var baseRect = node.Region;
 
 			if (IsInput) {
-				x = baseRect.x;
+				x = baseRect.x + 8f;
 				y = baseRect.y + buttonRect.y + (buttonRect.height / 2f) - 1f;
 			}
 
@@ -163,7 +163,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		private Rect GetOutputPointRect (NodeGUI node) {
 			var baseRect = node.Region;
 			return new Rect(
-				baseRect.x + baseRect.width - 8f, 
+				baseRect.x + baseRect.width - (Settings.GUI.CONNECTION_POINT_MARK_SIZE)/2f, 
 				baseRect.y + buttonRect.y + 1f, 
 				Settings.GUI.CONNECTION_POINT_MARK_SIZE, 
 				Settings.GUI.CONNECTION_POINT_MARK_SIZE
@@ -175,8 +175,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return new Rect(
 				baseRect.x - 2f, 
 				baseRect.y + buttonRect.y + 3f, 
-				Settings.GUI.CONNECTION_POINT_MARK_SIZE, 
-				Settings.GUI.CONNECTION_POINT_MARK_SIZE
+				Settings.GUI.CONNECTION_POINT_MARK_SIZE + 3f, 
+				Settings.GUI.CONNECTION_POINT_MARK_SIZE + 3f
 			);
 		}
 	}

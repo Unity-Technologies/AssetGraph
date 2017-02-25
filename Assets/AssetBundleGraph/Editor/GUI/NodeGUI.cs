@@ -230,53 +230,64 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void DrawConnectionInputPointMark (NodeEvent eventSource, bool justConnecting) {
-			var defaultPointTex = NodeGUIUtility.inputPointMarkTex;
+			var defaultPointTex = NodeGUIUtility.pointMark;
+			var lastColor = GUI.color;
+
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
 					!Model.ConnectionData.CanConnect(eventSource.eventSourceNode.Data, m_data)
 				);
 
-			if (shouldDrawEnable && justConnecting && eventSource != null) {
-				if (eventSource.eventSourceNode.Id != this.Id) {
-					var connectionPoint = eventSource.point;
-					if (connectionPoint.IsOutput) {
-						defaultPointTex = NodeGUIUtility.enablePointMarkTex;
-					}
-				}
-			}
+			bool shouldDrawWithEnabledColor = 
+				shouldDrawEnable && justConnecting && 
+				eventSource != null &&
+				eventSource.eventSourceNode.Id != this.Id &&
+				eventSource.point.IsOutput;
 
 			foreach (var point in m_data.InputPoints) {
 				if(IsValidInputConnectionPoint(point)) {
+					if(shouldDrawWithEnabledColor) {
+						GUI.color = Model.Settings.GUI.COLOR_CAN_CONNECT;
+					} else {
+						GUI.color = (justConnecting) ? Model.Settings.GUI.COLOR_CAN_NOT_CONNECT : Model.Settings.GUI.COLOR_CONNECTED;
+					}
+
 					GUI.DrawTexture(point.GetGlobalPointRegion(this), defaultPointTex);
+					GUI.color = lastColor;
 				}
 			}
 		}
 
 		public void DrawConnectionOutputPointMark (NodeEvent eventSource, bool justConnecting, Event current) {
-			var defaultPointTex = NodeGUIUtility.outputPointMarkConnectedTex;
+			var defaultPointTex = NodeGUIUtility.pointMark;
+			var lastColor = GUI.color;
+
 			bool shouldDrawEnable = 
 				!( eventSource != null && eventSource.eventSourceNode != null && 
 					!Model.ConnectionData.CanConnect(m_data, eventSource.eventSourceNode.Data)
 				);
 
-			if (shouldDrawEnable && justConnecting && eventSource != null) {
-				if (eventSource.eventSourceNode.Id != this.Id) {
-					var connectionPoint = eventSource.point;
-					if (connectionPoint.IsInput) {
-						defaultPointTex = NodeGUIUtility.enablePointMarkTex;
-					}
-				}
-			}
+			bool shouldDrawWithEnabledColor = 
+				shouldDrawEnable && justConnecting 
+				&& eventSource != null
+				&& eventSource.eventSourceNode.Id != this.Id
+				&& eventSource.point.IsInput;
 
 			var globalMousePosition = current.mousePosition;
 
 			foreach (var point in m_data.OutputPoints) {
 				var pointRegion = point.GetGlobalPointRegion(this);
 
+				if(shouldDrawWithEnabledColor) {
+					GUI.color = Model.Settings.GUI.COLOR_CAN_CONNECT;
+				} else {
+					GUI.color = (justConnecting) ? Model.Settings.GUI.COLOR_CAN_NOT_CONNECT : Model.Settings.GUI.COLOR_CONNECTED;
+				}
 				GUI.DrawTexture(
 					pointRegion, 
 					defaultPointTex
 				);
+				GUI.color = lastColor;
 
 				// eventPosition is contained by outputPointRect.
 				if (pointRegion.Contains(globalMousePosition)) {
@@ -344,7 +355,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					GUI.color = oldColor;
 				}
 				GUI.backgroundColor = Color.clear;
-				Texture2D tex = (point.IsInput)? NodeGUIUtility.inputPointTex : NodeGUIUtility.outputPointTex;
+				Texture2D tex = (point.IsInput)? NodeGUIUtility.inputPointBG : NodeGUIUtility.outputPointBG;
 				GUI.Button(point.Region, tex, "AnimationKeyframeBackground");
 			};
 			m_data.InputPoints.ForEach(drawConnectionPoint);

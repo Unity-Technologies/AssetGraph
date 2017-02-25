@@ -124,25 +124,26 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 			public const float FILTER_OUTPUT_SPAN = 32f;
 
-			public const float CONNECTION_POINT_MARK_SIZE = 19f;
+			public const float CONNECTION_POINT_MARK_SIZE = 16f;
 
-			public const float CONNECTION_CURVE_LENGTH = 10f;
+			public const float CONNECTION_CURVE_LENGTH = 20f;
 
 			public const float TOOLBAR_HEIGHT = 20f;
 			public const float TOOLBAR_GRAPHNAMEMENU_WIDTH = 150f;
 			public const int TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH = 20;
 
-			public const string RESOURCE_ARROW					= RESOURCE_BASEPATH + "AssetGraph_Arrow.png";
-
-			public const string RESOURCE_CONNECTIONPOINT_ENABLE	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_EnableMark.png";
-			public const string RESOURCE_CONNECTIONPOINT_INPUT	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_InputMark.png";
-			public const string RESOURCE_CONNECTIONPOINT_OUTPUT	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_OutputMark.png";
-			public const string RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_OutputMark_Connected.png";
+			public const string RESOURCE_CONNECTIONPOINT		= RESOURCE_BASEPATH + "ConnectionPoint.png";
 
 			public const string RESOURCE_INPUT_BG				= RESOURCE_BASEPATH + "AssetGraph_InputBG.png";
 			public const string RESOURCE_OUTPUT_BG				= RESOURCE_BASEPATH + "AssetGraph_OutputBG.png";
 
 			public const string RESOURCE_SELECTION				= RESOURCE_BASEPATH + "AssetGraph_Selection.png";
+
+			public static readonly Color COLOR_ENABLED = new Color(0.43f, 0.65f, 0.90f, 1.0f);
+			public static readonly Color COLOR_CONNECTED = new Color(0.8f, 0.8f, 0.8f, 1.0f);
+			public static readonly Color COLOR_NOT_CONNECTED = Color.grey;
+			public static readonly Color COLOR_CAN_CONNECT = Color.white;//new Color(0.60f, 0.60f, 1.0f, 1.0f);
+			public static readonly Color COLOR_CAN_NOT_CONNECT = new Color(0.33f, 0.33f, 0.33f, 1.0f);
 		}
 	}
 }

@@ -893,16 +893,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					EndWindows();
 				}
 
-				// draw connection input point marks.
-				foreach (var node in nodes) {
-					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING);
-				}
-
 				// draw connections.
 				foreach (var con in connections) {
 					con.DrawConnection(nodes, controller.StreamManager.FindAssetGroup(con.Id));
 				}
 					
+				// draw connection input point marks.
+				foreach (var node in nodes) {
+					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING);
+				}
+
 				// draw connection output point marks.
 				foreach (var node in nodes) {
 					node.DrawConnectionOutputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING, Event.current);
@@ -1286,11 +1286,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			for(int i = 0; i < customNodes.Count; ++i) {
 				// workaround: avoiding compilier closure bug
 				var index = i;
+				var name = customNodes[index].node.Name;
 				menu.AddItem(
-					new GUIContent(string.Format("Create {0} Node", customNodes[i].node.Name)),
+					new GUIContent(name),
 					false, 
 					() => {
-						AddNodeFromGUI(customNodes[index].CreateInstance(), customNodes[index].node.Name, pos.x, pos.y);
+						AddNodeFromGUI(customNodes[index].CreateInstance(), GetNodeNameFromMenu(name), pos.x, pos.y);
 						Setup();
 						Repaint();
 					}
@@ -1300,9 +1301,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			menu.ShowAsContext();
 		}
 
+		private string GetNodeNameFromMenu(string nodeMenuName) {
+			var slashIndex = nodeMenuName.LastIndexOf('/');
+			return nodeMenuName.Substring(slashIndex+1);
+		}
+
 		private void AddNodeFromGUI (Node n, string guiName, float x, float y) {
 
-			string nodeName = string.Format("New {0} Node", guiName);
+			string nodeName = guiName;
 			NodeGUI newNode = new NodeGUI(controller, new Model.NodeData(nodeName, n, x, y));
 
 			Undo.RecordObject(this, "Add " + guiName + " Node");
