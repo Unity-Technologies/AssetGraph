@@ -134,13 +134,11 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 			public const string RESOURCE_CONNECTIONPOINT		= RESOURCE_BASEPATH + "ConnectionPoint.png";
 
-			public const string RESOURCE_INPUT_BG				= RESOURCE_BASEPATH + "AssetGraph_InputBG.png";
-			public const string RESOURCE_OUTPUT_BG				= RESOURCE_BASEPATH + "AssetGraph_OutputBG.png";
+			public const string RESOURCE_INPUT_BG				= RESOURCE_BASEPATH + "InputBG.png";
+			public const string RESOURCE_OUTPUT_BG				= RESOURCE_BASEPATH + "OutputBG.png";
 
-			public const string RESOURCE_SELECTION				= RESOURCE_BASEPATH + "AssetGraph_Selection.png";
-
-			public static readonly Color COLOR_ENABLED = new Color(0.43f, 0.65f, 0.90f, 1.0f);
-			public static readonly Color COLOR_CONNECTED = new Color(0.8f, 0.8f, 0.8f, 1.0f);
+			public static readonly Color COLOR_ENABLED = new Color(0.43f, 0.65f, 1.0f, 1.0f);
+			public static readonly Color COLOR_CONNECTED = new Color(0.9f, 0.9f, 0.9f, 1.0f);
 			public static readonly Color COLOR_NOT_CONNECTED = Color.grey;
 			public static readonly Color COLOR_CAN_CONNECT = Color.white;//new Color(0.60f, 0.60f, 1.0f, 1.0f);
 			public static readonly Color COLOR_CAN_NOT_CONNECT = new Color(0.33f, 0.33f, 0.33f, 1.0f);

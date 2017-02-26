@@ -158,15 +158,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetBundles.GraphTool.LastEditedGraph";
 		static readonly int kDragNodesControlID = "AssetBundleGraphTool.HandleDragNodes".GetHashCode();
 
-		private Texture2D SelectionTexture {
-			get{
-				if(_selectionTex == null) {
-					_selectionTex = LoadTextureFromFile(Model.Settings.GUI.RESOURCE_SELECTION);
-				}
-				return _selectionTex;
-			}
-		}
-
 		private GUIContent ReloadButtonTexture {
 			get {
 				if( _reloadButtonTexture == null ) {
@@ -882,6 +873,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			using(var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos) ) {
 				scrollPos = scrollScope.scrollPosition;
 
+				// draw connections.
+				foreach (var con in connections) {
+					con.DrawConnection(nodes, controller.StreamManager.FindAssetGroup(con.Id));
+				}
+
 				// draw node window x N.
 				{
 					BeginWindows();
@@ -891,11 +887,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					HandleDragNodes();
 
 					EndWindows();
-				}
-
-				// draw connections.
-				foreach (var con in connections) {
-					con.DrawConnection(nodes, controller.StreamManager.FindAssetGroup(con.Id));
 				}
 					
 				// draw connection input point marks.
@@ -916,7 +907,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						break;
 					}
 				case ModifyMode.SELECTING: {
-						GUI.DrawTexture(new Rect(selectStartMousePosition.x, selectStartMousePosition.y, Event.current.mousePosition.x - selectStartMousePosition.x, Event.current.mousePosition.y - selectStartMousePosition.y), SelectionTexture);
+						float lx = Mathf.Max(selectStartMousePosition.x, Event.current.mousePosition.x);
+						float ly = Mathf.Max(selectStartMousePosition.y, Event.current.mousePosition.y);
+						float sx = Mathf.Min(selectStartMousePosition.x, Event.current.mousePosition.x);
+						float sy = Mathf.Min(selectStartMousePosition.y, Event.current.mousePosition.y);
+
+						Rect sel = new Rect(sx, sy, lx - sx, ly - sy);
+						GUI.Label(sel, string.Empty, "SelectionRect");
 						break;
 					}
 				}
@@ -926,6 +923,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				// set rect for scroll.
 				if (nodes.Any()) {
+					UpdateSpacerRect();
 					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
 				}
 			}
@@ -948,7 +946,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					case ModifyMode.NONE: {
 							switch (Event.current.button) {
 							case 0:{// left click
-									if(graphRegion.Contains(Event.current.mousePosition)) {
+									if(graphRegion.Contains(Event.current.mousePosition - scrollPos)) {
 										selectStartMousePosition = new SelectPoint(Event.current.mousePosition);
 										modifyMode = ModifyMode.SELECTING;
 									}
@@ -1487,7 +1485,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 					
 					UpdateActiveObjects(activeSelection);
-					UpdateSpacerRect();
 					break;
 				}
 				case NodeEvent.EventType.EVENT_NODE_UPDATED: {
@@ -1613,17 +1610,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return position;
 		}
 
-
-		/**
-			once expand, keep max size.
-			it's convenience.
-		*/
 		private void UpdateSpacerRect () {
-			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).Select(node => node.GetRightPos()).ToList()[0] + Model.Settings.WINDOW_SPAN;
-			if (rightPoint < spacerRectRightBottom.x) rightPoint = spacerRectRightBottom.x;
-
-			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).Select(node => node.GetBottomPos()).ToList()[0] + Model.Settings.WINDOW_SPAN;
-			if (bottomPoint < spacerRectRightBottom.y) bottomPoint = spacerRectRightBottom.y;
+			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).First().GetRightPos() + Model.Settings.WINDOW_SPAN;
+			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).First().GetBottomPos() + Model.Settings.WINDOW_SPAN;
 
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
