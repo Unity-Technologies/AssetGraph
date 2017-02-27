@@ -300,7 +300,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public void DrawNode () {
-			GUI.Window(m_nodeWindowId, m_baseRect, DrawThisNode, string.Empty, m_nodeSyle);
+			GUIStyle s = NodeGUIUtility.nodeSkin.FindStyle(m_nodeSyle);
+			GUI.Window(m_nodeWindowId, m_baseRect, DrawThisNode, string.Empty,  s);
 		}
 
 		private void DrawThisNode(int id) {
@@ -360,6 +361,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			};
 			m_data.InputPoints.ForEach(drawConnectionPoint);
 			m_data.OutputPoints.ForEach(drawConnectionPoint);
+
+			GUIStyle catStyle = new GUIStyle("WhiteMiniLabel");
+			catStyle.alignment = TextAnchor.LowerRight;
+			var categoryRect = new Rect(2f, m_baseRect.height - 14f, m_baseRect.width - 4f, 16f);
+			GUI.Label(categoryRect, m_data.Operation.Object.Category, catStyle);
 		}
 
 		public void UpdateNodeRect () {

@@ -12,7 +12,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Prefab Builder", 70)]
+	[CustomNode("Create Assets/Create Prefab From Group", 70)]
 	public class PrefabBuilder : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
@@ -32,13 +32,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 4 on";
+				return "node 4 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 4";
+				return "node 4";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Create";
 			}
 		}
 

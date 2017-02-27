@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Bundle Builder", 70)]
+	[CustomNode("Build Assets/Build Asset Bundles", 70)]
 	public class BundleBuilder : Node, Model.NodeDataImporter {
 
 		private static readonly string key = "0";
@@ -20,13 +20,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 6 on";
+				return "node 5 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 6";
+				return "node 5";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Build";
 			}
 		}
 

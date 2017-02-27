@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool
 {
-	[CustomNode("Grouping", 50)]
+	[CustomNode("Group Assets/By Name", 50)]
 	public class Grouping : Node, Model.NodeDataImporter {
 
 		enum GroupingPatternType : int {
@@ -25,13 +25,19 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 3 on";
+				return "node 2 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 3";
+				return "node 2";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Group";
 			}
 		}
 

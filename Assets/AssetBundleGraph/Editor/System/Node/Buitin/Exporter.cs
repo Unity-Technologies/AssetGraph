@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Exporter", 80)]
+	[CustomNode("Export/To Directory", 80)]
 	public class Exporter : Node, Model.NodeDataImporter {
 
 		public enum ExportOption : int {
@@ -26,13 +26,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 0 on";
+				return "node 0 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 0";
+				return "node 0";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Export";
 			}
 		}
 

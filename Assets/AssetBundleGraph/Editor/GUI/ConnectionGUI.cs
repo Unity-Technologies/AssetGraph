@@ -158,6 +158,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				lineColor = (totalAssets > 0) ? Model.Settings.GUI.COLOR_CONNECTED : Model.Settings.GUI.COLOR_NOT_CONNECTED;
 			}
 
+			ConnectionGUIUtility.HandleMaterial.SetPass(0);
 			Handles.DrawBezier(startV3, endV3, startTan, endTan, lineColor, null, lineWidth);
 
 			// draw connection label if connection's label is not normal.

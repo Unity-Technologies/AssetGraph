@@ -20,8 +20,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public static Material HandleMaterial {
+			get {
+				if(ConnectionGUISingleton.s.handleMat == null) {
+					Shader shader = Shader.Find ("Hidden/AssetBundleGraph/LineDraw");
+					Material m = new Material (shader);
+					m.hideFlags = HideFlags.HideAndDontSave;
+					ConnectionGUISingleton.s.handleMat = m;
+				}
+				return ConnectionGUISingleton.s.handleMat;
+			}
+		}
+
 		private class ConnectionGUISingleton {
 			public Action<ConnectionEvent> emitAction;
+			public Material handleMat;
 
 			private static ConnectionGUISingleton s_singleton;
 

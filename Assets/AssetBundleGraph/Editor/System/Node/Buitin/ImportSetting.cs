@@ -15,7 +15,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	/**
 		ImportSetting is the class for apply specific setting to already imported files.
 	*/
-	[CustomNode("Import Setting", 30)]
+	[CustomNode("Modify Assets/Overwrite Import Setting", 30)]
 	public class ImportSetting : Node, Model.NodeDataImporter {
 
 		public enum ConfigStatus {
@@ -29,13 +29,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 2 on";
+				return "node 8 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 2";
+				return "node 8";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Modify";
 			}
 		}
 

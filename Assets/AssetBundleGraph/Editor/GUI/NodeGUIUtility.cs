@@ -11,6 +11,13 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class NodeGUIUtility {
 
+		public static Texture2D LoadTextureFromFile(string path) {
+			Texture2D texture = new Texture2D(1, 1);
+			texture.LoadImage(File.ReadAllBytes(path));
+			return texture;
+		}
+
+
 		public struct PlatformButton {
 			public readonly GUIContent ui;
 			public readonly BuildTargetGroup targetGroup;
@@ -30,10 +37,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public static GUISkin nodeSkin {
+			get {
+				if(NodeSingleton.s.nodeSkin == null) {
+					NodeSingleton.s.nodeSkin = AssetDatabase.LoadAssetAtPath<GUISkin>(Model.Settings.GUI.RESOURCE_SKIN);
+				}
+				return NodeSingleton.s.nodeSkin;
+			}
+		}
+
 		public static Texture2D inputPointBG {
 			get {
 				if(NodeSingleton.s.inputPointBG == null) {
-					NodeSingleton.s.inputPointBG = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_INPUT_BG);
+					NodeSingleton.s.inputPointBG = LoadTextureFromFile(Model.Settings.GUI.RESOURCE_INPUT_BG);
 				}
 				return NodeSingleton.s.inputPointBG;
 			}
@@ -42,7 +58,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static Texture2D outputPointBG {
 			get {
 				if(NodeSingleton.s.outputPointBG == null) {
-					NodeSingleton.s.outputPointBG = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_OUTPUT_BG);
+					NodeSingleton.s.outputPointBG = LoadTextureFromFile(Model.Settings.GUI.RESOURCE_OUTPUT_BG);
 				}
 				return NodeSingleton.s.outputPointBG;
 			}
@@ -51,7 +67,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static Texture2D pointMark {
 			get {
 				if(NodeSingleton.s.pointMark == null) {
-					NodeSingleton.s.pointMark = AssetBundleGraphEditorWindow.LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT);
+					NodeSingleton.s.pointMark = LoadTextureFromFile(Model.Settings.GUI.RESOURCE_CONNECTIONPOINT);
 				}
 				return NodeSingleton.s.pointMark;
 			}
@@ -118,6 +134,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			public Texture2D inputPointBG;
 			public Texture2D outputPointBG;
+			public GUISkin nodeSkin;
 
 			public Texture2D pointMark;
 			public PlatformButton[] platformButtons;

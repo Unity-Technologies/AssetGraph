@@ -132,6 +132,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			public const float TOOLBAR_GRAPHNAMEMENU_WIDTH = 150f;
 			public const int TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH = 20;
 
+			public const string RESOURCE_SKIN					= RESOURCE_BASEPATH + "NodeStyle.guiskin";
 			public const string RESOURCE_CONNECTIONPOINT		= RESOURCE_BASEPATH + "ConnectionPoint.png";
 
 			public const string RESOURCE_INPUT_BG				= RESOURCE_BASEPATH + "InputBG.png";

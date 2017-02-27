@@ -10,7 +10,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Filter", 20)]
+	[CustomNode("Split Assets/By Filter", 20)]
 	public class Filter : Node, Model.NodeDataImporter {
 
 		[System.Serializable]
@@ -62,13 +62,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 1 on";
+				return "node 1 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 1";
+				return "node 1";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Split";
 			}
 		}
 

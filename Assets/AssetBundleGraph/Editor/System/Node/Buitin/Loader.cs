@@ -11,20 +11,26 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Loader", 10)]
+	[CustomNode("Load Assets/From Directory", 10)]
 	public class Loader : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetString m_loadPath;
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 0 on";
+				return "node 0 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 0";
+				return "node 0";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Load";
 			}
 		}
 			

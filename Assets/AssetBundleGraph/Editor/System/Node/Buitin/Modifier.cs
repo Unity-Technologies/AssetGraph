@@ -11,20 +11,26 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Modifier", 40)]
+	[CustomNode("Modify Assets/Modify Assets Directly", 40)]
 	public class Modifier : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
 
 		public override string ActiveStyle {
 			get {
-				return "flow node 2 on";
+				return "node 8 on";
 			}
 		}
 
 		public override string InactiveStyle {
 			get {
-				return "flow node 2";
+				return "node 8";
+			}
+		}
+
+		public override string Category {
+			get {
+				return "Modify";
 			}
 		}
 

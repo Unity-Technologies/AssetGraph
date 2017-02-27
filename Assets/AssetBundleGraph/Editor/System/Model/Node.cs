@@ -33,6 +33,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 		#endregion
 
+		/**
+		 * Category returns label string displayed at bottom of node
+		 */ 
+		public abstract string Category {
+			get;
+		}
+
+
 		#region Initialization, Copy, Comparison, Validation
 		/**
 		 * Initialize Node with given NodeData.
