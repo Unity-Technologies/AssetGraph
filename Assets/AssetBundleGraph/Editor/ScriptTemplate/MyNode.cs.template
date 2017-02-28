@@ -10,23 +10,26 @@ using System.Text.RegularExpressions;
 using UnityEngine.AssetBundles.GraphTool;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-/**
-	ImportSetting is the class for apply specific setting to already imported files.
-*/
-[CustomNode("My Custom Node", 100)]
+[CustomNode("Custom/MyNode", 1000)]
 public class MyNode : Node {
 
 	[SerializeField] private SerializableMultiTargetString m_myValue;
 
 	public override string ActiveStyle {
 		get {
-			return "flow node 1 on";
+			return "node 8 on";
 		}
 	}
 
 	public override string InactiveStyle {
 		get {
-			return "flow node 1";
+			return "node 8";
+		}
+	}
+
+	public override string Category {
+		get {
+			return "Custom";
 		}
 	}
 
