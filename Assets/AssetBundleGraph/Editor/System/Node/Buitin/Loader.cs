@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Load Assets/From Directory", 10)]
+	[CustomNode("Load Assets/Load From Directory", 10)]
 	public class Loader : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetString m_loadPath;
@@ -121,7 +121,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			EditorGUILayout.HelpBox("Loader: Load assets in given directory path.", MessageType.Info);
+			EditorGUILayout.HelpBox("Load From Directory: Load assets from given directory path.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);

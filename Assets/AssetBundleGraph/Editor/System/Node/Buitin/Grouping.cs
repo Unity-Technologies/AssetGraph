@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool
 {
-	[CustomNode("Group Assets/By Name", 50)]
+	[CustomNode("Group Assets/Group By File Path", 40)]
 	public class Grouping : Node, Model.NodeDataImporter {
 
 		enum GroupingPatternType : int {
@@ -73,7 +73,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 				return;
 			}
 
-			EditorGUILayout.HelpBox("Grouping: Create group of assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("Group By File Path: Create group of assets from asset's file path.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);

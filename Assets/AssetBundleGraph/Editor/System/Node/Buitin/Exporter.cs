@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Export/To Directory", 80)]
+	[CustomNode("Export/Export To Directory", 100)]
 	public class Exporter : Node, Model.NodeDataImporter {
 
 		public enum ExportOption : int {
@@ -91,7 +91,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			var currentEditingGroup = editor.CurrentEditingGroup;
 
-			EditorGUILayout.HelpBox("Exporter: Export given files to output directory.", MessageType.Info);
+			EditorGUILayout.HelpBox("Export To Directory: Export given files to output directory.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);

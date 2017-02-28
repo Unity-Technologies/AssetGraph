@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Modify Assets/Modify Assets Directly", 40)]
+	[CustomNode("Modify Assets/Modify Assets Directly", 61)]
 	public class Modifier : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
@@ -56,7 +56,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
-			EditorGUILayout.HelpBox("Modifier: Modify asset settings.", MessageType.Info);
+			EditorGUILayout.HelpBox("Modify Assets Directly: Modify assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -73,7 +73,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					incomingType = ModifierUtility.GetModifierTargetType(m_instance.ClassName);
 
 					if(incomingType == null) {
-						EditorGUILayout.HelpBox("Modifier needs a single type of incoming assets.", MessageType.Info);
+						EditorGUILayout.HelpBox("Modifier needs a single type from incoming assets.", MessageType.Info);
 						return;
 					}
 				}

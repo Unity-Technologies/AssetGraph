@@ -15,7 +15,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	/**
 		ImportSetting is the class for apply specific setting to already imported files.
 	*/
-	[CustomNode("Modify Assets/Overwrite Import Setting", 30)]
+	[CustomNode("Modify Assets/Overwrite Import Setting", 60)]
 	public class ImportSetting : Node, Model.NodeDataImporter {
 
 		public enum ConfigStatus {
@@ -87,7 +87,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
-			EditorGUILayout.HelpBox("ImportSetting: Force apply import settings to given assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("Overwrite Import Setting: Overwrite import settings of incoming assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);

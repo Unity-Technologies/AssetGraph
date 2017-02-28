@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Build Assets/Build Asset Bundles", 70)]
+	[CustomNode("Build/Build Asset Bundles", 90)]
 	public class BundleBuilder : Node, Model.NodeDataImporter {
 
 		private static readonly string key = "0";
@@ -75,7 +75,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			EditorGUILayout.HelpBox("BundleBuilder: Build asset bundles with given asset bundle settings.", MessageType.Info);
+			EditorGUILayout.HelpBox("Build Asset Bundles: Build asset bundles with given asset bundle settings.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);

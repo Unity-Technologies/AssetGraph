@@ -12,7 +12,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Create Assets/Create Prefab From Group", 70)]
+	[CustomNode("Create Assets/Create Prefab From Group", 50)]
 	public class PrefabBuilder : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
@@ -72,7 +72,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
-			EditorGUILayout.HelpBox("PrefabBuilder: Create prefab with given assets and script.", MessageType.Info);
+			EditorGUILayout.HelpBox("Create Prefab From Group: Create prefab from incoming group of assets, using assigned script.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			var builder = m_instance.Get<IPrefabBuilder>(editor.CurrentEditingGroup);
@@ -125,7 +125,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
 						EditorGUILayout.HelpBox(
 							string.Format(
-								"You need to create at least one PrefabBuilder script to use PrefabBuilder node. To start, select {0}>{1}>{2} menu and create new script from template.",
+								"You need to create at least one PrefabBuilder script to use this node. To start, select {0}>{1}>{2} menu and create new script from template.",
 								menuNames[1],menuNames[2], menuNames[3]
 							), MessageType.Info);
 					}

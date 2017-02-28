@@ -11,7 +11,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Asset Bundle/Create Bundle From Group", 60)]
+	[CustomNode("Configure Bundle/Configure Bundle From Group", 70)]
 	public class BundleConfigurator : Node, Model.NodeDataImporter {
 
 		[Serializable]
@@ -147,7 +147,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			if (m_bundleNameTemplate == null) return;
 
-			EditorGUILayout.HelpBox("BundleConfigurator: Create asset bundle settings with given group of assets.", MessageType.Info);
+			EditorGUILayout.HelpBox("Configure Bundle From Group: Create asset bundle settings from incoming group of assets.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);

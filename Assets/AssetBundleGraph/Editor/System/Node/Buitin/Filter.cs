@@ -10,7 +10,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	[CustomNode("Split Assets/By Filter", 20)]
+	[CustomNode("Split Assets/Split By Filter", 20)]
 	public class Filter : Node, Model.NodeDataImporter {
 
 		[System.Serializable]
@@ -128,7 +128,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
-			EditorGUILayout.HelpBox("Filter: Filter incoming assets by keywords and types. You can use regular expressions for keyword field.", MessageType.Info);
+			EditorGUILayout.HelpBox("Split By Filter: Split incoming assets by filter conditions.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
