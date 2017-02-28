@@ -16,13 +16,13 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 [CustomNode("Assert/Assert Unwanted Assets In Bundle", 80)]
 public class AssertUnwantedAssetsInBundle : Node {
 
-	public enum CheckStyle : int {
-		AllowOnlyAssetsInDirectory,	// Only allows asssets under given path to be included
-		ProhibitAssetsInDirectory	// Prohibit assets under given path to be included
+	public enum AssertionStyle : int {
+		AllowOnlyAssetsUnderAssertionPath,	// Only allows asssets under assertion path to be included
+		ProhibitAssetsUnderAssertionPath	// Prohibit assets under assertion path to be included
 	}
 
 	[SerializeField] private SerializableMultiTargetString m_path;
-	[SerializeField] private CheckStyle m_style;
+	[SerializeField] private AssertionStyle m_style;
 
 	public override string ActiveStyle {
 		get {
@@ -56,7 +56,7 @@ public class AssertUnwantedAssetsInBundle : Node {
 
 	public override void Initialize(Model.NodeData data) {
 		m_path = new SerializableMultiTargetString();
-		m_style = CheckStyle.AllowOnlyAssetsInDirectory;
+		m_style = AssertionStyle.AllowOnlyAssetsUnderAssertionPath;
 		data.AddDefaultInputPoint();
 		data.AddDefaultOutputPoint();
 	}
@@ -90,9 +90,9 @@ public class AssertUnwantedAssetsInBundle : Node {
 
 		GUILayout.Space(10f);
 
-		var newValue = (CheckStyle)EditorGUILayout.EnumPopup("Checking Style", m_style);
+		var newValue = (AssertionStyle)EditorGUILayout.EnumPopup("Assertion Style", m_style);
 		if(newValue != m_style) {
-			using(new RecordUndoScope("Change Checking Style", node, true)) {
+			using(new RecordUndoScope("Change Assertion Style", node, true)) {
 				m_style = newValue;
 				onValueChanged();
 			}
@@ -116,7 +116,7 @@ public class AssertUnwantedAssetsInBundle : Node {
 
 			using (disabledScope) {
 				var path = m_path[editor.CurrentEditingGroup];
-				EditorGUILayout.LabelField("Path:");
+				EditorGUILayout.LabelField("Assertion Path:");
 
 				string newLoadPath = null;
 
@@ -184,6 +184,10 @@ public class AssertUnwantedAssetsInBundle : Node {
 		IEnumerable<Model.ConnectionData> connectionsToOutput, 
 		PerformGraph.Output Output) 
 	{
+		if(string.IsNullOrEmpty(m_path[target])) {
+			throw new NodeException(node.Name + ":Assertion Path is empty.", node.Id);
+		}
+
 		// Pass incoming assets straight to Output
 		if(Output != null) {
 			var destination = (connectionsToOutput == null || !connectionsToOutput.Any())? 
@@ -192,29 +196,27 @@ public class AssertUnwantedAssetsInBundle : Node {
 			if(incoming != null) {
 
 				var checkPath = m_path[target];
-				var allow = m_style == CheckStyle.AllowOnlyAssetsInDirectory;
+				var allow = m_style == AssertionStyle.AllowOnlyAssetsUnderAssertionPath;
 
 				foreach(var ag in incoming) {
-					if(!string.IsNullOrEmpty(checkPath)) {
-						foreach (var assets in ag.assetGroups.Values) {
-							foreach(var a in assets) {
+					foreach (var assets in ag.assetGroups.Values) {
+						foreach(var a in assets) {
 
-								if(allow != a.importFrom.Contains(checkPath)) {
-									throw new NodeException(node.Name + ":Unwanted asset '" + a.importFrom + "' found.", node.Id);
-								}
+							if(allow != a.importFrom.Contains(checkPath)) {
+								throw new NodeException(node.Name + ":Unwanted asset '" + a.importFrom + "' found.", node.Id);
+							}
 
-								var dependencies = AssetDatabase.GetDependencies(new string[] { a.importFrom } );
+							var dependencies = AssetDatabase.GetDependencies(new string[] { a.importFrom } );
 
-								foreach(var d in dependencies) {
-									if(allow != d.Contains(checkPath)) {
-										throw new NodeException(node.Name + ":Unwanted asset found in dependency:'" + d 
-											+ "' from following asset:" + a.importFrom, node.Id);
-									}
+							foreach(var d in dependencies) {
+								if(allow != d.Contains(checkPath)) {
+									throw new NodeException(node.Name + ":Unwanted asset found in dependency:'" + d 
+										+ "' from following asset:" + a.importFrom, node.Id);
 								}
 							}
 						}
-						Output(destination, ag.assetGroups);
 					}
+					Output(destination, ag.assetGroups);
 				}
 			} else {
 				// Overwrite output with empty Dictionary when no there is incoming asset
