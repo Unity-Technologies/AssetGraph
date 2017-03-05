@@ -154,7 +154,6 @@ public class ExtractSharedAssets : Node {
 
 	private void CollectDependencies(string groupKey, string[] assetPaths, ref Dictionary<string, List<string>> collector) {
 		var dependencies = AssetDatabase.GetDependencies(assetPaths);
-		bool collectedAny = false;
 		foreach(var d in dependencies) {
 			if(!collector.ContainsKey(d)) {
 				collector[d] = new List<string>();
@@ -162,12 +161,7 @@ public class ExtractSharedAssets : Node {
 			if(!collector[d].Contains(groupKey)) {
 				collector[d].Add(groupKey);
 				collector[d].Sort();
-				collectedAny = true;
 			}
-		}
-
-		if(collectedAny) {
-			CollectDependencies(groupKey, dependencies, ref collector);
 		}
 	}
 }
