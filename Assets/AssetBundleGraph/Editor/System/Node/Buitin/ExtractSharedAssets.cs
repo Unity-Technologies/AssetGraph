@@ -110,17 +110,7 @@ public class ExtractSharedAssets : Node {
 						var assets = ag.assetGroups[key];
 
 						foreach(var a in assets) {
-							var dependencies = AssetDatabase.GetDependencies(new string[] { a.importFrom } );
-
-							foreach(var d in dependencies) {
-								if(!dependencyCollector.ContainsKey(d)) {
-									dependencyCollector[d] = new List<string>();
-								}
-								if(!dependencyCollector[d].Contains(key)) {
-									dependencyCollector[d].Add(key);
-									dependencyCollector[d].Sort();
-								}
-							}
+							CollectDependencies(key, new string[] { a.importFrom }, ref dependencyCollector);
 						}
 					}
 				}
@@ -162,4 +152,22 @@ public class ExtractSharedAssets : Node {
 		}
 	}
 
+	private void CollectDependencies(string groupKey, string[] assetPaths, ref Dictionary<string, List<string>> collector) {
+		var dependencies = AssetDatabase.GetDependencies(assetPaths);
+		bool collectedAny = false;
+		foreach(var d in dependencies) {
+			if(!collector.ContainsKey(d)) {
+				collector[d] = new List<string>();
+			}
+			if(!collector[d].Contains(groupKey)) {
+				collector[d].Add(groupKey);
+				collector[d].Sort();
+				collectedAny = true;
+			}
+		}
+
+		if(collectedAny) {
+			CollectDependencies(groupKey, dependencies, ref collector);
+		}
+	}
 }
