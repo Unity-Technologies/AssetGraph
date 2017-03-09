@@ -6,6 +6,10 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_5_5_OR_NEWER
+using UnityEngine.Profiling;
+#endif
+
 using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
