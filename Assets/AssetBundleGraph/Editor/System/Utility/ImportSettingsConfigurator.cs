@@ -123,6 +123,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#if UNITY_5_5_OR_NEWER
 			importer.alphaSource = reference.alphaSource;
 			importer.sRGBTexture = reference.sRGBTexture;
+			
+			foreach(var targetGroup in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
+                var impSet = reference.GetPlatformTextureSettings(targetGroup.ToString());
+                importer.SetPlatformTextureSettings(impSet);
+            }
+
+            importer.textureCompression = reference.textureCompression;
+            importer.crunchedCompression = reference.crunchedCompression;
 			#endif
 		}
 
@@ -169,6 +178,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#if UNITY_5_5_OR_NEWER
 			if (target.alphaSource != reference.alphaSource) return false;
 			if (target.sRGBTexture != reference.sRGBTexture) return false;
+
+			foreach(var targetGroup in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
+                var impSet = reference.GetPlatformTextureSettings(targetGroup.ToString());
+                var targetImpSet = target.GetPlatformTextureSettings(targetGroup.ToString());
+                if(!CompareImporterPlatformSettings(impSet, targetImpSet)) return false;
+            }
+
+            if(target.textureCompression != reference.textureCompression) return false;
+            if(target.crunchedCompression != reference.crunchedCompression) return false;
 			#endif
 
 			// spritesheet
@@ -189,6 +208,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.wrapMode != reference.wrapMode) return false;
 			return true;
 		}
+
+   		bool CompareImporterPlatformSettings(TextureImporterPlatformSettings c1, TextureImporterPlatformSettings c2)
+        {
+            if(c1.allowsAlphaSplitting != c2.allowsAlphaSplitting) return false;
+            if(c1.compressionQuality != c2.compressionQuality) return false;
+            if(c1.crunchedCompression != c2.crunchedCompression) return false;
+            if(c1.format != c2.format) return false;
+            if(c1.maxTextureSize != c2.maxTextureSize) return false;
+            if(c1.name != c2.name) return false;
+            if(c1.overridden != c2.overridden) return false;
+            if(c1.textureCompression != c2.textureCompression) return false;
+
+            return true;
+        }
+
 
 		#endregion
 
