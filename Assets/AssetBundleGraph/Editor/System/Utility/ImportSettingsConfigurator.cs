@@ -124,6 +124,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			importer.alphaSource = reference.alphaSource;
 			importer.sRGBTexture = reference.sRGBTexture;
 			#endif
+
+			#if UNITY_2017_1_OR_NEWER
+			importer.alphaTestReferenceValue = reference.alphaTestReferenceValue;
+			importer.mipMapsPreserveCoverage = reference.mipMapsPreserveCoverage;
+			importer.wrapModeU = reference.wrapModeU;
+			importer.wrapModeV = reference.wrapModeV;
+			importer.wrapModeW = reference.wrapModeW;
+			#endif
 		}
 
 		private bool IsEqual (TextureImporter target, bool ignorePackingTagDifference) {
@@ -169,6 +177,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#if UNITY_5_5_OR_NEWER
 			if (target.alphaSource != reference.alphaSource) return false;
 			if (target.sRGBTexture != reference.sRGBTexture) return false;
+			#endif
+
+			#if UNITY_2017_1_OR_NEWER
+			if (target.alphaTestReferenceValue != reference.alphaTestReferenceValue) return false;
+			if (target.mipMapsPreserveCoverage != reference.mipMapsPreserveCoverage) return false;
+			if (target.wrapModeU != reference.wrapModeU) return false;
+			if (target.wrapModeV != reference.wrapModeV) return false;
+			if (target.wrapModeW != reference.wrapModeW) return false;
 			#endif
 
 			// spritesheet
@@ -274,6 +290,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			importer.weldVertices = reference.weldVertices;
 			#endif
 
+			#if UNITY_2017_1_OR_NEWER
+			importer.importCameras = reference.importCameras;
+			importer.importLights = reference.importLights;
+			importer.normalCalculationMode = reference.normalCalculationMode;
+			importer.useFileScale = reference.useFileScale;
+			#endif
+
 			/* read only */
 			/* 
 			importer.importedTakeInfos
@@ -351,7 +374,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			if (target.fileScale != reference.fileScale) return false;
 			if (target.generateAnimations != reference.generateAnimations) return false;
 			if (target.generateSecondaryUV != reference.generateSecondaryUV) return false;
 			if (target.globalScale != reference.globalScale) return false;
@@ -401,7 +423,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.importedTakeInfos != reference.importedTakeInfos) return false;
 			if (target.importMaterials != reference.importMaterials) return false;
 			if (target.isBakeIKSupported != reference.isBakeIKSupported) return false;
-			if (target.isFileScaleUsed != reference.isFileScaleUsed) return false;
 			if (target.isReadable != reference.isReadable) return false;
 			if (target.isTangentImportSupported != reference.isTangentImportSupported) return false;
 			if (target.isUseFileUnitsSupported != reference.isUseFileUnitsSupported) return false;
@@ -428,6 +449,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			if (target.keepQuads != reference.keepQuads) return false;
 			if (target.weldVertices != reference.weldVertices) return false;
+			#endif
+
+			#if UNITY_2017_1_OR_NEWER
+			if (target.importCameras != reference.importCameras) return false;
+			if (target.importLights != reference.importLights) 	 return false;
+			if (target.normalCalculationMode != reference.normalCalculationMode) return false;
+			if (target.useFileScale != reference.useFileScale) return false;
+			#else
+			if (target.isFileScaleUsed != reference.isFileScaleUsed) return false;
+			if (target.fileScale != reference.fileScale) return false;
 			#endif
 
 			return true;
