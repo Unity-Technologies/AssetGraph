@@ -14,9 +14,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomNode("Build/Build Asset Bundles", 90)]
 	public class BundleBuilder : Node, Model.NodeDataImporter {
 
+		struct AssetImporterSetting {
+			private AssetImporter importer;
+			private string assetBundleName;
+			private string assetBundleVariant;
+
+			public AssetImporterSetting(AssetImporter imp) {
+				importer = imp;
+				assetBundleName = importer.assetBundleName;
+				assetBundleVariant = importer.assetBundleVariant;
+			}
+
+			public void WriteBack() {
+				importer.SetAssetBundleNameAndVariant (assetBundleName, assetBundleVariant);
+				importer.SaveAndReimport ();
+			}
+		}
+
 		private static readonly string key = "0";
 
 		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
+		[SerializeField] private bool m_overwriteImporterSetting;
 
 		public override string ActiveStyle {
 			get {
@@ -77,6 +95,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			EditorGUILayout.HelpBox("Build Asset Bundles: Build asset bundles with given asset bundle settings.", MessageType.Info);
 			editor.UpdateNodeName(node);
+
+			bool newOverwrite = EditorGUILayout.ToggleLeft ("Keep AssetImporter settings for variants", m_overwriteImporterSetting);
+			if (newOverwrite != m_overwriteImporterSetting) {
+				using(new RecordUndoScope("Remove Target Bundle Options", node, true)){
+					m_overwriteImporterSetting = newOverwrite;
+					onValueChanged();
+				}
+			}
 
 			GUILayout.Space(10f);
 
@@ -144,7 +170,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if(incoming == null) {
 				return;
 			}
-
+				
 			var bundleNames = incoming.SelectMany(v => v.assetGroups.Keys).Distinct().ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
 
@@ -248,6 +274,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			AssetBundleBuild[] bundleBuild = new AssetBundleBuild[validNames];
+			List<AssetImporterSetting> importerSetting = null;
+
+			if (!m_overwriteImporterSetting) {
+				importerSetting = new List<AssetImporterSetting> ();
+			}
 
 			int bbIndex = 0;
 			foreach(var name in bundleNames) {
@@ -261,6 +292,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					bundleBuild[bbIndex].assetBundleName = name;
 					bundleBuild[bbIndex].assetBundleVariant = v;
 					bundleBuild[bbIndex].assetNames = assets.Where(x => x.variantName == v).Select(x => x.importFrom).ToArray();
+
+					/**
+					 * WORKAROND: This will be unnecessary in future version
+					 * Unity currently have issue in configuring variant assets using AssetBundleBuild[] that
+					 * internal identifier does not match properly unless you configure value in AssetImporter.
+					 */
+					if (!string.IsNullOrEmpty (v)) {
+						foreach (var path in bundleBuild[bbIndex].assetNames) {
+							AssetImporter importer = AssetImporter.GetAtPath (path);
+
+							if (importer.assetBundleName != name || importer.assetBundleVariant != v) {
+								if (!m_overwriteImporterSetting) {
+									importerSetting.Add (new AssetImporterSetting(importer));
+								}
+								importer.SetAssetBundleNameAndVariant (name, v);
+								importer.SaveAndReimport ();
+							}
+						}
+					}
+
 					++bbIndex;
 				}
 			}
@@ -286,6 +337,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
 				Output(dst, output);
+			}
+
+			if (importerSetting != null) {
+				importerSetting.ForEach (i => i.WriteBack ());
 			}
 
 			AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, bundleBuild, output[key], aggregatedGroups, bundleVariants));
