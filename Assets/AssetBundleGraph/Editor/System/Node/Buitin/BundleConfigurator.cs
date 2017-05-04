@@ -324,6 +324,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			if(incoming != null) {
+				Dictionary<string, List<string>> variantsInfo = new Dictionary<string, List<string>> ();
+
 				foreach(var ag in incoming) {
 					string variantName = null;
 					if(!m_useGroupAsVariants) {
@@ -338,7 +340,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 						var bundleName = GetBundleName(target, node, groupKey);
 						var assets = ag.assetGroups[groupKey];
+
 						ConfigureAssetBundleSettings(variantName, assets);
+
+						if (!string.IsNullOrEmpty (variantName)) {
+							if (!variantsInfo.ContainsKey (bundleName)) {
+								variantsInfo [bundleName] = new List<string> ();
+							}
+							variantsInfo [bundleName].Add (variantName.ToLower());
+						}
+
 						if(output != null) {
 							if(!output.ContainsKey(bundleName)) {
 								output[bundleName] = new List<AssetReference>();
@@ -347,54 +358,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 					}
 				}
-			}
 
-			if(Output != null) {
-				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-					null : connectionsToOutput.First();
-				Output(dst, output);
-			}
-		}
-		
-		public override void Build (BuildTarget target, 
-			Model.NodeData node, 
-			IEnumerable<PerformGraph.AssetGroups> incoming, 
-			IEnumerable<Model.ConnectionData> connectionsToOutput, 
-			PerformGraph.Output Output,
-			Action<Model.NodeData, string, float> progressFunc) 
-		{
-			Dictionary<string, List<AssetReference>> output = null;
-			if(Output != null) {
-				output = new Dictionary<string, List<AssetReference>>();
-			}
-
-			if(incoming != null) {
-				foreach(var ag in incoming) {
-					string variantName = null;
-					if(!m_useGroupAsVariants) {
-						var currentVariant = m_variants.Find( v => v.ConnectionPointId == ag.connection.ToNodeConnectionPointId );
-						variantName = (currentVariant == null) ? null : currentVariant.Name;
-					}
-
-					// set configured assets in bundle name
-					foreach (var groupKey in ag.assetGroups.Keys) {
-						if(m_useGroupAsVariants) {
-							variantName = groupKey;
-						}
-						var bundleName = GetBundleName(target, node, groupKey);
-
-						if(progressFunc != null) progressFunc(node, string.Format("Configuring {0}", bundleName), 0.5f);
-
-						var assets = ag.assetGroups[groupKey];
-						ConfigureAssetBundleSettings(variantName, assets);
-						if(output != null) {
-							if(!output.ContainsKey(bundleName)) {
-								output[bundleName] = new List<AssetReference>();
-							} 
-							output[bundleName].AddRange(assets);
-						}
-					}
-				}
+				ValidateVariantsProperlyConfiguired (node, output, variantsInfo);
 			}
 
 			if(Output != null) {
@@ -407,7 +372,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void ConfigureAssetBundleSettings (string variantName, List<AssetReference> assets) {		
 
 			foreach(var a in assets) {
-				a.variantName = (string.IsNullOrEmpty(variantName))? null : variantName.ToLower();;
+				a.variantName = (string.IsNullOrEmpty(variantName))? null : variantName.ToLower();
 			}
 		}
 
@@ -444,6 +409,40 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				NameAlreadyExists();
 			}
 		}
+
+		private void ValidateVariantsProperlyConfiguired(
+			Model.NodeData node, 
+			Dictionary<string, List<AssetReference>> output, Dictionary<string, List<string>> variantsInfo) 
+		{
+			foreach (var bundleName in output.Keys) {
+				if (!variantsInfo.ContainsKey (bundleName)) {
+					continue;
+				}
+				List<string> variants = variantsInfo [bundleName];
+
+				if (variants.Count < 2) {
+					throw new NodeException (node.Name + ":" + bundleName + " is not configured to create more than 2 variants.", node.Id);
+				}
+
+				List<AssetReference> assets = output [bundleName];
+
+				List<AssetReference> variant0Assets = assets.Where (a => a.variantName == variants [0]).ToList ();
+
+				for(int i = 1; i< variants.Count; ++i) {
+					List<AssetReference> variantAssets = assets.Where (a => a.variantName == variants [i]).ToList ();
+					if(variant0Assets.Count != variantAssets.Count) {
+						throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " variant " + variants [0] + " and " + variants [i] + " do not match containing assets.", node.Id);
+					}
+
+					foreach (var a0 in variant0Assets) {
+						if(!variantAssets.Any( a => a.fileNameAndExtension == a0.fileNameAndExtension)) {
+							throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " does not contain " + a0.fileNameAndExtension + " in variant " + variants [i], node.Id);
+						}
+					}
+				}
+			}
+		}
+
 
 		public string GetBundleName(BuildTarget target, Model.NodeData node, string groupKey) {
 			var bundleName = m_bundleNameTemplate[target];
