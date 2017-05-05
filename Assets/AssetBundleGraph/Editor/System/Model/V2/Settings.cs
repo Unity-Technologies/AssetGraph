@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEditor;
 
 using UnityEngine.AssetBundles.GraphTool;
-using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 	public class Settings {
@@ -30,6 +29,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
 		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
 		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
+		public const string ASSETBUNDLEGRAPH_BUILDMAP_NAME = "AssetBundleBuildMap.asset";
 		public const string ASSETBUNDLEGRAPH_BATCHBUILD_CONFIG_NAME = "BatchBuildConfig.asset";
 
 		public const string ASSETS_PATH = "Assets/";

@@ -98,6 +98,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+		public string fileName {
+			get {
+				if(m_importFrom != null) {
+					return Path.GetFileNameWithoutExtension(m_importFrom);
+				}
+				if(m_exportTo != null) {
+					return Path.GetFileNameWithoutExtension(m_exportTo);
+				}
+				return null;
+			}
+		}
+
+
 		public string path {
 			get {
 				if(m_importFrom != null) {
