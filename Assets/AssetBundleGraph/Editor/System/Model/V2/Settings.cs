@@ -52,6 +52,12 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string SETTINGTEMPLATE_FILE_TEXTURE	= SETTING_TEMPLATE_PATH + "setting.png";
 		public const string SETTINGTEMPLATE_FILE_VIDEO		= SETTING_TEMPLATE_PATH + "setting.m4v";
 
+		public const string GUI_TEXT_SETTINGTEMPLATE_MODEL	= "Model";
+		public const string GUI_TEXT_SETTINGTEMPLATE_AUDIO	= "Audio";
+		public const string GUI_TEXT_SETTINGTEMPLATE_TEXTURE= "Texture";
+		public const string GUI_TEXT_SETTINGTEMPLATE_VIDEO	= "Video";
+
+
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
 		public const string MANIFEST_FOOTER = ".manifest";

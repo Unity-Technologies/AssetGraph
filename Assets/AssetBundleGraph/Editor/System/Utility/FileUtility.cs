@@ -183,6 +183,23 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return cacheDir;
 		}
 
+		public static string GetImportSettingTemplateFilePath(string name) {
+			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_MODEL) {
+				return Model.Settings.SETTINGTEMPLATE_FILE_MODEL;
+			}
+			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_AUDIO) {
+				return Model.Settings.SETTINGTEMPLATE_FILE_AUDIO;
+			}
+			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_TEXTURE) {
+				return Model.Settings.SETTINGTEMPLATE_FILE_TEXTURE;
+			}
+			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_VIDEO) {
+				return Model.Settings.SETTINGTEMPLATE_FILE_VIDEO;
+			}
+			#endif
+			return null;
+		}
 
 		public static string GetImportSettingTemplateFilePath(AssetReference a) {
 			if(a.filterType == typeof(ModelImporter)) {

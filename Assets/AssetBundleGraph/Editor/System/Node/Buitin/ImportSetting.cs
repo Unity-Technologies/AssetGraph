@@ -24,8 +24,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			GoodSampleFound
 		}
 
+		private static readonly string[] s_importerTypeList = new string[] {
+			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_MODEL,
+			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_TEXTURE,
+			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_AUDIO,
+			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_VIDEO
+		};
+
 		[SerializeField] private SerializableMultiTargetString m_spritePackingTagNameTemplate;
 		[SerializeField] private bool m_overwritePackingTag;
+
+		private Editor m_importerEditor;
 
 		public override string ActiveStyle {
 			get {
@@ -92,31 +101,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			GUILayout.Space(10f);
 
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-
-				m_overwritePackingTag = EditorGUILayout.ToggleLeft("Configure Sprite Packing Tag", m_overwritePackingTag);
-
-				using (new EditorGUI.DisabledScope(!m_overwritePackingTag)) {
-					var val = m_spritePackingTagNameTemplate[editor.CurrentEditingGroup];
-
-					var newValue = EditorGUILayout.TextField("Packing Tag", val);
-					if (newValue != val) {
-						using(new RecordUndoScope("Undo Change Packing Tag", node, true)){
-							m_spritePackingTagNameTemplate[editor.CurrentEditingGroup] = newValue;
-							onValueChanged();
-						}
-					}
-					EditorGUILayout.HelpBox(
-						"You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
-						MessageType.Info);
-				}
-			}
-
 			/*
 				importer node has no platform key. 
 				platform key is contained by Unity's importer inspector itself.
 			*/
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+			using (new EditorGUILayout.VerticalScope()) {
 				Type incomingType = TypeUtility.FindFirstIncomingAssetType(streamManager, node.Data.InputPoints[0]);
 				ImportSetting.ConfigStatus status = 
 					ImportSetting.GetConfigStatus(node.Data);
@@ -126,7 +115,30 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(status == ImportSetting.ConfigStatus.GoodSampleFound) {
 						incomingType = ImportSetting.GetReferenceAssetImporter(node.Data).GetType();
 					} else {
-						EditorGUILayout.HelpBox("ImportSetting needs a single type of incoming assets.", MessageType.Info);
+						using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+							EditorGUILayout.HelpBox ("Import setting type can be set by incoming asset, or you can specify by selecting.", MessageType.Info);
+							using (new EditorGUILayout.HorizontalScope ()) {
+								EditorGUILayout.LabelField ("Importer Type");
+								if (GUILayout.Button ("", "Popup", GUILayout.MinWidth (150f))) {
+
+									var menu = new GenericMenu ();
+
+									for (var i = 0; i < s_importerTypeList.Length; i++) {
+										var index = i;
+										menu.AddItem (
+											new GUIContent (s_importerTypeList [i]),
+											false,
+											() => {
+												ResetConfig (node.Data);
+												var configFilePath = FileUtility.GetImportSettingTemplateFilePath (s_importerTypeList [index]);
+												SaveSampleFile (node.Data, configFilePath);
+											}
+										);
+									}
+									menu.ShowAsContext ();
+								}
+							}
+						}
 						return;
 					}
 				}
@@ -138,16 +150,53 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					node.Data.NeedsRevisit = true;
 					break;
 				case ImportSetting.ConfigStatus.GoodSampleFound:
-					if (GUILayout.Button("Configure Import Setting")) {
-						Selection.activeObject = ImportSetting.GetReferenceAssetImporter(node.Data);
+					if (m_importerEditor == null) {
+						m_importerEditor = Editor.CreateEditor (ImportSetting.GetReferenceAssetImporter (node.Data));
 					}
-					if (GUILayout.Button("Reset Import Setting")) {
-						ImportSetting.ResetConfig(node.Data);
+
+					if (incomingType == typeof(UnityEditor.TextureImporter)) {
+						using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+
+							m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
+
+							using (new EditorGUI.DisabledScope (!m_overwritePackingTag)) {
+								var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
+
+								var newValue = EditorGUILayout.TextField ("Packing Tag", val);
+								if (newValue != val) {
+									using (new RecordUndoScope ("Undo Change Packing Tag", node, true)) {
+										m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
+										onValueChanged ();
+									}
+								}
+								EditorGUILayout.HelpBox (
+									"You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
+									MessageType.Info);
+							}
+						}
+						GUILayout.Space (10);
+					}
+
+					GUILayout.Label (string.Format("Import Setting ({0})", incomingType.Name));
+					m_importerEditor.OnInspectorGUI ();
+
+					GUILayout.Space (40);
+
+					using (new EditorGUILayout.HorizontalScope (GUI.skin.box)) {
+						GUILayout.Space (4);
+						EditorGUILayout.LabelField ("Clear Saved Import Setting");
+
+						if (GUILayout.Button ("Clear")) {
+							if (EditorUtility.DisplayDialog ("Clear Saved Import Setting", 
+								    string.Format ("Do you want to reset saved import setting for \"{0}\"? This operation is not undoable.", node.Name), "OK", "Cancel")) {
+								ResetConfig (node.Data);
+							}
+						}
 					}
 					break;
 				case ImportSetting.ConfigStatus.TooManySamplesFound:
 					if (GUILayout.Button("Reset Import Setting")) {
-						ImportSetting.ResetConfig(node.Data);
+						ResetConfig(node.Data);
 					}
 					break;
 				}
@@ -182,7 +231,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				if(firstAsset != null) {
 					// give a try first in sampling file
-					SaveSampleFile(node, firstAsset);
+					var configFilePath = FileUtility.GetImportSettingTemplateFilePath(firstAsset);
+					SaveSampleFile(node, configFilePath);
 
 					ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, (ConfigStatus eType) => {
 						if(eType == ConfigStatus.NoSampleFound) {
@@ -224,13 +274,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		private void SaveSampleFile(Model.NodeData node, AssetReference asset) {
+		private void SaveSampleFile(Model.NodeData node, string configFilePath) {
 			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 			if (!Directory.Exists(samplingDirectoryPath)) {
 				Directory.CreateDirectory(samplingDirectoryPath);
 			}
 
-			var configFilePath = FileUtility.GetImportSettingTemplateFilePath(asset);
 			UnityEngine.Assertions.Assert.IsNotNull(configFilePath);
 			var targetFilePath = FileUtility.PathCombine(samplingDirectoryPath, Path.GetFileName(configFilePath));
 
@@ -260,7 +309,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return ConfigStatus.TooManySamplesFound;
 		}
 
-		public static void ResetConfig(Model.NodeData node) {
+		public void ResetConfig(Model.NodeData node) {
+			if (m_importerEditor != null) {
+				UnityEngine.Object.DestroyImmediate (m_importerEditor);
+				m_importerEditor = null;
+			}
 			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
 			FileUtility.RemakeDirectory(sampleFileDir);
 		}
@@ -281,7 +334,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private void ApplyImportSetting(BuildTarget target, Model.NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
 
-			var referenceImporter = GetReferenceAssetImporter(node);	
+			var referenceImporter = GetReferenceAssetImporter(node);
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
 
 			foreach(var ag in incoming) {
