@@ -269,7 +269,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					if(r != null) {
-						outputSource.Add(AssetReferenceDatabase.GetReference(relativePath));
+						outputSource.Add(r);
 					}
 					continue;
 				}
