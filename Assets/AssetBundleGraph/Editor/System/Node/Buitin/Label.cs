@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEditor;
-using System.Linq;
 
 using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
