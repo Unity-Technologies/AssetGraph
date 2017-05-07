@@ -28,6 +28,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		[SerializeField] private string m_lastModified;
 		[SerializeField] private int m_version;
 		[SerializeField] private string m_graphDescription;
+		[SerializeField] private bool m_useAsAssetPostprocessor;
 
 		void OnEnable() {
 			Initialize();
@@ -62,6 +63,16 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 
 			EditorUtility.SetDirty(this);
+		}
+
+		public bool UseAsAssetPostprocessor {
+			get {  
+				return m_useAsAssetPostprocessor;
+			}
+			set {
+				m_useAsAssetPostprocessor = value;
+				SetGraphDirty();
+			}
 		}
 
 		public DateTime LastModified {
@@ -121,7 +132,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public void SetGraphDirty() {
 			EditorUtility.SetDirty(this);
 		}
-			
+
 		//
 		// Save/Load to disk
 		//

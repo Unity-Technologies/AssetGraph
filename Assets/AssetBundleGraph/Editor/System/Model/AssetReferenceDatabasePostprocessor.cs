@@ -21,7 +21,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				AssetReferenceDatabase.MoveReference(movedFromAssetPaths[i], movedAssets[i]);
 			}
 
+			NotifyAssetPostprocessorGraphs (importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+
 			AssetBundleGraphEditorWindow.NotifyAssetsReimportedToAllWindows(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+		}
+
+		static void NotifyAssetPostprocessorGraphs(string[] importedAssets, 
+			string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
+		{
+			var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+
+			foreach(var guid in guids) {
+				string path = AssetDatabase.GUIDToAssetPath(guid);
+				var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
+				if (graph.UseAsAssetPostprocessor) {
+					foreach(var n in graph.Nodes) {
+						n.Operation.Object.OnAssetsReimported(n, null, EditorUserBuildSettings.activeBuildTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+					}
+					AssetBundleGraphUtility.ExecuteGraph (graph);
+				}
+			}
 		}
 	}
 }
