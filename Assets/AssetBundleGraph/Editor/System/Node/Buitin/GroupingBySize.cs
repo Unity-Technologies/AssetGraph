@@ -126,10 +126,10 @@ namespace UnityEngine.AssetBundles.GraphTool
 				return;
 			}
 							var outputDict = new Dictionary<string, List<AssetReference>>();
-			var szGroup = m_groupSizeByte[target] * 1000;
+			long szGroup = m_groupSizeByte[target] * 1000;
 
 			int groupCount = 0;
-			int szGroupCount = 0;
+			long szGroupCount = 0;
 			var groupName = groupCount.ToString();
 
 			if(incoming != null) {
@@ -171,12 +171,16 @@ namespace UnityEngine.AssetBundles.GraphTool
 			return true;
 		}
 
-		private int GetMemorySizeOfAsset(AssetReference a) {
+		private long GetMemorySizeOfAsset(AssetReference a) {
 
 			var objects = a.allData;
-			int size = 0;
+			long size = 0;
 			foreach(var o in objects) {
+				#if UNITY_5_6_OR_NEWER
+				size += Profiler.GetRuntimeMemorySizeLong(o);
+				#else
 				size += Profiler.GetRuntimeMemorySize(o);
+				#endif
 			}
 
 			a.ReleaseData();
