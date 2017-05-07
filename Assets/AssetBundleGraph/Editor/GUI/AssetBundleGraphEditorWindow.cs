@@ -773,6 +773,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				showVerboseLog = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 				LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
 
+				controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle(controller.TargetGraph.UseAsAssetPostprocessor, "Use As Postprocessor", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+
 				GUILayout.FlexibleSpace();
 
 				GUIStyle tbLabel = new GUIStyle(EditorStyles.toolbar);
