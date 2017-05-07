@@ -1,10 +1,13 @@
 ﻿using UnityEngine;
-using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Linq;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleBuildMap : ScriptableObject {
@@ -29,6 +32,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					s_map.m_assetBundles = new List<AssetBundleEntry>();
 					s_map.m_version = VERSION;
 
+					#if UNITY_EDITOR
 					var DBDir = Config.ASSETNBUNDLEGRAPH_DATA_PATH;
 
 					if (!Directory.Exists(DBDir)) {
@@ -36,6 +40,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					AssetDatabase.CreateAsset(s_map, DBPath);
+					#endif
 				}
 			}
 
@@ -49,9 +54,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private static bool Load() {
-
 			bool loaded = false;
 
+			#if UNITY_EDITOR
 			try {
 				var dbPath = DBPath;
 
@@ -67,12 +72,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			} catch(Exception e) {
 				Debug.LogException (e);
 			}
+			#endif
 
 			return loaded;
 		}
 
 		public static void SetMapDirty() {
+			#if UNITY_EDITOR
 			EditorUtility.SetDirty(s_map);
+			#endif
 		}
 
 		internal static string MakeFullName(string assetBundleName, string variantName) {
@@ -99,10 +107,25 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[Serializable]
 		public class AssetBundleEntry {
 
+			[Serializable]
+			internal struct AssetPathString {
+				[SerializeField] public string original;
+				[SerializeField] public string lower;
+
+				internal AssetPathString(string s) {
+					original = s;
+					if(!string.IsNullOrEmpty(s)) {
+						lower = s.ToLower();
+					} else {
+						lower = s;
+					}
+				}
+			}
+
 			[SerializeField] internal string m_assetBundleName;
 			[SerializeField] internal string m_assetBundleVariantName;
 			[SerializeField] internal string m_fullName;
-			[SerializeField] private List<string> m_assets;
+			[SerializeField] internal List<AssetPathString> m_assets;
 			[SerializeField] public string m_registererId;
 
 			public string Name {
@@ -124,7 +147,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_assetBundleName = assetBundleName.ToLower();
 				m_assetBundleVariantName = variantName.ToLower();
 				m_fullName = AssetBundleBuildMap.MakeFullName(assetBundleName, variantName);
-				m_assets = new List<string>();
+				m_assets = new List<AssetPathString>();
 			}
 
 			public void Clear() {
@@ -135,14 +158,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			public void AddAssets(string id, IEnumerable<string> assets) {
 				foreach (var a in assets) {
-					m_assets.Add (a.ToLower ());
+					m_assets.Add (new AssetPathString(a));
 				}
 				AssetBundleBuildMap.SetMapDirty ();
 			}
 
 			public IEnumerable<string> GetAssetFromAssetName(string assetName) {
 				assetName = assetName.ToLower ();
-				return m_assets.Where (a => Path.GetFileNameWithoutExtension(a) == assetName);
+				return m_assets.Where (a => Path.GetFileNameWithoutExtension(a.lower) == assetName).Select(s => s.original);
 			}
 		}
 
@@ -175,6 +198,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return m_assetBundles.Where (ab => ab.m_fullName == assetbundleName)
 				.SelectMany (ab => ab.GetAssetFromAssetName (assetName))
 				.ToArray();
+		}
+
+		public string[] GetAssetPathsFromAssetBundle (string assetBundleName) {
+			assetBundleName = assetBundleName.ToLower ();
+			return m_assetBundles.Where(e => e.m_fullName == assetBundleName).SelectMany(e => e.m_assets).Select(s => s.original).ToArray();
+		}
+
+		public string GetAssetBundleName(string assetPath) {
+			var entry = m_assetBundles.Find(e => e.m_assets.Contains(new AssetBundleEntry.AssetPathString(assetPath)));
+			if (entry != null) {
+				return entry.m_fullName;
+			}
+			return string.Empty;
+		}
+
+		public string GetImplicitAssetBundleName(string assetPath) {
+			return GetAssetBundleName (assetPath);
+		}
+
+		public string[] GetAllAssetBundleNames() {
+			return m_assetBundles.Select (e => e.m_fullName).ToArray ();
 		}
 	}
 }
