@@ -67,6 +67,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			string[] movedAssets, 
 			string[] movedFromAssetPaths)
 		{
+			if (streamManager == null) {
+				return true;
+			}
+
 			var loadPath = m_loadPath[target];
 			// if loadPath is null/empty, loader load everything except for settings
 			if(string.IsNullOrEmpty(loadPath)) {
