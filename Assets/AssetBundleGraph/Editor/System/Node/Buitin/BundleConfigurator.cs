@@ -365,7 +365,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 
-				ValidateVariantsProperlyConfiguired (node, output, variantsInfo);
+				if (output != null) {
+					ValidateVariantsProperlyConfiguired (node, output, variantsInfo);
+				}
 			}
 
 			if(Output != null) {
@@ -441,7 +443,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 
 					foreach (var a0 in variant0Assets) {
-						if(!variantAssets.Any( a => a.fileNameAndExtension == a0.fileNameAndExtension)) {
+						if(!variantAssets.Any( a => a.fileName == a0.fileName)) {
 							throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " does not contain " + a0.fileNameAndExtension + " in variant " + variants [i], node.Id);
 						}
 					}
