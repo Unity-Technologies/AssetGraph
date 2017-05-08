@@ -50,7 +50,7 @@ VideoClipImporter:
     encodedStartFrame: 0
     encodedEndFrame: 42
     streamedResource:
-      source: Assets/AssetBundleGraph/Editor/SettingTemplate/setting.m4v
+      source: 
       offset: 0
       size: 15524
   userData: 

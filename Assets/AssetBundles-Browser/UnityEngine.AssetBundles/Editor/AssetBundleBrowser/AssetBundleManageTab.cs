@@ -2,8 +2,6 @@
 using UnityEditor.IMGUI.Controls;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
-
 namespace UnityEngine.AssetBundles
 {
     [System.Serializable]
