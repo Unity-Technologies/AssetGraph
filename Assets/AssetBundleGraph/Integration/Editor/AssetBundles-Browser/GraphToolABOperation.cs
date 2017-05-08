@@ -77,6 +77,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public bool BuildAssetBundles (ABBuildInfo info) {
 			
+            AssetBundleBuildMap.GetBuildMap ().Clear ();
+
 			var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
 
 			foreach(var guid in guids) {
