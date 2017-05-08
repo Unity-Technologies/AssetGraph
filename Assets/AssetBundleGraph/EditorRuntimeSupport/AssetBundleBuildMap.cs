@@ -13,9 +13,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleBuildMap : ScriptableObject {
 
 		[SerializeField] private List<AssetBundleEntry> m_assetBundles;
+        #if UNITY_EDITOR
 		[SerializeField] private int m_version;
-
 		private const int VERSION = 1;
+        #endif
 
 		private static AssetBundleBuildMap s_map;
 
@@ -30,9 +31,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					// Create vanilla db
 					s_map = ScriptableObject.CreateInstance<AssetBundleBuildMap>();
 					s_map.m_assetBundles = new List<AssetBundleEntry>();
+                    #if UNITY_EDITOR
 					s_map.m_version = VERSION;
 
-					#if UNITY_EDITOR
 					var DBDir = Config.ASSETNBUNDLEGRAPH_DATA_PATH;
 
 					if (!Directory.Exists(DBDir)) {
