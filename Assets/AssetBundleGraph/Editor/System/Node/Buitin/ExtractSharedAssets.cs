@@ -100,7 +100,10 @@ public class ExtractSharedAssets : Node {
 
 			if(incoming != null) {
 
-				var dependencyCollector = new Dictionary<string, List<string>>(); // [asset path:group name]
+                var buildMap = AssetBundleBuildMap.GetBuildMap ();
+                buildMap.ClearFromId (node.Id);
+
+                var dependencyCollector = new Dictionary<string, List<string>>(); // [asset path:group name]
 				var sharedDependency = new Dictionary<string, List<AssetReference>>();
 				var groupNameMap = new Dictionary<string, string>();
 
@@ -135,6 +138,11 @@ public class ExtractSharedAssets : Node {
 				}
 
 				if(sharedDependency.Keys.Count > 0) {
+                    foreach(var bundleName in sharedDependency.Keys) {
+                        var bundleConfig = buildMap.GetAssetBundleWithNameAndVariant (node.Id, bundleName, string.Empty);
+                        bundleConfig.AddAssets (node.Id, sharedDependency[bundleName].Select(a => a.importFrom));
+                    }
+
 					foreach(var ag in incoming) {
 						Output(destination, new Dictionary<string, List<AssetReference>>(ag.assetGroups));
 					}
