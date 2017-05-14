@@ -121,12 +121,12 @@ public class AssertUnwantedAssetsInBundle : Node {
 				string newLoadPath = null;
 
 				using(new EditorGUILayout.HorizontalScope()) {
-					newLoadPath = EditorGUILayout.TextField(Model.Settings.ASSETS_PATH, path);
+                    newLoadPath = EditorGUILayout.TextField(Model.Settings.Path.ASSETS_PATH, path);
 
 					if(GUILayout.Button("Select", GUILayout.Width(50f))) {
 						var folderSelected = 
 							EditorUtility.OpenFolderPanel("Select Asset Folder", 
-								FileUtility.PathCombine(Model.Settings.ASSETS_PATH, path), "");
+                                FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path), "");
 						if(!string.IsNullOrEmpty(folderSelected)) {
 							var dataPath = Application.dataPath;
 							if(dataPath == folderSelected) {
@@ -152,7 +152,7 @@ public class AssertUnwantedAssetsInBundle : Node {
 					}
 				}
 
-				var dirPath = Path.Combine(Model.Settings.ASSETS_PATH,newLoadPath);
+                var dirPath = Path.Combine(Model.Settings.Path.ASSETS_PATH,newLoadPath);
 				bool dirExists = Directory.Exists(dirPath);
 
 				GUILayout.Space(10f);

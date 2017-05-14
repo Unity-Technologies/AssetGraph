@@ -83,7 +83,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			string[] movedAssets, 
 			string[] movedFromAssetPaths)
 		{
-			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, nodeData.Id);
+            var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, nodeData.Id);
 
 			foreach(var imported in importedAssets) {
 				if(imported.StartsWith(samplingDirectoryPath)) {
@@ -275,7 +275,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private void SaveSampleFile(Model.NodeData node, string configFilePath) {
-			var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
+            var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, node.Id);
 			if (!Directory.Exists(samplingDirectoryPath)) {
 				Directory.CreateDirectory(samplingDirectoryPath);
 			}
@@ -289,7 +289,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static ConfigStatus GetConfigStatus(Model.NodeData node) {
-			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
+            var sampleFileDir = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, node.Id);
 
 			if(!Directory.Exists(sampleFileDir)) {
 				return ConfigStatus.NoSampleFound;
@@ -314,12 +314,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				UnityEngine.Object.DestroyImmediate (m_importerEditor);
 				m_importerEditor = null;
 			}
-			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
+            var sampleFileDir = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, node.Id);
 			FileUtility.RemakeDirectory(sampleFileDir);
 		}
 
 		public static AssetImporter GetReferenceAssetImporter(Model.NodeData node) {
-			var sampleFileDir = FileUtility.PathCombine(Model.Settings.IMPORTER_SETTINGS_PLACE, node.Id);
+            var sampleFileDir = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, node.Id);
 
 			UnityEngine.Assertions.Assert.IsTrue(Directory.Exists(sampleFileDir));
 

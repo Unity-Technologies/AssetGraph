@@ -75,7 +75,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// if loadPath is null/empty, loader load everything except for settings
 			if(string.IsNullOrEmpty(loadPath)) {
 				// ignore config file path update
-				var notConfigFilePath = importedAssets.Where( path => !path.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)).FirstOrDefault();
+                var notConfigFilePath = importedAssets.Where( path => !path.Contains(Model.Settings.Path.BasePath)).FirstOrDefault();
 				if(!string.IsNullOrEmpty(notConfigFilePath)) {
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 					return true;
@@ -151,12 +151,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					string newLoadPath = null;
 
 					using(new EditorGUILayout.HorizontalScope()) {
-						newLoadPath = EditorGUILayout.TextField(Model.Settings.ASSETS_PATH, path);
+                        newLoadPath = EditorGUILayout.TextField(Model.Settings.Path.ASSETS_PATH, path);
 
 						if(GUILayout.Button("Select", GUILayout.Width(50f))) {
 							var folderSelected = 
 								EditorUtility.OpenFolderPanel("Select Asset Folder", 
-									FileUtility.PathCombine(Model.Settings.ASSETS_PATH, path), "");
+                                    FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path), "");
 							if(!string.IsNullOrEmpty(folderSelected)) {
 								var dataPath = Application.dataPath;
 								if(dataPath == folderSelected) {
@@ -182,7 +182,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 					}
 
-					var dirPath = Path.Combine(Model.Settings.ASSETS_PATH,newLoadPath);
+                    var dirPath = Path.Combine(Model.Settings.Path.ASSETS_PATH,newLoadPath);
 					bool dirExists = Directory.Exists(dirPath);
 
 					GUILayout.Space(10f);
@@ -257,16 +257,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			foreach (var targetFilePath in targetFilePaths) {
 
-				if(targetFilePath.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)) {
+                if(targetFilePath.Contains(Model.Settings.Path.BasePath)) {
 					continue;
 				}
 
 				// already contained into Assets/ folder.
 				// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 				if (targetFilePath.StartsWith(assetsFolderPath)) {
-					var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.ASSETS_PATH);
+                    var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.Path.ASSETS_PATH);
 
 					var r = AssetReferenceDatabase.GetReference(relativePath);
+
+                    if (r == null) {
+                        continue;
+                    }
 
 					if(!TypeUtility.IsLoadingAsset(r)) {
 						continue;

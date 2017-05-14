@@ -148,11 +148,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				var targetFilePath = AssetDatabase.GUIDToAssetPath(guid);
 
-				if(targetFilePath.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)) {
+                if(targetFilePath.Contains(Model.Settings.Path.BasePath)) {
 					continue;
 				}
 
-				var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.ASSETS_PATH);
+                var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.Path.ASSETS_PATH);
 
 				var r = AssetReferenceDatabase.GetReference(relativePath);
 

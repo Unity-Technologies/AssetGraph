@@ -29,27 +29,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					s_database.m_dictionary = new SortedList<string, AssetReference>();
 					s_database.m_version = DB_VERSION;
 
-					var DBDir = FileUtility.PathCombine("Assets/", 
-						Model.Settings.ASSETNBUNDLEGRAPH_DATA_PATH);
+                    var DBDir = Model.Settings.Path.SettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);
 					}
 
-					AssetDatabase.CreateAsset(s_database, DBPath);
+                    AssetDatabase.CreateAsset(s_database, Model.Settings.Path.DatabasePath);
 				}
 			}
 
 			return s_database;
-		}
-
-		private static string DBPath {
-			get {
-				return FileUtility.PathCombine("Assets/", 
-					Model.Settings.ASSETNBUNDLEGRAPH_DATA_PATH,
-					Model.Settings.ASSETBUNDLEGRAPH_DATABASE_NAME);
-				
-			}
 		}
 
 		private static bool Load() {
@@ -57,7 +47,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool loaded = false;
 
 			try {
-				var dbPath = DBPath;
+                var dbPath = Model.Settings.Path.DatabasePath;
 				
 				if(File.Exists(dbPath)) 
 				{

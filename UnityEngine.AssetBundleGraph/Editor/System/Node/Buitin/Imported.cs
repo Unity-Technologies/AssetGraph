@@ -64,11 +64,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_lastImportedAssetPaths = new List<string> ();
 			}
 		
-			var imported = importedAssets.Where (path => !path.Contains (Model.Settings.ASSETBUNDLEGRAPH_PATH) && AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph));
-			var moved = movedAssets.Where (path => !path.Contains (Model.Settings.ASSETBUNDLEGRAPH_PATH) && AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph));
+            var imported = importedAssets.Where (path => !path.Contains (Model.Settings.Path.BasePath) && AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph));
+            var moved = movedAssets.Where (path => !path.Contains (Model.Settings.Path.BasePath) && AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph));
 
 			foreach (var path in imported) {
-				if (path.Contains (Model.Settings.ASSETBUNDLEGRAPH_PATH)) {
+                if (path.Contains (Model.Settings.Path.BasePath)) {
 					continue;
 				}
 
@@ -130,7 +130,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			if (m_lastImportedAssetPaths != null) {
 				foreach (var path in m_lastImportedAssetPaths) {
-					if(path.Contains(Model.Settings.ASSETBUNDLEGRAPH_PATH)) {
+                    if(path.Contains(Model.Settings.Path.BasePath)) {
 						continue;
 					}
 

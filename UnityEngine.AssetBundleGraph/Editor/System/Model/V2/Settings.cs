@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using System.IO;
 
 using UnityEngine.AssetBundles.GraphTool;
 
@@ -27,36 +28,12 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
 
-		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
-		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
-		public const string ASSETBUNDLEGRAPH_BUILDMAP_NAME = "AssetBundleBuildMap.asset";
-		public const string ASSETBUNDLEGRAPH_BATCHBUILD_CONFIG_NAME = "BatchBuildConfig.asset";
-
-		public const string ASSETS_PATH = "Assets/";
-		public const string ASSETBUNDLEGRAPH_PATH = ASSETS_PATH + "AssetBundleGraph/";
-		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETBUNDLEGRAPH_PATH + "Cache/";
-		public const string SCRIPT_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/ScriptTemplate/";
-		public const string SETTING_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/SettingTemplate/";
-		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
-		public const string CUISPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/CUI/";
-
 		public const string GRAPH_SEARCH_CONDITION = "t:UnityEngine.AssetBundles.GraphTool.DataModel.Version2.ConfigGraph";
-
-		public const string PREFABBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabs";
-		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";
-
-		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
-
-		public const string SETTINGTEMPLATE_FILE_MODEL		= SETTING_TEMPLATE_PATH + "setting.fbx";
-		public const string SETTINGTEMPLATE_FILE_AUDIO		= SETTING_TEMPLATE_PATH + "setting.wav";
-		public const string SETTINGTEMPLATE_FILE_TEXTURE	= SETTING_TEMPLATE_PATH + "setting.png";
-		public const string SETTINGTEMPLATE_FILE_VIDEO		= SETTING_TEMPLATE_PATH + "setting.m4v";
 
 		public const string GUI_TEXT_SETTINGTEMPLATE_MODEL	= "Model";
 		public const string GUI_TEXT_SETTINGTEMPLATE_AUDIO	= "Audio";
 		public const string GUI_TEXT_SETTINGTEMPLATE_TEXTURE= "Texture";
 		public const string GUI_TEXT_SETTINGTEMPLATE_VIDEO	= "Video";
-
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
@@ -66,6 +43,60 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string BASE64_IDENTIFIER = "B64|";
 
 		public const char KEYWORD_WILDCARD = '*';
+
+        public class Path {
+            private static string s_basePath;
+
+            public static string BasePath {
+                get {
+                    //if (string.IsNullOrEmpty (s_basePath)) {
+                        var obj = ScriptableObject.CreateInstance<ConfigGraph> ();
+                        MonoScript s = MonoScript.FromScriptableObject (obj);
+                        var configGuiPath = AssetDatabase.GetAssetPath( s );
+                        UnityEngine.Object.DestroyImmediate (obj);
+
+                        var fileInfo = new FileInfo(configGuiPath);
+                        var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
+
+                        Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
+
+                        string baseDirPath = baseDir.ToString ();
+
+                        int index = baseDirPath.LastIndexOf (ASSETS_PATH);
+                        Assertions.Assert.IsTrue ( index >= 0 );
+
+                        baseDirPath = baseDirPath.Substring (index);
+
+                        s_basePath = baseDirPath.Replace( '\\', '/');
+                    //}
+                    return s_basePath;
+                }
+            }
+
+            public const string ASSETS_PATH = "Assets/";
+
+            public static string ScriptTemplatePath     { get { return BasePath + "/Editor/ScriptTemplate/"; } }
+            public static string UserSpacePath          { get { return BasePath + "/Generated/Editor/"; } }
+            public static string CUISpacePath           { get { return BasePath + "/Generated/CUI/"; } }
+            public static string ImporterSettingsPath   { get { return BasePath + "/SavedSettings/ImportSettings/"; } }
+
+            public static string CachePath              { get { return BasePath + "/Cache/"; } }
+            public static string PrefabBuilderCachePath { get { return CachePath + "Prefabs/"; } }
+            public static string BundleBuilderCachePath { get { return CachePath + "AssetBundles/"; } }
+
+            public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }
+            public static string DatabasePath           { get { return SettingFilePath + "AssetReferenceDB.asset"; } }
+            public static string BuildMapPath           { get { return SettingFilePath + "AssetBundleBuildMap.asset"; } }
+            public static string BatchBuildConfigPath   { get { return SettingFilePath + "BatchBuildConfig.asset"; } }
+
+            public static string SettingTemplatePath    { get { return BasePath + "/Editor/SettingTemplate/"; } }
+            public static string SettingTemplateModel   { get { return SettingTemplatePath + "setting.fbx"; } }
+            public static string SettingTemplateAudio   { get { return SettingTemplatePath + "setting.wav"; } }
+            public static string SettingTemplateTexture { get { return SettingTemplatePath + "setting.png"; } }
+            public static string SettingTemplateVideo   { get { return SettingTemplatePath + "setting.m4v"; } }
+
+            public static string GUIResourceBasePath    { get { return BasePath + "/Editor/GUI/GraphicResources/"; } }
+        }
 
 		public struct BuildAssetBundleOption {
 			public readonly BuildAssetBundleOptions option;
@@ -112,8 +143,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string NODE_INPUTPOINT_FIXED_LABEL = "FIXED_INPUTPOINT_ID";
 
 		public class GUI {
-			public const string RESOURCE_BASEPATH = "Assets/AssetBundleGraph/Editor/GUI/GraphicResources/";
-
 			public const float NODE_BASE_WIDTH = 120f;
 			public const float NODE_BASE_HEIGHT = 40f;
 			public const float NODE_WIDTH_MARGIN = 48f;
@@ -138,17 +167,16 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			public const float TOOLBAR_GRAPHNAMEMENU_WIDTH = 150f;
 			public const int TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH = 20;
 
-			public const string RESOURCE_SKIN					= RESOURCE_BASEPATH + "NodeStyle.guiskin";
-			public const string RESOURCE_CONNECTIONPOINT		= RESOURCE_BASEPATH + "ConnectionPoint.png";
-
-			public const string RESOURCE_INPUT_BG				= RESOURCE_BASEPATH + "InputBG.png";
-			public const string RESOURCE_OUTPUT_BG				= RESOURCE_BASEPATH + "OutputBG.png";
-
 			public static readonly Color COLOR_ENABLED = new Color(0.43f, 0.65f, 1.0f, 1.0f);
 			public static readonly Color COLOR_CONNECTED = new Color(0.9f, 0.9f, 0.9f, 1.0f);
 			public static readonly Color COLOR_NOT_CONNECTED = Color.grey;
 			public static readonly Color COLOR_CAN_CONNECT = Color.white;//new Color(0.60f, 0.60f, 1.0f, 1.0f);
 			public static readonly Color COLOR_CAN_NOT_CONNECT = new Color(0.33f, 0.33f, 0.33f, 1.0f);
+
+            public static string Skin               { get { return Path.GUIResourceBasePath + "NodeStyle.guiskin"; } }
+            public static string ConnectionPoint    { get { return Path.GUIResourceBasePath + "ConnectionPoint.png"; } }
+            public static string InputBG            { get { return Path.GUIResourceBasePath + "InputBG.png"; } }
+            public static string OutputBG           { get { return Path.GUIResourceBasePath + "OutputBG.png"; } }
 		}
 	}
 }

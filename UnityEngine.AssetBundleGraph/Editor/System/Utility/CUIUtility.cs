@@ -30,9 +30,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var ext = (Application.platform == RuntimePlatform.WindowsEditor)? "bat" : "sh";
 			var cmdFile = string.Format(kCommandName, ext );
 
-			var destinationPath = FileUtility.PathCombine(Model.Settings.CUISPACE_PATH, cmdFile);
+            var destinationPath = FileUtility.PathCombine(Model.Settings.Path.CUISpacePath, cmdFile);
 
-			Directory.CreateDirectory(Model.Settings.CUISPACE_PATH);
+            Directory.CreateDirectory(Model.Settings.Path.CUISpacePath);
 			File.WriteAllText(destinationPath, cmd);
 
 			AssetDatabase.Refresh();

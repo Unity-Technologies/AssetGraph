@@ -34,7 +34,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			foreach(var guid in guids) {
 				string path = AssetDatabase.GUIDToAssetPath(guid);
 				var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
-				if (graph.UseAsAssetPostprocessor) {
+                if (graph != null && graph.UseAsAssetPostprocessor) {
 					foreach(var n in graph.Nodes) {
 						n.Operation.Object.OnAssetsReimported(n, null, EditorUserBuildSettings.activeBuildTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 					}

@@ -268,7 +268,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			var report = new ExportReport(node);
-			var cacheFolderDepth = Model.Settings.BUNDLEBUILDER_CACHE_PLACE.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length + 1;
+            var cacheFolderDepth = Model.Settings.Path.BundleBuilderCachePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length + 1;
 
 			foreach(var ag in incoming) {
 				foreach (var groupKey in ag.assetGroups.Keys) {
@@ -281,7 +281,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 						if(m_flattenDir[target] == 0) {
 							// in bundleBulider, use platform-package folder for export destination.
-							if (destinationSourcePath.StartsWith(Model.Settings.BUNDLEBUILDER_CACHE_PLACE)) {
+                            if (destinationSourcePath.StartsWith(Model.Settings.Path.BundleBuilderCachePath)) {
 
 								var splitted = destinationSourcePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR);
 								var reducedArray = new string[splitted.Length - cacheFolderDepth];

@@ -192,7 +192,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static void GenerateScript (ScriptType scriptType) {
-			var destinationBasePath = Model.Settings.USERSPACE_PATH;
+            var destinationBasePath = Model.Settings.Path.UserSpacePath;
 
 			var sourceFileName = string.Empty;
 			var destinationFileName = string.Empty;
@@ -200,27 +200,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			switch (scriptType) {
 			case ScriptType.SCRIPT_MODIFIER: 
 				{
-					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyModifier.cs.template");
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyModifier.cs.template");
 					destinationFileName = "MyModifier{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_PREFABBUILDER: {
-					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyPrefabBuilder.cs.template");
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyPrefabBuilder.cs.template");
 					destinationFileName = "MyPrefabBuilder{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_POSTPROCESS: {
-					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyPostprocess.cs.template");
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyPostprocess.cs.template");
 					destinationFileName = "MyPostprocess{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_FILTER: {
-					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyFilter.cs.template");
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyFilter.cs.template");
 					destinationFileName = "MyFilter{0}{1}";
 					break;
 				}
 			case ScriptType.SCRIPT_NODE: {
-					sourceFileName = FileUtility.PathCombine(Model.Settings.SCRIPT_TEMPLATE_PATH, "MyNode.cs.template");
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyNode.cs.template");
 					destinationFileName = "MyNode{0}{1}";
 					break;
 				}
@@ -280,7 +280,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
-			FileUtility.RemakeDirectory(Model.Settings.APPLICATIONDATAPATH_CACHE_PATH);
+            FileUtility.RemakeDirectory(Model.Settings.Path.CachePath);
 
 			AssetDatabase.Refresh();
 		}
@@ -291,7 +291,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				"This operation is not undoable. It will affect all graphs in this project.", "Yes", "Cancel");
 
 			if(result) {
-				FileUtility.RemakeDirectory(Model.Settings.IMPORTER_SETTINGS_PLACE);
+                FileUtility.RemakeDirectory(Model.Settings.Path.ImporterSettingsPath);
 				AssetDatabase.Refresh();
 			}
 		}

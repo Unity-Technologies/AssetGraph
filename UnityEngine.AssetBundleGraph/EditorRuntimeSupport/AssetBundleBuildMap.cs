@@ -20,10 +20,40 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private static AssetBundleBuildMap s_map;
 
-		class Config {
-			public const string ASSETNBUNDLEGRAPH_DATA_PATH    = "Assets/AssetBundleGraph/SettingFiles";
-			public const string ASSETBUNDLEGRAPH_BUILDMAP_NAME = ASSETNBUNDLEGRAPH_DATA_PATH + "/AssetBundleBuildMap.asset";
-		}
+        #if UNITY_EDITOR
+        class Config {
+            private static string s_basePath;
+
+            public static string BasePath {
+                get {
+                    //if (string.IsNullOrEmpty (s_basePath)) {
+                    var obj = ScriptableObject.CreateInstance<AssetBundleBuildMap> ();
+                    MonoScript s = MonoScript.FromScriptableObject (obj);
+                    var configGuiPath = AssetDatabase.GetAssetPath( s );
+                    UnityEngine.Object.DestroyImmediate (obj);
+
+                    var fileInfo = new FileInfo(configGuiPath);
+                    var baseDir = fileInfo.Directory.Parent;
+
+                    Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
+
+                    string baseDirPath = baseDir.ToString ();
+
+                    int index = baseDirPath.LastIndexOf (ASSETS_PATH);
+                    Assertions.Assert.IsTrue ( index >= 0 );
+
+                    baseDirPath = baseDirPath.Substring (index);
+
+                    s_basePath = baseDirPath.Replace( '\\', '/');
+                    //}
+                    return s_basePath;
+                }
+            }
+            public const string ASSETS_PATH = "Assets/";
+            public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }
+            public static string BuildMapPath           { get { return SettingFilePath + "AssetBundleBuildMap.asset"; } }
+        }
+        #endif
 
 		public static AssetBundleBuildMap GetBuildMap() {
 			if(s_map == null) {
@@ -34,13 +64,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     #if UNITY_EDITOR
 					s_map.m_version = VERSION;
 
-					var DBDir = Config.ASSETNBUNDLEGRAPH_DATA_PATH;
+                    var DBDir = Config.SettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);
 					}
 
-					AssetDatabase.CreateAsset(s_map, DBPath);
+                    AssetDatabase.CreateAsset(s_map, Config.BuildMapPath);
 					#endif
 				}
 			}
@@ -48,18 +78,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return s_map;
 		}
 
-		private static string DBPath {
-			get {
-				return Config.ASSETBUNDLEGRAPH_BUILDMAP_NAME;
-			}
-		}
-
 		private static bool Load() {
 			bool loaded = false;
 
 			#if UNITY_EDITOR
 			try {
-				var dbPath = DBPath;
+                var dbPath = Config.BuildMapPath;
 
 				if(File.Exists(dbPath)) 
 				{

@@ -51,27 +51,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					s_config.m_collections = new List<GraphCollection>();
 					s_config.m_version = VERSION;
 
-					var SettingDir = FileUtility.PathCombine("Assets/", 
-						Model.Settings.ASSETNBUNDLEGRAPH_DATA_PATH);
+                    var SettingDir = Model.Settings.Path.SettingFilePath;
 
 					if (!Directory.Exists(SettingDir)) {
 						Directory.CreateDirectory(SettingDir);
 					}
 
-					AssetDatabase.CreateAsset(s_config, ConfigPath);
+                    AssetDatabase.CreateAsset(s_config, Model.Settings.Path.BatchBuildConfigPath);
 				}
 			}
 
 			return s_config;
-		}
-
-		private static string ConfigPath {
-			get {
-				return FileUtility.PathCombine("Assets/", 
-					Model.Settings.ASSETNBUNDLEGRAPH_DATA_PATH,
-					Model.Settings.ASSETBUNDLEGRAPH_BATCHBUILD_CONFIG_NAME);
-				
-			}
 		}
 
 		private static bool Load() {
@@ -79,7 +69,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			bool loaded = false;
 
 			try {
-				var configPath = ConfigPath;
+                var configPath = Model.Settings.Path.BatchBuildConfigPath;
 				
 				if(File.Exists(configPath)) 
 				{

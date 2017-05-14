@@ -158,7 +158,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static string EnsurePrefabBuilderCacheDirExists(BuildTarget t, Model.NodeData node) {
-			var cacheDir = FileUtility.PathCombine(Model.Settings.PREFABBUILDER_CACHE_PLACE, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+            var cacheDir = FileUtility.PathCombine(Model.Settings.Path.PrefabBuilderCachePath, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 
 			if (!Directory.Exists(cacheDir)) {
 				Directory.CreateDirectory(cacheDir);
@@ -171,7 +171,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 
 		public static string EnsureAssetBundleCacheDirExists(BuildTarget t, Model.NodeData node, bool remake = false) {
-			var cacheDir = FileUtility.PathCombine(Model.Settings.BUNDLEBUILDER_CACHE_PLACE, node.Id, BuildTargetUtility.TargetToAssetBundlePlatformName(t));
+            var cacheDir = FileUtility.PathCombine(Model.Settings.Path.BundleBuilderCachePath, node.Id, BuildTargetUtility.TargetToAssetBundlePlatformName(t));
 
 			if (!Directory.Exists(cacheDir)) {
 				Directory.CreateDirectory(cacheDir);
@@ -185,17 +185,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public static string GetImportSettingTemplateFilePath(string name) {
 			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_MODEL) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_MODEL;
+                return Model.Settings.Path.SettingTemplateModel;
 			}
 			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_AUDIO) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_AUDIO;
+                return Model.Settings.Path.SettingTemplateAudio;
 			}
 			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_TEXTURE) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_TEXTURE;
+                return Model.Settings.Path.SettingTemplateTexture;
 			}
 			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			if(name == Model.Settings.GUI_TEXT_SETTINGTEMPLATE_VIDEO) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_VIDEO;
+                return Model.Settings.Path.SettingTemplateVideo;
 			}
 			#endif
 			return null;
@@ -203,17 +203,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public static string GetImportSettingTemplateFilePath(AssetReference a) {
 			if(a.filterType == typeof(ModelImporter)) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_MODEL;
+                return Model.Settings.Path.SettingTemplateModel;
 			}
 			if(a.filterType == typeof(AudioImporter)) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_AUDIO;
+                return Model.Settings.Path.SettingTemplateAudio;
 			}
 			if(a.filterType == typeof(TextureImporter)) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_TEXTURE;
+                return Model.Settings.Path.SettingTemplateTexture;
 			}
 			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			if(a.filterType == typeof(VideoClipImporter)) {
-				return Model.Settings.SETTINGTEMPLATE_FILE_VIDEO;
+                return Model.Settings.Path.SettingTemplateVideo;
 			}
 			#endif
 			return null;

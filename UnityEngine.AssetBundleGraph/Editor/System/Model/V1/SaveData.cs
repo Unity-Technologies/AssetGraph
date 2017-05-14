@@ -153,19 +153,19 @@ namespace AssetBundleGraph {
 
 		private static string SaveDataDirectoryPath {
 			get {
-				return FileUtility.PathCombine(Application.dataPath, Settings.ASSETNBUNDLEGRAPH_DATA_PATH);
+                return Settings.Path.SettingFilePath;
 			}
 		}
 
 		private static string SaveDataAssetPath {
 			get {
-				return FileUtility.PathCombine("Assets/", Settings.ASSETNBUNDLEGRAPH_DATA_PATH, Settings.ASSETBUNDLEGRAPH_DATA_NAME);
+                return Settings.Path.AssetBundleGraphPath;
 			}
 		}
 
 		private static string SaveDataJsonPath {
 			get {
-				return FileUtility.PathCombine(SaveDataDirectoryPath, Settings.ASSETBUNDLEGRAPH_DATA_JSON_NAME);
+                return Settings.Path.JSONPath;
 			}
 		}
 

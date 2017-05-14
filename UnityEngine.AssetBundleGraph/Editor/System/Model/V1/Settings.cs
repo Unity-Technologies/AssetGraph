@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
+using UnityEngine.Assertions;
+using System.IO;
 
 using UnityEngine.AssetBundles.GraphTool;
 
@@ -23,28 +26,6 @@ namespace AssetBundleGraph {
 		
 		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
 
-		public const string ASSETNBUNDLEGRAPH_DATA_PATH = "AssetBundleGraph/SettingFiles";
-		public const string ASSETBUNDLEGRAPH_DATA_JSON_NAME = "AssetBundleGraph.json";
-		public const string ASSETBUNDLEGRAPH_DATA_NAME = "AssetBundleGraph.asset";
-		public const string ASSETBUNDLEGRAPH_DATABASE_NAME = "AssetReferenceDB.asset";
-		
-		public const string ASSETS_PATH = "Assets/";
-		public const string ASSETBUNDLEGRAPH_PATH = ASSETS_PATH + "AssetBundleGraph/";
-		public const string APPLICATIONDATAPATH_CACHE_PATH = ASSETBUNDLEGRAPH_PATH + "Cache/";
-		public const string SCRIPT_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/ScriptTemplate/";
-		public const string SETTING_TEMPLATE_PATH = ASSETBUNDLEGRAPH_PATH + "Editor/SettingTemplate/";
-		public const string USERSPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/Editor/";
-		public const string CUISPACE_PATH = ASSETBUNDLEGRAPH_PATH + "Generated/CUI/";
-
-		public const string PREFABBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "Prefabs";
-		public const string BUNDLEBUILDER_CACHE_PLACE	= APPLICATIONDATAPATH_CACHE_PATH + "AssetBundles";
-
-		public const string IMPORTER_SETTINGS_PLACE		= ASSETBUNDLEGRAPH_PATH + "SavedSettings/ImportSettings";
-
-		public const string SETTINGTEMPLATE_FILE_MODEL		= SETTING_TEMPLATE_PATH + "setting.fbx";
-		public const string SETTINGTEMPLATE_FILE_AUDIO		= SETTING_TEMPLATE_PATH + "setting.wav";
-		public const string SETTINGTEMPLATE_FILE_TEXTURE	= SETTING_TEMPLATE_PATH + "setting.png";
-
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
@@ -65,6 +46,52 @@ namespace AssetBundleGraph {
 				description = desc;
 			}
 		}
+
+        public class Path {
+            private static string s_basePath;
+
+            public static string BasePath {
+                get {
+                    if (string.IsNullOrEmpty (s_basePath)) {
+                        var obj = ScriptableObject.CreateInstance<SaveData> ();
+                        MonoScript s = MonoScript.FromScriptableObject (obj);
+                        var configGuiPath = AssetDatabase.GetAssetPath( s );
+                        UnityEngine.Object.DestroyImmediate (obj);
+
+                        var fileInfo = new FileInfo(configGuiPath);
+                        var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
+
+                        Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
+
+                        s_basePath = baseDir.ToString().Replace( '\\', '/');
+                    }
+                    return s_basePath;
+                }
+            }
+
+            public const string ASSETS_PATH = "Assets/";
+
+            public static string ScriptTemplatePath     { get { return BasePath + "Editor/ScriptTemplate/"; } }
+            public static string SettingTemplatePath    { get { return BasePath + "Editor/SettingTemplate/"; } }
+            public static string UserSpacePath          { get { return BasePath + "Generated/Editor/"; } }
+            public static string CUISpacePath           { get { return BasePath + "Generated/CUI/"; } }
+            public static string ImporterSettingsPath   { get { return BasePath + "SavedSettings/ImportSettings"; } }
+
+            public static string CachePath              { get { return BasePath + "Cache/"; } }
+            public static string PrefabBuilderCachePath { get { return CachePath + "Prefabs"; } }
+            public static string BundleBuilderCachePath { get { return CachePath + "AssetBundles"; } }
+
+            public static string SettingFilePath        { get { return BasePath + "SettingFiles"; } }
+            public static string JSONPath               { get { return SettingFilePath + "AssetBundleGraph.json"; } }
+            public static string AssetBundleGraphPath   { get { return SettingFilePath + "AssetBundleGraph.asset"; } }
+            public static string DatabasePath           { get { return SettingFilePath + "AssetReferenceDB.asset"; } }
+
+            public static string SettingTemplateModel   { get { return SettingTemplatePath + "setting.fbx"; } }
+            public static string SettingTemplateAudio   { get { return SettingTemplatePath + "setting.wav"; } }
+            public static string SettingTemplateTexture { get { return SettingTemplatePath + "setting.png"; } }
+
+            public static string GUIResourceBasePath    { get { return BasePath + "Editor/GUI/GraphicResources/"; } }
+        }
 
 		public static List<BuildAssetBundleOption> BundleOptionSettings = new List<BuildAssetBundleOption> {
 			new BuildAssetBundleOption("Uncompressed AssetBundle", BuildAssetBundleOptions.UncompressedAssetBundle),
@@ -138,7 +165,6 @@ namespace AssetBundleGraph {
 		}
 
 		public class GUI {
-			public const string RESOURCE_BASEPATH = "Assets/AssetBundleGraph/Editor/GUI/GraphicResources/";
 
 			public const float NODE_BASE_WIDTH = 120f;
 			public const float NODE_BASE_HEIGHT = 40f;
@@ -162,17 +188,14 @@ namespace AssetBundleGraph {
 
 			public const float TOOLBAR_HEIGHT = 20f;
 
-			public const string RESOURCE_ARROW					= RESOURCE_BASEPATH + "AssetGraph_Arrow.png";
-
-			public const string RESOURCE_CONNECTIONPOINT_ENABLE	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_EnableMark.png";
-			public const string RESOURCE_CONNECTIONPOINT_INPUT	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_InputMark.png";
-			public const string RESOURCE_CONNECTIONPOINT_OUTPUT	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_OutputMark.png";
-			public const string RESOURCE_CONNECTIONPOINT_OUTPUT_CONNECTED	= RESOURCE_BASEPATH + "AssetGraph_ConnectionPoint_OutputMark_Connected.png";
-
-			public const string RESOURCE_INPUT_BG				= RESOURCE_BASEPATH + "AssetGraph_InputBG.png";
-			public const string RESOURCE_OUTPUT_BG				= RESOURCE_BASEPATH + "AssetGraph_OutputBG.png";
-
-			public const string RESOURCE_SELECTION				= RESOURCE_BASEPATH + "AssetGraph_Selection.png";
+            public static string Arrow                          { get { return Path.GUIResourceBasePath + "AssetGraph_Arrow.png"; } }
+            public static string ConnectionPointEnable          { get { return Path.GUIResourceBasePath + "AssetGraph_ConnectionPoint_EnableMark.png"; } }
+            public static string ConnectionPointInput           { get { return Path.GUIResourceBasePath + "AssetGraph_ConnectionPoint_InputMark.png"; } }
+            public static string ConnectionPointOutput          { get { return Path.GUIResourceBasePath + "AssetGraph_ConnectionPoint_OutputMark.png"; } }
+            public static string ConnectionPointOutputConnected { get { return Path.GUIResourceBasePath + "AssetGraph_ConnectionPoint_OutputMark_Connected.png"; } }
+            public static string InputBG                        { get { return Path.GUIResourceBasePath + "AssetGraph_InputBG.png"; } }
+            public static string OutputBG                       { get { return Path.GUIResourceBasePath + "AssetGraph_OutputBG.png"; } }
+            public static string Selection                      { get { return Path.GUIResourceBasePath + "AssetGraph_Selection.png"; } }
 		}
 	}
 }
