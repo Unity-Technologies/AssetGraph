@@ -13,7 +13,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const bool IGNORE_META = true;
 
 		public const string GUI_TEXT_MENU_OPEN = "Window/AssetBundleGraph/Open Graph Editor";
-		public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = "Window/AssetBundleGraph/Open Batch Build Window";
+        public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = "Window/AssetBundleGraph/Open Batch Build Window";
+        public const string GUI_TEXT_MENU_PROJECTWINDOW_OPEN = "Window/AssetBundleGraph/Open Project Window";
 		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
 		public const string GUI_TEXT_MENU_BATCHBUILD = "Window/AssetBundleGraph/Build Current Graph Selections";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Create Node Script";
@@ -43,6 +44,46 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string BASE64_IDENTIFIER = "B64|";
 
 		public const char KEYWORD_WILDCARD = '*';
+
+        public class UserSettings {
+            private static readonly string PREFKEY_AB_BUILD_CACHE_DIR = "AssetBundles.GraphTool.Cache.AssetBundle";
+
+            private static readonly string PREFKEY_BATCHBUILD_LASTSELECTEDCOLLECTION = "AssetBundles.GraphTool.LastSelectedCollection";
+            private static readonly string PREFKEY_BATCHBUILD__USECOLLECTIONSTATE    = "AssetBundles.GraphTool.UseCollection";
+
+
+            public static string AssetBundleBuildCacheDir {
+                get {
+                    var cacheDir = EditorUserSettings.GetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR);
+                    if (string.IsNullOrEmpty (cacheDir)) {
+                        return Path.CachePath + "AssetBundles/";
+                    }
+                    return cacheDir;
+                }
+
+                set {
+                    EditorUserSettings.SetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR, value);
+                }
+            }
+
+            public static string BatchBuildLastSelectedCollection {
+                get {
+                    return EditorUserSettings.GetConfigValue (PREFKEY_BATCHBUILD_LASTSELECTEDCOLLECTION);
+                }
+                set {
+                    EditorUserSettings.SetConfigValue (PREFKEY_BATCHBUILD_LASTSELECTEDCOLLECTION, value);
+                }
+            }
+
+            public static bool BatchBuildUseCollectionState {
+                get {
+                    return EditorUserSettings.GetConfigValue (PREFKEY_BATCHBUILD__USECOLLECTIONSTATE) == "True";
+                }
+                set {
+                    EditorUserSettings.SetConfigValue (PREFKEY_BATCHBUILD__USECOLLECTIONSTATE, value.ToString());
+                }
+            }
+        }
 
         public class Path {
             private static string s_basePath;
@@ -82,7 +123,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
             public static string CachePath              { get { return BasePath + "/Cache/"; } }
             public static string PrefabBuilderCachePath { get { return CachePath + "Prefabs/"; } }
-            public static string BundleBuilderCachePath { get { return CachePath + "AssetBundles/"; } }
+            public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
             public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }
             public static string DatabasePath           { get { return SettingFilePath + "AssetReferenceDB.asset"; } }

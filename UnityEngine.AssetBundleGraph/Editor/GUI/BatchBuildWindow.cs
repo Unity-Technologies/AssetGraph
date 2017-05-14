@@ -13,9 +13,6 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class BatchBuildWindow : EditorWindow {
 
-		private static readonly string kPREFKEY_LASTSELECTEDCOLLECTION = "AssetBundles.GraphTool.LastSelectedCollection";
-		private static readonly string kPREFKEY_USECOLLECTIONSTATE     = "AssetBundles.GraphTool.UseCollection";
-
 		private class GraphEntry {
 			private string name;
 			private string guid;
@@ -71,13 +68,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			GetWindow<BatchBuildWindow>();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, false, 2+21)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, false, 2+101)]
 		public static void BuildFromMenu() {
 			var w = GetWindow<BatchBuildWindow>() as BatchBuildWindow;
 			w.Build();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, true, 2+21)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, true, 2+101)]
 		public static bool BuildFromMenuValidator() {
 			var windows = Resources.FindObjectsOfTypeAll<BatchBuildWindow>();
 
@@ -95,8 +92,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			m_activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
 
-			m_useGraphCollection = EditorPrefs.GetBool(kPREFKEY_USECOLLECTIONSTATE);
-			string lastCollection = EditorPrefs.GetString(kPREFKEY_LASTSELECTEDCOLLECTION);
+            m_useGraphCollection = Model.Settings.UserSettings.BatchBuildUseCollectionState;
+            string lastCollection = Model.Settings.UserSettings.BatchBuildLastSelectedCollection;
 			var newCollection = BatchBuildConfig.GetConfig().Find(lastCollection);
 
 			SelectGraphCollection(newCollection);
@@ -175,7 +172,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						entry.Selected = true;
 					}
 				}
-				EditorPrefs.SetString(kPREFKEY_LASTSELECTEDCOLLECTION, m_currentCollection.Name);
+                Model.Settings.UserSettings.BatchBuildLastSelectedCollection = m_currentCollection.Name;
 			}
 		}
 
@@ -232,11 +229,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_useGraphCollection = EditorGUILayout.ToggleLeft("Use Graph Collection", m_useGraphCollection, new GUIStyle("BoldLabel"));
 
 			if(m_useGraphCollection && m_currentCollection == null) {
-				string lastCollection = EditorPrefs.GetString(kPREFKEY_LASTSELECTEDCOLLECTION);
+                string lastCollection = Model.Settings.UserSettings.BatchBuildLastSelectedCollection;
 				m_currentCollection = BatchBuildConfig.GetConfig().Find(lastCollection);
 			} 
 			if(GUI.changed) {
-				EditorPrefs.SetBool(kPREFKEY_USECOLLECTIONSTATE, m_useGraphCollection);
+                Model.Settings.UserSettings.BatchBuildUseCollectionState = m_useGraphCollection;
 			}
 
 			using(new EditorGUI.DisabledScope(!m_useGraphCollection)) {

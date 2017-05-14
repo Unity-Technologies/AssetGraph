@@ -296,7 +296,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 21)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 101)]
 		public static bool BuildFromMenuValidator () {
 			// Calling GetWindow<>() will force open window
 			// That's not what we want to do in validator function,
@@ -308,7 +308,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return !w.IsAnyIssueFound;
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 21)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 101)]
 		public static void BuildFromMenu () {
 			var window = GetWindow<AssetBundleGraphEditorWindow>();
 			window.SaveGraph();
