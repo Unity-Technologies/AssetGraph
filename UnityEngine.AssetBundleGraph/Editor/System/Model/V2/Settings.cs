@@ -148,20 +148,51 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 		}
 
-		public static List<BuildAssetBundleOption> BundleOptionSettings = new List<BuildAssetBundleOption> {
-			new BuildAssetBundleOption("Uncompressed AssetBundle", BuildAssetBundleOptions.UncompressedAssetBundle),
-			new BuildAssetBundleOption("Disable Write TypeTree", BuildAssetBundleOptions.DisableWriteTypeTree),
-			new BuildAssetBundleOption("Deterministic AssetBundle", BuildAssetBundleOptions.DeterministicAssetBundle),
-			new BuildAssetBundleOption("Force Rebuild AssetBundle", BuildAssetBundleOptions.ForceRebuildAssetBundle),
-			new BuildAssetBundleOption("Ignore TypeTree Changes", BuildAssetBundleOptions.IgnoreTypeTreeChanges),
-			new BuildAssetBundleOption("Append Hash To AssetBundle Name", BuildAssetBundleOptions.AppendHashToAssetBundleName),
-			new BuildAssetBundleOption("ChunkBased Compression", BuildAssetBundleOptions.ChunkBasedCompression),
-			new BuildAssetBundleOption("Strict Mode", BuildAssetBundleOptions.StrictMode)
-			#if !UNITY_5_5_OR_NEWER
-			,
-      		// UnityEditor.BuildAssetBundleOptions does no longer have OmitClassVersions available
-			new BuildAssetBundleOption("Omit Class Versions", BuildAssetBundleOptions.OmitClassVersions)
-			#endif
+        public struct BuildPlayerOption {
+            public readonly BuildOptions option;
+            public readonly string description;
+            public BuildPlayerOption(string desc, BuildOptions opt) {
+                option = opt;
+                description = desc;
+            }
+        }
+
+        public static List<BuildAssetBundleOption> BundleOptionSettings = new List<BuildAssetBundleOption> {
+            new BuildAssetBundleOption("Uncompressed AssetBundle", BuildAssetBundleOptions.UncompressedAssetBundle),
+            new BuildAssetBundleOption("Disable Write TypeTree", BuildAssetBundleOptions.DisableWriteTypeTree),
+            new BuildAssetBundleOption("Deterministic AssetBundle", BuildAssetBundleOptions.DeterministicAssetBundle),
+            new BuildAssetBundleOption("Force Rebuild AssetBundle", BuildAssetBundleOptions.ForceRebuildAssetBundle),
+            new BuildAssetBundleOption("Ignore TypeTree Changes", BuildAssetBundleOptions.IgnoreTypeTreeChanges),
+            new BuildAssetBundleOption("Append Hash To AssetBundle Name", BuildAssetBundleOptions.AppendHashToAssetBundleName),
+            new BuildAssetBundleOption("ChunkBased Compression", BuildAssetBundleOptions.ChunkBasedCompression),
+            new BuildAssetBundleOption("Strict Mode", BuildAssetBundleOptions.StrictMode)
+            #if !UNITY_5_5_OR_NEWER
+            ,
+            // UnityEditor.BuildAssetBundleOptions does no longer have OmitClassVersions available
+            new BuildAssetBundleOption("Omit Class Versions", BuildAssetBundleOptions.OmitClassVersions)
+            #endif
+        };
+
+        public static List<BuildPlayerOption> BuildPlayerOptionsSettings = new List<BuildPlayerOption> {
+            new BuildPlayerOption("Accept External Modification To Player", BuildOptions.AcceptExternalModificationsToPlayer),
+            new BuildPlayerOption("Allow Debugging", BuildOptions.AllowDebugging),
+            new BuildPlayerOption("Auto Run Player", BuildOptions.AutoRunPlayer),
+            new BuildPlayerOption("Build Additional Streamed Scenes", BuildOptions.BuildAdditionalStreamedScenes),
+            new BuildPlayerOption("Build Scripts Only", BuildOptions.BuildScriptsOnly),
+            new BuildPlayerOption("Compress With LZ4", BuildOptions.CompressWithLz4),
+            new BuildPlayerOption("Compute CRC", BuildOptions.ComputeCRC),
+            new BuildPlayerOption("Connect To Host", BuildOptions.ConnectToHost),
+            new BuildPlayerOption("Connect With Profiler", BuildOptions.ConnectWithProfiler),
+            new BuildPlayerOption("Development Build", BuildOptions.Development),
+            new BuildPlayerOption("Enable Headless Mode", BuildOptions.EnableHeadlessMode),
+            new BuildPlayerOption("Force Enable Assertions", BuildOptions.ForceEnableAssertions),
+            new BuildPlayerOption("Force Optimize Script Compilation", BuildOptions.ForceOptimizeScriptCompilation),
+            new BuildPlayerOption("Use IL2CPP", BuildOptions.Il2CPP),
+            new BuildPlayerOption("Install In Build Folder", BuildOptions.InstallInBuildFolder),
+            new BuildPlayerOption("Show Built Player", BuildOptions.ShowBuiltPlayer),
+            new BuildPlayerOption("Strict Mode", BuildOptions.StrictMode),
+            new BuildPlayerOption("Symlink Libraries", BuildOptions.SymlinkLibraries),
+            new BuildPlayerOption("Uncompressed AssetBundle", BuildOptions.UncompressedAssetBundle)
 		};
 
 		public const float WINDOW_SPAN = 20f;
