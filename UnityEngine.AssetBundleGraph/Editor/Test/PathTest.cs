@@ -13,7 +13,6 @@ public class PathTest {
 		// Use the Assert class to test conditions.
 
         string path;
-        string guid;
 
         path = Settings.Path.BasePath;
         Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
