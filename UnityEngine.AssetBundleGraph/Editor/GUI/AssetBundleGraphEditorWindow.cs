@@ -1055,14 +1055,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
                 foreach (Object obj in DragAndDrop.objectReferences) {
                     var path = AssetDatabase.GetAssetPath (obj);
-                    FileAttributes attr = File.GetAttributes (path);
+                    if (!string.IsNullOrEmpty (path)) {
+                        FileAttributes attr = File.GetAttributes (path);
 
-                    if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
-                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-                        break;
-                    } else {
-                        DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
-                        break;
+                        if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+                            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                            break;
+                        } else {
+                            DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+                            break;
+                        }
                     }
                 }
 
