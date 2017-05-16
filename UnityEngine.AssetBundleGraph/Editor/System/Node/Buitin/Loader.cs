@@ -40,8 +40,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        public Loader() {}
+        public Loader(string path) {
+            m_loadPath = new SerializableMultiTargetString(NormalizeLoadPath(path));
+        }
+
 		public override void Initialize(Model.NodeData data) {
-			m_loadPath = new SerializableMultiTargetString();
+            if (m_loadPath == null) {
+                m_loadPath = new SerializableMultiTargetString();
+            }
 
 			data.AddDefaultOutputPoint();
 		}
@@ -119,6 +126,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
+        public static string NormalizeLoadPath(string path) {
+            if(!string.IsNullOrEmpty(path)) {
+                var dataPath = Application.dataPath;
+                if(dataPath == path) {
+                    path = string.Empty;
+                } else {
+                    var index = path.IndexOf(dataPath);
+                    if (index >= 0) {
+                        path = path.Substring (dataPath.Length + index);
+                        if (path.IndexOf ('/') == 0) {
+                            path = path.Substring (1);
+                        }
+                    } else if(path.StartsWith (Model.Settings.Path.ASSETS_PATH)) {
+                        path = path.Substring (Model.Settings.Path.ASSETS_PATH.Length);
+                    }
+                }
+            }
+            return path;
+        }
+
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			if (m_loadPath == null) {
@@ -158,19 +185,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								EditorUtility.OpenFolderPanel("Select Asset Folder", 
                                     FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path), "");
 							if(!string.IsNullOrEmpty(folderSelected)) {
-								var dataPath = Application.dataPath;
-								if(dataPath == folderSelected) {
-									folderSelected = string.Empty;
-								} else {
-									var index = folderSelected.IndexOf(dataPath);
-									if(index >= 0 ) {
-										folderSelected = folderSelected.Substring(dataPath.Length + index);
-										if(folderSelected.IndexOf('/') == 0) {
-											folderSelected = folderSelected.Substring(1);
-										}
-									}
-								}
-								newLoadPath = folderSelected;
+                                newLoadPath = NormalizeLoadPath (folderSelected);
 							}
 						}
 					}

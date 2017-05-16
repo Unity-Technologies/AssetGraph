@@ -916,6 +916,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				// handle Graph GUI events
 				HandleGraphGUIEvents();
+                HandleDragAndDropGUI (graphRegion);
 
 				// set rect for scroll.
 				if (nodes.Any()) {
@@ -1040,6 +1041,49 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 		}
+
+        private void HandleDragAndDropGUI (Rect dragdropArea)
+        {
+            Event evt = Event.current;
+
+            switch (evt.type) {
+            case EventType.DragUpdated:
+            case EventType.DragPerform:
+                if (!dragdropArea.Contains (evt.mousePosition))
+                    return;
+
+                foreach (Object obj in DragAndDrop.objectReferences) {
+                    var path = AssetDatabase.GetAssetPath (obj);
+                    FileAttributes attr = File.GetAttributes (path);
+
+                    if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+                        break;
+                    } else {
+                        DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+                        break;
+                    }
+                }
+
+                if (evt.type == EventType.DragPerform) {
+                    DragAndDrop.AcceptDrag ();
+
+                    foreach (Object obj in DragAndDrop.objectReferences) {
+                        var path = AssetDatabase.GetAssetPath (obj);
+                        FileAttributes attr = File.GetAttributes(path);
+
+                        if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
+                            AddNodeFromGUI(new Loader(path), 
+                                string.Format("Load from {0}", Path.GetFileName(path)), 
+                                evt.mousePosition.x, evt.mousePosition.y);
+                            Setup();
+                            Repaint();
+                        }
+                    }
+                }
+                break;
+            }
+        }
 
 		public void OnEnable () {
 			Init();
