@@ -266,6 +266,11 @@ public class ExtractSharedAssets : Node {
 	private void CollectDependencies(string groupKey, string[] assetPaths, ref Dictionary<string, List<string>> collector) {
 		var dependencies = AssetDatabase.GetDependencies(assetPaths);
 		foreach(var d in dependencies) {
+            // AssetBundle must not include script asset
+            if (TypeUtility.GetTypeOfAsset (d) == typeof(MonoScript)) {
+                continue;
+            }
+
 			if(!collector.ContainsKey(d)) {
 				collector[d] = new List<string>();
 			}
