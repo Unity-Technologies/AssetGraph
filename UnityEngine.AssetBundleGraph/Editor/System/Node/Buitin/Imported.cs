@@ -64,15 +64,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				m_lastImportedAssetPaths = new List<string> ();
 			}
 		
-            var imported = importedAssets.Where (path => !path.Contains (Model.Settings.Path.BasePath) && AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph));
-            var moved = movedAssets.Where (path => !path.Contains (Model.Settings.Path.BasePath) && AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph));
-
-			foreach (var path in imported) {
-                if (path.Contains (Model.Settings.Path.BasePath)) {
-					continue;
-				}
-
-			}
+            var imported = importedAssets.Where (path => !TypeUtility.IsGraphToolSystemAsset (path));
+            var moved = movedAssets.Where (path => !TypeUtility.IsGraphToolSystemAsset (path));
 
 			if (imported.Any () || moved.Any ()) {
 				m_lastImportedAssetPaths.Clear ();
@@ -130,9 +123,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			if (m_lastImportedAssetPaths != null) {
 				foreach (var path in m_lastImportedAssetPaths) {
-                    if(path.Contains(Model.Settings.Path.BasePath)) {
-						continue;
-					}
+                    if (TypeUtility.IsGraphToolSystemAsset (path)) {
+                        continue;
+                    }
 
 					var r = AssetReferenceDatabase.GetReference(path);
 

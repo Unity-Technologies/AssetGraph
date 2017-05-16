@@ -177,7 +177,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                                         onValueChanged ();
                                         continue;
                                     }
-                                    var type = AssetDatabase.GetMainAssetTypeAtPath (path);
+                                    var type = TypeUtility.GetTypeOfAsset (path);
                                     if (type != typeof(UnityEditor.SceneAsset)) {
                                         continue;
                                     }

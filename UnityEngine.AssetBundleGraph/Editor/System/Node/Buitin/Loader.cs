@@ -75,8 +75,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// if loadPath is null/empty, loader load everything except for settings
 			if(string.IsNullOrEmpty(loadPath)) {
 				// ignore config file path update
-                var notConfigFilePath = importedAssets.Where( path => !path.Contains(Model.Settings.Path.BasePath)).FirstOrDefault();
-				if(!string.IsNullOrEmpty(notConfigFilePath)) {
+                var notConfigFilePath = importedAssets.Where(path => !TypeUtility.IsGraphToolSystemAsset(path));
+                if(notConfigFilePath.Any()) {
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 					return true;
 				}
@@ -257,14 +257,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			foreach (var targetFilePath in targetFilePaths) {
 
-                if(targetFilePath.Contains(Model.Settings.Path.BasePath)) {
-					continue;
-				}
-
 				// already contained into Assets/ folder.
 				// imported path is Assets/SOMEWHERE_FILE_EXISTS.
 				if (targetFilePath.StartsWith(assetsFolderPath)) {
                     var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.Path.ASSETS_PATH);
+
+                    if (TypeUtility.IsGraphToolSystemAsset (relativePath)) {
+                        continue;
+                    }
 
 					var r = AssetReferenceDatabase.GetReference(relativePath);
 
