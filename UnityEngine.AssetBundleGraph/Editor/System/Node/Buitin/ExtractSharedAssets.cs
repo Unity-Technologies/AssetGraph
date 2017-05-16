@@ -7,6 +7,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
+#if UNITY_5_5_OR_NEWER
+using UnityEngine.Profiling;
+#endif
+
 using UnityEngine.AssetBundles.GraphTool;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
@@ -16,7 +20,15 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 [CustomNode("Configure Bundle/Extract Shared Assets", 71)]
 public class ExtractSharedAssets : Node {
 
-	[SerializeField] private string m_bundleNameTemplate;
+    enum GroupingType : int {
+        ByFileSize,
+        ByRuntimeMemorySize
+    };
+
+    [SerializeField] private string m_bundleNameTemplate;
+    [SerializeField] private SerializableMultiTargetInt m_groupExtractedAssets;
+    [SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
+    [SerializeField] private SerializableMultiTargetInt m_groupingType;
 
 	public override string ActiveStyle {
 		get {
@@ -50,12 +62,18 @@ public class ExtractSharedAssets : Node {
 
 	public override void Initialize(Model.NodeData data) {
 		m_bundleNameTemplate = "shared_*";
+        m_groupExtractedAssets = new SerializableMultiTargetInt();
+        m_groupSizeByte = new SerializableMultiTargetInt();
+        m_groupingType = new SerializableMultiTargetInt();
 		data.AddDefaultInputPoint();
 		data.AddDefaultOutputPoint();
 	}
 
 	public override Node Clone(Model.NodeData newData) {
 		var newNode = new ExtractSharedAssets();
+        newNode.m_groupExtractedAssets = new SerializableMultiTargetInt(m_groupExtractedAssets);
+        newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
+        newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
 		newNode.m_bundleNameTemplate = m_bundleNameTemplate;
 		newData.AddDefaultInputPoint();
 		newData.AddDefaultOutputPoint();
@@ -76,6 +94,64 @@ public class ExtractSharedAssets : Node {
 				onValueChanged();
 			}
 		}
+
+        GUILayout.Space(10f);
+
+        //Show target configuration tab
+        editor.DrawPlatformSelector(node);
+        using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+            var disabledScope = editor.DrawOverrideTargetToggle(node, m_groupSizeByte.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
+                using(new RecordUndoScope("Remove Target Grouping Size Settings", node, true)){
+                    if(enabled) {
+                        m_groupExtractedAssets[editor.CurrentEditingGroup] = m_groupExtractedAssets.DefaultValue;
+                        m_groupSizeByte[editor.CurrentEditingGroup] = m_groupSizeByte.DefaultValue;
+                        m_groupingType[editor.CurrentEditingGroup] = m_groupingType.DefaultValue;
+                    } else {
+                        m_groupExtractedAssets.Remove(editor.CurrentEditingGroup);
+                        m_groupSizeByte.Remove(editor.CurrentEditingGroup);
+                        m_groupingType.Remove(editor.CurrentEditingGroup);
+                    }
+                    onValueChanged();
+                }
+            });
+
+            using (disabledScope) {
+                var useGroup = EditorGUILayout.ToggleLeft ("Subgroup shared assets by size", m_groupExtractedAssets [editor.CurrentEditingGroup] != 0);
+                if (useGroup != (m_groupExtractedAssets [editor.CurrentEditingGroup] != 0)) {
+                    using(new RecordUndoScope("Change Grouping Type", node, true)){
+                        m_groupExtractedAssets[editor.CurrentEditingGroup] = (useGroup)? 1:0;
+                        onValueChanged();
+                    }
+                }
+
+                using (new EditorGUI.DisabledScope (!useGroup)) {
+                    var newType = (GroupingType)EditorGUILayout.EnumPopup("Grouping Type",(GroupingType)m_groupingType[editor.CurrentEditingGroup]);
+                    if (newType != (GroupingType)m_groupingType[editor.CurrentEditingGroup]) {
+                        using(new RecordUndoScope("Change Grouping Type", node, true)){
+                            m_groupingType[editor.CurrentEditingGroup] = (int)newType;
+                            onValueChanged();
+                        }
+                    }
+
+                    var newSizeText = EditorGUILayout.TextField("Size(KB)",m_groupSizeByte[editor.CurrentEditingGroup].ToString());
+                    int newSize = 0;
+
+                    if( !Int32.TryParse(newSizeText, out newSize) ) {
+                        throw new NodeException("Invalid size. Size property must be in decimal format.", node.Id);
+                    }
+                    if(newSize < 0) {
+                        throw new NodeException("Invalid size. Size property must be a positive number.", node.Id);
+                    }
+
+                    if (newSize != m_groupSizeByte[editor.CurrentEditingGroup]) {
+                        using(new RecordUndoScope("Change Grouping Size", node, true)){
+                            m_groupSizeByte[editor.CurrentEditingGroup] = newSize;
+                            onValueChanged();
+                        }
+                    }
+                }
+            }
+        }
 
 		EditorGUILayout.HelpBox("Bundle Name Template replaces \'*\' with number.", MessageType.Info);
 	}
@@ -130,6 +206,7 @@ public class ExtractSharedAssets : Node {
 							groupNameMap.Add(joinedName, newName);
 						}
 						var groupName = groupNameMap[joinedName];
+
 						if(!sharedDependency.ContainsKey(groupName)) {
 							sharedDependency[groupName] = new List<AssetReference>();
 						}
@@ -138,6 +215,32 @@ public class ExtractSharedAssets : Node {
 				}
 
 				if(sharedDependency.Keys.Count > 0) {
+                    // subgroup shared dependency bundles by size
+                    if (m_groupExtractedAssets [target] != 0) {
+                        List<string> devidingBundleNames = new List<string> (sharedDependency.Keys);
+                        long szGroup = m_groupSizeByte[target] * 1000;
+
+                        foreach(var bundleName in devidingBundleNames) {
+                            var assets = sharedDependency[bundleName];
+                            int groupCount = 0;
+                            long szGroupCount = 0;
+                            foreach(var a in assets) {
+                                var subGroupName = string.Format ("{0}_{1}", bundleName, groupCount);
+                                if (!sharedDependency.ContainsKey(subGroupName)) {
+                                    sharedDependency[subGroupName] = new List<AssetReference>();
+                                }
+                                sharedDependency[subGroupName].Add(a);
+
+                                szGroupCount += GetSizeOfAsset(a, (GroupingType)m_groupingType[target]);
+                                if(szGroupCount >= szGroup) {
+                                    szGroupCount = 0;
+                                    ++groupCount;
+                                }
+                            }
+                            sharedDependency.Remove (bundleName);
+                        }
+                    }
+
                     foreach(var bundleName in sharedDependency.Keys) {
                         var bundleConfig = buildMap.GetAssetBundleWithNameAndVariant (node.Id, bundleName, string.Empty);
                         bundleConfig.AddAssets (node.Id, sharedDependency[bundleName].Select(a => a.importFrom));
@@ -172,4 +275,34 @@ public class ExtractSharedAssets : Node {
 			}
 		}
 	}
+
+    private long GetSizeOfAsset(AssetReference a, GroupingType t) {
+
+        long size = 0;
+
+        // You can not read scene and do estimate
+        if (TypeUtility.GetTypeOfAsset (a.importFrom) == typeof(UnityEditor.SceneAsset)) {
+            t = GroupingType.ByFileSize;
+        }
+
+        if (t == GroupingType.ByRuntimeMemorySize) {
+            var objects = a.allData;
+            foreach (var o in objects) {
+                #if UNITY_5_6_OR_NEWER
+                size += Profiler.GetRuntimeMemorySizeLong (o);
+                #else
+                size += Profiler.GetRuntimeMemorySize(o);
+                #endif
+            }
+
+            a.ReleaseData ();
+        } else if (t == GroupingType.ByFileSize) {
+            System.IO.FileInfo fileInfo = new System.IO.FileInfo(a.absolutePath);
+            if (fileInfo.Exists) {
+                size = fileInfo.Length;
+            }
+        }
+
+        return size;
+    }
 }
