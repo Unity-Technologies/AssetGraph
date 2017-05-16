@@ -62,6 +62,9 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
                 }
 
                 set {
+                    if (!value.EndsWith ("/")) {
+                        value = value + "/";
+                    }
                     EditorUserSettings.SetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR, value);
                 }
             }

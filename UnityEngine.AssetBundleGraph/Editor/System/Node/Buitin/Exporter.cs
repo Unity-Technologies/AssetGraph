@@ -268,7 +268,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			var report = new ExportReport(node);
-            var cacheFolderDepth = Model.Settings.Path.BundleBuilderCachePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length + 1;
+            var cacheFolderDepth = Model.Settings.Path.BundleBuilderCachePath.Split(Model.Settings.UNITY_FOLDER_SEPARATOR).Length;
 
 			foreach(var ag in incoming) {
 				foreach (var groupKey in ag.assetGroups.Keys) {
