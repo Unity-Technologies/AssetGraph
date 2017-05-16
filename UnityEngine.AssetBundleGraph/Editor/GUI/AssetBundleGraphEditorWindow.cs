@@ -633,6 +633,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			try {
 				AssetDatabase.SaveAssets();
+                AssetBundleBuildMap.GetBuildMap ().Clear ();
 
 				float currentCount = 0f;
 				float totalCount = (float)controller.TargetGraph.Nodes.Count;

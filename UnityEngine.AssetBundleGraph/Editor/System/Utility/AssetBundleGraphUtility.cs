@@ -67,7 +67,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BuildTarget t, BatchBuildConfig.GraphCollection c) {
 
-			List<ExecuteGraphResult> resultCollection = new List<ExecuteGraphResult>(c.GraphGUIDs.Count);
+            AssetBundleBuildMap.GetBuildMap ().Clear ();
+
+            List<ExecuteGraphResult> resultCollection = new List<ExecuteGraphResult>(c.GraphGUIDs.Count);
 
 			foreach(var guid in c.GraphGUIDs) {
 				string path = AssetDatabase.GUIDToAssetPath(guid);
