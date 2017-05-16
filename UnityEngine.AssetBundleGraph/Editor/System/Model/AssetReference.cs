@@ -125,7 +125,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public string absolutePath {
 			get {
-				return Application.dataPath + m_importFrom;
+                return m_importFrom.Replace("Assets", Application.dataPath);
 			}
 		}
 
