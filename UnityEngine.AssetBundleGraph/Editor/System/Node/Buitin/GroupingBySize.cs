@@ -15,10 +15,16 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool
 {
-	[CustomNode("Group Assets/Group By Runtime Memory Size", 41)]
+	[CustomNode("Group Assets/Group By Size", 41)]
 	public class GroupingBySize : Node {
 
-		[SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
+        enum GroupingType : int {
+            ByFileSize,
+            ByRuntimeMemorySize
+        };
+
+        [SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
+        [SerializeField] private SerializableMultiTargetInt m_groupingType;
 
 		public override string ActiveStyle {
 			get {
@@ -39,7 +45,8 @@ namespace UnityEngine.AssetBundles.GraphTool
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			m_groupSizeByte = new SerializableMultiTargetInt();
+            m_groupSizeByte = new SerializableMultiTargetInt();
+            m_groupingType = new SerializableMultiTargetInt();
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -47,7 +54,8 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new GroupingBySize();
-			newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
+            newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
+            newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -60,7 +68,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 				return;
 			}
 
-			EditorGUILayout.HelpBox("Grouping by runtime memory size: Create group of assets by runtime memory size.", MessageType.Info);
+			EditorGUILayout.HelpBox("Grouping by size: Create group of assets by size.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);
@@ -72,14 +80,24 @@ namespace UnityEngine.AssetBundles.GraphTool
 					using(new RecordUndoScope("Remove Target Grouping Size Settings", node, true)){
 						if(enabled) {
 							m_groupSizeByte[editor.CurrentEditingGroup] = m_groupSizeByte.DefaultValue;
+                            m_groupingType[editor.CurrentEditingGroup] = m_groupingType.DefaultValue;
 						} else {
 							m_groupSizeByte.Remove(editor.CurrentEditingGroup);
+                            m_groupingType.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
 				});
 
 				using (disabledScope) {
+                    var newType = (GroupingType)EditorGUILayout.EnumPopup("Grouping Type",(GroupingType)m_groupingType[editor.CurrentEditingGroup]);
+                    if (newType != (GroupingType)m_groupingType[editor.CurrentEditingGroup]) {
+                        using(new RecordUndoScope("Change Grouping Type", node, true)){
+                            m_groupingType[editor.CurrentEditingGroup] = (int)newType;
+                            onValueChanged();
+                        }
+                    }
+
 					var newSizeText = EditorGUILayout.TextField("Size(KB)",m_groupSizeByte[editor.CurrentEditingGroup].ToString());
 					int newSize = 0;
 
@@ -125,7 +143,8 @@ namespace UnityEngine.AssetBundles.GraphTool
 			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
-							var outputDict = new Dictionary<string, List<AssetReference>>();
+
+            var outputDict = new Dictionary<string, List<AssetReference>>();
 			long szGroup = m_groupSizeByte[target] * 1000;
 
 			int groupCount = 0;
@@ -137,7 +156,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 				foreach(var ag in incoming) {
 					foreach (var assets in ag.assetGroups.Values) {
 						foreach(var a in assets) {
-							szGroupCount += GetMemorySizeOfAsset(a);
+                            szGroupCount += GetSizeOfAsset(a, (GroupingType)m_groupingType[target]);
 
 							if (!outputDict.ContainsKey(groupName)) {
 								outputDict[groupName] = new List<AssetReference>();
@@ -171,19 +190,32 @@ namespace UnityEngine.AssetBundles.GraphTool
 			return true;
 		}
 
-		private long GetMemorySizeOfAsset(AssetReference a) {
+        private long GetSizeOfAsset(AssetReference a, GroupingType t) {
 
-			var objects = a.allData;
-			long size = 0;
-			foreach(var o in objects) {
-				#if UNITY_5_6_OR_NEWER
-				size += Profiler.GetRuntimeMemorySizeLong(o);
-				#else
-				size += Profiler.GetRuntimeMemorySize(o);
-				#endif
-			}
+            long size = 0;
 
-			a.ReleaseData();
+            // You can not read scene and do estimate
+            if (TypeUtility.GetTypeOfAsset (a.importFrom) == typeof(UnityEditor.SceneAsset)) {
+                t = GroupingType.ByFileSize;
+            }
+
+            if (t == GroupingType.ByRuntimeMemorySize) {
+                var objects = a.allData;
+                foreach (var o in objects) {
+                    #if UNITY_5_6_OR_NEWER
+                    size += Profiler.GetRuntimeMemorySizeLong (o);
+                    #else
+                    size += Profiler.GetRuntimeMemorySize(o);
+                    #endif
+                }
+
+                a.ReleaseData ();
+            } else if (t == GroupingType.ByFileSize) {
+                System.IO.FileInfo fileInfo = new System.IO.FileInfo(a.absolutePath);
+                if (fileInfo.Exists) {
+                    size = fileInfo.Length;
+                }
+            }
 
 			return size;
 		}
