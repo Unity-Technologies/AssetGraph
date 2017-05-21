@@ -77,7 +77,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var reference = referenceImporter as TextureImporter;
 			UnityEngine.Assertions.Assert.IsNotNull(reference);
 
-			importer.anisoLevel = reference.anisoLevel;
+            importer.textureType = reference.textureType;
+
+            importer.anisoLevel = reference.anisoLevel;
 			importer.borderMipmap = reference.borderMipmap;
 			importer.compressionQuality = reference.compressionQuality;
 			importer.convertToNormalmap = reference.convertToNormalmap;
@@ -104,7 +106,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			importer.spritePixelsPerUnit = reference.spritePixelsPerUnit;
 			importer.spritesheet = reference.spritesheet;
 
-			importer.textureType = reference.textureType;
 			importer.wrapMode = reference.wrapMode;
 
 			/* read only */
@@ -147,6 +148,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private bool IsEqual (TextureImporter target, bool ignorePackingTagDifference) {
 			TextureImporter reference = referenceImporter as TextureImporter;
 			UnityEngine.Assertions.Assert.IsNotNull(reference);
+
+            // UnityEditor.TextureImporter.textureFormat' is obsolete: 
+            // `textureFormat is not longer accessible at the TextureImporter level
+            if (target.textureType != reference.textureType) return false;
+            if (target.wrapMode != reference.wrapMode) return false;
 
 			if (target.anisoLevel != reference.anisoLevel) return false;
 			if (target.borderMipmap != reference.borderMipmap) return false;
@@ -219,10 +225,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			// UnityEditor.TextureImporter.textureFormat' is obsolete: 
-			// `textureFormat is not longer accessible at the TextureImporter level
-			if (target.textureType != reference.textureType) return false;
-			if (target.wrapMode != reference.wrapMode) return false;
 			return true;
 		}
 
