@@ -177,19 +177,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					string newLoadPath = null;
 
-					using(new EditorGUILayout.HorizontalScope()) {
-                        newLoadPath = EditorGUILayout.TextField(Model.Settings.Path.ASSETS_PATH, path);
-
-						if(GUILayout.Button("Select", GUILayout.Width(50f))) {
-							var folderSelected = 
-								EditorUtility.OpenFolderPanel("Select Asset Folder", 
-                                    FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path), "");
-							if(!string.IsNullOrEmpty(folderSelected)) {
-                                newLoadPath = NormalizeLoadPath (folderSelected);
-							}
-						}
-					}
-
+                    newLoadPath = editor.DrawFolderSelector (Model.Settings.Path.ASSETS_PATH, "Select Asset Folder", 
+                        path,
+                        FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path),
+                        (string folderSelected) => { return NormalizeLoadPath(folderSelected); }
+                    );
 					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							m_loadPath[editor.CurrentEditingGroup] = newLoadPath;

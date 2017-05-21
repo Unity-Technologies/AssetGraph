@@ -109,27 +109,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     using (var scrollScope = new EditorGUILayout.ScrollViewScope (m_scroll)) {
                         m_scroll = scrollScope.scrollPosition;
                         GUILayout.Label ("Player Build Location", "BoldLabel");
-                        using (new EditorGUILayout.HorizontalScope ()) {
-                            var newBuildLocation = EditorGUILayout.TextField (m_buildLocations [editor.CurrentEditingGroup]);
-                            if (GUILayout.Button ("Select", GUILayout.Width (50f))) {
-                                var dataPath = Application.dataPath;
-                                var folderSelected = 
-                                    EditorUtility.OpenFolderPanel (
-                                        "Select Build Location", 
-                                        FileUtility.PathCombine (dataPath, "/../"), 
-                                        "");
-                                if (!string.IsNullOrEmpty (folderSelected)) {
-                                    if (folderSelected.StartsWith (dataPath)) {
-                                        throw new NodeException ("You can not build player inside Assets directory.", node.Id);
-                                    }
-                                    newBuildLocation = folderSelected;
-                                }
-                            }
-                            if (newBuildLocation != m_buildLocations [editor.CurrentEditingGroup]) {
-                                using (new RecordUndoScope ("Change Build Location", node, true)) {
-                                    m_buildLocations [editor.CurrentEditingGroup] = newBuildLocation;
-                                    onValueChanged ();
-                                }
+                        var newBuildLocation = editor.DrawFolderSelector ("", "Select Build Location", 
+                            m_buildLocations [editor.CurrentEditingGroup],
+                            Application.dataPath + "/../"
+                        );
+                        if (newBuildLocation.StartsWith (Application.dataPath)) {
+                            throw new NodeException ("You can not build player inside Assets directory.", node.Id);
+                        }
+
+                        if (newBuildLocation != m_buildLocations [editor.CurrentEditingGroup]) {
+                            using (new RecordUndoScope ("Change Build Location", node, true)) {
+                                m_buildLocations [editor.CurrentEditingGroup] = newBuildLocation;
+                                onValueChanged ();
                             }
                         }
                         GUILayout.Space(4f);

@@ -120,30 +120,25 @@ public class AssertUnwantedAssetsInBundle : Node {
 
 				string newLoadPath = null;
 
-				using(new EditorGUILayout.HorizontalScope()) {
-                    newLoadPath = EditorGUILayout.TextField(Model.Settings.Path.ASSETS_PATH, path);
-
-					if(GUILayout.Button("Select", GUILayout.Width(50f))) {
-						var folderSelected = 
-							EditorUtility.OpenFolderPanel("Select Asset Folder", 
-                                FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path), "");
-						if(!string.IsNullOrEmpty(folderSelected)) {
-							var dataPath = Application.dataPath;
-							if(dataPath == folderSelected) {
-								folderSelected = string.Empty;
-							} else {
-								var index = folderSelected.IndexOf(dataPath);
-								if(index >= 0 ) {
-									folderSelected = folderSelected.Substring(dataPath.Length + index);
-									if(folderSelected.IndexOf('/') == 0) {
-										folderSelected = folderSelected.Substring(1);
-									}
-								}
-							}
-							newLoadPath = folderSelected;
-						}
-					}
-				}
+                newLoadPath = editor.DrawFolderSelector (Model.Settings.Path.ASSETS_PATH, "Select Asset Folder", 
+                    path,
+                    FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path),
+                    (string folderSelected) => {
+                        var dataPath = Application.dataPath;
+                        if(dataPath == folderSelected) {
+                            folderSelected = string.Empty;
+                        } else {
+                            var index = folderSelected.IndexOf(dataPath);
+                            if(index >= 0 ) {
+                                folderSelected = folderSelected.Substring(dataPath.Length + index);
+                                if(folderSelected.IndexOf('/') == 0) {
+                                    folderSelected = folderSelected.Substring(1);
+                                }
+                            }
+                        }
+                        return folderSelected;
+                    }
+                );
 
 				if (newLoadPath != path) {
 					using(new RecordUndoScope("Path Change", node, true)){
