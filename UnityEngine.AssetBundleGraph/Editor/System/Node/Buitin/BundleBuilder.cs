@@ -33,7 +33,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private static readonly string key = "0";
 
-		[SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
+        [SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
+        [SerializeField] private SerializableMultiTargetString m_outputDir;
 		[SerializeField] private bool m_overwriteImporterSetting;
 
 		public override string ActiveStyle {
@@ -67,7 +68,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public override void Initialize(Model.NodeData data) {
-			m_enabledBundleOptions = new SerializableMultiTargetInt();
+            m_enabledBundleOptions = new SerializableMultiTargetInt();
+            m_outputDir = new SerializableMultiTargetString();
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -75,11 +77,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 			m_enabledBundleOptions = new SerializableMultiTargetInt(v1.BundleBuilderBundleOptions);
+            m_outputDir = new SerializableMultiTargetString();
 		}
 			
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new BundleBuilder();
 			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);
+            newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -112,15 +116,28 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				var disabledScope = editor.DrawOverrideTargetToggle(node, m_enabledBundleOptions.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
 					using(new RecordUndoScope("Remove Target Bundle Options", node, true)){
 						if(enabled) {
-							m_enabledBundleOptions[editor.CurrentEditingGroup] = m_enabledBundleOptions.DefaultValue;
+                            m_enabledBundleOptions[editor.CurrentEditingGroup] = m_enabledBundleOptions.DefaultValue;
+                            m_outputDir[editor.CurrentEditingGroup] = m_outputDir.DefaultValue;
 						}  else {
-							m_enabledBundleOptions.Remove(editor.CurrentEditingGroup);
+                            m_enabledBundleOptions.Remove(editor.CurrentEditingGroup);
+                            m_outputDir.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
 				} );
 
 				using (disabledScope) {
+                    var newDirPath = editor.DrawFolderSelector ("Output Directory", "Select Output Folder", 
+                        m_outputDir[editor.CurrentEditingGroup],
+                        Application.dataPath + "/../"
+                    );
+                    if (newDirPath != m_outputDir[editor.CurrentEditingGroup]) {
+                        using(new RecordUndoScope("Change Output Directory", node, true)){
+                            m_outputDir[editor.CurrentEditingGroup] = newDirPath;
+                            onValueChanged();
+                        }
+                    }
+
 					int bundleOptions = m_enabledBundleOptions[editor.CurrentEditingGroup];
 
 					bool isDisableWriteTypeTreeEnabled  = 0 < (bundleOptions & (int)BuildAssetBundleOptions.DisableWriteTypeTree);
@@ -170,6 +187,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if(incoming == null) {
 				return;
 			}
+
+            if (!string.IsNullOrEmpty (m_outputDir[target])) {
+                var cacheDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+                if (m_outputDir [target] != cacheDir) {
+                    try {
+                        FileAttributes attr = File.GetAttributes (m_outputDir [target]);
+                        if ((attr & FileAttributes.Directory) != FileAttributes.Directory) {
+                            throw new NodeException (node.Name + ":Output path is not directory:" + m_outputDir [target], node.Id);
+                        }
+                    } catch(FileNotFoundException) {
+                        // if not found, it is fine.
+                    }
+                }
+            }
 				
 			var bundleNames = incoming.SelectMany(v => v.assetGroups.Keys).Distinct().ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
@@ -191,7 +222,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 
 			// add manifest file
-			var manifestName = BuildTargetUtility.TargetToAssetBundlePlatformName(target);
+            var manifestName = GetManifestName(target);
 			bundleNames.Add( manifestName );
 			bundleVariants[manifestName] = new List<string>() {""};
 
@@ -200,7 +231,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 				var outputDict = new Dictionary<string, List<AssetReference>>();
 				outputDict[key] = new List<AssetReference>();
-				var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+                var bundleOutputDir = m_outputDir[target];
+                if(string.IsNullOrEmpty(bundleOutputDir)) {
+                    bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+                }
 
 				foreach (var name in bundleNames) {
 					foreach(var v in bundleVariants[name]) {
@@ -243,7 +277,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			var bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists(target, node);
+            var bundleOutputDir = m_outputDir [target];
+            if (string.IsNullOrEmpty (bundleOutputDir)) {
+                bundleOutputDir = FileUtility.EnsureAssetBundleCacheDirExists (target, node);
+            } else {
+                if (!Directory.Exists (bundleOutputDir)) {
+                    Directory.CreateDirectory (bundleOutputDir);
+                }
+            }
 
 			var bundleNames = aggregatedGroups.Keys.ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
@@ -324,8 +365,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			output[key] = new List<AssetReference>();
 
 			var generatedFiles = FileUtility.GetAllFilePathsInFolder(bundleOutputDir);
+            var manifestName = GetManifestName (target);
 			// add manifest file
-			bundleVariants.Add( BuildTargetUtility.TargetToAssetBundlePlatformName(target).ToLower(), new List<string> { null } );
+            bundleVariants.Add( manifestName.ToLower(), new List<string> { null } );
 			foreach (var path in generatedFiles) {
 				var fileName = path.Substring(bundleOutputDir.Length+1);
 				if( IsFileIntendedItem(fileName, bundleVariants) ) {
@@ -343,8 +385,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				importerSetting.ForEach (i => i.WriteBack ());
 			}
 
-			AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, bundleBuild, output[key], aggregatedGroups, bundleVariants));
+            AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, manifestName, bundleBuild, output[key], aggregatedGroups, bundleVariants));
 		}
+
+        private string GetManifestName(BuildTarget target) {
+            if (string.IsNullOrEmpty (m_outputDir [target])) {
+                return BuildTargetUtility.TargetToAssetBundlePlatformName (target);
+            } else {
+                return Path.GetFileName (m_outputDir [target]);
+            }
+        }
 
 		// Check if given file is generated Item
 		private bool IsFileIntendedItem(string filename, Dictionary<string, List<string>> bundleVariants) {
