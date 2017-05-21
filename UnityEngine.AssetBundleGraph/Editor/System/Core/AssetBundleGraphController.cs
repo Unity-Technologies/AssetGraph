@@ -196,7 +196,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var postprocessType = typeof(IPostprocess);
 			var ppTypes = Assembly.GetExecutingAssembly().GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
 			foreach (var t in ppTypes) {
-				var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(t.Name);
+                var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(t.FullName);
 				if (postprocessScriptInstance == null) {
 					throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
 				}
