@@ -229,14 +229,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 Directory.CreateDirectory(m_buildLocations [target]);
             }
 
-            var manifestName = BuildTargetUtility.TargetToAssetBundlePlatformName(target) + ".manifest";
             string manifestPath = string.Empty;
 
             foreach(var ag in incoming) {
                 foreach(var assets in ag.assetGroups.Values) {
-                    var manifestBundle = assets.Where (a => a.fileNameAndExtension == manifestName);
+                    var manifestBundle = assets.Where (a => a.assetType == typeof(AssetBundleManifestReference));
                     if (manifestBundle.Any ()) {
-                        manifestPath = manifestBundle.First ().importFrom;
+                        manifestPath = manifestBundle.First().importFrom;
                     }
                 }
             }

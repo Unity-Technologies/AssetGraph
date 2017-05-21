@@ -192,6 +192,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			);
 		}
 
+        public static AssetReference CreateAssetBundleManifestReference (string path) {
+            return new AssetReference(
+                guid: Guid.NewGuid(),
+                assetDatabaseId:AssetDatabase.AssetPathToGUID(path),
+                importFrom:path,
+                assetType:typeof(AssetBundleManifestReference)
+            );
+        }
+
 		private AssetReference (
 			Guid guid,
 			string assetDatabaseId = null,

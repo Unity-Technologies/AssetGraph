@@ -10,7 +10,7 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetReferenceDatabase : ScriptableObject {
 
-		private const int DB_VERSION = 1;
+		private const int DB_VERSION = 2;
 
 		private delegate AssetReference CreateReference();
 
@@ -62,7 +62,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 						s_database = db;
 						loaded = true;
-					}
+                    } else {
+                        if(db != null) {
+                            Resources.UnloadAsset(db);
+                        }
+                    }
 				}
 			} catch(Exception e) {
 				LogUtility.Logger.LogWarning(LogUtility.kTag, e);
@@ -86,6 +90,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static AssetReference GetAssetBundleReference(string relativePath) {
 			return GetReference(relativePath, () => { return AssetReference.CreateAssetBundleReference(relativePath); });
 		}
+
+        public static AssetReference GetAssetBundleManifestReference(string relativePath) {
+            return GetReference(relativePath, () => { return AssetReference.CreateAssetBundleManifestReference(relativePath); });
+        }
 
 		public static void DeleteReference(string relativePath) {
 			AssetReferenceDatabase db = GetDatabase();
