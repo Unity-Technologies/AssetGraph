@@ -160,6 +160,45 @@ namespace UnityEngine.AssetBundles.GraphTool {
                                 onValueChanged();
                             }
                         }
+
+                        if (opt == OutputOption.ErrorIfNoOutputDirectoryFound && 
+                            !Directory.Exists (m_outputDir [editor.CurrentEditingGroup])) 
+                        {
+                            using (new EditorGUILayout.HorizontalScope()) {
+                                EditorGUILayout.LabelField(m_outputDir[editor.CurrentEditingGroup] + " does not exist.");
+                                if(GUILayout.Button("Create directory")) {
+                                    Directory.CreateDirectory(m_outputDir[editor.CurrentEditingGroup]);
+                                }
+                            }
+                            EditorGUILayout.Space();
+
+                            string parentDir = Path.GetDirectoryName(m_outputDir[editor.CurrentEditingGroup]);
+                            if(Directory.Exists(parentDir)) {
+                                EditorGUILayout.LabelField("Available Directories:");
+                                string[] dirs = Directory.GetDirectories(parentDir);
+                                foreach(string s in dirs) {
+                                    EditorGUILayout.LabelField(s);
+                                }
+                            }
+                            EditorGUILayout.Space();
+                        }
+
+                        var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, false);
+
+                        using (new EditorGUI.DisabledScope (!Directory.Exists (outputDir))) 
+                        {
+                            using (new EditorGUILayout.HorizontalScope ()) {
+                                GUILayout.FlexibleSpace ();
+                                #if UNITY_EDITOR_OSX
+                                string buttonName = "Reveal in Finder";
+                                #else
+                                string buttonName = "Show in Explorer";
+                                #endif
+                                if (GUILayout.Button (buttonName)) {
+                                    EditorUtility.RevealInFinder (outputDir);
+                                }
+                            }
+                        }
                     }
 
 					int bundleOptions = m_enabledBundleOptions[editor.CurrentEditingGroup];
@@ -212,7 +251,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-            var bundleOutputDir = PrepareOutputDirectory (target, node);
+            var bundleOutputDir = PrepareOutputDirectory (target, node, false);
 
 			var bundleNames = incoming.SelectMany(v => v.assetGroups.Keys).Distinct().ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
@@ -285,7 +324,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-            var bundleOutputDir = PrepareOutputDirectory (target, node);
+            var bundleOutputDir = PrepareOutputDirectory (target, node, true);
 			var bundleNames = aggregatedGroups.Keys.ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
 
@@ -400,7 +439,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
         }
 
-        private string PrepareOutputDirectory(BuildTarget target, Model.NodeData node) {
+        private string PrepareOutputDirectory(BuildTarget target, Model.NodeData node, bool autoCreate) {
 
             var outputOption = (OutputOption)m_outputOption [target];
             var outputDir = m_outputDir [target];
@@ -419,14 +458,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 }
             }
 
-            if(outputOption == OutputOption.DeleteAndRecreateOutputDirectory) {
-                if (Directory.Exists(outputDir)) {
-                    Directory.Delete(outputDir, true);
+            if (autoCreate) {
+                if(outputOption == OutputOption.DeleteAndRecreateOutputDirectory) {
+                    if (Directory.Exists(outputDir)) {
+                        Directory.Delete(outputDir, true);
+                    }
                 }
-            }
 
-            if (!Directory.Exists(outputDir)) {
-                Directory.CreateDirectory(outputDir);
+                if (!Directory.Exists(outputDir)) {
+                    Directory.CreateDirectory(outputDir);
+                }
             }
 
             return outputDir;
