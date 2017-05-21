@@ -75,6 +75,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private Model.NodeData m_node;
 		private AssetBundleManifest m_manifest;
+        private string m_manifestFileName;
 		private AssetBundleBuild[] m_bundleBuild;
 		private List<AssetReference> m_builtBundles;
 		private Dictionary<string, List<AssetReference>> m_assetGroups;
@@ -92,7 +93,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public AssetBundleBuild[] BundleBuild {
+        public string ManifestFileName {
+            get {
+                return m_manifestFileName;
+            }
+        }
+
+        public AssetBundleBuild[] BundleBuild {
 			get {
 				return m_bundleBuild;
 			}
@@ -125,13 +132,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public AssetBundleBuildReport(
 			Model.NodeData node,
-			AssetBundleManifest m, 
+			AssetBundleManifest m,
+            string manifestFileName,
 			AssetBundleBuild[] bb, 
 			List<AssetReference> builtBundles,
 			Dictionary<string, List<AssetReference>> ag, 
 			Dictionary<string, List<string>> names) {
 			m_node = node;
 			m_manifest = m;
+            m_manifestFileName = manifestFileName;
 			m_bundleBuild = bb;
 			m_builtBundles = builtBundles;
 			m_assetGroups = ag;
