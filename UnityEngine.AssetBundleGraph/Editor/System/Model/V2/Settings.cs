@@ -104,14 +104,12 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
                         Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
 
-                        string baseDirPath = baseDir.ToString ();
+						string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
 
                         int index = baseDirPath.LastIndexOf (ASSETS_PATH);
                         Assertions.Assert.IsTrue ( index >= 0 );
 
-                        baseDirPath = baseDirPath.Substring (index);
-
-                        s_basePath = baseDirPath.Replace( '\\', '/');
+						s_basePath = baseDirPath.Substring (index);
                     //}
                     return s_basePath;
                 }

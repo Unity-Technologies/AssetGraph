@@ -37,14 +37,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
                     Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
 
-                    string baseDirPath = baseDir.ToString ();
+					string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
 
                     int index = baseDirPath.LastIndexOf (ASSETS_PATH);
                     Assertions.Assert.IsTrue ( index >= 0 );
 
                     baseDirPath = baseDirPath.Substring (index);
 
-                    s_basePath = baseDirPath.Replace( '\\', '/');
+					s_basePath = baseDirPath;
                     //}
                     return s_basePath;
                 }
