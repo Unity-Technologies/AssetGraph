@@ -152,7 +152,23 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     using (new EditorGUI.DisabledScope (opt == OutputOption.BuildInCacheDirectory)) {
                         var newDirPath = editor.DrawFolderSelector ("Output Directory", "Select Output Folder", 
                             m_outputDir[editor.CurrentEditingGroup],
-                            Application.dataPath + "/../"
+                            Application.dataPath + "/../",
+                            (string folderSelected) => {
+                                var projectPath = Directory.GetParent(Application.dataPath).ToString();
+
+                                if(projectPath == folderSelected) {
+                                    folderSelected = string.Empty;
+                                } else {
+                                    var index = folderSelected.IndexOf(projectPath);
+                                    if(index >= 0 ) {
+                                        folderSelected = folderSelected.Substring(projectPath.Length + index);
+                                        if(folderSelected.IndexOf('/') == 0) {
+                                            folderSelected = folderSelected.Substring(1);
+                                        }
+                                    }
+                                }
+                                return folderSelected;
+                            }
                         );
                         if (newDirPath != m_outputDir[editor.CurrentEditingGroup]) {
                             using(new RecordUndoScope("Change Output Directory", node, true)){
@@ -162,6 +178,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                         }
 
                         if (opt == OutputOption.ErrorIfNoOutputDirectoryFound && 
+                            !string.IsNullOrEmpty(m_outputDir [editor.CurrentEditingGroup]) &&
                             !Directory.Exists (m_outputDir [editor.CurrentEditingGroup])) 
                         {
                             using (new EditorGUILayout.HorizontalScope()) {
@@ -183,7 +200,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                             EditorGUILayout.Space();
                         }
 
-                        var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, false);
+                        var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, false, false);
 
                         using (new EditorGUI.DisabledScope (!Directory.Exists (outputDir))) 
                         {
@@ -251,7 +268,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-            var bundleOutputDir = PrepareOutputDirectory (target, node, false);
+            var bundleOutputDir = PrepareOutputDirectory (target, node, false, true);
 
 			var bundleNames = incoming.SelectMany(v => v.assetGroups.Keys).Distinct().ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
@@ -324,7 +341,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-            var bundleOutputDir = PrepareOutputDirectory (target, node, true);
+            var bundleOutputDir = PrepareOutputDirectory (target, node, true, true);
 			var bundleNames = aggregatedGroups.Keys.ToList();
 			var bundleVariants = new Dictionary<string, List<string>>();
 
@@ -439,7 +456,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
         }
 
-        private string PrepareOutputDirectory(BuildTarget target, Model.NodeData node, bool autoCreate) {
+        private string PrepareOutputDirectory(BuildTarget target, Model.NodeData node, bool autoCreate, bool throwException) {
 
             var outputOption = (OutputOption)m_outputOption [target];
             var outputDir = m_outputDir [target];
@@ -448,13 +465,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 return FileUtility.EnsureAssetBundleCacheDirExists (target, node);
             }
 
-            if(string.IsNullOrEmpty(outputDir)) {
-                throw new NodeException (node.Name + ":Output directory is empty.", node.Id);
-            }
+            if (throwException) {
+                if(string.IsNullOrEmpty(outputDir)) {
+                    throw new NodeException (node.Name + ":Output directory is empty.", node.Id);
+                }
 
-            if(outputOption == OutputOption.ErrorIfNoOutputDirectoryFound) {
-                if (!Directory.Exists (outputDir)) {
-                    throw new NodeException (node.Name + ":Output directory not found.", node.Id);
+                if(outputOption == OutputOption.ErrorIfNoOutputDirectoryFound) {
+                    if (!Directory.Exists (outputDir)) {
+                        throw new NodeException (node.Name + ":Output directory not found.", node.Id);
+                    }
                 }
             }
 
