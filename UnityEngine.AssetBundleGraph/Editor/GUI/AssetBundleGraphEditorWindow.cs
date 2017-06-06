@@ -240,7 +240,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				destinationPath = FileUtility.PathCombine(destinationBasePath, string.Format(destinationFileName, ++count, ".cs"));
 			}
 
-			FileUtility.CopyTemplateFile(sourceFileName, destinationPath, string.Format(destinationFileName, "", ""), string.Format(destinationFileName, count, ""));
+            FileUtility.CopyTemplateFile(sourceFileName, destinationPath, string.Format(destinationFileName, "", ""), string.Format(destinationFileName, count==0?"":count.ToString(), ""));
 
 			AssetDatabase.Refresh();
 
