@@ -40,7 +40,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
 			typeof(Scene).ToString(),
-			typeof(GameObject).ToString(),
+            typeof(GameObject).ToString(),
+            typeof(Audio.AudioMixer).ToString(),
 		};
 		
 		public static readonly Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
@@ -50,7 +51,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			{".mask", typeof(AvatarMask)},
 			{".cubemap", typeof(Cubemap)},
 			{".flare", typeof(Flare)},
-			{".fontsettings", typeof(Font)},
+            {".fontsettings", typeof(Font)},
+            {".ttf", typeof(Font)},
+            {".otf", typeof(Font)},
+            {".compute", typeof(ComputeShader)},
 			{".guiskin", typeof(GUISkin)},
 			// typeof(LightmapParameters).ToString(),
 			{".mat", typeof(Material)},
@@ -58,7 +62,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			{".physicsmaterial2d", typeof(PhysicsMaterial2D)},
 			{".rendertexture", typeof(RenderTexture)},
 			// typeof(SceneAsset).ToString(),
-			{".shader", typeof(Shader)},
+            {".shader", typeof(Shader)},
+            {".cg", typeof(Shader)},
+            {".cginc", typeof(Shader)},
+            {".mixer", typeof(Audio.AudioMixer)},
 			{".unity", typeof(Scene)},
 			{".txt", typeof(TextAsset)},
 			{".html", typeof(TextAsset)},
