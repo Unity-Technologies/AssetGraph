@@ -1,30 +1,35 @@
-using System;
-using UnityEngine;
-using UnityEditor;
-using UnityEngine.Assertions;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEditor.IMGUI.Controls;
-
 /**
  * AssetBundles-Browser integration
  * 
- * set ASSETBUNDLE_BROWSER_INSTALLED to 1 if you install AssetBundles-Browser
- * and want to use the integration.
+ * This code will setup the output of the graph tool to be viewable in the browser.
  * 
  * AssetBundles-Browser Available at:
- * https://github.com/hiroki-o/AssetBundles-Browser
+ * https://github.com/Unity-Technologies/AssetBundles-Browser
  */
+ 
+using UnityEditor;
+using Model = UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using System;
+using System.Collections.Generic;
 
-#if ASSETBUNDLE_BROWSER_INSTALLED
-
-using UnityEngine.AssetBundles.AssetBundleOperation;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+namespace UnityEngine.AssetBundles.AssetBundleDataSource
+{
+    public partial struct ABBuildInfo { }
+    public partial interface ABDataSource { }
+}
 
 namespace UnityEngine.AssetBundles.GraphTool {
-	public class GraphToolABOperation : ABOperation
+	public class GraphToolABDataSource : AssetBundleDataSource.ABDataSource
     {
-		public string Name {
+        public static List<AssetBundleDataSource.ABDataSource> CreateDataSources()
+        {
+            var op = new GraphToolABABDataSource();
+            var retList = new List<AssetBundleDataSource.ABDataSource>();
+            retList.Add(op);
+            return retList;
+        }
+
+        public string Name {
 			get {
 				return "AssetBundles";
 			}
@@ -64,7 +69,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// readonly. do nothing
 		}
 
-		public bool CanSpecifyBuildTarget { 
+		public bool CanSpecifyBuildTarget {
 			get { return true; } 
 		}
 		public bool CanSpecifyBuildOutputDirectory { 
@@ -75,7 +80,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			get { return false; } 
 		}
 
-		public bool BuildAssetBundles (ABBuildInfo info) {
+		public bool BuildAssetBundles (AssetBundleDataSource.ABBuildInfo info) {
 			
             AssetBundleBuildMap.GetBuildMap ().Clear ();
 
@@ -85,27 +90,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				string path = AssetDatabase.GUIDToAssetPath(guid);
 				var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
 				if (!graph.UseAsAssetPostprocessor) {
-					var result = AssetBundleGraphUtility.ExecuteGraph (info.buildTarget, graph);
-					if (result.IsAnyIssueFound) {
-						return false;
-					}
+                    Type infoType = info.GetType();
+                    var targetInfo = infoType.GetProperty("buildTarget");
+                    if (targetInfo.GetValue(info, null) is BuildTarget)
+                    {
+                        BuildTarget target = (BuildTarget)targetInfo.GetValue(info, null);
+                        var result = AssetBundleGraphUtility.ExecuteGraph(target, graph);
+                        if (result.IsAnyIssueFound)
+                        {
+                            return false;
+                        }
+                    }
 				}
 			}
 
 			return true;
 		}
     }
-
-	[CustomABOperationProvider("AssetBundle Graph Tool")]
-	public class AssetDatabaseABOperationProvider : ABOperationProvider
-	{
-		public int GetABOperationCount () {
-			return 1;
-		}
-		public ABOperation CreateOperation(int index) {
-			return new GraphToolABOperation ();
-		}
-	}
 }
-
-#endif
