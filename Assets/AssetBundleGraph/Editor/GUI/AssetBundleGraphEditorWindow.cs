@@ -733,23 +733,57 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					GenericMenu menu = new GenericMenu();
 
 					var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+                    var nameList = new List<string> ();
 
 					foreach(var guid in guids) {
 						string path = AssetDatabase.GUIDToAssetPath(guid);
 						string name = Path.GetFileNameWithoutExtension(path);
 
-						menu.AddItem(new GUIContent(name), false, () => {
+                        // GenericMenu can't have multiple menu item with the same name
+                        // Avoid name overlap
+                        string menuName = name;
+                        int i = 1;
+                        while (nameList.Contains (menuName)) {
+                            menuName = string.Format ("{0} ({1})", name, i++);
+                        }
+
+                        menu.AddItem(new GUIContent(menuName), false, () => {
 							if(path != graphAssetPath) {
 								var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
 								OpenGraph(graph);
 							}
 						});
+                        nameList.Add (menuName);
 					}
 
 					menu.AddSeparator("");
 					menu.AddItem(new GUIContent("Create New..."), false, () => {
 						CreateNewGraphFromDialog();
 					});
+
+                    menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("Import/Import JSON Graph to current graph..."), false, () => {
+                        var graph = JSONGraphUtility.ImportJSONToGraphFromDialog(controller.TargetGraph);
+                        if(graph != null) {
+                            OpenGraph(graph);
+                        }
+                    });
+                    menu.AddSeparator("Import/");
+                    menu.AddItem(new GUIContent("Import/Import JSON Graph and create new..."), false, () => {
+                        var graph = JSONGraphUtility.ImportJSONToGraphFromDialog(null);
+                        if(graph != null) {
+                            OpenGraph(graph);
+                        }
+                    });
+                    menu.AddItem(new GUIContent("Import/Import JSON Graphs in folder..."), false, () => {
+                        JSONGraphUtility.ImportAllJSONInDirectoryToGraphFromDialog();
+                    });
+                    menu.AddItem (new GUIContent ("Export/Export current graph to JSON..."), false, () => {
+                        JSONGraphUtility.ExportGraphToJSONFromDialog(controller.TargetGraph);
+                    });
+                    menu.AddItem(new GUIContent("Export/Export all graphs to JSON..."), false, () => {
+                        JSONGraphUtility.ExportAllGraphsToJSONFromDialog();
+                    });
 
 					if(Model.ConfigGraph.IsImportableDataAvailableAtDisk()) {
 						menu.AddSeparator("");
