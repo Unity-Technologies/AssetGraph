@@ -194,16 +194,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void Postprocess () 
 		{
 			var postprocessType = typeof(IPostprocess);
-			var ppTypes = Assembly.GetExecutingAssembly().GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
-			foreach (var t in ppTypes) {
-                var postprocessScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(t.FullName);
-				if (postprocessScriptInstance == null) {
-					throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
-				}
 
-				var postprocessInstance = (IPostprocess)postprocessScriptInstance;
-				postprocessInstance.DoPostprocess(AssetBundleBuildReport.BuildReports, AssetBundleBuildReport.ExportReports);
-			}
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                var ppTypes = assembly.GetTypes().Select(v => v).Where(v => v != postprocessType && postprocessType.IsAssignableFrom(v)).ToList();
+                foreach (var t in ppTypes) {
+                    var postprocessScriptInstance = assembly.CreateInstance(t.FullName);
+                    if (postprocessScriptInstance == null) {
+                        throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
+                    }
+
+                    var postprocessInstance = (IPostprocess)postprocessScriptInstance;
+                    postprocessInstance.DoPostprocess(AssetBundleBuildReport.BuildReports, AssetBundleBuildReport.ExportReports);
+                }
+            }
 		}
 
 		public void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {

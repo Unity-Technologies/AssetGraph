@@ -149,7 +149,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								using (new GUILayout.VerticalScope()) {
 									EditorGUILayout.HelpBox(string.Format("Failed to deserialize assigned filter({0}). Please select valid class.", cond.Instance.ClassName), MessageType.Error);
 									if (GUILayout.Button(cond.Instance.ClassName, "Popup", GUILayout.MinWidth(150f))) {
-										var map = FilterUtility.GetAttributeClassNameMap();
+                                        var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
 										NodeGUI.ShowTypeNamesMenu(cond.Instance.ClassName, map.Keys.ToList(), (string selectedGUIName) => 
 											{
 												using(new RecordUndoScope("Change Filter Setting", node)) {
@@ -185,7 +185,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				// add contains keyword interface.
 				if (GUILayout.Button("+")) {
 
-					var map = FilterUtility.GetAttributeClassNameMap();
+					var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
 					if(map.Keys.Count > 1) {
 						GenericMenu menu = new GenericMenu();
 						foreach(var name in map.Keys) {

@@ -787,14 +787,6 @@ namespace AssetBundleGraph {
 			return true;
 		}
 
-		private bool TestCreateScriptInstance() {
-			if(string.IsNullOrEmpty(ScriptClassName)) {
-				return false;
-			}
-			var nodeScriptInstance = Assembly.GetExecutingAssembly().CreateInstance(m_scriptClassName);
-			return nodeScriptInstance != null;
-		}
-
 		public bool CompareIgnoreGUIChanges (NodeData rhs) {
 
 			if(this.m_kind != rhs.m_kind) {

@@ -190,9 +190,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public Node CreateInstance() {
-			string typeName = type.FullName;
-
-			object o = Assembly.GetExecutingAssembly().CreateInstance(typeName);
+            string typeName = type.AssemblyQualifiedName;
+            object o = type.Assembly.CreateInstance(type.FullName);
 			return (Node) o;
 		}
 
@@ -222,13 +221,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private static List<CustomNodeInfo> BuildCustomNodeList() {
 			var list = new List<CustomNodeInfo>();
 
-			var nodes = Assembly
-				.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => t != typeof(Node))
-				.Where(t => typeof(Node).IsAssignableFrom(t));
+            var allNodes = new List<Type>();
 
-			foreach (var type in nodes) {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                var nodes = assembly.GetTypes()
+                    .Where(t => t != typeof(Node))
+                    .Where(t => typeof(Node).IsAssignableFrom(t));
+                allNodes.AddRange (nodes);
+            }
+
+            foreach (var type in allNodes) {
 				CustomNode attr = 
 					type.GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
 
@@ -261,7 +263,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var type = Type.GetType(className);
 			if(type != null) {
 				CustomNode attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
+                    type.GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
 				if(attr != null) {
 					return attr.Name;
 				}
@@ -273,7 +275,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var type = Type.GetType(className);
 			if(type != null) {
 				CustomNode attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
+                    type.GetCustomAttributes(typeof(CustomNode), false).FirstOrDefault() as CustomNode;
 				if(attr != null) {
 					return attr.OrderPriority;
 				}
@@ -281,9 +283,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return CustomNode.kDEFAULT_PRIORITY;
 		}
 
-		public static Node CreateNodeInstance(string className) {
-			if(className != null) {
-				return (Node) Assembly.GetExecutingAssembly().CreateInstance(className);
+		public static Node CreateNodeInstance(string assemblyQualifiedName) {
+			if(assemblyQualifiedName != null) {
+                var type = Type.GetType(assemblyQualifiedName);
+
+                return (Node) type.Assembly.CreateInstance(type.FullName);
 			}
 			return null;
 		}

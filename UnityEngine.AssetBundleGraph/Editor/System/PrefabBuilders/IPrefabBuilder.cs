@@ -80,38 +80,41 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 	public class PrefabBuilderUtility {
 
-		private static  Dictionary<string, string> s_attributeClassNameMap;
+        private static  Dictionary<string, string> s_attributeAssemblyQualifiedNameMap;
 
-		public static Dictionary<string, string> GetAttributeClassNameMap () {
+		public static Dictionary<string, string> GetAttributeAssemblyQualifiedNameMap () {
 
-			if(s_attributeClassNameMap == null) {
+			if(s_attributeAssemblyQualifiedNameMap == null) {
 				// attribute name or class name : class name
-				s_attributeClassNameMap = new Dictionary<string, string>(); 
+				s_attributeAssemblyQualifiedNameMap = new Dictionary<string, string>(); 
 
-				var builders = Assembly
-					.GetExecutingAssembly()
-					.GetTypes()
-					.Where(t => !t.IsInterface)
-					.Where(t => typeof(IPrefabBuilder).IsAssignableFrom(t));
+                var allBuilders = new List<Type>();
 
-				foreach (var type in builders) {
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                    var builders = assembly.GetTypes()
+                        .Where(t => !t.IsInterface)
+                        .Where(t => typeof(IPrefabBuilder).IsAssignableFrom(t));
+                    allBuilders.AddRange (builders);
+                }
+
+                foreach (var type in allBuilders) {
 					// set attribute-name as key of dict if atribute is exist.
 					CustomPrefabBuilder attr = 
 						type.GetCustomAttributes(typeof(CustomPrefabBuilder), true).FirstOrDefault() as CustomPrefabBuilder;
 
-					var typename = type.ToString();
+                    var typename = type.AssemblyQualifiedName;
 
 
 					if (attr != null) {
-						if (!s_attributeClassNameMap.ContainsKey(attr.Name)) {
-							s_attributeClassNameMap[attr.Name] = typename;
+						if (!s_attributeAssemblyQualifiedNameMap.ContainsKey(attr.Name)) {
+							s_attributeAssemblyQualifiedNameMap[attr.Name] = typename;
 						}
 					} else {
-						s_attributeClassNameMap[typename] = typename;
+						s_attributeAssemblyQualifiedNameMap[typename] = typename;
 					}
 				}
 			}
-			return s_attributeClassNameMap;
+			return s_attributeAssemblyQualifiedNameMap;
 		}
 
 		public static string GetPrefabBuilderGUIName(IPrefabBuilder builder) {
@@ -131,7 +134,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				var type = Type.GetType(className);
 				if(type != null) {
 					CustomPrefabBuilder attr = 
-						Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+                        type.GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
 					if(attr != null) {
 						return attr.Name;
 					}
@@ -144,7 +147,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var type = Type.GetType(className);
 			if(type != null) {
 				CustomPrefabBuilder attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+                    type.GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
 				if(attr != null) {
 					return attr.Version;
 				}
@@ -156,7 +159,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var type = Type.GetType(className);
 			if(type != null) {
 				CustomPrefabBuilder attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
+                    type.GetCustomAttributes(typeof(CustomPrefabBuilder), false).FirstOrDefault() as CustomPrefabBuilder;
 				if(attr != null) {
 					return attr.AssetThreshold;
 				}
@@ -164,8 +167,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return 0;
 		}
 
-		public static string GUINameToClassName(string guiName) {
-			var map = GetAttributeClassNameMap();
+		public static string GUINameToAssemblyQualifiedName(string guiName) {
+			var map = GetAttributeAssemblyQualifiedNameMap();
 
 			if(map.ContainsKey(guiName)) {
 				return map[guiName];
@@ -175,20 +178,24 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static IPrefabBuilder CreatePrefabBuilder(string guiName) {
-			var className = GUINameToClassName(guiName);
+			var className = GUINameToAssemblyQualifiedName(guiName);
 			if(className != null) {
-				return (IPrefabBuilder) Assembly.GetExecutingAssembly().CreateInstance(className);
+                var type = Type.GetType(className);
+                if (type == null) {
+                    return null;
+                }
+                return (IPrefabBuilder) type.Assembly.CreateInstance(type.FullName);
 			}
 			return null;
 		}
 
-		public static IPrefabBuilder CreatePrefabBuilderByClassName(string className) {
+		public static IPrefabBuilder CreatePrefabBuilderByAssemblyQualifiedName(string assemblyQualifiedName) {
 
-			if(className == null) {
+			if(assemblyQualifiedName == null) {
 				return null;
 			}
 
-			Type t = Type.GetType(className);
+			Type t = Type.GetType(assemblyQualifiedName);
 			if(t == null) {
 				return null;
 			}
@@ -197,7 +204,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return null;
 			}
 
-			return (IPrefabBuilder) Assembly.GetExecutingAssembly().CreateInstance(className);
+            return (IPrefabBuilder) t.Assembly.CreateInstance(t.FullName);
 		}
 	}
 }

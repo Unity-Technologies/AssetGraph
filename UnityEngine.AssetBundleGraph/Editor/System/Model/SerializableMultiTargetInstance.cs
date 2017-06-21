@@ -32,13 +32,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public SerializableMultiTargetInstance(object value) {
-			m_className = value.GetType().FullName;
+            m_className = value.GetType().AssemblyQualifiedName;
 			m_values = new List<Entry>();
 			Set(BuildTargetUtility.DefaultTarget, value);
 		}
 
-		public SerializableMultiTargetInstance(string classname, SerializableMultiTargetString instanceData) {
-			m_className = classname;
+        public SerializableMultiTargetInstance(string assemblyQualifiedName, SerializableMultiTargetString instanceData) {
+            m_className = assemblyQualifiedName;
 			m_values = new List<Entry>(instanceData.Values.Count);
 			foreach(var v in instanceData.Values) {
 				m_values.Add(new Entry(v.targetGroup, CustomScriptUtility.EncodeString(v.value)));
@@ -126,9 +126,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			bool defaultNeedsUpdate = false;
 
-			if(m_className != value.GetType().FullName) {
+            if(m_className != value.GetType().AssemblyQualifiedName) {
 				m_values.Clear();
-				m_className = value.GetType().FullName;
+                m_className = value.GetType().AssemblyQualifiedName;
 				defaultNeedsUpdate = true;
 			}
 

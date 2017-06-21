@@ -81,7 +81,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				Dictionary<string, string> map = null;
 
 				if(incomingType != null) {
-					map = ModifierUtility.GetAttributeClassNameMap(incomingType);
+					map = ModifierUtility.GetAttributeAssemblyQualifiedNameMap(incomingType);
 				}
 
 				if(map != null  && map.Count > 0) {

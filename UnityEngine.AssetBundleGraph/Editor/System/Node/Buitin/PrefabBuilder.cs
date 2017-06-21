@@ -79,7 +79,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				var map = PrefabBuilderUtility.GetAttributeClassNameMap();
+				var map = PrefabBuilderUtility.GetAttributeAssemblyQualifiedNameMap();
 				if(map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
 						GUILayout.Label("PrefabBuilder");

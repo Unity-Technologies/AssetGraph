@@ -73,40 +73,43 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	}
 
 	public class ModifierUtility {
-		private static Dictionary<Type, Dictionary<string, string>> s_attributeClassNameMap;
+        private static Dictionary<Type, Dictionary<string, string>> s_attributeAssemblyQualifiedNameMap;
 
-		public static Dictionary<string, string> GetAttributeClassNameMap (Type targetType) {
+		public static Dictionary<string, string> GetAttributeAssemblyQualifiedNameMap (Type targetType) {
 
 			UnityEngine.Assertions.Assert.IsNotNull(targetType);
 
-			if(s_attributeClassNameMap == null) {
-				s_attributeClassNameMap =  new Dictionary<Type, Dictionary<string, string>>();
+			if(s_attributeAssemblyQualifiedNameMap == null) {
+				s_attributeAssemblyQualifiedNameMap =  new Dictionary<Type, Dictionary<string, string>>();
 			}
 
-			if(!s_attributeClassNameMap.Keys.Contains(targetType)) {
+			if(!s_attributeAssemblyQualifiedNameMap.Keys.Contains(targetType)) {
 				var map = new Dictionary<string, string>(); 
 
-				var builders = Assembly
-					.GetExecutingAssembly()
-					.GetTypes()
-					.Where(t => t != typeof(IModifier))
-					.Where(t => typeof(IModifier).IsAssignableFrom(t));
+                var allBuilders = new List<Type>();
 
-				foreach (var type in builders) {
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                    var builders = assembly.GetTypes()
+                        .Where(t => t != typeof(IModifier))
+                        .Where(t => typeof(IModifier).IsAssignableFrom(t));
+                    allBuilders.AddRange (builders);
+                }
+
+                foreach (var type in allBuilders) {
 					CustomModifier attr = 
 						type.GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
 
 					if (attr != null && attr.For == targetType) {
 						if (!map.ContainsKey(attr.Name)) {
-							map[attr.Name] = type.FullName;
+							map[attr.Name] = type.AssemblyQualifiedName;
 						} else {
 							LogUtility.Logger.LogWarning(LogUtility.kTag, "Multiple CustomModifier class with the same name/type found. Ignoring " + type.Name);
 						}
 					}
 				}
-				s_attributeClassNameMap[targetType] = map;
+				s_attributeAssemblyQualifiedNameMap[targetType] = map;
 			}
-			return s_attributeClassNameMap[targetType];
+			return s_attributeAssemblyQualifiedNameMap[targetType];
 		}
 
 		public static string GetModifierGUIName(IModifier m) {
@@ -118,8 +121,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static string GetModifierGUIName(string className) {
 			var type = Type.GetType(className);
 			if(type != null) {
-				CustomModifier attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+				CustomModifier attr = type.GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
 				if(attr != null) {
 					return attr.Name;
 				}
@@ -127,8 +129,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return string.Empty;
 		}
 
-		public static string GUINameToClassName(string guiName, Type targetType) {
-			var map = GetAttributeClassNameMap(targetType);
+		public static string GUINameToAssemblyQualifiedName(string guiName, Type targetType) {
+			var map = GetAttributeAssemblyQualifiedNameMap(targetType);
 
 			if(map.ContainsKey(guiName)) {
 				return map[guiName];
@@ -147,8 +149,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static Type GetModifierTargetType(string className) {
 			var type = Type.GetType(className);
 			if(type != null) {
-				CustomModifier attr = 
-					Type.GetType(className).GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+				CustomModifier attr = type.GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
 				if(attr != null) {
 					return attr.For;
 				}
@@ -167,20 +168,25 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static IModifier CreateModifier(string guiName, Type targetType) {
-			var className = GUINameToClassName(guiName, targetType);
-			if(className != null) {
-				return (IModifier) Assembly.GetExecutingAssembly().CreateInstance(className);
+            var assemblyQualifiedName = GUINameToAssemblyQualifiedName(guiName, targetType);
+			if(assemblyQualifiedName != null) {
+                var type = Type.GetType(assemblyQualifiedName);
+                if (type == null) {
+                    return null;
+                }
+
+                return (IModifier) type.Assembly.CreateInstance(type.FullName);
 			}
 			return null;
 		}
 
-		public static IModifier CreateModifier(string className) {
+		public static IModifier CreateModifier(string assemblyQualifiedName) {
 
-			if(className == null) {
+			if(assemblyQualifiedName == null) {
 				return null;
 			}
 
-			Type t = Type.GetType(className);
+			Type t = Type.GetType(assemblyQualifiedName);
 			if(t == null) {
 				return null;
 			}
@@ -189,7 +195,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return null;
 			}
 
-			return (IModifier) Assembly.GetExecutingAssembly().CreateInstance(className);
+            return (IModifier) t.Assembly.CreateInstance(t.FullName);
 		}
 	}
 }

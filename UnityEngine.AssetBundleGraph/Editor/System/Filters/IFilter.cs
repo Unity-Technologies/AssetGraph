@@ -44,38 +44,40 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 	public class FilterUtility {
 
-		private static  Dictionary<string, string> s_attributeClassNameMap;
+		private static  Dictionary<string, string> s_attributeAssemblyQualifiedNameMap;
 
-		public static Dictionary<string, string> GetAttributeClassNameMap () {
+		public static Dictionary<string, string> GetAttributeAssemblyQualifiedNameMap () {
 
-			if(s_attributeClassNameMap == null) {
+			if(s_attributeAssemblyQualifiedNameMap == null) {
 				// attribute name or class name : class name
-				s_attributeClassNameMap = new Dictionary<string, string>(); 
+                s_attributeAssemblyQualifiedNameMap = new Dictionary<string, string>(); 
 
-				var filters = Assembly
-					.GetExecutingAssembly()
-					.GetTypes()
-					.Where(t => !t.IsInterface)
-					.Where(t => typeof(IFilter).IsAssignableFrom(t));
+                var allFilters = new List<Type>();
 
-				foreach (var type in filters) {
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                    var filters = assembly.GetTypes()
+                        .Where(t => !t.IsInterface)
+                        .Where(t => typeof(IFilter).IsAssignableFrom(t));
+                    allFilters.AddRange (filters);
+                }
+
+                foreach (var type in allFilters) {
 					// set attribute-name as key of dict if atribute is exist.
 					CustomFilter attr = 
 						type.GetCustomAttributes(typeof(CustomFilter), true).FirstOrDefault() as CustomFilter;
 
-					var typename = type.ToString();
-
+                    var typename = type.AssemblyQualifiedName;
 
 					if (attr != null) {
-						if (!s_attributeClassNameMap.ContainsKey(attr.Name)) {
-							s_attributeClassNameMap[attr.Name] = typename;
+						if (!s_attributeAssemblyQualifiedNameMap.ContainsKey(attr.Name)) {
+							s_attributeAssemblyQualifiedNameMap[attr.Name] = typename;
 						}
 					} else {
-						s_attributeClassNameMap[typename] = typename;
+						s_attributeAssemblyQualifiedNameMap[typename] = typename;
 					}
 				}
 			}
-			return s_attributeClassNameMap;
+			return s_attributeAssemblyQualifiedNameMap;
 		}
 
 		public static string GetFilterGUIName(IFilter filter) {
@@ -89,7 +91,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				var type = Type.GetType(className);
 				if(type != null) {
 					CustomFilter attr = 
-						Type.GetType(className).GetCustomAttributes(typeof(CustomFilter), false).FirstOrDefault() as CustomFilter;
+						type.GetCustomAttributes(typeof(CustomFilter), false).FirstOrDefault() as CustomFilter;
 					if(attr != null) {
 						return attr.Name;
 					}
@@ -98,8 +100,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return string.Empty;
 		}
 
-		public static string GUINameToClassName(string guiName) {
-			var map = GetAttributeClassNameMap();
+		public static string GUINameToAssemblyQualifiedName(string guiName) {
+			var map = GetAttributeAssemblyQualifiedNameMap();
 
 			if(map.ContainsKey(guiName)) {
 				return map[guiName];
@@ -109,9 +111,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public static IFilter CreateFilter(string guiName) {
-			var className = GUINameToClassName(guiName);
-			if(className != null) {
-				return (IFilter) Assembly.GetExecutingAssembly().CreateInstance(className);
+            var assemblyQualifiedName = GUINameToAssemblyQualifiedName(guiName);
+			if(assemblyQualifiedName != null) {
+                Type t = Type.GetType(assemblyQualifiedName);
+                if(t == null) {
+                    return null;
+                }
+
+                return (IFilter) t.Assembly.CreateInstance(t.FullName);
 			}
 			return null;
 		}
@@ -122,13 +129,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return attr != null && !string.IsNullOrEmpty(attr.Name);
 		}
 
-		public static IFilter CreateFilterByClassName(string className) {
+		public static IFilter CreateFilterByAssemblyQualifiedName(string assemblyQualifiedName) {
 
-			if(className == null) {
+			if(assemblyQualifiedName == null) {
 				return null;
 			}
 
-			Type t = Type.GetType(className);
+			Type t = Type.GetType(assemblyQualifiedName);
 			if(t == null) {
 				return null;
 			}
@@ -137,7 +144,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return null;
 			}
 
-			return (IFilter) Assembly.GetExecutingAssembly().CreateInstance(className);
+            return (IFilter) t.Assembly.CreateInstance(t.FullName);
 		}
 	}
 }
