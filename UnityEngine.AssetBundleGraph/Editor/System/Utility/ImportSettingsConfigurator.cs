@@ -125,10 +125,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			importer.alphaSource = reference.alphaSource;
 			importer.sRGBTexture = reference.sRGBTexture;
 			
-			foreach(var targetGroup in NodeGUIUtility.SupportedBuildTargetGroups)
+            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
 			{
-				var impSet = reference.GetPlatformTextureSettings(targetGroup.ToString());
-				importer.SetPlatformTextureSettings(impSet);
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
+                var impSet = reference.GetPlatformTextureSettings(platformName);
+                importer.SetPlatformTextureSettings(impSet);
 			}
 
 			importer.textureCompression = reference.textureCompression;
@@ -194,10 +195,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.alphaSource != reference.alphaSource) return false;
 			if (target.sRGBTexture != reference.sRGBTexture) return false;
 
-			foreach(var targetGroup in NodeGUIUtility.SupportedBuildTargetGroups)
+            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
 			{
-				var impSet = reference.GetPlatformTextureSettings(targetGroup.ToString());
-				var targetImpSet = target.GetPlatformTextureSettings(targetGroup.ToString());
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
+
+                var impSet = reference.GetPlatformTextureSettings(platformName);
+                var targetImpSet = target.GetPlatformTextureSettings(platformName);
 				if(!CompareImporterPlatformSettings(impSet, targetImpSet)) return false;
 			}
 
@@ -255,29 +258,75 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			importer.forceToMono = reference.forceToMono;
 			importer.preloadAudioData = reference.preloadAudioData;
 
+            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(BuildTargetUtility.GroupToTarget(g), 
+                    BuildTargetUtility.PlatformNameType.AudioImporter);
+
+                if (reference.ContainsSampleSettingsOverride (platformName)) {
+                    var setting = reference.GetOverrideSampleSettings (platformName);
+                    if (!importer.SetOverrideSampleSettings (platformName, setting)) {
+                        LogUtility.Logger.LogError ("AudioImporter", 
+                            string.Format ("Failed to set override setting for {0}: {1}", platformName, importer.assetPath));
+                    }
+                } else {
+                    importer.ClearSampleSettingOverride (platformName);
+                }
+            }
+
 			// using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
 			#if !UNITY_5_6_OR_NEWER
 			importer.loadInBackground = reference.loadInBackground;
 			#endif
 		}
+        private bool IsEqual (AudioImporter target) {
+            AudioImporter reference = referenceImporter as AudioImporter;
+            UnityEngine.Assertions.Assert.IsNotNull (reference);
 
-		private bool IsEqual (AudioImporter target) {
-			AudioImporter reference = referenceImporter as AudioImporter;
-			UnityEngine.Assertions.Assert.IsNotNull(reference);
+            if (!IsEqualAudioSampleSetting (target.defaultSampleSettings, reference.defaultSampleSettings)) {
+                return false;
+            }
 
+            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups) 
+            {
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, 
+                    BuildTargetUtility.PlatformNameType.AudioImporter);
+
+                if (target.ContainsSampleSettingsOverride (platformName) !=
+                   reference.ContainsSampleSettingsOverride (platformName)) 
+                {
+                    return false;
+                }
+                if (target.ContainsSampleSettingsOverride (platformName)) {
+                    var t = target.GetOverrideSampleSettings (platformName);
+                    var r = reference.GetOverrideSampleSettings (platformName);
+                    if (!IsEqualAudioSampleSetting (t, r)) 
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if (target.forceToMono != reference.forceToMono)
+                return false;
+            // using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
+            #if !UNITY_5_6_OR_NEWER
+            if (target.loadInBackground != reference.loadInBackground)
+                return false;
+            #endif
+            if (target.preloadAudioData != reference.preloadAudioData)
+                return false;
+
+            return true;
+        }
+
+        private bool IsEqualAudioSampleSetting (AudioImporterSampleSettings target, AudioImporterSampleSettings reference) {
 			// defaultSampleSettings
-			if (target.defaultSampleSettings.compressionFormat != reference.defaultSampleSettings.compressionFormat) return false;
-			if (target.defaultSampleSettings.loadType != reference.defaultSampleSettings.loadType) return false;
-			if (target.defaultSampleSettings.quality != reference.defaultSampleSettings.quality) return false;
-			if (target.defaultSampleSettings.sampleRateOverride != reference.defaultSampleSettings.sampleRateOverride) return false;
-			if (target.defaultSampleSettings.sampleRateSetting != reference.defaultSampleSettings.sampleRateSetting) return false;
-
-			if (target.forceToMono != reference.forceToMono) return false;
-			// using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
-			#if !UNITY_5_6_OR_NEWER
-			if (target.loadInBackground != reference.loadInBackground) return false;
-			#endif
-			if (target.preloadAudioData != reference.preloadAudioData) return false;
+            if (target.compressionFormat != reference.compressionFormat) return false;
+            if (target.loadType != reference.loadType) return false;
+            if (target.quality != reference.quality) return false;
+            if (target.sampleRateOverride != reference.sampleRateOverride) return false;
+            if (target.sampleRateSetting != reference.sampleRateSetting) return false;
 
 			return true;
 		}
@@ -374,10 +423,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			{
 				if (target.clipAnimations.Length != reference.clipAnimations.Length) return false;
 				for (int i = 0; i < target.clipAnimations.Length; i++) {
+                    if (target.clipAnimations[i].additiveReferencePoseFrame != reference.clipAnimations[i].additiveReferencePoseFrame) return false;
 					if (target.clipAnimations[i].curves != reference.clipAnimations[i].curves) return false;
 					if (target.clipAnimations[i].cycleOffset != reference.clipAnimations[i].cycleOffset) return false;
 					if (target.clipAnimations[i].events != reference.clipAnimations[i].events) return false;
-					if (target.clipAnimations[i].firstFrame != reference.clipAnimations[i].firstFrame) return false;
+                    if (target.clipAnimations[i].firstFrame != reference.clipAnimations[i].firstFrame) return false;
+                    if (target.clipAnimations[i].hasAdditiveReferencePose != reference.clipAnimations[i].hasAdditiveReferencePose) return false;
 					if (target.clipAnimations[i].heightFromFeet != reference.clipAnimations[i].heightFromFeet) return false;
 					if (target.clipAnimations[i].heightOffset != reference.clipAnimations[i].heightOffset) return false;
 					if (target.clipAnimations[i].keepOriginalOrientation != reference.clipAnimations[i].keepOriginalOrientation) return false;

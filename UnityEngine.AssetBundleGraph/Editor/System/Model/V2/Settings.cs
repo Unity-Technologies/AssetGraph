@@ -180,7 +180,9 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
             new BuildPlayerOption("Auto Run Player", BuildOptions.AutoRunPlayer),
             new BuildPlayerOption("Build Additional Streamed Scenes", BuildOptions.BuildAdditionalStreamedScenes),
             new BuildPlayerOption("Build Scripts Only", BuildOptions.BuildScriptsOnly),
+            #if UNITY_5_6_OR_NEWER
             new BuildPlayerOption("Compress With LZ4", BuildOptions.CompressWithLz4),
+            #endif
             new BuildPlayerOption("Compute CRC", BuildOptions.ComputeCRC),
             new BuildPlayerOption("Connect To Host", BuildOptions.ConnectToHost),
             new BuildPlayerOption("Connect With Profiler", BuildOptions.ConnectWithProfiler),

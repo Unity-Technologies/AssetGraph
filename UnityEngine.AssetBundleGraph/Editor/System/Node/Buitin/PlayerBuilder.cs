@@ -248,7 +248,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
             opt.assetBundleManifestPath = manifestPath;
             opt.scenes = sceneGUIDs.Select(guid => AssetDatabase.GUIDToAssetPath(guid) ).Where(path => !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray();
             opt.target = target;
+            #if UNITY_5_6_OR_NEWER
             opt.targetGroup = BuildTargetUtility.TargetToGroup(target);
+            #endif
 
             var errorMsg = BuildPipeline.BuildPlayer (opt);
             if(!string.IsNullOrEmpty(errorMsg)) {

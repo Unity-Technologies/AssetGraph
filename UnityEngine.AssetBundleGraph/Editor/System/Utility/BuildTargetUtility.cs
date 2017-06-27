@@ -83,8 +83,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        public enum PlatformNameType {
+            Default,
+            TextureImporter,
+            AudioImporter
+        }
+
+        public static string TargetToAssetBundlePlatformName(BuildTargetGroup g, PlatformNameType pnt = PlatformNameType.Default) {
+            return TargetToAssetBundlePlatformName (GroupToTarget (g), pnt);
+        }
+
 		//returns the same value defined in AssetBundleManager
-		public static string TargetToAssetBundlePlatformName(BuildTarget t)
+        public static string TargetToAssetBundlePlatformName(BuildTarget t, PlatformNameType pnt = PlatformNameType.Default)
 		{
 			switch(t) {
 			case BuildTarget.Android:
@@ -107,8 +117,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.StandaloneOSXIntel64:
 			case BuildTarget.StandaloneOSXUniversal:
 			return "OSX";
-			case BuildTarget.StandaloneWindows:
-			case BuildTarget.StandaloneWindows64:
+            case BuildTarget.StandaloneWindows:
+            case BuildTarget.StandaloneWindows64:
+                switch (pnt) {
+                case PlatformNameType.AudioImporter:
+                    return "Standalone";
+                case PlatformNameType.TextureImporter:
+                    return "Standalone";
+                }
 			return "Windows";
 			case BuildTarget.Tizen:
 			return "Tizen";
@@ -119,6 +135,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.WiiU:
 			return "WiiU";
 			case BuildTarget.WSAPlayer:
+                switch (pnt) {
+                case PlatformNameType.AudioImporter:
+                    return "WSA";
+                }
 			return "WindowsStoreApps";
 			case BuildTarget.XboxOne:
 			return "XboxOne";

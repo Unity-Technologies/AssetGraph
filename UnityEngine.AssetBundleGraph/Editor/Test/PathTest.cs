@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_5_6_OR_NEWER
+using UnityEngine;
 using UnityEditor;
 using UnityEngine.TestTools;
 using NUnit.Framework;
@@ -64,3 +65,4 @@ public class PathTest {
 		yield return null;
 	}
 }
+#endif
