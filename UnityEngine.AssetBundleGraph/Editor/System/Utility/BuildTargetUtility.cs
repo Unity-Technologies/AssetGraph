@@ -86,7 +86,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
         public enum PlatformNameType {
             Default,
             TextureImporter,
-            AudioImporter
+            AudioImporter,
+            VideoClipImporter
         }
 
         public static string TargetToAssetBundlePlatformName(BuildTargetGroup g, PlatformNameType pnt = PlatformNameType.Default) {
@@ -106,6 +107,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.PSM:
 			return "PSM";
 			case BuildTarget.PSP2:
+                switch (pnt) {
+                case PlatformNameType.AudioImporter:
+                    return "PSP2";
+                case PlatformNameType.TextureImporter:
+                    return "PSP2";
+                case PlatformNameType.VideoClipImporter:
+                    return "PSP2";
+                }
 			return "PSVita";
 			case BuildTarget.SamsungTV:
 			return "SamsungTV";
@@ -124,6 +133,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     return "Standalone";
                 case PlatformNameType.TextureImporter:
                     return "Standalone";
+                case PlatformNameType.VideoClipImporter:
+                    return "Standalone";
                 }
 			return "Windows";
 			case BuildTarget.Tizen:
@@ -137,6 +148,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.WSAPlayer:
                 switch (pnt) {
                 case PlatformNameType.AudioImporter:
+                    return "WSA";
+                case PlatformNameType.VideoClipImporter:
                     return "WSA";
                 }
 			return "WindowsStoreApps";

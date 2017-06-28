@@ -260,7 +260,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
             foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
             {
-                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(BuildTargetUtility.GroupToTarget(g), 
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, 
                     BuildTargetUtility.PlatformNameType.AudioImporter);
 
                 if (reference.ContainsSampleSettingsOverride (platformName)) {
@@ -556,12 +556,32 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		#region VideoClipImporter
 		#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+        public bool IsEqual (VideoImporterTargetSettings t, VideoImporterTargetSettings r) {
+
+            if(r == null) {
+                if(t != r) {
+                    return false;
+                }
+            }
+
+            if (r.aspectRatio != t.aspectRatio)   return false;
+            if (r.bitrateMode != t.bitrateMode)   return false;
+            if (r.codec != t.codec)               return false;
+            if (r.customHeight != t.customHeight) return false;
+            if (r.customWidth != t.customWidth)   return false;
+            if (r.enableTranscoding != t.enableTranscoding) return false;
+            if (r.resizeMode != t.resizeMode) return false;
+            if (r.spatialQuality != t.spatialQuality) return false;
+            return true;
+        }
 
 		public bool IsEqual (VideoClipImporter target) {
 			VideoClipImporter reference = referenceImporter as VideoClipImporter;
 			UnityEngine.Assertions.Assert.IsNotNull(reference);
 
-			if (target.defaultTargetSettings	 != reference.defaultTargetSettings) 	return false;
+            if (!IsEqual (target.defaultTargetSettings, reference.defaultTargetSettings))
+                return false;
+
 			if (target.deinterlaceMode			 != reference.deinterlaceMode) 			return false;
 			if (target.flipHorizontal			 != reference.flipHorizontal) 			return false;
 			if (target.flipVertical			 	 != reference.flipVertical) 			return false;
@@ -577,6 +597,27 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			if (target.sourceFileSize			 != reference.sourceFileSize) 			return false;
 			if (target.sourceHasAlpha			 != reference.sourceHasAlpha) 			return false;
 			if (target.useLegacyImporter		 != reference.useLegacyImporter) 		return false;
+
+
+            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, 
+                    BuildTargetUtility.PlatformNameType.VideoClipImporter);
+
+                try {
+                    var r = reference.GetTargetSettings (platformName);
+                    var t = target.GetTargetSettings (platformName);
+
+                    if(!IsEqual(r, t)) {
+                        return false;
+                    }
+
+                } catch (Exception e) {
+                    LogUtility.Logger.LogWarning ("VideoClipImporter", 
+                        string.Format ("Failed to set override setting for platform {0}: file :{1} \\nreason:{2}", 
+                            platformName, target.assetPath, e.Message));
+                }
+            }
 
 			return true;
 		}
@@ -613,6 +654,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			importer.linearColor			= reference.linearColor;
 			importer.quality				= reference.quality;
 			importer.useLegacyImporter		= reference.useLegacyImporter;
+
+
+            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
+                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, 
+                    BuildTargetUtility.PlatformNameType.VideoClipImporter);
+
+                try {
+                    var setting = reference.GetTargetSettings (platformName);
+                    if(setting != null) {
+                        importer.SetTargetSettings(platformName, setting);
+                    } else {
+                        importer.ClearTargetSettings(platformName);
+                    }
+                } catch (Exception e) {
+                    LogUtility.Logger.LogWarning ("VideoClipImporter", 
+                        string.Format ("Failed to set override setting for platform {0}: file :{1} \\nreason:{2}", 
+                            platformName, importer.assetPath, e.Message));
+                }
+            }
 
 			/* read only */
 			/* 
