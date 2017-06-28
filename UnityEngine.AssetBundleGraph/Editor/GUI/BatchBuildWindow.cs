@@ -318,7 +318,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 
 				if(GUILayout.Button("Build")) {
-					EditorApplication.ExecuteMenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD);
+                    EditorApplication.delayCall += Build;
 				}
 				GUILayout.Space(8f);
 			}
