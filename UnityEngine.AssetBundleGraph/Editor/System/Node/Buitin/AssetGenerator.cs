@@ -36,6 +36,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
         }
 
         [SerializeField] private List<GeneratorEntry> m_entries;
+        [SerializeField] private string m_defaultOutputPointId;
+
         private GeneratorEntry m_removingEntry;
 
 		public override string ActiveStyle {
@@ -59,12 +61,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public override void Initialize(Model.NodeData data) {
             m_entries = new List<GeneratorEntry>();
 
-			data.AddDefaultInputPoint();
+            data.AddDefaultInputPoint();
+            var point = data.AddDefaultOutputPoint();
+            m_defaultOutputPointId = point.Id;
 		}
 
 		public override Node Clone(Model.NodeData newData) {
             var newNode = new AssetGenerator();
             newData.AddDefaultInputPoint();
+            newData.AddDefaultOutputPoint();
+            var point = newData.AddDefaultOutputPoint();
+            newNode.m_defaultOutputPointId = point.Id;
 
             newNode.m_entries = new List<GeneratorEntry>();
             foreach(var s in m_entries) {
@@ -253,9 +260,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 allOutput[outPoints.Id] = new Dictionary<string, List<AssetReference>>();
             }
 
+            var defaultOutputCond = connectionsToOutput.Where (c => c.FromNodeConnectionPointId == m_defaultOutputPointId);
+            Model.ConnectionData defaultOutput = null;
+            if (defaultOutputCond.Any ()) {
+                defaultOutput = defaultOutputCond.First ();
+            }
+
 			foreach(var ag in incoming) {
+                if (defaultOutput != null) {
+                    Output(defaultOutput, ag.assetGroups);
+                }
                 foreach(var groupKey in ag.assetGroups.Keys) {
-                    foreach(var a in ag.assetGroups[groupKey]) {
+                    foreach(var a in ag.assetGroups [groupKey]) {
                         foreach (var entry in m_entries) {
                             var assetOutputDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
                             var generator = entry.m_instance.Get<IAssetGenerator>(target);
