@@ -44,9 +44,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
             typeof(Audio.AudioMixer).ToString(),
 		};
 		
-		public static readonly Dictionary<string, Type> AssumeTypeBindingByExtension = new Dictionary<string, Type>{
+        private static readonly Dictionary<string, Type> FilterTypeBindingByExtension = new Dictionary<string, Type>{
 			// others(Assets)
-			{".anim", typeof(Animation)},
+            {".png", typeof(TextureImporter)},
+            {".jpg", typeof(TextureImporter)},
+            {".exr", typeof(TextureImporter)},
+            {".anim", typeof(Animation)},
 			{".controller", typeof(Animator)},
 			{".mask", typeof(AvatarMask)},
 			{".cubemap", typeof(Cubemap)},
@@ -82,7 +85,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// {"", typeof(Sprite)},
 		};
 
-		public static readonly List<string> IgnoredExtension = new List<string>{
+        private static readonly List<string> IgnoredAssetTypeExtension = new List<string>{
 			string.Empty,
 			".manifest",
 			".assetbundle",
@@ -171,38 +174,40 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		/**
-		 * Get type of asset from give path.
+		 * Get asset filter type from asset path.
 		 */
-		public static Type FindTypeOfAsset (string assetPath) {
+		public static Type FindAssetFilterType (string assetPath) {
 			// check by asset importer type.
-			var importer = AssetImporter.GetAtPath(assetPath);
-			if (importer == null) {
-				LogUtility.Logger.LogWarning(LogUtility.kTag, "Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
-				return typeof(object);
-			}
+//			if (importer == null) {
+//				LogUtility.Logger.LogWarning(LogUtility.kTag, "Failed to assume assetType of asset. The asset will be ignored: " + assetPath);
+//				return typeof(object);
+//			}
 
-			var assumedImporterType = importer.GetType();
-			var importerTypeStr = assumedImporterType.ToString();
-			
-			switch (importerTypeStr) {
-				case "UnityEditor.TextureImporter":
-				case "UnityEditor.ModelImporter":
-				case "UnityEditor.AudioImporter": 
-				#if UNITY_5_6 || UNITY_5_6_OR_NEWER
-				case "UnityEditor.VideoClipImporter": 
-				#endif
-				{
-					return assumedImporterType;
-				}
-			}
+            var importer = AssetImporter.GetAtPath(assetPath);
+            if (importer != null) {
+                var importerType = importer.GetType();
+                var importerTypeStr = importerType.ToString();
+
+                switch (importerTypeStr) {
+                case "UnityEditor.TextureImporter":
+                case "UnityEditor.ModelImporter":
+                case "UnityEditor.AudioImporter": 
+                    #if UNITY_5_6 || UNITY_5_6_OR_NEWER
+                case "UnityEditor.VideoClipImporter": 
+                    #endif
+                    {
+                        return importerType;
+                    }
+                }
+            }
 			
 			// not specific type importer. should determine their type by extension.
 			var extension = Path.GetExtension(assetPath).ToLower();
-			if (AssumeTypeBindingByExtension.ContainsKey(extension)) {
-				return AssumeTypeBindingByExtension[extension];
+			if (FilterTypeBindingByExtension.ContainsKey(extension)) {
+				return FilterTypeBindingByExtension[extension];
 			}
 
-			if (IgnoredExtension.Contains(extension)) {
+			if (IgnoredAssetTypeExtension.Contains(extension)) {
 				return null;
 			}
 			

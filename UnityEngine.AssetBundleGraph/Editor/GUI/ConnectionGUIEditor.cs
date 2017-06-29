@@ -84,11 +84,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						var sourceStr = (helper.fileNameOnly) ? assets[i].fileNameAndExtension : assets[i].path;
 						var variantName = assets[i].variantName;
 
-						if(!string.IsNullOrEmpty(variantName))
-							EditorGUILayout.LabelField(string.Format("{0}[{1}]", sourceStr, variantName));
-						else {
-							EditorGUILayout.LabelField(sourceStr);
-						}
+                        using (new EditorGUILayout.HorizontalScope ()) {
+                            if (!string.IsNullOrEmpty (variantName)) {
+                                EditorGUILayout.LabelField (string.Format ("{0}[{1}]", sourceStr, variantName));
+                            } else {
+                                EditorGUILayout.LabelField(sourceStr);
+                            }
+                            if (GUILayout.Button ("Select", GUILayout.Width (50f))) {
+                                var obj = AssetDatabase.LoadMainAssetAtPath(assets[i].path);
+                                if (obj != null) {
+                                    EditorGUIUtility.PingObject(obj);
+                                    Selection.activeObject = obj;
+                                }
+                            }
+                        }
 					}
 					EditorGUI.indentLevel = 0;
 				}

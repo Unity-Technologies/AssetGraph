@@ -19,7 +19,8 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		public const string GUI_TEXT_MENU_BATCHBUILD = "Window/AssetBundleGraph/Build Current Graph Selections";
 		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Create Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
-		public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";
+        public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";
+        public const string GUI_TEXT_MENU_GENERATE_ASSETGENERATOR = GUI_TEXT_MENU_GENERATE + "/AssetGenerator Script";
 		public const string GUI_TEXT_MENU_GENERATE_CUITOOL = "Window/AssetBundleGraph/Create CUI Tool";
 
 		public const string GUI_TEXT_MENU_GENERATE_POSTPROCESS = GUI_TEXT_MENU_GENERATE + "/Postprocess Script";
@@ -124,6 +125,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
             public static string CachePath              { get { return BasePath + "/Cache/"; } }
             public static string PrefabBuilderCachePath { get { return CachePath + "Prefabs/"; } }
+            public static string AssetGeneratorCachePath { get { return CachePath + "GeneratedAssets/"; } }
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
             public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }

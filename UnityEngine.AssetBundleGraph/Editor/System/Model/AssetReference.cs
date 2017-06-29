@@ -80,7 +80,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public Type filterType {
 			get {
 				if(m_filterType == null) {
-					m_filterType = TypeUtility.FindTypeOfAsset(m_importFrom);
+                    m_filterType = TypeUtility.FindAssetFilterType(m_importFrom);
 				}
 				return m_filterType;
 			}
@@ -173,6 +173,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				assetType:TypeUtility.GetTypeOfAsset(importFrom)
 			);
 		}
+
+        public static AssetReference CreateReference (string importFrom, Type assetType) {
+            return new AssetReference(
+                guid: Guid.NewGuid(),
+                assetDatabaseId:AssetDatabase.AssetPathToGUID(importFrom),
+                importFrom:importFrom,
+                assetType:assetType
+            );
+        }
 
 		public static AssetReference CreatePrefabReference (string importFrom) {
 			return new AssetReference(

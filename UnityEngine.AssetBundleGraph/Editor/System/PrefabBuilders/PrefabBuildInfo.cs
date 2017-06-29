@@ -14,12 +14,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	public class PrefabBuildInfo : ScriptableObject {
 
 		[Serializable]
-		class UsedAssets {
+		class UsedAsset {
 			public string importFrom;
 			public string assetGuid;
 			public string lastUpdated; // long is not supported by Text Serializer, so save it in string.
 
-			public UsedAssets(string importFrom) {
+			public UsedAsset(string importFrom) {
 				this.importFrom = importFrom;
 				this.assetGuid = AssetDatabase.AssetPathToGUID(importFrom);
 				this.lastUpdated = File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc().ToString();
@@ -47,7 +47,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private string m_instanceData;
 		[SerializeField] private string m_prefabBuilderVersion;
 		[SerializeField] private int m_replacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
-		[SerializeField] private List<UsedAssets> m_usedAssets;
+		[SerializeField] private List<UsedAsset> m_usedAssets;
 
 		public PrefabBuildInfo() {}
 
@@ -58,8 +58,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_prefabBuilderVersion = version;
 			m_replacePrefabOptions = (int)opt;
 
-			m_usedAssets = new List<UsedAssets> ();
-			assets.ForEach(a => m_usedAssets.Add(new UsedAssets(a.importFrom)));
+			m_usedAssets = new List<UsedAsset> ();
+			assets.ForEach(a => m_usedAssets.Add(new UsedAsset(a.importFrom)));
 		}
 
 		static private PrefabBuildInfo GetPrefabBuildInfo(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey) {

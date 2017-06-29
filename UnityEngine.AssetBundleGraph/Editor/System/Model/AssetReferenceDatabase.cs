@@ -83,6 +83,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return GetReference(relativePath, () => { return AssetReference.CreateReference(relativePath); });
 		}
 
+        public static AssetReference GetReferenceWithType(string relativePath, Type t) {
+            return GetReference(relativePath, () => { return AssetReference.CreateReference(relativePath, t); });
+        }
+
 		public static AssetReference GetPrefabReference(string relativePath) {
 			return GetReference(relativePath, () => { return AssetReference.CreatePrefabReference(relativePath); });
 		}

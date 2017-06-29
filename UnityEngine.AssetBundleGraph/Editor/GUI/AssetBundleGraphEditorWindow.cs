@@ -124,7 +124,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			SCRIPT_PREFABBUILDER,
 			SCRIPT_POSTPROCESS,
 			SCRIPT_NODE,
-			SCRIPT_FILTER
+			SCRIPT_FILTER,
+            SCRIPT_ASSETGENERATOR
 		}
 			
 		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
@@ -219,11 +220,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					destinationFileName = "MyFilter{0}{1}";
 					break;
 				}
-			case ScriptType.SCRIPT_NODE: {
+            case ScriptType.SCRIPT_NODE: {
                     sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyNode.cs.template");
-					destinationFileName = "MyNode{0}{1}";
-					break;
-				}
+                    destinationFileName = "MyNode{0}{1}";
+                    break;
+                }
+            case ScriptType.SCRIPT_ASSETGENERATOR: {
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyGenerator.cs.template");
+                    destinationFileName = "MyGenerator{0}{1}";
+                    break;
+                }
 			default: {
 					LogUtility.Logger.LogError(LogUtility.kTag, "Unknown script type found:" + scriptType);
 					break;
@@ -273,6 +279,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static void GenerateCustomNode () {
 			GenerateScript(ScriptType.SCRIPT_NODE);
 		}
+        [MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_ASSETGENERATOR)]
+        public static void GenerateAssetGenerator () {
+            GenerateScript(ScriptType.SCRIPT_ASSETGENERATOR);
+        }
 			
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
@@ -726,8 +736,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		private void DrawGUIToolBar() {
-			bool performBuild = false;
-
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 
 				if (GUILayout.Button(new GUIContent(graphAssetName, "Select graph"), EditorStyles.toolbarPopup, GUILayout.Width(Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_WIDTH), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
