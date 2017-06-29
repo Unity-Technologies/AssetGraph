@@ -22,7 +22,13 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			public UsedAsset(string importFrom) {
 				this.importFrom = importFrom;
 				this.assetGuid = AssetDatabase.AssetPathToGUID(importFrom);
-				this.lastUpdated = File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc().ToString();
+
+                var importer = AssetImporter.GetAtPath (importFrom);
+                if(importer != null) {
+                    lastUpdated = importer.assetTimeStamp.ToString();
+                } else {
+                    this.lastUpdated = File.GetLastWriteTimeUtc (importFrom).ToFileTimeUtc ().ToString ();
+                }
 			}
 
 			public bool IsAssetModifiedFromLastTime {
@@ -30,9 +36,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					if(!File.Exists(importFrom)) {
 						return true;
 					}
-					if(lastUpdated != File.GetLastWriteTimeUtc(importFrom).ToFileTimeUtc().ToString()) {
-						return true;
-					}
+
+                    var importer = AssetImporter.GetAtPath (importFrom);
+                    if(importer != null) {
+                        var ts = importer.assetTimeStamp.ToString();
+                        if (ts != lastUpdated) {
+                            return true;
+                        }
+                    } else {
+                        var ts = File.GetLastWriteTimeUtc (importFrom).ToFileTimeUtc ().ToString ();
+                        if (ts != lastUpdated) {
+                            return true;
+                        }
+                    }
+
 					if(assetGuid != AssetDatabase.AssetPathToGUID(importFrom)) {
 						return true;
 					}
@@ -96,20 +113,25 @@ namespace UnityEngine.AssetBundles.GraphTool {
         static private AssetGenerateInfo GetAssetGenerateInfo(AssetGenerator.GeneratorEntry entry, Model.NodeData node, BuildTarget target, AssetReference asset) {
 
             var cacheDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
-            var generatorInfoPath = FileUtility.PathCombine(cacheDir, entry.m_id + ".asset");
+            var generateInfoDir = FileUtility.PathCombine (cacheDir, entry.m_id);
+            var generatorInfoPath = FileUtility.PathCombine(generateInfoDir, asset.fileNameAndExtension + ".asset");
 
             return AssetDatabase.LoadAssetAtPath<AssetGenerateInfo>(generatorInfoPath);
         }
 
-        static public void SaveAssetGenerateInfo(AssetGenerator.GeneratorEntry setting, Model.NodeData node, BuildTarget target, AssetReference asset) {
+        static public void SaveAssetGenerateInfo(AssetGenerator.GeneratorEntry entry, Model.NodeData node, BuildTarget target, AssetReference asset) {
 
             var cacheDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
-            var generatorInfoPath = FileUtility.PathCombine(cacheDir, setting.m_id + ".asset");
+            var generateInfoDir = FileUtility.PathCombine (cacheDir, entry.m_id);
+            if (!Directory.Exists (generateInfoDir)) {
+                Directory.CreateDirectory (generateInfoDir);
+            }
+            var generatorInfoPath = FileUtility.PathCombine(generateInfoDir, asset.fileNameAndExtension + ".asset");
 
-            var version = PrefabBuilderUtility.GetPrefabBuilderVersion(setting.m_instance.ClassName);
+            var version = AssetGeneratorUtility.GetVersion(entry.m_instance.ClassName);
 
             var info = ScriptableObject.CreateInstance<AssetGenerateInfo>();
-            info.Initialize(setting.m_instance.ClassName, setting.m_instance[target], version, asset);
+            info.Initialize(entry.m_instance.ClassName, entry.m_instance[target], version, asset);
 
 			AssetDatabase.CreateAsset(info, generatorInfoPath);		
 		}
