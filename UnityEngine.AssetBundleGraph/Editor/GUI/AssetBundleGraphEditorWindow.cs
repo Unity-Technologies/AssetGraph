@@ -1369,7 +1369,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					new GUIContent(name),
 					false, 
 					() => {
-						AddNodeFromGUI(customNodes[index].CreateInstance(), GetNodeNameFromMenu(name), pos.x, pos.y);
+                        AddNodeFromGUI(customNodes[index].CreateInstance(), GetNodeNameFromMenu(name), pos.x + scrollPos.x, pos.y + scrollPos.y);
 						Setup();
 						Repaint();
 					}
