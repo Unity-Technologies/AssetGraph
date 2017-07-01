@@ -84,6 +84,8 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
 	 */ 
 	public void OnInspectorGUI (Action onValueChanged) {
 
+        EditorGUILayout.HelpBox ("Replace Game Object By Name create prefab by replacing children of incoming GameObject using assigned names and Prefabs.", MessageType.Info);
+
         if (m_replaceEntries == null) {
             m_replaceEntries = new List<ReplaceEntry> ();
             onValueChanged ();

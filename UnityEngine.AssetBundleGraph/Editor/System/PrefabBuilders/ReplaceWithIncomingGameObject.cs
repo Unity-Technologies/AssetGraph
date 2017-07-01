@@ -7,7 +7,7 @@ using System.Linq;
 
 using UnityEngine.AssetBundles.GraphTool;
 
-[CustomPrefabBuilder("[Experimental]Replace With Incoming GameObject", "v1.0", 15)]
+[CustomPrefabBuilder("[Experimental]Replace With Incoming GameObject", "v1.0", 50)]
 public class ReplaceWithIncomingGameObject : IPrefabBuilder {
 
     [SerializeField] GameObject m_replacingObject;
@@ -77,6 +77,8 @@ public class ReplaceWithIncomingGameObject : IPrefabBuilder {
 	 * Draw Inspector GUI for this PrefabBuilder.
 	 */ 
 	public void OnInspectorGUI (Action onValueChanged) {
+
+        EditorGUILayout.HelpBox ("Replace With Incoming GameObject creates prefab by replacing child of assigned Prefab with incoming GameObjects using name.", MessageType.Info);
 
         using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
 
