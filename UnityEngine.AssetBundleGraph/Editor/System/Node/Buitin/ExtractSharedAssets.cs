@@ -135,13 +135,7 @@ public class ExtractSharedAssets : Node {
 
                     var newSizeText = EditorGUILayout.TextField("Size(KB)",m_groupSizeByte[editor.CurrentEditingGroup].ToString());
                     int newSize = 0;
-
-                    if( !Int32.TryParse(newSizeText, out newSize) ) {
-                        throw new NodeException("Invalid size. Size property must be in decimal format.", node.Id);
-                    }
-                    if(newSize < 0) {
-                        throw new NodeException("Invalid size. Size property must be a positive number.", node.Id);
-                    }
+                    Int32.TryParse (newSizeText, out newSize);
 
                     if (newSize != m_groupSizeByte[editor.CurrentEditingGroup]) {
                         using(new RecordUndoScope("Change Grouping Size", node, true)){
@@ -168,6 +162,11 @@ public class ExtractSharedAssets : Node {
 		if(string.IsNullOrEmpty(m_bundleNameTemplate)) {
 			throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
 		}
+        if (m_groupExtractedAssets [target] != 0) {
+            if(m_groupSizeByte[target] < 0) {
+                throw new NodeException("Invalid size. Size property must be a positive number.", node.Id);
+            }
+        }
 
 		// Pass incoming assets straight to Output
 		if(Output != null) {
