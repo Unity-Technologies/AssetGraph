@@ -14,299 +14,298 @@ using UnityEngine.Profiling;
 using UnityEngine.AssetBundles.GraphTool;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-/**
-	ImportSetting is the class for apply specific setting to already imported files.
-*/
-[CustomNode("Configure Bundle/Extract Shared Assets", 71)]
-public class ExtractSharedAssets : Node {
+namespace UnityEngine.AssetBundles.GraphTool {
+    [CustomNode("Configure Bundle/Extract Shared Assets", 71)]
+    public class ExtractSharedAssets : Node {
 
-    enum GroupingType : int {
-        ByFileSize,
-        ByRuntimeMemorySize
-    };
+        enum GroupingType : int {
+            ByFileSize,
+            ByRuntimeMemorySize
+        };
 
-    [SerializeField] private string m_bundleNameTemplate;
-    [SerializeField] private SerializableMultiTargetInt m_groupExtractedAssets;
-    [SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
-    [SerializeField] private SerializableMultiTargetInt m_groupingType;
+        [SerializeField] private string m_bundleNameTemplate;
+        [SerializeField] private SerializableMultiTargetInt m_groupExtractedAssets;
+        [SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
+        [SerializeField] private SerializableMultiTargetInt m_groupingType;
 
-	public override string ActiveStyle {
-		get {
-			return "node 3 on";
-		}
-	}
+    	public override string ActiveStyle {
+    		get {
+    			return "node 3 on";
+    		}
+    	}
 
-	public override string InactiveStyle {
-		get {
-			return "node 3";
-		}
-	}
+    	public override string InactiveStyle {
+    		get {
+    			return "node 3";
+    		}
+    	}
 
-	public override string Category {
-		get {
-			return "Configure";
-		}
-	}
+    	public override string Category {
+    		get {
+    			return "Configure";
+    		}
+    	}
 
-	public override Model.NodeOutputSemantics NodeInputType {
-		get {
-			return Model.NodeOutputSemantics.AssetBundleConfigurations;
-		}
-	}
+    	public override Model.NodeOutputSemantics NodeInputType {
+    		get {
+    			return Model.NodeOutputSemantics.AssetBundleConfigurations;
+    		}
+    	}
 
-	public override Model.NodeOutputSemantics NodeOutputType {
-		get {
-			return Model.NodeOutputSemantics.AssetBundleConfigurations;
-		}
-	}
+    	public override Model.NodeOutputSemantics NodeOutputType {
+    		get {
+    			return Model.NodeOutputSemantics.AssetBundleConfigurations;
+    		}
+    	}
 
-	public override void Initialize(Model.NodeData data) {
-		m_bundleNameTemplate = "shared_*";
-        m_groupExtractedAssets = new SerializableMultiTargetInt();
-        m_groupSizeByte = new SerializableMultiTargetInt();
-        m_groupingType = new SerializableMultiTargetInt();
-		data.AddDefaultInputPoint();
-		data.AddDefaultOutputPoint();
-	}
+    	public override void Initialize(Model.NodeData data) {
+    		m_bundleNameTemplate = "shared_*";
+            m_groupExtractedAssets = new SerializableMultiTargetInt();
+            m_groupSizeByte = new SerializableMultiTargetInt();
+            m_groupingType = new SerializableMultiTargetInt();
+    		data.AddDefaultInputPoint();
+    		data.AddDefaultOutputPoint();
+    	}
 
-	public override Node Clone(Model.NodeData newData) {
-		var newNode = new ExtractSharedAssets();
-        newNode.m_groupExtractedAssets = new SerializableMultiTargetInt(m_groupExtractedAssets);
-        newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
-        newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
-		newNode.m_bundleNameTemplate = m_bundleNameTemplate;
-		newData.AddDefaultInputPoint();
-		newData.AddDefaultOutputPoint();
-		return newNode;
-	}
+    	public override Node Clone(Model.NodeData newData) {
+    		var newNode = new ExtractSharedAssets();
+            newNode.m_groupExtractedAssets = new SerializableMultiTargetInt(m_groupExtractedAssets);
+            newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
+            newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
+    		newNode.m_bundleNameTemplate = m_bundleNameTemplate;
+    		newData.AddDefaultInputPoint();
+    		newData.AddDefaultOutputPoint();
+    		return newNode;
+    	}
 
-	public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
+    	public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
-		EditorGUILayout.HelpBox("Extract Shared Assets: Extract shared assets between asset bundles and add bundle configurations.", MessageType.Info);
-		editor.UpdateNodeName(node);
+    		EditorGUILayout.HelpBox("Extract Shared Assets: Extract shared assets between asset bundles and add bundle configurations.", MessageType.Info);
+    		editor.UpdateNodeName(node);
 
-		GUILayout.Space(10f);
+    		GUILayout.Space(10f);
 
-		var newValue = EditorGUILayout.TextField("Bundle Name Template", m_bundleNameTemplate);
-		if(newValue != m_bundleNameTemplate) {
-			using(new RecordUndoScope("Bundle Name Template Change", node, true)) {
-				m_bundleNameTemplate = newValue;
-				onValueChanged();
-			}
-		}
+    		var newValue = EditorGUILayout.TextField("Bundle Name Template", m_bundleNameTemplate);
+    		if(newValue != m_bundleNameTemplate) {
+    			using(new RecordUndoScope("Bundle Name Template Change", node, true)) {
+    				m_bundleNameTemplate = newValue;
+    				onValueChanged();
+    			}
+    		}
 
-        GUILayout.Space(10f);
+            GUILayout.Space(10f);
 
-        //Show target configuration tab
-        editor.DrawPlatformSelector(node);
-        using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-            var disabledScope = editor.DrawOverrideTargetToggle(node, m_groupSizeByte.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
-                using(new RecordUndoScope("Remove Target Grouping Size Settings", node, true)){
-                    if(enabled) {
-                        m_groupExtractedAssets[editor.CurrentEditingGroup] = m_groupExtractedAssets.DefaultValue;
-                        m_groupSizeByte[editor.CurrentEditingGroup] = m_groupSizeByte.DefaultValue;
-                        m_groupingType[editor.CurrentEditingGroup] = m_groupingType.DefaultValue;
-                    } else {
-                        m_groupExtractedAssets.Remove(editor.CurrentEditingGroup);
-                        m_groupSizeByte.Remove(editor.CurrentEditingGroup);
-                        m_groupingType.Remove(editor.CurrentEditingGroup);
-                    }
-                    onValueChanged();
-                }
-            });
-
-            using (disabledScope) {
-                var useGroup = EditorGUILayout.ToggleLeft ("Subgroup shared assets by size", m_groupExtractedAssets [editor.CurrentEditingGroup] != 0);
-                if (useGroup != (m_groupExtractedAssets [editor.CurrentEditingGroup] != 0)) {
-                    using(new RecordUndoScope("Change Grouping Type", node, true)){
-                        m_groupExtractedAssets[editor.CurrentEditingGroup] = (useGroup)? 1:0;
+            //Show target configuration tab
+            editor.DrawPlatformSelector(node);
+            using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+                var disabledScope = editor.DrawOverrideTargetToggle(node, m_groupSizeByte.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
+                    using(new RecordUndoScope("Remove Target Grouping Size Settings", node, true)){
+                        if(enabled) {
+                            m_groupExtractedAssets[editor.CurrentEditingGroup] = m_groupExtractedAssets.DefaultValue;
+                            m_groupSizeByte[editor.CurrentEditingGroup] = m_groupSizeByte.DefaultValue;
+                            m_groupingType[editor.CurrentEditingGroup] = m_groupingType.DefaultValue;
+                        } else {
+                            m_groupExtractedAssets.Remove(editor.CurrentEditingGroup);
+                            m_groupSizeByte.Remove(editor.CurrentEditingGroup);
+                            m_groupingType.Remove(editor.CurrentEditingGroup);
+                        }
                         onValueChanged();
                     }
-                }
+                });
 
-                using (new EditorGUI.DisabledScope (!useGroup)) {
-                    var newType = (GroupingType)EditorGUILayout.EnumPopup("Grouping Type",(GroupingType)m_groupingType[editor.CurrentEditingGroup]);
-                    if (newType != (GroupingType)m_groupingType[editor.CurrentEditingGroup]) {
+                using (disabledScope) {
+                    var useGroup = EditorGUILayout.ToggleLeft ("Subgroup shared assets by size", m_groupExtractedAssets [editor.CurrentEditingGroup] != 0);
+                    if (useGroup != (m_groupExtractedAssets [editor.CurrentEditingGroup] != 0)) {
                         using(new RecordUndoScope("Change Grouping Type", node, true)){
-                            m_groupingType[editor.CurrentEditingGroup] = (int)newType;
+                            m_groupExtractedAssets[editor.CurrentEditingGroup] = (useGroup)? 1:0;
                             onValueChanged();
                         }
                     }
 
-                    var newSizeText = EditorGUILayout.TextField("Size(KB)",m_groupSizeByte[editor.CurrentEditingGroup].ToString());
-                    int newSize = 0;
-                    Int32.TryParse (newSizeText, out newSize);
+                    using (new EditorGUI.DisabledScope (!useGroup)) {
+                        var newType = (GroupingType)EditorGUILayout.EnumPopup("Grouping Type",(GroupingType)m_groupingType[editor.CurrentEditingGroup]);
+                        if (newType != (GroupingType)m_groupingType[editor.CurrentEditingGroup]) {
+                            using(new RecordUndoScope("Change Grouping Type", node, true)){
+                                m_groupingType[editor.CurrentEditingGroup] = (int)newType;
+                                onValueChanged();
+                            }
+                        }
 
-                    if (newSize != m_groupSizeByte[editor.CurrentEditingGroup]) {
-                        using(new RecordUndoScope("Change Grouping Size", node, true)){
-                            m_groupSizeByte[editor.CurrentEditingGroup] = newSize;
-                            onValueChanged();
+                        var newSizeText = EditorGUILayout.TextField("Size(KB)",m_groupSizeByte[editor.CurrentEditingGroup].ToString());
+                        int newSize = 0;
+                        Int32.TryParse (newSizeText, out newSize);
+
+                        if (newSize != m_groupSizeByte[editor.CurrentEditingGroup]) {
+                            using(new RecordUndoScope("Change Grouping Size", node, true)){
+                                m_groupSizeByte[editor.CurrentEditingGroup] = newSize;
+                                onValueChanged();
+                            }
                         }
                     }
                 }
             }
-        }
 
-		EditorGUILayout.HelpBox("Bundle Name Template replaces \'*\' with number.", MessageType.Info);
-	}
+    		EditorGUILayout.HelpBox("Bundle Name Template replaces \'*\' with number.", MessageType.Info);
+    	}
 
-	/**
-	 * Prepare is called whenever graph needs update. 
-	 */ 
-	public override void Prepare (BuildTarget target, 
-		Model.NodeData node, 
-		IEnumerable<PerformGraph.AssetGroups> incoming, 
-		IEnumerable<Model.ConnectionData> connectionsToOutput, 
-		PerformGraph.Output Output) 
-	{
-		if(string.IsNullOrEmpty(m_bundleNameTemplate)) {
-			throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
-		}
-        if (m_groupExtractedAssets [target] != 0) {
-            if(m_groupSizeByte[target] < 0) {
-                throw new NodeException("Invalid size. Size property must be a positive number.", node.Id);
+    	/**
+    	 * Prepare is called whenever graph needs update. 
+    	 */ 
+    	public override void Prepare (BuildTarget target, 
+    		Model.NodeData node, 
+    		IEnumerable<PerformGraph.AssetGroups> incoming, 
+    		IEnumerable<Model.ConnectionData> connectionsToOutput, 
+    		PerformGraph.Output Output) 
+    	{
+    		if(string.IsNullOrEmpty(m_bundleNameTemplate)) {
+    			throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
+    		}
+            if (m_groupExtractedAssets [target] != 0) {
+                if(m_groupSizeByte[target] < 0) {
+                    throw new NodeException("Invalid size. Size property must be a positive number.", node.Id);
+                }
             }
-        }
 
-		// Pass incoming assets straight to Output
-		if(Output != null) {
-			var destination = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
+    		// Pass incoming assets straight to Output
+    		if(Output != null) {
+    			var destination = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+    				null : connectionsToOutput.First();
 
-			if(incoming != null) {
+    			if(incoming != null) {
 
-                var buildMap = AssetBundleBuildMap.GetBuildMap ();
-                buildMap.ClearFromId (node.Id);
+                    var buildMap = AssetBundleBuildMap.GetBuildMap ();
+                    buildMap.ClearFromId (node.Id);
 
-                var dependencyCollector = new Dictionary<string, List<string>>(); // [asset path:group name]
-				var sharedDependency = new Dictionary<string, List<AssetReference>>();
-				var groupNameMap = new Dictionary<string, string>();
+                    var dependencyCollector = new Dictionary<string, List<string>>(); // [asset path:group name]
+    				var sharedDependency = new Dictionary<string, List<AssetReference>>();
+    				var groupNameMap = new Dictionary<string, string>();
 
-				// build dependency map
-				foreach(var ag in incoming) {
-					foreach (var key in ag.assetGroups.Keys) {
-						var assets = ag.assetGroups[key];
+    				// build dependency map
+    				foreach(var ag in incoming) {
+    					foreach (var key in ag.assetGroups.Keys) {
+    						var assets = ag.assetGroups[key];
 
-						foreach(var a in assets) {
-							CollectDependencies(key, new string[] { a.importFrom }, ref dependencyCollector);
-						}
-					}
-				}
+    						foreach(var a in assets) {
+    							CollectDependencies(key, new string[] { a.importFrom }, ref dependencyCollector);
+    						}
+    					}
+    				}
 
-				foreach(var entry in dependencyCollector) {
-					if(entry.Value != null && entry.Value.Count > 1) {
-						var joinedName = string.Join("-", entry.Value.ToArray());
-						if(!groupNameMap.ContainsKey(joinedName)) {
-							var count = groupNameMap.Count;
-							var newName = m_bundleNameTemplate.Replace("*", count.ToString());
-							if(newName == m_bundleNameTemplate) {
-								newName = m_bundleNameTemplate + count.ToString();
-							}
-							groupNameMap.Add(joinedName, newName);
-						}
-						var groupName = groupNameMap[joinedName];
+    				foreach(var entry in dependencyCollector) {
+    					if(entry.Value != null && entry.Value.Count > 1) {
+    						var joinedName = string.Join("-", entry.Value.ToArray());
+    						if(!groupNameMap.ContainsKey(joinedName)) {
+    							var count = groupNameMap.Count;
+    							var newName = m_bundleNameTemplate.Replace("*", count.ToString());
+    							if(newName == m_bundleNameTemplate) {
+    								newName = m_bundleNameTemplate + count.ToString();
+    							}
+    							groupNameMap.Add(joinedName, newName);
+    						}
+    						var groupName = groupNameMap[joinedName];
 
-						if(!sharedDependency.ContainsKey(groupName)) {
-							sharedDependency[groupName] = new List<AssetReference>();
-						}
-						sharedDependency[groupName].Add( AssetReference.CreateReference(entry.Key) );
-					}
-				}
+    						if(!sharedDependency.ContainsKey(groupName)) {
+    							sharedDependency[groupName] = new List<AssetReference>();
+    						}
+    						sharedDependency[groupName].Add( AssetReference.CreateReference(entry.Key) );
+    					}
+    				}
 
-				if(sharedDependency.Keys.Count > 0) {
-                    // subgroup shared dependency bundles by size
-                    if (m_groupExtractedAssets [target] != 0) {
-                        List<string> devidingBundleNames = new List<string> (sharedDependency.Keys);
-                        long szGroup = m_groupSizeByte[target] * 1000;
+    				if(sharedDependency.Keys.Count > 0) {
+                        // subgroup shared dependency bundles by size
+                        if (m_groupExtractedAssets [target] != 0) {
+                            List<string> devidingBundleNames = new List<string> (sharedDependency.Keys);
+                            long szGroup = m_groupSizeByte[target] * 1000;
 
-                        foreach(var bundleName in devidingBundleNames) {
-                            var assets = sharedDependency[bundleName];
-                            int groupCount = 0;
-                            long szGroupCount = 0;
-                            foreach(var a in assets) {
-                                var subGroupName = string.Format ("{0}_{1}", bundleName, groupCount);
-                                if (!sharedDependency.ContainsKey(subGroupName)) {
-                                    sharedDependency[subGroupName] = new List<AssetReference>();
+                            foreach(var bundleName in devidingBundleNames) {
+                                var assets = sharedDependency[bundleName];
+                                int groupCount = 0;
+                                long szGroupCount = 0;
+                                foreach(var a in assets) {
+                                    var subGroupName = string.Format ("{0}_{1}", bundleName, groupCount);
+                                    if (!sharedDependency.ContainsKey(subGroupName)) {
+                                        sharedDependency[subGroupName] = new List<AssetReference>();
+                                    }
+                                    sharedDependency[subGroupName].Add(a);
+
+                                    szGroupCount += GetSizeOfAsset(a, (GroupingType)m_groupingType[target]);
+                                    if(szGroupCount >= szGroup) {
+                                        szGroupCount = 0;
+                                        ++groupCount;
+                                    }
                                 }
-                                sharedDependency[subGroupName].Add(a);
-
-                                szGroupCount += GetSizeOfAsset(a, (GroupingType)m_groupingType[target]);
-                                if(szGroupCount >= szGroup) {
-                                    szGroupCount = 0;
-                                    ++groupCount;
-                                }
+                                sharedDependency.Remove (bundleName);
                             }
-                            sharedDependency.Remove (bundleName);
                         }
-                    }
 
-                    foreach(var bundleName in sharedDependency.Keys) {
-                        var bundleConfig = buildMap.GetAssetBundleWithNameAndVariant (node.Id, bundleName, string.Empty);
-                        bundleConfig.AddAssets (node.Id, sharedDependency[bundleName].Select(a => a.importFrom));
-                    }
+                        foreach(var bundleName in sharedDependency.Keys) {
+                            var bundleConfig = buildMap.GetAssetBundleWithNameAndVariant (node.Id, bundleName, string.Empty);
+                            bundleConfig.AddAssets (node.Id, sharedDependency[bundleName].Select(a => a.importFrom));
+                        }
 
-					foreach(var ag in incoming) {
-						Output(destination, new Dictionary<string, List<AssetReference>>(ag.assetGroups));
-					}
-					Output(destination, sharedDependency);
-				} else {
-					foreach(var ag in incoming) {
-						Output(destination, ag.assetGroups);
-					}
-				}
+    					foreach(var ag in incoming) {
+    						Output(destination, new Dictionary<string, List<AssetReference>>(ag.assetGroups));
+    					}
+    					Output(destination, sharedDependency);
+    				} else {
+    					foreach(var ag in incoming) {
+    						Output(destination, ag.assetGroups);
+    					}
+    				}
 
-			} else {
-				// Overwrite output with empty Dictionary when no there is incoming asset
-				Output(destination, new Dictionary<string, List<AssetReference>>());
-			}
-		}
-	}
+    			} else {
+    				// Overwrite output with empty Dictionary when no there is incoming asset
+    				Output(destination, new Dictionary<string, List<AssetReference>>());
+    			}
+    		}
+    	}
 
-	private void CollectDependencies(string groupKey, string[] assetPaths, ref Dictionary<string, List<string>> collector) {
-		var dependencies = AssetDatabase.GetDependencies(assetPaths);
-		foreach(var d in dependencies) {
-            // AssetBundle must not include script asset
-            if (TypeUtility.GetTypeOfAsset (d) == typeof(MonoScript)) {
-                continue;
+    	private void CollectDependencies(string groupKey, string[] assetPaths, ref Dictionary<string, List<string>> collector) {
+    		var dependencies = AssetDatabase.GetDependencies(assetPaths);
+    		foreach(var d in dependencies) {
+                // AssetBundle must not include script asset
+                if (TypeUtility.GetTypeOfAsset (d) == typeof(MonoScript)) {
+                    continue;
+                }
+
+    			if(!collector.ContainsKey(d)) {
+    				collector[d] = new List<string>();
+    			}
+    			if(!collector[d].Contains(groupKey)) {
+    				collector[d].Add(groupKey);
+    				collector[d].Sort();
+    			}
+    		}
+    	}
+
+        private long GetSizeOfAsset(AssetReference a, GroupingType t) {
+
+            long size = 0;
+
+            // You can not read scene and do estimate
+            if (TypeUtility.GetTypeOfAsset (a.importFrom) == typeof(UnityEditor.SceneAsset)) {
+                t = GroupingType.ByFileSize;
             }
 
-			if(!collector.ContainsKey(d)) {
-				collector[d] = new List<string>();
-			}
-			if(!collector[d].Contains(groupKey)) {
-				collector[d].Add(groupKey);
-				collector[d].Sort();
-			}
-		}
-	}
+            if (t == GroupingType.ByRuntimeMemorySize) {
+                var objects = a.allData;
+                foreach (var o in objects) {
+                    #if UNITY_5_6_OR_NEWER
+                    size += Profiler.GetRuntimeMemorySizeLong (o);
+                    #else
+                    size += Profiler.GetRuntimeMemorySize(o);
+                    #endif
+                }
 
-    private long GetSizeOfAsset(AssetReference a, GroupingType t) {
+                a.ReleaseData ();
+            } else if (t == GroupingType.ByFileSize) {
+                System.IO.FileInfo fileInfo = new System.IO.FileInfo(a.absolutePath);
+                if (fileInfo.Exists) {
+                    size = fileInfo.Length;
+                }
+            }
 
-        long size = 0;
-
-        // You can not read scene and do estimate
-        if (TypeUtility.GetTypeOfAsset (a.importFrom) == typeof(UnityEditor.SceneAsset)) {
-            t = GroupingType.ByFileSize;
+            return size;
         }
-
-        if (t == GroupingType.ByRuntimeMemorySize) {
-            var objects = a.allData;
-            foreach (var o in objects) {
-                #if UNITY_5_6_OR_NEWER
-                size += Profiler.GetRuntimeMemorySizeLong (o);
-                #else
-                size += Profiler.GetRuntimeMemorySize(o);
-                #endif
-            }
-
-            a.ReleaseData ();
-        } else if (t == GroupingType.ByFileSize) {
-            System.IO.FileInfo fileInfo = new System.IO.FileInfo(a.absolutePath);
-            if (fileInfo.Exists) {
-                size = fileInfo.Length;
-            }
-        }
-
-        return size;
     }
 }
