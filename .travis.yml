@@ -24,6 +24,6 @@ deploy:
   provider: pages
   skip_cleanup: true
   local_dir: $TRAVIS_BUILD_DIR/docs/html
-  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+  github_token: $GH_REPO_TOKEN
   on:
     branch: 1.3/release
