@@ -8,6 +8,9 @@ using System.Security.Cryptography;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
+    /// <summary>
+    /// Asset reference.
+    /// </summary>
 	[System.Serializable]
 	public class AssetReference {
 
@@ -22,18 +25,30 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private Type m_assetType;
 		private Type m_filterType;
 
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
 		public string id {
 			get {
 				return m_guid.ToString();
 			}
 		}
 
+        /// <summary>
+        /// Gets the asset database identifier.
+        /// </summary>
+        /// <value>The asset database identifier.</value>
 		public string assetDatabaseId {
 			get {
 				return m_assetDatabaseId;
 			}
 		}
 
+        /// <summary>
+        /// Gets or sets the import from.
+        /// </summary>
+        /// <value>The import from.</value>
 		public string importFrom {
 			get {
 				return m_importFrom;
@@ -44,6 +59,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets or sets the export to.
+        /// </summary>
+        /// <value>The export to.</value>
 		public string exportTo {
 			get {
 				return m_exportTo;
@@ -54,6 +73,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets or sets the name of the variant.
+        /// </summary>
+        /// <value>The name of the variant.</value>
 		public string variantName {
 			get {
 				return m_variantName;
@@ -64,6 +87,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets the type of the asset.
+        /// </summary>
+        /// <value>The type of the asset.</value>
 		public Type assetType {
 			get {
 				if(m_assetType == null) {
@@ -77,6 +104,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets the type of the filter.
+        /// </summary>
+        /// <value>The type of the filter.</value>
 		public Type filterType {
 			get {
 				if(m_filterType == null) {
@@ -86,6 +117,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets the file name and extension.
+        /// </summary>
+        /// <value>The file name and extension.</value>
 		public string fileNameAndExtension {
 			get {
 				if(m_importFrom != null) {
@@ -98,6 +133,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets the name of the file.
+        /// </summary>
+        /// <value>The name of the file.</value>
 		public string fileName {
 			get {
 				if(m_importFrom != null) {
@@ -110,7 +149,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-
+        /// <summary>
+        /// Gets the path.
+        /// </summary>
+        /// <value>The path.</value>
 		public string path {
 			get {
 				if(m_importFrom != null) {
@@ -123,12 +165,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Gets the absolute path.
+        /// </summary>
+        /// <value>The absolute path.</value>
 		public string absolutePath {
 			get {
                 return m_importFrom.Replace("Assets", Application.dataPath);
 			}
 		}
 
+        /// <summary>
+        /// Gets all data.
+        /// </summary>
+        /// <value>All data.</value>
 		public UnityEngine.Object[] allData {
 			get {
 				if(m_data == null || m_data.Length == 0) {
@@ -138,6 +188,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Sets the dirty.
+        /// </summary>
 		public void SetDirty() {
 			if(m_data != null) {
 				foreach(var o in m_data) {
@@ -146,6 +199,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Releases the data.
+        /// </summary>
 		public void ReleaseData() {
 			if(m_data != null) {
 				foreach(var o in m_data) {
@@ -161,10 +217,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Touchs the import asset.
+        /// </summary>
 		public void TouchImportAsset() {
 			System.IO.File.SetLastWriteTime(importFrom, DateTime.UtcNow);
 		}
 
+        /// <summary>
+        /// Creates the reference.
+        /// </summary>
+        /// <returns>The reference.</returns>
+        /// <param name="importFrom">Import from.</param>
 		public static AssetReference CreateReference (string importFrom) {
 			return new AssetReference(
 				guid: Guid.NewGuid(),
@@ -174,6 +238,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			);
 		}
 
+        /// <summary>
+        /// Creates the reference.
+        /// </summary>
+        /// <returns>The reference.</returns>
+        /// <param name="importFrom">Import from.</param>
+        /// <param name="assetType">Asset type.</param>
         public static AssetReference CreateReference (string importFrom, Type assetType) {
             return new AssetReference(
                 guid: Guid.NewGuid(),
@@ -183,6 +253,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
             );
         }
 
+        /// <summary>
+        /// Creates the prefab reference.
+        /// </summary>
+        /// <returns>The prefab reference.</returns>
+        /// <param name="importFrom">Import from.</param>
 		public static AssetReference CreatePrefabReference (string importFrom) {
 			return new AssetReference(
 				guid: Guid.NewGuid(),
@@ -192,6 +267,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			);
 		}
 
+        /// <summary>
+        /// Creates the asset bundle reference.
+        /// </summary>
+        /// <returns>The asset bundle reference.</returns>
+        /// <param name="path">Path.</param>
 		public static AssetReference CreateAssetBundleReference (string path) {
 			return new AssetReference(
 				guid: Guid.NewGuid(),
@@ -201,6 +281,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			);
 		}
 
+        /// <summary>
+        /// Creates the asset bundle manifest reference.
+        /// </summary>
+        /// <returns>The asset bundle manifest reference.</returns>
+        /// <param name="path">Path.</param>
         public static AssetReference CreateAssetBundleManifestReference (string path) {
             return new AssetReference(
                 guid: Guid.NewGuid(),
@@ -210,6 +295,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
             );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnityEngine.AssetBundles.GraphTool.AssetReference"/> class.
+        /// </summary>
+        /// <param name="guid">GUID.</param>
+        /// <param name="assetDatabaseId">Asset database identifier.</param>
+        /// <param name="importFrom">Import from.</param>
+        /// <param name="exportTo">Export to.</param>
+        /// <param name="assetType">Asset type.</param>
+        /// <param name="variantName">Variant name.</param>
 		private AssetReference (
 			Guid guid,
 			string assetDatabaseId = null,

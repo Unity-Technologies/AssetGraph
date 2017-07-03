@@ -9,9 +9,6 @@ using System.Text.RegularExpressions;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
-	/**
-		GUI Inspector to ConnectionGUI (Through ConnectionGUIInspectorHelper)
-	*/
 	[CustomEditor(typeof(ConnectionGUIInspectorHelper))]
 	public class ConnectionGUIEditor : Editor {
 		

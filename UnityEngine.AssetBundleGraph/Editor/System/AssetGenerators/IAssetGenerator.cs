@@ -11,44 +11,57 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	/**
-	 * IAssetGenerator is an interface to generate new asset from incoming asset.
-	 * Subclass of IAssetGenerator must have CustomAssetGenerator attribute.
-	 */
+    /// <summary>
+    /// IAssetGenerator is an interface to generate new asset from incoming asset.
+    /// Subclass of IAssetGenerator must have CustomAssetGenerator attribute.
+    /// </summary>
 	public interface IAssetGenerator {
-        /**
-         * File extension of generated asset.
-         */ 
+        /// <summary>
+        /// File extension of generated asset.
+        /// </summary>
+        /// <value>The extension in string format (e.g. ".png").</value>
         string Extension {
             get;
         }
 
-        /**
-         * Asset Type of generated asset.
-         */ 
+        /// <summary>
+        /// Gets the type of the asset.
+        /// For type of assets that have associated importers, return type of Importer.
+        /// Textures = TextureImporter, Audio = AudioImporter, Video = VideoClipImporter
+        /// </summary>
+        /// <value>The type of the asset. </value>
         Type AssetType {
             get;
         }
 
-        /**
-		 * Test if asset can be generated from given asset.
-         * @param [out] message Additional message when generator can not generate asset.
-		 */
+        /// <summary>
+        /// Test if asset can be generated from given asset.
+        /// </summary>
+        /// <returns><c>true</c> if this instance can generate asset the specified asset message; otherwise, <c>false</c>.</returns>
+        /// <param name="asset">Asset to examine if derivertive asset can be generated.</param>
+        /// <param name="message">Additional message when generator can not generate asset.</param>
         bool CanGenerateAsset (AssetReference asset, out string message);
 
-		/**
-		 * Generate asset.
-         * @param [in] asset Source asset to generate derivertive asset.
-         * @param [in] generateAssetPath Path to save generated derivertive asset.
-		 */ 
+        /// <summary>
+        /// Generates the asset.
+        /// </summary>
+        /// <returns><c>true</c>, if asset was generated, <c>false</c> otherwise.</returns>
+        /// <param name="asset">Asset to generate derivertive asset from.</param>
+        /// <param name="generateAssetPath">Path to save generated derivertive asset.</param>
         bool GenerateAsset (AssetReference asset, string generateAssetPath);
 
-		/**
-		 * Draw Inspector GUI for this AssetGenerator.
-		 */ 
+        /// <summary>
+        /// Draw Inspector GUI for this AssetGenerator.
+        /// Make sure to call <c>onValueChanged</c>() when inspector values are modified. 
+        /// It will save state of AssetGenerator object.
+        /// </summary>
+        /// <param name="onValueChanged">Action to call when inspector value changed.</param>
 		void OnInspectorGUI (Action onValueChanged);
 	}
 
+    /// <summary>
+    /// Attribute for Custom Asset Generator.
+    /// </summary>
 	[AttributeUsage(AttributeTargets.Class)] 
 	public class CustomAssetGenerator : Attribute {
 		private string m_name;
@@ -56,12 +69,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private const int kDEFAULT_ASSET_THRES = 10;
 
+        /// <summary>
+        /// GUI name of the generator.
+        /// </summary>
+        /// <value>The GUI name of the generator.</value>
 		public string Name {
 			get {
 				return m_name;
 			}
 		}
 
+        /// <summary>
+        /// Version string of the generator.
+        /// Version string is useful to force update all generated assets
+        /// when generator have catastrophic changes.
+        /// </summary>
+        /// <value>The version string.</value>
 		public string Version {
 			get {
 				return m_version;

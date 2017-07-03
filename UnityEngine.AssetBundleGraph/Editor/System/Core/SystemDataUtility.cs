@@ -10,15 +10,9 @@ using System.Security.Cryptography;
 
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-/**
-	static executor for AssetBundleGraph's data.
-*/
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class SystemDataUtility {
 
-		/**
-			Return true if given asset is already Cached
-		*/
 		public static bool IsCached (AssetReference relatedAsset, List<string> alreadyCachedPath, string localAssetPath) {
 			if (alreadyCachedPath.Contains(localAssetPath)) {
 				// if source is exists, check hash.

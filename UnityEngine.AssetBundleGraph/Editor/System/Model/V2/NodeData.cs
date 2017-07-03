@@ -13,6 +13,9 @@ using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
+    /// <summary>
+    /// Node data.
+    /// </summary>
 	[Serializable]
 	public class NodeData {
 
@@ -97,9 +100,13 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 		}
 
 
-		/*
-		 * Constructor used to create new node from GUI
-		 */ 
+        /// <summary>
+        /// Create new node from GUI.
+        /// </summary>
+        /// <param name="name">Name.</param>
+        /// <param name="node">Node.</param>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
 		public NodeData(string name, Node node, float x, float y) {
 
 			m_id = Guid.NewGuid().ToString();
@@ -162,9 +169,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_nodeInstance = new NodeInstance(n);
 		}
 
-		/**
-		 * Duplicate this node with new guid.
-		 */ 
 		public NodeData Duplicate (bool keepId = false) {
 			return new NodeData(this, keepId);
 		}

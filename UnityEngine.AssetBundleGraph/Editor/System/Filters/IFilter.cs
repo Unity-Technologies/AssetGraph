@@ -11,19 +11,31 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	/**
-	 * IFilter is an interface to create custom filter condition.
-	 * Subclass of IFilter must have CUstomFilter attribute.
-	 */
+    /// <summary>
+    /// IFilter is an interface to create custom filter condition.
+    /// </summary>
 	public interface IFilter {
 
+        /// <summary>
+        /// Label string for the filter.
+        /// Label string will be displayed in output point and outgoing connection.
+        /// </summary>
+        /// <value>The label string.</value>
 		string Label { get; }
 
+        /// <summary>
+        /// Filters the asset.
+        /// </summary>
+        /// <returns><c>true</c>, if asset meets filter criteria, <c>false</c> otherwise.</returns>
+        /// <param name="asset">Asset.</param>
 		bool FilterAsset(AssetReference asset);
 
-		/**
-		 * Draw Inspector GUI for this Filter.
-		 */ 
+        /// <summary>
+        /// Draw Inspector GUI for this Filter.
+        /// Make sure to call <c>onValueChanged</c>() when inspector values are modified. 
+        /// It will save state of AssetGenerator object.
+        /// </summary>
+        /// <param name="onValueChanged">Action to call when inspector value changed.</param>
 		void OnInspectorGUI (Action onValueChanged);
 	}
 

@@ -12,9 +12,6 @@ using System.Security.Cryptography;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
-	/*
-	 * AssetBundleGraphController executes operations based on graph 
-	 */
 	public class AssetBundleGraphController {
 
 		private List<NodeException> m_nodeExceptions;

@@ -10,9 +10,6 @@ using System.Reflection;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
-	/**
-		GUI Inspector to NodeGUI (Through NodeGUIInspectorHelper)
-	*/
 	[CustomEditor(typeof(NodeGUIInspectorHelper))]
 	public class NodeGUIEditor : Editor {
 

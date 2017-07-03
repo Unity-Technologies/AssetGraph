@@ -12,9 +12,6 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 	
-	/**
-		ImportSetting is the class for apply specific setting to already imported files.
-	*/
 	[CustomNode("Modify Assets/Overwrite Import Setting", 60)]
 	public class ImportSetting : Node, Model.NodeDataImporter {
 

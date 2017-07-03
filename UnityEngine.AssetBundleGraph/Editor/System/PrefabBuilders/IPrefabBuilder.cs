@@ -11,28 +11,41 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	/**
-	 * IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.
-	 * Subclass of IPrefabBuilder must have CUstomPrefabBuilder attribute.
-	 */
+    /// <summary>
+    /// IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.
+    /// Subclass of IPrefabBuilder must have CUstomPrefabBuilder attribute.
+    /// </summary>
 	public interface IPrefabBuilder {
 		/**
-		 * Test if prefab can be created with incoming assets.
+		 * 
 		 * @result Name of prefab file if prefab can be created. null if not.
 		 */
+        /// <summary>
+        /// Determines whether this instance can create prefab with the specified groupKey objects.
+        /// </summary>
+        /// <returns><c>true</c> if this instance can create prefab the specified groupKey objects; otherwise, <c>false</c>.</returns>
+        /// <param name="groupKey">Group key.</param>
+        /// <param name="objects">Objects.</param>
 		string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects);
 
-		/**
-		 * Create Prefab.
-		 */ 
+        /// <summary>
+        /// Creates the prefab.
+        /// </summary>
+        /// <returns>The prefab.</returns>
+        /// <param name="groupKey">Group key.</param>
+        /// <param name="objects">Objects.</param>
 		UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects);
 
-		/**
-		 * Draw Inspector GUI for this PrefabBuilder.
-		 */ 
+        /// <summary>
+        /// Draw Inspector GUI for this PrefabBuilder.
+        /// </summary>
+        /// <param name="onValueChanged">On value changed.</param>
 		void OnInspectorGUI (Action onValueChanged);
 	}
 
+    /// <summary>
+    /// Custom prefab builder attribute.
+    /// </summary>
 	[AttributeUsage(AttributeTargets.Class)] 
 	public class CustomPrefabBuilder : Attribute {
 		private string m_name;
@@ -41,18 +54,30 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private const int kDEFAULT_ASSET_THRES = 10;
 
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
 		public string Name {
 			get {
 				return m_name;
 			}
 		}
 
+        /// <summary>
+        /// Gets the version.
+        /// </summary>
+        /// <value>The version.</value>
 		public string Version {
 			get {
 				return m_version;
 			}
 		}
 
+        /// <summary>
+        /// Gets the asset threshold.
+        /// </summary>
+        /// <value>The asset threshold.</value>
 		public int AssetThreshold {
 			get {
 				return m_assetThreshold;

@@ -10,22 +10,27 @@ using System.Linq;
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
+    /// <summary>
+    /// Node.
+    /// </summary>
 	public abstract class Node {
 
 		#region Node input output types
 
-		/**
-		 * NodeInputType returns valid type of input for this node.
-		 */ 
+        /// <summary>
+        /// Gets the valid type of the node input.
+        /// </summary>
+        /// <value>The type of the node input.</value>
 		public virtual Model.NodeOutputSemantics NodeInputType {
 			get {
 				return Model.NodeOutputSemantics.Assets;
 			}
 		}
 
-		/**
-		 * NodeOutputType returns output data type from this node.
-		 */ 
+        /// <summary>
+        /// Gets the valid type of the node output.
+        /// </summary>
+        /// <value>The type of the node output.</value>
 		public virtual Model.NodeOutputSemantics NodeOutputType {
 			get {
 				return Model.NodeOutputSemantics.Assets;
@@ -33,28 +38,33 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 		#endregion
 
-		/**
-		 * Category returns label string displayed at bottom of node
-		 */ 
+        /// <summary>
+        /// Category returns label string displayed at bottom of node.
+        /// </summary>
+        /// <value>The category.</value>
 		public abstract string Category {
 			get;
 		}
 
 
 		#region Initialization, Copy, Comparison, Validation
-		/**
-		 * Initialize Node with given NodeData.
-		 */ 
+        /// <summary>
+        /// Initialize Node with given NodeData.
+        /// </summary>
+        /// <param name="data">Data.</param>
 		public abstract void Initialize(Model.NodeData data);
 
-		/**
-		 * Create duplicated copy of this Node.
-		 */ 
+        /// <summary>
+        /// Clone the node using newData.
+        /// </summary>
+        /// <param name="newData">New data.</param>
 		public abstract Node Clone(Model.NodeData newData);
 
-		/**
-		 * Test if input point is valid on this Node.
-		 */ 
+        /// <summary>
+        /// Determines whether this instance is valid input connection point the specified point.
+        /// </summary>
+        /// <returns><c>true</c> if this instance is valid input connection point the specified point; otherwise, <c>false</c>.</returns>
+        /// <param name="point">Point.</param>
 		public virtual bool IsValidInputConnectionPoint(Model.ConnectionPointData point) {
 			return true;
 		}
@@ -62,14 +72,14 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		#region Build
 
-		/**
-		 *	Prepare is the method which validates and perform necessary setups in order to build.
-		 * @param [in] 	target				target platform
-		 * @param [in]	nodeData			NodeData instance for this node.
-		 * @param [in]	incoming			incoming group of assets for this node on executing graph.
-		 * @param [in]	connectionsToOutput	outgoing connections from this node.
-		 * @param [in]	outputFunc			an interface to set outgoing group of assets.
-		 */
+        /// <summary>
+        /// Prepare is the method which validates and perform necessary setups in order to build.
+        /// </summary>
+        /// <param name="target">Target platform.</param>
+        /// <param name="nodeData">NodeData instance for this node.</param>
+        /// <param name="incoming">Incoming group of assets for this node on executing graph.</param>
+        /// <param name="connectionsToOutput">Outgoing connections from this node.</param>
+        /// <param name="outputFunc">An interface to set outgoing group of assets.</param>
 		public virtual void Prepare (BuildTarget target, 
 			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
@@ -79,15 +89,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// Do nothing
 		}
 
-		/**
-		 * Build is the method which actualy performs the build. It is always called after Setup() is performed.
-		 * @param [in] 	target				target platform
-		 * @param [in]	nodeData			NodeData instance for this node.
-		 * @param [in]	incoming			incoming group of assets for this node on executing graph.
-		 * @param [in]	connectionsToOutput	outgoing connections from this node.
-		 * @param [in]	outputFunc			an interface to set outgoing group of assets.
-		 * @param [in]	progressFunc		an interface to display progress.
-		 */
+        /// <summary>
+        /// Build is the method which actualy performs the build. It is always called after Setup() is performed.
+        /// </summary>
+        /// <param name="target">Target platform.</param>
+        /// <param name="nodeData">NodeData instance for this node.</param>
+        /// <param name="incoming">Incoming group of assets for this node on executing graph.</param>
+        /// <param name="connectionsToOutput">Outgoing connections from this node.</param>
+        /// <param name="outputFunc">An interface to set outgoing group of assets.</param>
+        /// <param name="progressFunc">An interface to display progress.</param>
 		public virtual void Build (BuildTarget target, 
 			Model.NodeData nodeData, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
@@ -101,39 +111,45 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		#endregion
 
 		#region GUI
-		/*
-		 * ActiveStyle/InactiveStyle returns GUIStyle
-		 */ 
+        /// <summary>
+        /// Gets the active style name in GUISkin.
+        /// </summary>
+        /// <value>The active style.</value>
 		public abstract string ActiveStyle 	 { get; }
+
+        /// <summary>
+        /// Gets the inactive style name in GUISkin.
+        /// </summary>
+        /// <value>The inactive style.</value>
 		public abstract string InactiveStyle { get; }
 
-		/**
-		 * OnInspectorGUI() is called when drawing Inspector of this Node.
-		 * @param [in]	node			NodeGUI instance for this node.
-		 * @param [in]	streamManager	Manager instance to retrieve graph's incoming/outgoing group of assets.
-		 * @param [in]	editor			helper instance to draw inspector.
-		 * @param [in]	onValueChanged	Action to call when OnInspectorGUI() changed value of this node.
-		 */ 
+        /// <summary>
+        /// Raises the inspector GU event.
+        /// </summary>
+        /// <param name="node">NodeGUI instance for this node.</param>
+        /// <param name="streamManager">Manager instance to retrieve graph's incoming/outgoing group of assets.</param>
+        /// <param name="editor">Helper instance to draw inspector.</param>
+        /// <param name="onValueChanged">Action to call when OnInspectorGUI() changed value of this node.</param>
 		public abstract void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged);
 
-		/*
-		 * OnContextMenuGUI() is called when Node is clicked for context menu.
-		 * @param [in]	menu	Context menu instance.
-		 */
+        /// <summary>
+        /// OnContextMenuGUI() is called when Node is clicked for context menu.
+        /// </summary>
+        /// <param name="menu">Context menu instance.</param>
 		public virtual void OnContextMenuGUI(GenericMenu menu) {
 			// Do nothing
 		}
 
-		/**
-		 * OnAssetsReimported() is called when there are changes of assets during editing graph.
-		 * @param [in]	node				NodeGUI instance for this node.
-		 * @param [in]	streamManager		Manager instance to retrieve graph's incoming/outgoing group of assets.
-		 * @param [in] 	target				target platform
-		 * @param [in]	importedAssets		Imported asset paths.
-		 * @param [in]	deletedAssets		Deleted asset paths.
-		 * @param [in]	movedAssets			Moved asset paths.
-		 * @param [in]	movedFromAssetPaths	Original paths of moved assets.
-		 */ 
+        /// <summary>
+        /// OnAssetsReimported() is called when there are changes of assets during editing graph.
+        /// </summary>
+        /// <param name="nodeData">NodeGUI instance for this node.</param>
+        /// <param name="streamManager">Manager instance to retrieve graph's incoming/outgoing group.</param>
+        /// <param name="target">Target platform.</param>
+        /// <param name="importedAssets">Imported asset paths.</param>
+        /// <param name="deletedAssets">Deleted asset paths.</param>
+        /// <param name="movedAssets">Moved asset paths.</param>
+        /// <param name="movedFromAssetPaths">Original paths of moved assets.</param>
 		public virtual bool OnAssetsReimported(
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
@@ -149,6 +165,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		#endregion
 	}
 
+    /// <summary>
+    /// Custom node attribute for custom nodes.
+    /// </summary>
 	[AttributeUsage(AttributeTargets.Class)] 
 	public class CustomNode : Attribute {
 
@@ -157,12 +176,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public static readonly int kDEFAULT_PRIORITY = 1000;
 
+        /// <summary>
+        /// Gets the name.
+        /// </summary>
+        /// <value>The name.</value>
 		public string Name {
 			get {
 				return m_name;
 			}
 		}
 
+        /// <summary>
+        /// Gets the order priority.
+        /// </summary>
+        /// <value>The order priority.</value>
 		public int OrderPriority {
 			get {
 				return m_orderPriority;

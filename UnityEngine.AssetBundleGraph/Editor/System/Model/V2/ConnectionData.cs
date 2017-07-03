@@ -13,17 +13,39 @@ using V1=AssetBundleGraph;
 
 namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
+    /// <summary>
+    /// Node output semantics.
+    /// </summary>
 	public enum NodeOutputSemantics : uint {
+        /// <summary>
+        /// The none.
+        /// </summary>
 		None 						= 0,
+
+        /// <summary>
+        /// Any.
+        /// </summary>
 		Any  						= 0xFFFFFFFF,
+
+        /// <summary>
+        /// The assets.
+        /// </summary>
 		Assets						= 1,
+
+        /// <summary>
+        /// The asset bundle configurations.
+        /// </summary>
 		AssetBundleConfigurations 	= 2,
+
+        /// <summary>
+        /// The asset bundles.
+        /// </summary>
 		AssetBundles 				= 4
 	}
 
-	/*
-	 * connection data saved in/to Json
-	 */ 
+    /// <summary>
+    /// Connection data.
+    /// </summary>
 	[Serializable]
 	public class ConnectionData {
 
@@ -56,12 +78,20 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			m_label = v1.Label;
 		}
 
+        /// <summary>
+        /// Gets the identifier.
+        /// </summary>
+        /// <value>The identifier.</value>
 		public string Id {
 			get {
 				return m_id;
 			}
 		}
 
+        /// <summary>
+        /// Gets or sets the label.
+        /// </summary>
+        /// <value>The label.</value>
 		public string Label {
 			get {
 				return m_label;
@@ -72,24 +102,40 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			}
 		}
 
+        /// <summary>
+        /// Gets from node identifier.
+        /// </summary>
+        /// <value>From node identifier.</value>
 		public string FromNodeId {
 			get {
 				return m_fromNodeId;
 			}
 		}
 
+        /// <summary>
+        /// Gets from node connection point identifier.
+        /// </summary>
+        /// <value>From node connection point identifier.</value>
 		public string FromNodeConnectionPointId {
 			get {
 				return m_fromNodeConnectionPointId;
 			}
 		}
 
+        /// <summary>
+        /// Gets to node identifier.
+        /// </summary>
+        /// <value>To node identifier.</value>
 		public string ToNodeId {
 			get {
 				return m_toNodeId;
 			}
 		}
 
+        /// <summary>
+        /// Gets to node connection point identifier.
+        /// </summary>
+        /// <value>To node connection point identifier.</value>
 		public string ToNodeConnectionPointId {
 			get {
 				return m_toNodeConnectionPoiontId;
@@ -110,10 +156,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return newData;
 		}
 
-		/*
-		 * Checks deserialized ConnectionData, and make some changes if necessary
-		 * return false if any changes are perfomed.
-		 */
 		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {
 
 			var fromNode = allNodes.Find(n => n.Id == this.FromNodeId);
@@ -146,6 +188,12 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			return true;
 		}
 
+        /// <summary>
+        /// Determines if can connect the specified from to.
+        /// </summary>
+        /// <returns><c>true</c> if can connect the specified from to; otherwise, <c>false</c>.</returns>
+        /// <param name="from">From.</param>
+        /// <param name="to">To.</param>
 		public static bool CanConnect (NodeData from, NodeData to) {
 
 			var inType  = (uint)to.Operation.Object.NodeInputType;

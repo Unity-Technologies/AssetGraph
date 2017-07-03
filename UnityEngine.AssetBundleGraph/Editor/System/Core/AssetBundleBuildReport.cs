@@ -10,12 +10,11 @@ using System.Security.Cryptography;
 
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
-/**
-	static executor for AssetBundleGraph's data.
-*/
 namespace UnityEngine.AssetBundles.GraphTool {
+    /// <summary>
+    /// Asset bundle build report.
+    /// </summary>
 	public class AssetBundleBuildReport {
-
 		private class AssetBundleBuildReportManager {
 
 			private List<AssetBundleBuildReport> m_buildReports;
@@ -81,49 +80,82 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private Dictionary<string, List<AssetReference>> m_assetGroups;
 		private Dictionary<string, List<string>> m_bundleNamesAndVariants;
 
+        /// <summary>
+        /// Gets the node.
+        /// </summary>
+        /// <value>The node.</value>
 		public Model.NodeData Node {
 			get {
 				return m_node;
 			}
 		}
 
+        /// <summary>
+        /// Gets the manifest.
+        /// </summary>
+        /// <value>The manifest.</value>
 		public AssetBundleManifest Manifest {
 			get {
 				return m_manifest;
 			}
 		}
 
+        /// <summary>
+        /// Gets the name of the manifest file.
+        /// </summary>
+        /// <value>The name of the manifest file.</value>
         public string ManifestFileName {
             get {
                 return m_manifestFileName;
             }
         }
 
+        /// <summary>
+        /// Gets the bundle build.
+        /// </summary>
+        /// <value>The bundle build.</value>
         public AssetBundleBuild[] BundleBuild {
 			get {
 				return m_bundleBuild;
 			}
 		}
 
+        /// <summary>
+        /// Gets the built bundle files.
+        /// </summary>
+        /// <value>The built bundle files.</value>
 		public List<AssetReference> BuiltBundleFiles {
 			get {
 				return m_builtBundles;
 			}
 		}
 
+        /// <summary>
+        /// Gets the asset groups.
+        /// </summary>
+        /// <value>The asset groups.</value>
 		public Dictionary<string, List<AssetReference>> AssetGroups {
 			get {
 				return m_assetGroups;
 			}
 		}
 
+        /// <summary>
+        /// Gets the bundle names.
+        /// </summary>
+        /// <value>The bundle names.</value>
 		public IEnumerable<string> BundleNames {
 			get {
 				return m_bundleNamesAndVariants.Keys;
 			}
 		}
 
-		public List<string> GetVariantNames(string bundleName) {
+        /// <summary>
+        /// Gets the variant names.
+        /// </summary>
+        /// <returns>The variant names.</returns>
+        /// <param name="bundleName">Bundle name.</param>
+        public List<string> GetVariantNames(string bundleName) {
 			if(m_bundleNamesAndVariants.ContainsKey(bundleName)) {
 				return m_bundleNamesAndVariants[bundleName];
 			}
@@ -148,10 +180,23 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 	}
 
+    /// <summary>
+    /// Export report.
+    /// </summary>
 	public class ExportReport {
 
+        /// <summary>
+        /// Entry.
+        /// </summary>
 		public class Entry {
+            /// <summary>
+            /// The source.
+            /// </summary>
 			public string source;
+
+            /// <summary>
+            /// The destination.
+            /// </summary>
 			public string destination;
 			public Entry(string src, string dst) {
 				source = src;
@@ -159,9 +204,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        /// <summary>
+        /// Error entry.
+        /// </summary>
 		public class ErrorEntry {
+            /// <summary>
+            /// The source.
+            /// </summary>
 			public string source;
+            /// <summary>
+            /// The destination.
+            /// </summary>
 			public string destination;
+            /// <summary>
+            /// The reason.
+            /// </summary>
 			public string reason;
 			public ErrorEntry(string src, string dst, string r) {
 				source = src;
@@ -175,18 +232,30 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private List<Entry> m_exportedItems;
 		private List<ErrorEntry> m_failedItems;
 
+        /// <summary>
+        /// Gets the exported items.
+        /// </summary>
+        /// <value>The exported items.</value>
 		public List<Entry> ExportedItems {
 			get {
 				return m_exportedItems;
 			}
 		}
 
+        /// <summary>
+        /// Gets the errors.
+        /// </summary>
+        /// <value>The errors.</value>
 		public List<ErrorEntry> Errors {
 			get {
 				return m_failedItems;
 			}
 		}
 
+        /// <summary>
+        /// Gets the node.
+        /// </summary>
+        /// <value>The node.</value>
 		public Model.NodeData Node {
 			get {
 				return m_nodeData;

@@ -12,60 +12,64 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
-	/**
-	 * IModifier is an interface which modifies incoming assets.
-	 * Subclass of IModifier must have CustomModifier attribute.
-	 */
+    /// <summary>
+    /// IModifier is an interface which modifies incoming assets.
+    /// Subclass of IModifier must have <c>CustomModifier</c> attribute.
+    /// </summary>
 	public interface IModifier {
-		/**
-		 * Test if incoming assset is different from this IModifier's setting.
-		 * asset is always type of object defined
-		 */ 
+        /// <summary>
+        /// Test if incoming assset is different from this IModifier's setting.
+        /// </summary>
+        /// <returns><c>true</c> if this instance is modified the specified assets; otherwise, <c>false</c>.</returns>
+        /// <param name="assets">Assets.</param>
 		bool IsModified (UnityEngine.Object[] assets);
 
-		/**
-		 * Modifies incoming asset.
-		 */ 
+        /// <summary>
+        /// Modify incoming assets.
+        /// </summary>
+        /// <param name="assets">Assets.</param>
 		void Modify (UnityEngine.Object[] assets);
 
-		/**
-		 * Draw Inspector GUI for this Modifier.
-		 */ 
+        /// <summary>
+        /// Draw Inspector GUI for this Modifier.
+        /// </summary>
+        /// <param name="onValueChanged">On value changed.</param>
 		void OnInspectorGUI (Action onValueChanged);
 	}
 
-	/**
-	 * Used to declare the class is used as a IModifier. 
-	 * Classes with CustomModifier attribute must implement IModifier interface.
-	 */ 
+    /// <summary>
+    /// CustomModifier attribute is to declare the class is used as a IModifier. 
+    /// </summary>
 	[AttributeUsage(AttributeTargets.Class)] 
 	public class CustomModifier : Attribute {
 		private string m_name;
 		private Type m_modifyFor;
 
-		/**
-		 * Name of Modifier appears on GUI.
-		 */ 
+        /// <summary>
+        /// Name of Modifier appears on GUI.
+        /// </summary>
+        /// <value>The name.</value>
 		public string Name {
 			get {
 				return m_name;
 			}
 		}
 
-		/**
-		 * Type of asset Modifier modifies.
-		 */ 
+        /// <summary>
+        /// Type of asset Modifier modifies.
+        /// </summary>
+        /// <value>For.</value>
 		public Type For {
 			get {
 				return m_modifyFor;
 			}
 		}
 
-		/**
-		 * CustomModifier declares the class is used as a IModifier.
-		 * @param [in] name 	 Name of Modifier appears on GUI.
-		 * @param [in] modifyFor Type of asset Modifier modifies.
-		 */ 
+        /// <summary>
+        /// CustomModifier declares the class is used as a IModifier.
+        /// </summary>
+        /// <param name="name">Name of Modifier appears on GUI.</param>
+        /// <param name="modifyFor">Type of asset Modifier modifies.</param>
 		public CustomModifier (string name, Type modifyFor) {
 			m_name = name;
 			m_modifyFor = modifyFor;

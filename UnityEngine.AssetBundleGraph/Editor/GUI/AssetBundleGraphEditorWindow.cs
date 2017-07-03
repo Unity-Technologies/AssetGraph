@@ -12,7 +12,6 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class AssetBundleGraphEditorWindow : EditorWindow {
-
 		[Serializable]
 		public class SavedSelection {
 			[SerializeField] public List<NodeGUI> nodes;
@@ -450,9 +449,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			OpenGraph(graph);
 		}
 
-		/**
-			open node graph
-		*/
 		public void OpenGraph (Model.ConfigGraph graph) {
 
 			CloseGraph();
