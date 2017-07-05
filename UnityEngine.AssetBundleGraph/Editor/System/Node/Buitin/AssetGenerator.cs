@@ -277,12 +277,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
                             var generator = entry.m_instance.Get<IAssetGenerator>(target);
                             UnityEngine.Assertions.Assert.IsNotNull(generator);
 
-                            var newItem = FileUtility.PathCombine (assetOutputDir, entry.m_id, a.fileName + generator.Extension);
+                            var newItem = FileUtility.PathCombine (assetOutputDir, entry.m_id, a.fileName + generator.GetAssetExtension (a));
                             var output = allOutput[entry.m_id];
                             if(!output.ContainsKey(groupKey)) {
                                 output[groupKey] = new List<AssetReference>();
                             }
-                            output[groupKey].Add(AssetReferenceDatabase.GetReferenceWithType (newItem, generator.AssetType));
+                            output[groupKey].Add(AssetReferenceDatabase.GetReferenceWithType (newItem, generator.GetAssetType(a)));
                         }
                     }
 				}
@@ -324,7 +324,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                         foreach (var a in assets) {
                             if(AssetGenerateInfo.DoesAssetNeedRegenerate(entry, node, target, a)) {
 
-                                var assetSavePath = FileUtility.PathCombine (assetSaveDir, a.fileName + generator.Extension);
+                                var assetSavePath = FileUtility.PathCombine (assetSaveDir, a.fileName + generator.GetAssetExtension(a));
 
                                 if (!generator.GenerateAsset (a, assetSavePath)) {
                                     throw new AssetBundleGraphException(string.Format("{0} :Failed to generate asset for {1}", 
