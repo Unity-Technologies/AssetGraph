@@ -16,23 +16,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
     /// Subclass of IAssetGenerator must have CustomAssetGenerator attribute.
     /// </summary>
 	public interface IAssetGenerator {
+
         /// <summary>
-        /// File extension of generated asset.
+        /// Gets the asset extension of generating asset.
         /// </summary>
-        /// <value>The extension in string format (e.g. ".png").</value>
-        string Extension {
-            get;
-        }
+        /// <returns>The extension in string format (e.g. ".png").</returns>
+        /// <param name="asset">The source asset to generate from.</param>
+        string GetAssetExtension (AssetReference asset);
 
         /// <summary>
         /// Gets the type of the asset.
         /// For type of assets that have associated importers, return type of Importer.
         /// Textures = TextureImporter, Audio = AudioImporter, Video = VideoClipImporter
         /// </summary>
-        /// <value>The type of the asset. </value>
-        Type AssetType {
-            get;
-        }
+        /// <returns>The asset type.</returns>
+        /// <param name="asset">The source asset to generate from.</param>
+        Type GetAssetType(AssetReference asset);
 
         /// <summary>
         /// Test if asset can be generated from given asset.

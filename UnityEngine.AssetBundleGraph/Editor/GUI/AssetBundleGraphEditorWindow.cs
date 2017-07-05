@@ -1299,9 +1299,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							}
 
 							Undo.RecordObject(this, "Paste");
-							foreach (var newNode in copiedSelection.nodes) {
-								DuplicateNode(newNode, copiedSelection.PasteOffset);
+
+                            Dictionary<NodeGUI, NodeGUI> nodeLookup = new Dictionary<NodeGUI, NodeGUI> ();
+
+							foreach (var copiedNode in copiedSelection.nodes) {
+                                var newNode = DuplicateNode(copiedNode, copiedSelection.PasteOffset);
+                                nodeLookup.Add (copiedNode, newNode);
 							}
+
+                            foreach (var copiedConnection in copiedSelection.connections) {
+                                DuplicateConnection (copiedConnection, nodeLookup);
+                            }
+
+
 							copiedSelection.IncrementPasteOffset();
 
 							Setup();
@@ -1693,14 +1703,42 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
 		
-		public void DuplicateNode (NodeGUI node, float offset) {
+		public NodeGUI DuplicateNode (NodeGUI node, float offset) {
 			var newNode = node.Duplicate(
 				controller,
 				node.GetX() + offset,
 				node.GetY() + offset
 			);
 			AddNodeGUI(newNode);
+            return newNode;
 		}
+
+        public void DuplicateConnection(ConnectionGUI con, Dictionary<NodeGUI, NodeGUI> nodeLookup) {
+
+            var srcNodes = nodeLookup.Keys;
+            var dstNodes = nodeLookup.Values;
+
+            var srcFrom = srcNodes.Where (n => n.Id == con.Data.FromNodeId).FirstOrDefault();
+            var srcTo = srcNodes.Where (n => n.Id == con.Data.ToNodeId).FirstOrDefault();
+
+            if (srcFrom == null || srcTo == null) {
+                return;
+            }
+
+            var fromPointIndex = srcFrom.Data.OutputPoints.FindIndex (p => p.Id == con.Data.FromNodeConnectionPointId);
+            var inPointIndex   = srcTo.Data.InputPoints.FindIndex (p => p.Id == con.Data.ToNodeConnectionPointId);
+
+            if (fromPointIndex < 0 || inPointIndex < 0) {
+                return;
+            }
+
+            var dstFrom = nodeLookup [srcFrom];
+            var dstTo   = nodeLookup [srcTo];
+            var dstFromPoint = dstFrom.Data.OutputPoints [fromPointIndex];
+            var dstToPoint   = dstTo.Data.InputPoints [inPointIndex];
+
+            AddConnection (con.Label, dstFrom, dstFromPoint, dstTo, dstToPoint);
+        }
 
 		private void AddNodeGUI(NodeGUI newNode) {
 

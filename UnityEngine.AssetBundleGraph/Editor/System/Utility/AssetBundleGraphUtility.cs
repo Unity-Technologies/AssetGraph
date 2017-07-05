@@ -10,6 +10,9 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 
+    /// <summary>
+    /// Execute graph result.
+    /// </summary>
 	public class ExecuteGraphResult {
 		private Model.ConfigGraph  	graph;
 		private List<NodeException>	issues;
@@ -19,24 +22,39 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			this.issues = issues;
 		}
 
+        /// <summary>
+        /// Gets a value indicating whether last graph execution has any issue found.
+        /// </summary>
+        /// <value><c>true</c> if this instance is any issue found; otherwise, <c>false</c>.</value>
 		public bool IsAnyIssueFound {
 			get {
 				return issues.Count > 0;
 			}
 		}
 
+        /// <summary>
+        /// Gets the executed graph associated with this result.
+        /// </summary>
+        /// <value>The graph.</value>
 		public Model.ConfigGraph Graph {
 			get {
 				return graph;
 			}
 		}
 
+        /// <summary>
+        /// Gets the graph asset path.
+        /// </summary>
+        /// <value>The graph asset path.</value>
 		public string GraphAssetPath {
 			get {
 				return AssetDatabase.GetAssetPath(graph);
 			}
 		}
 
+        /// <summary>
+        /// Gets the list of issues found during last execution.
+        /// </summary>
 		public IEnumerable<NodeException> Issues {
 			get {
 				return issues.AsEnumerable();
@@ -44,12 +62,26 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 	}
 
+    /// <summary>
+    /// The helper utility to execute graph and graph collection from API.
+    /// </summary>
 	public class AssetBundleGraphUtility {
 
+        /// <summary>
+        /// Executes the graph collection.
+        /// </summary>
+        /// <returns>The graph collection.</returns>
+        /// <param name="collectionName">Collection name.</param>
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(string collectionName) {
 			return ExecuteGraphCollection(EditorUserBuildSettings.activeBuildTarget, collectionName);
 		}
 
+        /// <summary>
+        /// Executes the graph collection.
+        /// </summary>
+        /// <returns>The graph collection.</returns>
+        /// <param name="t">T.</param>
+        /// <param name="collectionName">Collection name.</param>
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BuildTarget t, string collectionName) {
 			var c = BatchBuildConfig.GetConfig().Find(collectionName);
 			if(c == null) {
@@ -61,10 +93,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return ExecuteGraphCollection(t, c);
 		}
 
+        /// <summary>
+        /// Executes the graph collection.
+        /// </summary>
+        /// <returns>The graph collection.</returns>
+        /// <param name="c">C.</param>
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BatchBuildConfig.GraphCollection c) {
 			return ExecuteGraphCollection(EditorUserBuildSettings.activeBuildTarget, c);
 		}
 
+        /// <summary>
+        /// Executes the graph collection.
+        /// </summary>
+        /// <returns>The graph collection.</returns>
+        /// <param name="t">T.</param>
+        /// <param name="c">C.</param>
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BuildTarget t, BatchBuildConfig.GraphCollection c) {
 
             AssetBundleBuildMap.GetBuildMap ().Clear ();
@@ -85,18 +128,40 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return  resultCollection;
 		}
 
+        /// <summary>
+        /// Executes the graph.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="graphAssetPath">Graph asset path.</param>
 		public static ExecuteGraphResult ExecuteGraph(string graphAssetPath) {
 			return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graphAssetPath);
 		}
 
+        /// <summary>
+        /// Executes the graph.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="graph">Graph.</param>
 		public static ExecuteGraphResult ExecuteGraph(Model.ConfigGraph graph) {
 			return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graph);
 		}
 
+        /// <summary>
+        /// Executes the graph.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="target">Target.</param>
+        /// <param name="graphAssetPath">Graph asset path.</param>
 		public static ExecuteGraphResult ExecuteGraph(BuildTarget target, string graphAssetPath) {
 			return ExecuteGraph(target, AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphAssetPath));
 		}
 
+        /// <summary>
+        /// Executes the graph.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="target">Target.</param>
+        /// <param name="graph">Graph.</param>
 		public static ExecuteGraphResult ExecuteGraph(BuildTarget target, Model.ConfigGraph graph) {
 
 			string assetPath = AssetDatabase.GetAssetPath(graph);

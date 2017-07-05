@@ -13,17 +13,13 @@ public class MyGenerator : IAssetGenerator {
 
 	[SerializeField] private float m_scale = 1.0f;
 
-	public string Extension {
-		get {
-			return ".jpg";
-		}
-	}
+    public string GetAssetExtension (AssetReference asset) {
+        return ".jpg";
+    }
 
-	public Type AssetType {
-		get {
-			return typeof(TextureImporter);
-		}
-	}
+    public Type GetAssetType(AssetReference asset) {
+        return typeof(TextureImporter);
+    }
 
 	public bool CanGenerateAsset (AssetReference asset, out string message) {
 		if (asset.filterType != typeof(TextureImporter)) {

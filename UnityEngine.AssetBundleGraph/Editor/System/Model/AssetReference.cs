@@ -134,6 +134,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
         /// <summary>
+        /// Gets extension.
+        /// </summary>
+        /// <value>The extension of the file name.</value>
+        public string extension {
+            get {
+                if(m_importFrom != null) {
+                    return Path.GetExtension(m_importFrom);
+                }
+                if(m_exportTo != null) {
+                    return Path.GetExtension(m_exportTo);
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Gets the name of the file.
         /// </summary>
         /// <value>The name of the file.</value>

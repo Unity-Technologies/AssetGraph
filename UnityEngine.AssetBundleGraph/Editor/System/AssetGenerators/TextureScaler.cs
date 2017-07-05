@@ -37,27 +37,22 @@ namespace UnityEngine.AssetBundles.GraphTool {
         [SerializeField] private Texture2D.EXRFlags m_exrFlags = Texture2D.EXRFlags.CompressZIP;
         #endif
 
-
-        public string Extension {
-            get {
-                switch (m_outputType) {
-                case TextureOutputType.PNG:
-                    return ".png";
-                case TextureOutputType.JPG:
-                    return ".jpg";
+        public string GetAssetExtension (AssetReference asset) {
+            switch (m_outputType) {
+            case TextureOutputType.PNG:
+                return ".png";
+            case TextureOutputType.JPG:
+                return ".jpg";
                 #if UNITY_5_6_OR_NEWER
-                case TextureOutputType.EXR:
-                    return ".exr";
+            case TextureOutputType.EXR:
+                return ".exr";
                 #endif
-                }
-                return "";
             }
+            return "";
         }
 
-        public Type AssetType {
-            get {
-                return typeof(TextureImporter);
-            }
+        public Type GetAssetType(AssetReference asset) {
+            return typeof(TextureImporter);
         }
 
         public bool CanGenerateAsset (AssetReference asset, out string message) {
@@ -73,9 +68,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             return true;
         }
 
-        /**
-         * Generate asset.
-         */ 
         public bool GenerateAsset (AssetReference asset, string generateAssetPath) {
 
             var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(asset.importFrom);
@@ -175,9 +167,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             return dst;
         }
 
-        /**
-         * Draw Inspector GUI for this AssetGenerator.
-         */ 
         public void OnInspectorGUI (Action onValueChanged) {
 
             var newOutputType = (TextureOutputType)EditorGUILayout.EnumPopup ("Output Format", m_outputType);
