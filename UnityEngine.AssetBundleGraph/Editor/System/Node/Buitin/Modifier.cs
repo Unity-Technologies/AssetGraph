@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 using System;
 using System.Linq;
@@ -234,23 +235,23 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							modifier.Modify(asset.allData);
 							asset.SetDirty();
 							isAnyAssetModified = true;
+
+							// apply asset setting changes to AssetDatabase.
+							if (asset.isSceneAsset) {
+								if (!EditorSceneManager.SaveScene (asset.scene)) {
+									throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
+								}
+							} else {
+								AssetDatabase.SaveAssets ();
+							}
 						}
+						asset.ReleaseData ();
 					}
 				}
 			}
 
 			if(isAnyAssetModified) {
-				// apply asset setting changes to AssetDatabase.
-				AssetDatabase.SaveAssets();
 				AssetDatabase.Refresh();
-			}
-
-			foreach(var ag in incoming) {
-				foreach(var assets in ag.assetGroups.Values) {
-					foreach(var asset in assets) {
-						asset.ReleaseData();
-					}
-				}
 			}
 
 			if(incoming != null && Output != null) {
