@@ -12,7 +12,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	public class FileUtility {
 		public static void RemakeDirectory (string localFolderPath) {
 			if (Directory.Exists(localFolderPath)) {
-				Directory.Delete(localFolderPath, true);
+                FileUtility.DeleteDirectory(localFolderPath, true);
 			}
 			Directory.CreateDirectory(localFolderPath);
 		}
@@ -41,7 +41,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var directoryPath = Directory.GetParent(localTargetFilePath).FullName;
 			var restFiles = GetFilePathsInFolder(directoryPath);
 			if (!restFiles.Any()) {
-				Directory.Delete(directoryPath, true);
+                FileUtility.DeleteDirectory(directoryPath, true);
 				File.Delete(directoryPath + Model.Settings.UNITY_METAFILE_EXTENSION);
 			}
 		}
@@ -230,5 +230,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#endif
 			return null;
 		}
+		public static void DeleteDirectory(string dirPath,bool isRecursive)
+        {
+            string[] tempDirs = Directory.GetDirectories(dirPath);
+            string[] tempFiles = Directory.GetFiles(dirPath);
+            foreach (var tempDir in tempDirs)
+            {
+                File.SetAttributes(tempDir, FileAttributes.Normal);
+            }
+            foreach (var tempFile in tempFiles)
+            {
+                File.SetAttributes(tempFile, FileAttributes.Normal);
+                File.Delete(tempFile);
+            }
+            File.SetAttributes(dirPath, FileAttributes.Normal);
+            Directory.Delete(dirPath, isRecursive);
+        }
 	}
 }
