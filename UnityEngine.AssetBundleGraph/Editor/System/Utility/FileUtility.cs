@@ -230,10 +230,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#endif
 			return null;
 		}
-        public static void DeleteDirectory(string varDirePath,bool varRecursive)
+		public static void DeleteDirectory(string dirPath,bool isRecursive)
         {
-            string[] tempDirs = Directory.GetDirectories(varDirePath);
-            string[] tempFiles = Directory.GetFiles(varDirePath);
+            string[] tempDirs = Directory.GetDirectories(dirPath);
+            string[] tempFiles = Directory.GetFiles(dirPath);
             foreach (var tempDir in tempDirs)
             {
                 File.SetAttributes(tempDir, FileAttributes.Normal);
@@ -243,8 +243,8 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 File.SetAttributes(tempFile, FileAttributes.Normal);
                 File.Delete(tempFile);
             }
-            File.SetAttributes(varDirePath, FileAttributes.Normal);
-            Directory.Delete(varDirePath, varRecursive);
+            File.SetAttributes(dirPath, FileAttributes.Normal);
+            Directory.Delete(dirPath, isRecursive);
         }
 	}
 }
