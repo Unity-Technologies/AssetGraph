@@ -230,21 +230,23 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			#endif
 			return null;
 		}
-		public static void DeleteDirectory(string dirPath,bool isRecursive)
+		public static void DeleteDirectory(string dirPath, bool isRecursive, bool forceDelete = true)
         {
-            string[] tempDirs = Directory.GetDirectories(dirPath);
-            string[] tempFiles = Directory.GetFiles(dirPath);
-            foreach (var tempDir in tempDirs)
-            {
-                File.SetAttributes(tempDir, FileAttributes.Normal);
-            }
-            foreach (var tempFile in tempFiles)
-            {
-                File.SetAttributes(tempFile, FileAttributes.Normal);
-                File.Delete(tempFile);
-            }
-            File.SetAttributes(dirPath, FileAttributes.Normal);
+			if (forceDelete) {
+				RemoveFileAttributes (dirPath, isRecursive);
+			}
             Directory.Delete(dirPath, isRecursive);
         }
+
+		public static void RemoveFileAttributes(string dirPath, bool isRecursive) {
+			foreach (var file in Directory.GetFiles (dirPath)) {
+				File.SetAttributes (file, FileAttributes.Normal);
+			}
+			if(isRecursive) {
+				foreach (var dir in Directory.GetDirectories (dirPath)) {
+					RemoveFileAttributes (dir, isRecursive);
+				}
+			}
+		}
 	}
 }
