@@ -210,6 +210,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void SetDirty() {
 			if(m_data != null) {
 				foreach(var o in m_data) {
+					if(o == null) {
+						continue;
+					}
 					EditorUtility.SetDirty(o);
 				}
 			}
@@ -221,6 +224,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void ReleaseData() {
 			if(m_data != null) {
 				foreach(var o in m_data) {
+					if (o == null) {
+						continue;
+					}
 					if(o is UnityEngine.GameObject || o is UnityEngine.Component) {
 						// do nothing.
 						// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
