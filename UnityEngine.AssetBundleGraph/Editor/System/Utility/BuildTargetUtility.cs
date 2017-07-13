@@ -101,7 +101,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.Android:
 			return "Android";
 			case BuildTarget.iOS:
-			return "iOS";
+                switch (pnt) {
+                case PlatformNameType.TextureImporter:
+                    return "iPhone";
+                }
+                return "iOS";
 			case BuildTarget.PS4:
 			return "PS4";
 			case BuildTarget.PSM:
@@ -117,7 +121,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 }
 			return "PSVita";
 			case BuildTarget.SamsungTV:
-			return "SamsungTV";
+			return "Samsung TV";
 			case BuildTarget.StandaloneLinux:
 			case BuildTarget.StandaloneLinux64:
 			case BuildTarget.StandaloneLinuxUniversal:

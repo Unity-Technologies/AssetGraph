@@ -25,7 +25,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_MODEL,
 			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_TEXTURE,
 			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_AUDIO,
-			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_VIDEO
+            #if UNITY_5_6_OR_NEWER
+			Model.Settings.GUI_TEXT_SETTINGTEMPLATE_VIDEO,
+            #endif
 		};
 
 		[SerializeField] private SerializableMultiTargetString m_spritePackingTagNameTemplate;

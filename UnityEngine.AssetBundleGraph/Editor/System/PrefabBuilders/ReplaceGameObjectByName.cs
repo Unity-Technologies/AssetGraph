@@ -65,7 +65,7 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
                     var newObj = GameObject.Instantiate (r.dstObject, 
                         childTransform.position, 
                         childTransform.rotation, 
-                        parent.transform);
+                        parent.transform) as GameObject;
                     newObj.SetActive (childTransform.gameObject.activeSelf);
                     newObj.name = childTransform.gameObject.name; // suppress "(Clone)"
                     UnityEngine.Object.DestroyImmediate (childTransform.gameObject);
