@@ -237,7 +237,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
                 if (Directory.Exists (dstDir)) {
                     if(m_mirrorOption[target] == (int)MirrorOption.AlwaysRecreateDestination) {
-                        Directory.Delete(dstDir, true);
+                        FileUtility.DeleteDirectory(dstDir, true);
                     }
                     else if(m_mirrorOption[target] == (int)MirrorOption.KeepAlreadyCopiedFiles)
                     {
