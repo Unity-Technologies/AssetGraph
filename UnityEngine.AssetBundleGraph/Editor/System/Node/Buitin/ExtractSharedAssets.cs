@@ -283,7 +283,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
             long size = 0;
 
             // You can not read scene and do estimate
-            if (TypeUtility.GetTypeOfAsset (a.importFrom) == typeof(UnityEditor.SceneAsset)) {
+			if (a.isSceneAsset) {
                 t = GroupingType.ByFileSize;
             }
 
