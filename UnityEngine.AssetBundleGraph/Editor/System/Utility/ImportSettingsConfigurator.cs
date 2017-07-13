@@ -40,9 +40,10 @@ namespace UnityEngine.AssetBundles.GraphTool
                 return IsEqual(importer as UnityEditor.ModelImporter);
             }
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
-			else if(importer.GetType() == typeof(UnityEditor.VideoClipImporter)) {
-				return IsEqual(importer as UnityEditor.VideoClipImporter);
-			}
+            else if (importer.GetType() == typeof(UnityEditor.VideoClipImporter))
+            {
+                return IsEqual(importer as UnityEditor.VideoClipImporter);
+            }
 #endif
             else
             {
@@ -77,9 +78,10 @@ namespace UnityEngine.AssetBundles.GraphTool
                 OverwriteImportSettings(importer as UnityEditor.ModelImporter);
             }
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
-			else if(importer.GetType() == typeof(UnityEditor.VideoClipImporter)) {
-				OverwriteImportSettings(importer as UnityEditor.VideoClipImporter);
-			}
+            else if (importer.GetType() == typeof(UnityEditor.VideoClipImporter))
+            {
+                OverwriteImportSettings(importer as UnityEditor.VideoClipImporter);
+            }
 #endif
             else
             {
@@ -154,18 +156,22 @@ namespace UnityEngine.AssetBundles.GraphTool
 #endif
 
 #if UNITY_5_5_OR_NEWER
-			importer.alphaSource = reference.alphaSource;
-			importer.sRGBTexture = reference.sRGBTexture;
-			
-            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
-			{
+            importer.allowAlphaSplitting = reference.allowAlphaSplitting;
+            importer.alphaIsTransparency = reference.alphaIsTransparency;
+            importer.textureShape = reference.textureShape;
+
+            importer.alphaSource = reference.alphaSource;
+            importer.sRGBTexture = reference.sRGBTexture;
+
+            foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
                 var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
                 var impSet = reference.GetPlatformTextureSettings(platformName);
                 importer.SetPlatformTextureSettings(impSet);
-			}
+            }
 
-			importer.textureCompression = reference.textureCompression;
-			importer.crunchedCompression = reference.crunchedCompression;
+            importer.textureCompression = reference.textureCompression;
+            importer.crunchedCompression = reference.crunchedCompression;
 
 #endif
 
@@ -246,19 +252,23 @@ namespace UnityEngine.AssetBundles.GraphTool
 #endif
 
 #if UNITY_5_5_OR_NEWER
-			if (target.alphaSource != reference.alphaSource) return false;
-			if (target.sRGBTexture != reference.sRGBTexture) return false;
+            if (target.allowAlphaSplitting != reference.allowAlphaSplitting) return false;
+            if (target.alphaIsTransparency != reference.alphaIsTransparency) return false;
+            if (target.textureShape != reference.textureShape) return false;
+
+            if (target.alphaSource != reference.alphaSource) return false;
+            if (target.sRGBTexture != reference.sRGBTexture) return false;
             if (target.textureCompression != reference.textureCompression) return false;
             if (target.crunchedCompression != reference.crunchedCompression) return false;
 
-            foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
-			{
+            foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
+            {
                 var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
 
                 var impSet = reference.GetPlatformTextureSettings(platformName);
                 var targetImpSet = target.GetPlatformTextureSettings(platformName);
-				if(!CompareImporterPlatformSettings(impSet, targetImpSet)) return false;
-			}
+                if (!CompareImporterPlatformSettings(impSet, targetImpSet)) return false;
+            }
 #endif
 
 #if UNITY_2017_1_OR_NEWER
@@ -337,7 +347,13 @@ namespace UnityEngine.AssetBundles.GraphTool
 #if !UNITY_5_6_OR_NEWER
             importer.loadInBackground = reference.loadInBackground;
 #endif
+
+#if UNITY_2017_1_OR_NEWER
+            importer.ambisonic = reference.ambisonic;
+#endif
         }
+
+
         private bool IsEqual(AudioImporter target)
         {
             AudioImporter reference = referenceImporter as AudioImporter;
@@ -374,6 +390,11 @@ namespace UnityEngine.AssetBundles.GraphTool
             // using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
 #if !UNITY_5_6_OR_NEWER
             if (target.loadInBackground != reference.loadInBackground)
+                return false;
+#endif
+
+#if UNITY_2017_1_OR_NEWER
+            if (target.ambisonic != reference.ambisonic)
                 return false;
 #endif
             if (target.preloadAudioData != reference.preloadAudioData)
@@ -443,12 +464,15 @@ namespace UnityEngine.AssetBundles.GraphTool
 #if UNITY_2017_1_OR_NEWER
 			importer.importCameras = reference.importCameras;
 			importer.importLights = reference.importLights;
+            importer.importVisibility = reference.importVisibility;
 			importer.normalCalculationMode = reference.normalCalculationMode;
-			importer.useFileScale = reference.useFileScale;
+            importer.extraUserProperties = reference.extraUserProperties;
+            importer.useFileScale = reference.useFileScale;
 #endif
 
-            /* read only */
             /* 
+             read only properties.
+             
 			importer.importedTakeInfos
 			importer.defaultClipAnimations
 			importer.importAnimation
@@ -470,6 +494,13 @@ namespace UnityEngine.AssetBundles.GraphTool
             /* Obsolete */
         }
 
+        /// <summary>
+        /// Test if reference importer setting has the equal setting as given target.
+        /// ImportSettingsConfigurator will not test read only properties.
+        /// 
+        /// </summary>
+        /// <returns><c>true</c>, if both settings are the equal, <c>false</c> otherwise.</returns>
+        /// <param name="target">Target importer to test equality.</param>
         public bool IsEqual(ModelImporter target)
         {
             ModelImporter reference = referenceImporter as ModelImporter;
@@ -517,8 +548,6 @@ namespace UnityEngine.AssetBundles.GraphTool
                     if (target.clipAnimations[i].wrapMode != reference.clipAnimations[i].wrapMode) return false;
                 }
             }
-
-            if (target.defaultClipAnimations != reference.defaultClipAnimations) return false;
 
             // extraExposedTransformPaths
             {
@@ -575,24 +604,13 @@ namespace UnityEngine.AssetBundles.GraphTool
                 if (target.humanDescription.upperLegTwist != reference.humanDescription.upperLegTwist) return false;
             }
 
-            if (target.importAnimation != reference.importAnimation) return false;
             if (target.importBlendShapes != reference.importBlendShapes) return false;
-            if (target.importedTakeInfos != reference.importedTakeInfos) return false;
-            if (target.importMaterials != reference.importMaterials) return false;
-            if (target.isBakeIKSupported != reference.isBakeIKSupported) return false;
             if (target.isReadable != reference.isReadable) return false;
-            if (target.isTangentImportSupported != reference.isTangentImportSupported) return false;
-            if (target.isUseFileUnitsSupported != reference.isUseFileUnitsSupported) return false;
             if (target.materialName != reference.materialName) return false;
             if (target.materialSearch != reference.materialSearch) return false;
-            if (target.meshCompression != reference.meshCompression) return false;
-            if (target.motionNodeName != reference.motionNodeName) return false;
-            if (target.importNormals != reference.importNormals) return false;
             if (target.normalSmoothingAngle != reference.normalSmoothingAngle) return false;
-            if (target.optimizeGameObjects != reference.optimizeGameObjects) return false;
             if (target.optimizeMesh != reference.optimizeMesh) return false;
 
-            if (target.referencedClips != reference.referencedClips) return false;
             if (target.secondaryUVAngleDistortion != reference.secondaryUVAngleDistortion) return false;
             if (target.secondaryUVAreaDistortion != reference.secondaryUVAreaDistortion) return false;
             if (target.secondaryUVHardAngle != reference.secondaryUVHardAngle) return false;
@@ -600,8 +618,6 @@ namespace UnityEngine.AssetBundles.GraphTool
             if (target.sourceAvatar != reference.sourceAvatar) return false;
             if (target.swapUVChannels != reference.swapUVChannels) return false;
             if (target.importTangents != reference.importTangents) return false;
-            if (target.transformPaths != reference.transformPaths) return false;
-            if (target.useFileUnits != reference.useFileUnits) return false;
 
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			if (target.keepQuads != reference.keepQuads) return false;
@@ -612,9 +628,15 @@ namespace UnityEngine.AssetBundles.GraphTool
 			if (target.importCameras != reference.importCameras) return false;
 			if (target.importLights != reference.importLights) 	 return false;
 			if (target.normalCalculationMode != reference.normalCalculationMode) return false;
-			if (target.useFileScale != reference.useFileScale) return false;
+
+            if (target.extraUserProperties != reference.extraUserProperties) return false;
+            if (target.importCameras != reference.importCameras) return false;
+            if (target.importLights != reference.importLights) return false;
+            if (target.importVisibility != reference.importVisibility) return false;
+            if (target.normalCalculationMode != reference.normalCalculationMode) return false;
+            if (target.useFileScale != reference.useFileScale) return false;
+
 #else
-            if (target.isFileScaleUsed != reference.isFileScaleUsed) return false;
             if (target.fileScale != reference.fileScale) return false;
 #endif
 
@@ -644,29 +666,38 @@ namespace UnityEngine.AssetBundles.GraphTool
             return true;
         }
 
-		public bool IsEqual (VideoClipImporter target) {
-			VideoClipImporter reference = referenceImporter as VideoClipImporter;
-			UnityEngine.Assertions.Assert.IsNotNull(reference);
+        public bool IsEqual(VideoClipImporter target)
+        {
+            VideoClipImporter reference = referenceImporter as VideoClipImporter;
+            UnityEngine.Assertions.Assert.IsNotNull(reference);
 
-            if (!IsEqual (target.defaultTargetSettings, reference.defaultTargetSettings))
+            if (!IsEqual(target.defaultTargetSettings, reference.defaultTargetSettings))
                 return false;
 
-			if (target.deinterlaceMode			 != reference.deinterlaceMode) 			return false;
-			if (target.flipHorizontal			 != reference.flipHorizontal) 			return false;
-			if (target.flipVertical			 	 != reference.flipVertical) 			return false;
-			if (target.frameCount				 != reference.frameCount) 				return false;
-			if (target.frameRate				 != reference.frameRate) 				return false;
-			if (target.importAudio				 != reference.importAudio) 				return false;
-			if (target.isPlayingPreview		 	 != reference.isPlayingPreview) 		return false;
-			if (target.keepAlpha				 != reference.keepAlpha) 				return false;
-			if (target.linearColor				 != reference.linearColor) 				return false;
-			if (target.outputFileSize			 != reference.outputFileSize) 			return false;
-			if (target.quality					 != reference.quality) 					return false;
-			if (target.sourceAudioTrackCount	 != reference.sourceAudioTrackCount) 	return false;
-			if (target.sourceFileSize			 != reference.sourceFileSize) 			return false;
-			if (target.sourceHasAlpha			 != reference.sourceHasAlpha) 			return false;
-			if (target.useLegacyImporter		 != reference.useLegacyImporter) 		return false;
+            /* read only properties. ImportSettingConfigurator will not use these properties for diff. */
+            /* 
+            importer.frameCount             
+            importer.frameRate              
+            importer.isPlayingPreview       
+            importer.outputFileSize         
+            importer.sourceAudioTrackCount  
+            importer.sourceFileSize         
+            importer.sourceHasAlpha         
+            */
 
+            if (target.deinterlaceMode != reference.deinterlaceMode) return false;
+            if (target.flipHorizontal != reference.flipHorizontal) return false;
+            if (target.flipVertical != reference.flipVertical) return false;
+            if (target.importAudio != reference.importAudio) return false;
+            if (target.keepAlpha != reference.keepAlpha) return false;
+            if (target.linearColor != reference.linearColor) return false;
+            if (target.quality != reference.quality) return false;
+            if (target.useLegacyImporter != reference.useLegacyImporter) return false;
+
+#if UNITY2017_2_OR_NEWER
+            if (target.pixelAspectRatioDenominator != reference.pixelAspectRatioDenominator) return false;
+            if (target.pixelAspectRatioNumerator != reference.pixelAspectRatioNumerator) return false;
+#endif
 
             foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
             {
@@ -724,6 +755,10 @@ namespace UnityEngine.AssetBundles.GraphTool
 			importer.quality				= reference.quality;
 			importer.useLegacyImporter		= reference.useLegacyImporter;
 
+#if UNITY2017_2_OR_NEWER
+            importer.pixelAspectRatioDenominator    = reference.pixelAspectRatioDenominator;
+            importer.pixelAspectRatioNumerator      = reference.pixelAspectRatioNumerator;
+#endif
 
             foreach(var g in NodeGUIUtility.SupportedBuildTargetGroups)
             {
@@ -758,5 +793,5 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 #endif
 #endregion
-    }
+        }
 }
