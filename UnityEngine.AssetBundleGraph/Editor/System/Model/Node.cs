@@ -217,7 +217,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
 		public Node CreateInstance() {
-            string typeName = type.AssemblyQualifiedName;
             object o = type.Assembly.CreateInstance(type.FullName);
 			return (Node) o;
 		}

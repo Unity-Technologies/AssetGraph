@@ -1716,7 +1716,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
         public void DuplicateConnection(ConnectionGUI con, Dictionary<NodeGUI, NodeGUI> nodeLookup) {
 
             var srcNodes = nodeLookup.Keys;
-            var dstNodes = nodeLookup.Values;
 
             var srcFrom = srcNodes.Where (n => n.Id == con.Data.FromNodeId).FirstOrDefault();
             var srcTo = srcNodes.Where (n => n.Id == con.Data.ToNodeId).FirstOrDefault();
