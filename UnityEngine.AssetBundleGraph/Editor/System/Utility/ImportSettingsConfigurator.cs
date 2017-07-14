@@ -9,6 +9,12 @@ using Model = UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool
 {
+    public struct ConfigurationOption {
+        public bool keepPackingTag;
+        public bool keepSpriteSheet;
+        public string customPackingTag;
+    }
+
     public class ImportSettingsConfigurator
     {
 
@@ -19,7 +25,7 @@ namespace UnityEngine.AssetBundles.GraphTool
             this.referenceImporter = referenceImporter;
         }
 
-        public bool IsEqual(AssetImporter importer, bool ignorePackingTagDifference = false)
+        public bool IsEqual(AssetImporter importer, ConfigurationOption opt)
         {
 
             if (importer.GetType() != referenceImporter.GetType())
@@ -29,7 +35,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             if (importer.GetType() == typeof(UnityEditor.TextureImporter))
             {
-                return IsEqual(importer as UnityEditor.TextureImporter, ignorePackingTagDifference);
+                return IsEqual(importer as UnityEditor.TextureImporter, opt);
             }
             else if (importer.GetType() == typeof(UnityEditor.AudioImporter))
             {
@@ -51,11 +57,11 @@ namespace UnityEngine.AssetBundles.GraphTool
             }
         }
 
-        public void OverwriteImportSettings(AssetImporter importer)
+        public void OverwriteImportSettings(AssetImporter importer, ConfigurationOption opt)
         {
 
             // avoid touching asset if there is no need to.
-            if (IsEqual(importer))
+            if (IsEqual(importer, opt))
             {
                 return;
             }
@@ -67,7 +73,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             if (importer.GetType() == typeof(UnityEditor.TextureImporter))
             {
-                OverwriteImportSettings(importer as UnityEditor.TextureImporter);
+                OverwriteImportSettings(importer as UnityEditor.TextureImporter, opt);
             }
             else if (importer.GetType() == typeof(UnityEditor.AudioImporter))
             {
@@ -91,7 +97,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
         #region TextureImporter
 
-        private void OverwriteImportSettings(TextureImporter importer)
+        private void OverwriteImportSettings(TextureImporter importer, ConfigurationOption opt)
         {
             var reference = referenceImporter as TextureImporter;
             UnityEngine.Assertions.Assert.IsNotNull(reference);
@@ -128,10 +134,18 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             importer.spriteBorder = reference.spriteBorder;
             importer.spriteImportMode = reference.spriteImportMode;
-            importer.spritePackingTag = reference.spritePackingTag;
+            if (!opt.keepPackingTag) {
+                if (!string.IsNullOrEmpty (opt.customPackingTag)) {
+                    importer.spritePackingTag = opt.customPackingTag;
+                } else {
+                    importer.spritePackingTag = reference.spritePackingTag;
+                }
+            }
             importer.spritePivot = reference.spritePivot;
             importer.spritePixelsPerUnit = reference.spritePixelsPerUnit;
-            importer.spritesheet = reference.spritesheet;
+            if (!opt.keepSpriteSheet) {
+                importer.spritesheet = reference.spritesheet;
+            }
 
             importer.wrapMode = reference.wrapMode;
 
@@ -188,7 +202,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 #endif
         }
 
-        private bool IsEqual(TextureImporter target, bool ignorePackingTagDifference)
+        private bool IsEqual(TextureImporter target, ConfigurationOption opt)
         {
             TextureImporter reference = referenceImporter as TextureImporter;
             UnityEngine.Assertions.Assert.IsNotNull(reference);
@@ -208,28 +222,36 @@ namespace UnityEngine.AssetBundles.GraphTool
             }
 
             if (target.textureType == TextureImporterType.Sprite) {
-                if (target.spritePackingTag != reference.spritePackingTag) {
-                    return false;
+                if (!opt.keepPackingTag) {
+                    if (!string.IsNullOrEmpty (opt.customPackingTag)) {
+                        if (target.spritePackingTag != opt.customPackingTag)
+                            return false;
+                    } else {
+                        if (target.spritePackingTag != reference.spritePackingTag)
+                            return false;
+                    }
                 }
 
-                var s1 = target.spritesheet;
-                var s2 = reference.spritesheet;
+                if (!opt.keepSpriteSheet) {
+                    var s1 = target.spritesheet;
+                    var s2 = reference.spritesheet;
 
-                if (s1.Length != s2.Length) {
-                    return false;
-                }
+                    if (s1.Length != s2.Length) {
+                        return false;
+                    }
 
-                for (int i = 0; i < s1.Length; ++i) {
-                    if (s1 [i].alignment != s2 [i].alignment)
-                        return false;
-                    if (s1 [i].border != s2 [i].border)
-                        return false;
-                    if (s1 [i].name != s2 [i].name)
-                        return false;
-                    if (s1 [i].pivot != s2 [i].pivot)
-                        return false;
-                    if (s1 [i].rect != s2 [i].rect)
-                        return false;
+                    for (int i = 0; i < s1.Length; ++i) {
+                        if (s1 [i].alignment != s2 [i].alignment)
+                            return false;
+                        if (s1 [i].border != s2 [i].border)
+                            return false;
+                        if (s1 [i].name != s2 [i].name)
+                            return false;
+                        if (s1 [i].pivot != s2 [i].pivot)
+                            return false;
+                        if (s1 [i].rect != s2 [i].rect)
+                            return false;
+                    }
                 }
             }
 
@@ -253,7 +275,6 @@ namespace UnityEngine.AssetBundles.GraphTool
             if (target.npotScale != reference.npotScale) return false;
             if (target.spriteBorder != reference.spriteBorder) return false;
             if (target.spriteImportMode != reference.spriteImportMode) return false;
-            if (!ignorePackingTagDifference && target.spritePackingTag != reference.spritePackingTag) return false;
             if (target.spritePivot != reference.spritePivot) return false;
             if (target.spritePixelsPerUnit != reference.spritePixelsPerUnit) return false;
 
