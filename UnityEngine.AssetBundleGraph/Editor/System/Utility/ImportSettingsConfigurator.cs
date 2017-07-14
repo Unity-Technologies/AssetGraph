@@ -98,6 +98,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             importer.textureType = reference.textureType;
 
+            TextureImporterSettings settings = new TextureImporterSettings ();
+
+            reference.ReadTextureSettings (settings);
+            importer.SetTextureSettings (settings);
+
             importer.anisoLevel = reference.anisoLevel;
             importer.borderMipmap = reference.borderMipmap;
             importer.compressionQuality = reference.compressionQuality;
@@ -105,7 +110,6 @@ namespace UnityEngine.AssetBundles.GraphTool
             importer.fadeout = reference.fadeout;
             importer.filterMode = reference.filterMode;
             importer.generateCubemap = reference.generateCubemap;
-
             importer.heightmapScale = reference.heightmapScale;
 
             importer.isReadable = reference.isReadable;
@@ -120,6 +124,7 @@ namespace UnityEngine.AssetBundles.GraphTool
             importer.npotScale = reference.npotScale;
             importer.spriteBorder = reference.spriteBorder;
             importer.spriteImportMode = reference.spriteImportMode;
+
             importer.spritePackingTag = reference.spritePackingTag;
             importer.spritePivot = reference.spritePivot;
             importer.spritePixelsPerUnit = reference.spritePixelsPerUnit;
@@ -153,15 +158,15 @@ namespace UnityEngine.AssetBundles.GraphTool
                     importer.ClearPlatformTextureSettings(platformName);
                 }
             }
-#endif
-
-#if UNITY_5_5_OR_NEWER
+#else
             importer.allowAlphaSplitting = reference.allowAlphaSplitting;
             importer.alphaIsTransparency = reference.alphaIsTransparency;
             importer.textureShape = reference.textureShape;
 
             importer.alphaSource = reference.alphaSource;
             importer.sRGBTexture = reference.sRGBTexture;
+            importer.textureCompression = reference.textureCompression;
+            importer.crunchedCompression = reference.crunchedCompression;
 
             foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
             {
@@ -169,10 +174,6 @@ namespace UnityEngine.AssetBundles.GraphTool
                 var impSet = reference.GetPlatformTextureSettings(platformName);
                 importer.SetPlatformTextureSettings(impSet);
             }
-
-            importer.textureCompression = reference.textureCompression;
-            importer.crunchedCompression = reference.crunchedCompression;
-
 #endif
 
 #if UNITY_2017_1_OR_NEWER
@@ -192,8 +193,44 @@ namespace UnityEngine.AssetBundles.GraphTool
             // UnityEditor.TextureImporter.textureFormat' is obsolete: 
             // `textureFormat is not longer accessible at the TextureImporter level
             if (target.textureType != reference.textureType) return false;
-            if (target.wrapMode != reference.wrapMode) return false;
 
+            TextureImporterSettings targetSetting    = new TextureImporterSettings ();
+            TextureImporterSettings referenceSetting = new TextureImporterSettings ();
+
+            target.ReadTextureSettings (targetSetting);
+            reference.ReadTextureSettings (referenceSetting);
+
+            if (!TextureImporterSettings.Equal (targetSetting, referenceSetting)) {
+                return false;
+            }
+
+            if (target.textureType == TextureImporterType.Sprite) {
+                if (target.spritePackingTag != reference.spritePackingTag) {
+                    return false;
+                }
+
+                var s1 = target.spritesheet;
+                var s2 = reference.spritesheet;
+
+                if (s1.Length != s2.Length) {
+                    return false;
+                }
+
+                for (int i = 0; i < s1.Length; ++i) {
+                    if (s1 [i].alignment != s2 [i].alignment)
+                        return false;
+                    if (s1 [i].border != s2 [i].border)
+                        return false;
+                    if (s1 [i].name != s2 [i].name)
+                        return false;
+                    if (s1 [i].pivot != s2 [i].pivot)
+                        return false;
+                    if (s1 [i].rect != s2 [i].rect)
+                        return false;
+                }
+            }
+
+            if (target.wrapMode != reference.wrapMode) return false;
             if (target.anisoLevel != reference.anisoLevel) return false;
             if (target.borderMipmap != reference.borderMipmap) return false;
             if (target.compressionQuality != reference.compressionQuality) return false;
@@ -249,9 +286,7 @@ namespace UnityEngine.AssetBundles.GraphTool
                 if (srcFormat != dstFormat) return false;
                 if (srcCompressionQuality != dstCompressionQuality) return false;
             }
-#endif
-
-#if UNITY_5_5_OR_NEWER
+#else
             if (target.allowAlphaSplitting != reference.allowAlphaSplitting) return false;
             if (target.alphaIsTransparency != reference.alphaIsTransparency) return false;
             if (target.textureShape != reference.textureShape) return false;
@@ -278,20 +313,6 @@ namespace UnityEngine.AssetBundles.GraphTool
 			if (target.wrapModeV != reference.wrapModeV) return false;
 			if (target.wrapModeW != reference.wrapModeW) return false;
 #endif
-
-            // spritesheet
-            {
-                if (target.spritesheet.Length != reference.spritesheet.Length) return false;
-                for (int i = 0; i < target.spritesheet.Length; i++)
-                {
-                    if (target.spritesheet[i].alignment != reference.spritesheet[i].alignment) return false;
-                    if (target.spritesheet[i].border != reference.spritesheet[i].border) return false;
-                    if (target.spritesheet[i].name != reference.spritesheet[i].name) return false;
-                    if (target.spritesheet[i].pivot != reference.spritesheet[i].pivot) return false;
-                    if (target.spritesheet[i].rect != reference.spritesheet[i].rect) return false;
-                }
-            }
-
             return true;
         }
 
