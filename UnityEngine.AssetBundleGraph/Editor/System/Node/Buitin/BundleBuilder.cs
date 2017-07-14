@@ -480,7 +480,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
             if (autoCreate) {
                 if(outputOption == OutputOption.DeleteAndRecreateOutputDirectory) {
                     if (Directory.Exists(outputDir)) {
-                        Directory.Delete(outputDir, true);
+                        FileUtility.DeleteDirectory(outputDir, true);
                     }
                 }
 

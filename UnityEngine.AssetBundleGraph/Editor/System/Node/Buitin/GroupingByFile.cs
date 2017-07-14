@@ -68,10 +68,7 @@ namespace UnityEngine.AssetBundles.GraphTool
                 foreach(var ag in incoming) {
                     foreach (var assets in ag.assetGroups.Values) {
                         foreach(var a in assets) {
-                            var targetPath = a.path;
-
                             var key = i.ToString ();
-
                             outputDict[key] = new List<AssetReference>();
                             outputDict [key].Add (a);
                             ++i;

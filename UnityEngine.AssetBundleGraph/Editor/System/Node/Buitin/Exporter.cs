@@ -252,7 +252,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			if(m_exportOption[target] == (int)ExportOption.DeleteAndRecreateExportDirectory) {
 				if (Directory.Exists(exportPath)) {
-					Directory.Delete(exportPath, true);
+                    FileUtility.DeleteDirectory(exportPath, true);
 				}
 			}
 

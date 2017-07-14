@@ -5,8 +5,9 @@
 AssetBundleGraphTool is a visual toolset that lets you configure and create Unity's AssetBundles. It is intended to create visual, rule-based configuration and manage efficient workflow around AssetBundle generation. It is open source project and available for use in your project.
 
 #Getting Started
-- You can read our [Introduction](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Introduction) and [QuickStart Guide](/Doc/QuickStart.md) to learn what this tool does and how to use them. There is also [Quick Q&A](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Home) section to help you.
-- You can check out our [Release Notes](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Release%20Notes) for the latest version info.
+- User Manual: [English](https://docs.google.com/document/d/1Al_1pJ7a-7lHu9dPrpWFjm9UCUpyMwmutopLHYCoSOI) |  [Japanese](https://docs.google.com/document/d/1FxGn9Me12cb6jSRHceAl5fQqdCrGapmgr1q7aO0Nqco)
+- [Quick Q&A](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Home)
+- [Release Notes](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Release%20Notes) for the latest version info.
 - If you find any bugs/issues or feature request, please create new Issue from [Issue Section](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/issues?status=new&status=open).
 
 #License

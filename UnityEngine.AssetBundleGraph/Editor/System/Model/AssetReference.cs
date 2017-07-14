@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 using System;
 using System.IO;
@@ -22,6 +23,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private string m_assetTypeString;
 
 		private UnityEngine.Object[] m_data;
+		private SceneManagement.Scene m_scene;
 		private Type m_assetType;
 		private Type m_filterType;
 
@@ -198,9 +200,36 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public UnityEngine.Object[] allData {
 			get {
 				if(m_data == null || m_data.Length == 0) {
-					m_data = AssetDatabase.LoadAllAssetsAtPath(importFrom);
+					if (isSceneAsset) {
+						if(!m_scene.isLoaded) {
+							m_scene = EditorSceneManager.OpenScene (importFrom);
+						}
+						m_data = m_scene.GetRootGameObjects ();
+					} else {
+						m_data = AssetDatabase.LoadAllAssetsAtPath (importFrom);
+					}
 				}
 				return m_data;
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether this <see cref="T:UnityEngine.AssetBundles.GraphTool.AssetReference"/> is referencing a scene asset.
+		/// </summary>
+		/// <value><c>true</c> if is scene asset; otherwise, <c>false</c>.</value>
+		public bool isSceneAsset {
+			get {
+				return filterType == typeof (SceneManagement.Scene);
+			}
+		}
+
+		/// <summary>
+		/// Gets the scene.
+		/// </summary>
+		/// <value>The loaded Scene object.</value>
+		public SceneManagement.Scene scene {
+			get {
+				return m_scene;
 			}
 		}
 
@@ -208,8 +237,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
         /// Sets the dirty.
         /// </summary>
 		public void SetDirty() {
-			if(m_data != null) {
+			if(isSceneAsset) {
+				if(m_scene.isLoaded) {
+					EditorSceneManager.MarkSceneDirty (m_scene);
+				}
+			}
+			else if(m_data != null) {
 				foreach(var o in m_data) {
+					if(o == null) {
+						continue;
+					}
 					EditorUtility.SetDirty(o);
 				}
 			}
@@ -219,8 +256,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
         /// Releases the data.
         /// </summary>
 		public void ReleaseData() {
-			if(m_data != null) {
+			if (isSceneAsset) {
+				if(m_scene.isLoaded) {
+					// unloading last scene is not supported. omit closing if this is the last scene.
+					if(EditorSceneManager.sceneCount > 1) {
+						EditorSceneManager.CloseScene (m_scene, true);
+					}
+				}
+				m_data = null;
+			}
+			else if(m_data != null) {
 				foreach(var o in m_data) {
+					if (o == null) {
+						continue;
+					}
 					if(o is UnityEngine.GameObject || o is UnityEngine.Component) {
 						// do nothing.
 						// NOTE: DestroyImmediate() will destroy persistant GameObject in prefab. Do not call it.
@@ -230,6 +279,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					}
 				}
 				m_data = null;
+
 			}
 		}
 
