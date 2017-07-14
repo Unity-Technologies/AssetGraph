@@ -103,6 +103,9 @@ namespace UnityEngine.AssetBundles.GraphTool
             reference.ReadTextureSettings (settings);
             importer.SetTextureSettings (settings);
 
+            // some unity version do not properly copy properties via TextureSettings,
+            // so also perform manual copy
+
             importer.anisoLevel = reference.anisoLevel;
             importer.borderMipmap = reference.borderMipmap;
             importer.compressionQuality = reference.compressionQuality;
@@ -122,9 +125,9 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             importer.normalmapFilter = reference.normalmapFilter;
             importer.npotScale = reference.npotScale;
+
             importer.spriteBorder = reference.spriteBorder;
             importer.spriteImportMode = reference.spriteImportMode;
-
             importer.spritePackingTag = reference.spritePackingTag;
             importer.spritePivot = reference.spritePivot;
             importer.spritePixelsPerUnit = reference.spritePixelsPerUnit;
