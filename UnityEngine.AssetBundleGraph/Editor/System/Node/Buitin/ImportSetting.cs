@@ -33,6 +33,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private SerializableMultiTargetString m_spritePackingTagNameTemplate;
         [SerializeField] private bool m_overwritePackingTag;
         [SerializeField] private bool m_useCustomSettingAsset;
+        [SerializeField] private bool m_overwriteSpriteSheet;
         [SerializeField] private string m_customSettingAssetGuid;
 
         private Object m_customSettingAssetObject;
@@ -95,6 +96,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_overwritePackingTag = false;
             m_useCustomSettingAsset = false;
             m_customSettingAssetGuid = string.Empty;
+            m_overwriteSpriteSheet = false;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -111,6 +113,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
             newNode.m_spritePackingTagNameTemplate = new SerializableMultiTargetString(m_spritePackingTagNameTemplate);
             newNode.m_useCustomSettingAsset = m_useCustomSettingAsset;
             newNode.m_customSettingAssetGuid = m_customSettingAssetGuid;
+            newNode.m_overwriteSpriteSheet = m_overwriteSpriteSheet;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -196,8 +199,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					node.Data.NeedsRevisit = true;
 					break;
                 case ImportSetting.ConfigStatus.GoodSampleFound:
+                    var importer = GetReferenceAssetImporter (node.Data, true);
+
                     if (m_importerEditor == null) {
-                        var importer = GetReferenceAssetImporter (node.Data, true);
                         if (importer != null) {
                             m_importerEditor = Editor.CreateEditor (importer);
                         }
@@ -205,26 +209,31 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
                     // Custom Sprite Packing Tag
                     if (incomingType == typeof(UnityEditor.TextureImporter)) {
-                        using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+                        var textureImporter = importer as TextureImporter;
+                        if (textureImporter.textureType == TextureImporterType.Sprite) {
+                            using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+                                GUILayout.Label (string.Format("Sprite Settings", incomingType.Name));
+                                GUILayout.Space (4f);
+                                m_overwriteSpriteSheet = EditorGUILayout.ToggleLeft ("Configure Sprite Sheets", m_overwriteSpriteSheet);
+                                m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
 
-                            m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
+                                if (m_overwritePackingTag) {
+                                    var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
 
-                            if (m_overwritePackingTag) {
-                                var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
-
-                                var newValue = EditorGUILayout.TextField ("Packing Tag", val);
-                                if (newValue != val) {
-                                    using (new RecordUndoScope ("Change Packing Tag", node, true)) {
-                                        m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
-                                        onValueChanged ();
+                                    var newValue = EditorGUILayout.TextField ("Packing Tag", val);
+                                    if (newValue != val) {
+                                        using (new RecordUndoScope ("Change Packing Tag", node, true)) {
+                                            m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
+                                            onValueChanged ();
+                                        }
                                     }
                                 }
+                                EditorGUILayout.HelpBox (
+                                    "You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
+                                    MessageType.Info);
                             }
-                            EditorGUILayout.HelpBox (
-                                "You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
-                                MessageType.Info);
+                            GUILayout.Space (10);
                         }
-                        GUILayout.Space (10);
                     }
 
                     // Custom Sample Asset
@@ -466,25 +475,21 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var referenceImporter = GetReferenceAssetImporter(node, true);
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
 
+            ConfigurationOption opt;
+            opt.keepPackingTag  = !m_overwritePackingTag;
+            opt.keepSpriteSheet = !m_overwriteSpriteSheet;
+
 			foreach(var ag in incoming) {
 				foreach(var groupKey in ag.assetGroups.Keys) {
 					var assets = ag.assetGroups[groupKey];
 					foreach(var asset in assets) {
 						var importer = AssetImporter.GetAtPath(asset.importFrom);
 						bool importerModified = false;
-						if(!configurator.IsEqual(importer, m_overwritePackingTag)) {
-							configurator.OverwriteImportSettings(importer);
+                        opt.customPackingTag = GetTagName(target, groupKey);
+
+                        if(!configurator.IsEqual(importer, opt)) {
+                            configurator.OverwriteImportSettings(importer, opt);
 							importerModified = true;
-						}
-						if(m_overwritePackingTag) {
-							if(asset.filterType == typeof(UnityEditor.TextureImporter) ) {
-								var textureImporter = AssetImporter.GetAtPath(asset.importFrom) as TextureImporter;
-								var newTagName = GetTagName(target, groupKey);
-								if(textureImporter.spritePackingTag != newTagName) {
-									textureImporter.spritePackingTag = newTagName;
-									importerModified = true;
-								}
-							}
 						}
 
 						if(importerModified) {
