@@ -31,7 +31,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		};
 
 		[SerializeField] private SerializableMultiTargetString m_spritePackingTagNameTemplate;
-		[SerializeField] private bool m_overwritePackingTag;
+        [SerializeField] private bool m_overwritePackingTag;
+        [SerializeField] private bool m_useCustomSettingAsset;
+        [SerializeField] private string m_customSettingAssetGuid;
+
+        private Object m_customSettingAssetObject;
 
 		private Editor m_importerEditor;
 
@@ -53,9 +57,44 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
+        private Object CustomSettingAsset {
+            get {
+                if (m_customSettingAssetObject == null) {
+                    if (!string.IsNullOrEmpty (m_customSettingAssetGuid)) {
+                        var path = AssetDatabase.GUIDToAssetPath (m_customSettingAssetGuid);
+                        if (!string.IsNullOrEmpty (path)) {
+                            m_customSettingAssetObject = AssetDatabase.LoadMainAssetAtPath (path);
+                        }
+                    }
+                }
+                return m_customSettingAssetObject;
+            }
+            set {
+                m_customSettingAssetObject = value;
+                if (value != null) {
+                    var path = AssetDatabase.GetAssetPath (value);
+                    m_customSettingAssetGuid = AssetDatabase.AssetPathToGUID (path);
+                } else {
+                    m_customSettingAssetGuid = string.Empty;
+                }
+            }
+        }
+
+        private string CustomSettingAssetGuid {
+            get {
+                return m_customSettingAssetGuid;
+            }
+            set {
+                m_customSettingAssetGuid = value;
+                m_customSettingAssetObject = null;
+            }
+        }
+
 		public override void Initialize(Model.NodeData data) {
 			m_spritePackingTagNameTemplate = new SerializableMultiTargetString("*");
 			m_overwritePackingTag = false;
+            m_useCustomSettingAsset = false;
+            m_customSettingAssetGuid = string.Empty;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -67,6 +106,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new ImportSetting();
+
+            newNode.m_overwritePackingTag = m_overwritePackingTag;
+            newNode.m_spritePackingTagNameTemplate = new SerializableMultiTargetString(m_spritePackingTagNameTemplate);
+            newNode.m_useCustomSettingAsset = m_useCustomSettingAsset;
+            newNode.m_customSettingAssetGuid = m_customSettingAssetGuid;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -100,6 +144,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			GUILayout.Space(10f);
 
+            // prevent inspector flicking by new Editor changing active selction
+            node.SetActive (true);
+
 			/*
 				importer node has no platform key. 
 				platform key is contained by Unity's importer inspector itself.
@@ -112,7 +159,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if(incomingType == null) {
 					// try to retrieve incoming type from configuration
 					if(status == ImportSetting.ConfigStatus.GoodSampleFound) {
-						incomingType = ImportSetting.GetReferenceAssetImporter(node.Data).GetType();
+						incomingType = GetReferenceAssetImporter(node.Data, false).GetType();
 					} else {
 						using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
 							EditorGUILayout.HelpBox ("Import setting type can be set by incoming asset, or you can specify by selecting.", MessageType.Info);
@@ -148,38 +195,105 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					EditorGUILayout.HelpBox("Press Refresh to configure.", MessageType.Info);
 					node.Data.NeedsRevisit = true;
 					break;
-				case ImportSetting.ConfigStatus.GoodSampleFound:
-					if (m_importerEditor == null) {
-						m_importerEditor = Editor.CreateEditor (ImportSetting.GetReferenceAssetImporter (node.Data));
-					}
+                case ImportSetting.ConfigStatus.GoodSampleFound:
+                    if (m_importerEditor == null) {
+                        var importer = GetReferenceAssetImporter (node.Data, true);
+                        if (importer != null) {
+                            m_importerEditor = Editor.CreateEditor (importer);
+                        }
+                    }
 
-					if (incomingType == typeof(UnityEditor.TextureImporter)) {
-						using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+                    // Custom Sprite Packing Tag
+                    if (incomingType == typeof(UnityEditor.TextureImporter)) {
+                        using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
 
-							m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
+                            m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
 
-							using (new EditorGUI.DisabledScope (!m_overwritePackingTag)) {
-								var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
+                            if (m_overwritePackingTag) {
+                                var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
 
-								var newValue = EditorGUILayout.TextField ("Packing Tag", val);
-								if (newValue != val) {
-									using (new RecordUndoScope ("Undo Change Packing Tag", node, true)) {
-										m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
-										onValueChanged ();
-									}
-								}
-								EditorGUILayout.HelpBox (
-									"You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
-									MessageType.Info);
-							}
-						}
-						GUILayout.Space (10);
-					}
+                                var newValue = EditorGUILayout.TextField ("Packing Tag", val);
+                                if (newValue != val) {
+                                    using (new RecordUndoScope ("Change Packing Tag", node, true)) {
+                                        m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
+                                        onValueChanged ();
+                                    }
+                                }
+                            }
+                            EditorGUILayout.HelpBox (
+                                "You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
+                                MessageType.Info);
+                        }
+                        GUILayout.Space (10);
+                    }
 
-					GUILayout.Label (string.Format("Import Setting ({0})", incomingType.Name));
-					m_importerEditor.OnInspectorGUI ();
+                    // Custom Sample Asset
+                    using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
 
-					GUILayout.Space (40);
+                        var newUseCustomAsset = EditorGUILayout.ToggleLeft ("Use Custom Setting Asset", m_useCustomSettingAsset);
+                        if (newUseCustomAsset != m_useCustomSettingAsset) {
+                            using (new RecordUndoScope ("Change Custom Setting Asset", node, true)) {
+                                m_useCustomSettingAsset = newUseCustomAsset;
+                                onValueChanged ();
+
+                                if (m_importerEditor != null) {
+                                    UnityEngine.Object.DestroyImmediate (m_importerEditor);
+                                    m_importerEditor = null;
+                                }
+                            }
+                        }
+
+                        if (m_useCustomSettingAsset) {
+                            var assetType = GetAssetTypeFromImporterType (incomingType);
+                            if (assetType != null) {
+                                var newObject = EditorGUILayout.ObjectField ("Asset", CustomSettingAsset, assetType, false);
+                                if (incomingType == typeof(ModelImporter)) {
+                                    // disallow selecting non-model prefab
+                                    if (PrefabUtility.GetPrefabType (newObject) != PrefabType.ModelPrefab) {
+                                        newObject = CustomSettingAsset;
+                                    }
+                                }
+
+                                if (newObject != CustomSettingAsset) {
+                                    using (new RecordUndoScope ("Change Custom Setting Asset", node, true)) {
+                                        CustomSettingAsset = newObject;
+                                        onValueChanged ();
+
+                                        if (m_importerEditor != null) {
+                                            UnityEngine.Object.DestroyImmediate (m_importerEditor);
+                                            m_importerEditor = null;
+                                        }
+                                    }
+                                }
+                                if (CustomSettingAsset != null) {
+                                    using (new EditorGUILayout.HorizontalScope ()) {
+                                        GUILayout.FlexibleSpace ();
+                                        if (GUILayout.Button ("Highlight in Project Window", GUILayout.Width (180f))) {
+                                            EditorGUIUtility.PingObject (CustomSettingAsset);
+                                        }
+                                    }
+                                }
+                            } else {
+                                EditorGUILayout.HelpBox (
+                                    "Incoming asset type is not supported. Please fix issue first or clear the saved import setting.", 
+                                    MessageType.Error);
+                                if (m_importerEditor != null) {
+                                    UnityEngine.Object.DestroyImmediate (m_importerEditor);
+                                    m_importerEditor = null;
+                                }
+                            }
+                        }
+                        EditorGUILayout.HelpBox (
+                            "Custom setting asset is useful when you need specific needs for setting asset; i.e. when configuring with multiple sprite mode.", 
+                            MessageType.Info);
+                    }
+                    GUILayout.Space (10);
+
+                    if (m_importerEditor != null) {
+                        GUILayout.Label (string.Format("Import Setting ({0})", incomingType.Name));
+                        m_importerEditor.OnInspectorGUI ();
+                        GUILayout.Space (40);
+                    }
 
 					using (new EditorGUILayout.HorizontalScope (GUI.skin.box)) {
 						GUILayout.Space (4);
@@ -223,6 +337,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				throw new NodeException(string.Format("{0} :Incoming asset type is does not match with this ImportSetting (Expected type:{1}, Incoming type:{2}).",
 					node.Name, (expectedType != null)?expectedType.FullName:"null", (incomingType != null)?incomingType.FullName:"null"), node.Id);
 			};
+            Action customConfigIsNull = () => {
+                throw new NodeException(string.Format("{0} :You must select custom setting asset.", node.Name), node.Id);
+            };
 
 			Action<ConfigStatus> errorInConfig = (ConfigStatus _) => {
 
@@ -239,12 +356,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						}
 						if(eType == ConfigStatus.TooManySamplesFound) {
 							throw new NodeException(node.Name + " :ImportSetting has too many sampling file. Please fix it from Inspector.", node.Id);
-						}
-					});
+                        }
+                    }, customConfigIsNull);
 				}
 			};
 
-			ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, errorInConfig);
+            ValidateInputSetting(node, target, incoming, multipleAssetTypeFound, unsupportedType, incomingTypeMismatch, errorInConfig, customConfigIsNull);
 
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
 			if(Output != null) {
@@ -313,11 +430,24 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				UnityEngine.Object.DestroyImmediate (m_importerEditor);
 				m_importerEditor = null;
 			}
+            m_useCustomSettingAsset = false;
+            CustomSettingAssetGuid = string.Empty;
             var sampleFileDir = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, node.Id);
 			FileUtility.RemakeDirectory(sampleFileDir);
 		}
 
-		public static AssetImporter GetReferenceAssetImporter(Model.NodeData node) {
+        private AssetImporter GetReferenceAssetImporter(Model.NodeData node, bool allowCustom) {
+
+            if (allowCustom) {
+                if (m_useCustomSettingAsset) {
+                    if (CustomSettingAsset != null) {
+                        var path = AssetDatabase.GUIDToAssetPath (CustomSettingAssetGuid);
+                        return AssetImporter.GetAtPath (path);
+                    } 
+                    return null;
+                }
+            }
+
             var sampleFileDir = FileUtility.PathCombine(Model.Settings.Path.ImporterSettingsPath, node.Id);
 
 			UnityEngine.Assertions.Assert.IsTrue(Directory.Exists(sampleFileDir));
@@ -333,7 +463,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		private void ApplyImportSetting(BuildTarget target, Model.NodeData node, IEnumerable<PerformGraph.AssetGroups> incoming) {
 
-			var referenceImporter = GetReferenceAssetImporter(node);
+			var referenceImporter = GetReferenceAssetImporter(node, true);
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
 
 			foreach(var ag in incoming) {
@@ -389,14 +519,32 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public static void ValidateInputSetting (
+        private Type GetAssetTypeFromImporterType(Type importerType) {
+
+            if (importerType == typeof(TextureImporter)) {
+                return typeof(Texture);
+            } else if (importerType == typeof(ModelImporter)) {
+                return typeof(GameObject);
+            } else if (importerType == typeof(AudioImporter)) {
+                return typeof(AudioClip);
+            }
+            #if UNITY_5_6_OR_NEWER
+            else if (importerType == typeof(VideoClipImporter)) {
+                return typeof(UnityEngine.Video.VideoClip);
+            }
+            #endif
+            return null;
+        }
+
+		private void ValidateInputSetting (
 			Model.NodeData node,
 			BuildTarget target,
 			IEnumerable<PerformGraph.AssetGroups> incoming,
 			Action<Type, Type, AssetReference> multipleAssetTypeFound,
 			Action<Type> unsupportedType,
 			Action<Type, Type> incomingTypeMismatch,
-			Action<ConfigStatus> errorInConfig
+			Action<ConfigStatus> errorInConfig,
+            Action customAssetIsNull
 		) {
 			Type expectedType = TypeUtility.FindFirstIncomingAssetType(incoming);
 			if(multipleAssetTypeFound != null) {
@@ -442,12 +590,16 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				// if there is no incoming assets, there is no way to check if 
 				// right type of asset is coming in - so we'll just skip the test
 				if(incoming != null && expectedType != null && status == ConfigStatus.GoodSampleFound) {
-					Type targetType = GetReferenceAssetImporter(node).GetType();
+                    Type targetType = GetReferenceAssetImporter(node, false).GetType();
 					if( targetType != expectedType ) {
 						incomingTypeMismatch(targetType, expectedType);
 					}
 				}
 			}
+
+            if (m_useCustomSettingAsset && CustomSettingAsset == null) {
+                customAssetIsNull ();
+            }
 		}
 	}
 }
