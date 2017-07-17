@@ -210,29 +210,31 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     // Custom Sprite Packing Tag
                     if (incomingType == typeof(UnityEditor.TextureImporter)) {
                         var textureImporter = importer as TextureImporter;
-                        if (textureImporter.textureType == TextureImporterType.Sprite) {
-                            using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
-                                GUILayout.Label (string.Format("Sprite Settings", incomingType.Name));
-                                GUILayout.Space (4f);
-                                m_overwriteSpriteSheet = EditorGUILayout.ToggleLeft ("Configure Sprite Sheets", m_overwriteSpriteSheet);
-                                m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
+                        if (textureImporter != null) {
+                            if (textureImporter.textureType == TextureImporterType.Sprite) {
+                                using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+                                    GUILayout.Label ("Sprite Settings");
+                                    GUILayout.Space (4f);
+                                    m_overwriteSpriteSheet = EditorGUILayout.ToggleLeft ("Configure Sprite Mode", m_overwriteSpriteSheet);
+                                    m_overwritePackingTag = EditorGUILayout.ToggleLeft ("Configure Sprite Packing Tag", m_overwritePackingTag);
 
-                                if (m_overwritePackingTag) {
-                                    var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
+                                    if (m_overwritePackingTag) {
+                                        var val = m_spritePackingTagNameTemplate [editor.CurrentEditingGroup];
 
-                                    var newValue = EditorGUILayout.TextField ("Packing Tag", val);
-                                    if (newValue != val) {
-                                        using (new RecordUndoScope ("Change Packing Tag", node, true)) {
-                                            m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
-                                            onValueChanged ();
+                                        var newValue = EditorGUILayout.TextField ("Packing Tag", val);
+                                        if (newValue != val) {
+                                            using (new RecordUndoScope ("Change Packing Tag", node, true)) {
+                                                m_spritePackingTagNameTemplate [editor.CurrentEditingGroup] = newValue;
+                                                onValueChanged ();
+                                            }
                                         }
                                     }
+                                    EditorGUILayout.HelpBox (
+                                        "You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
+                                        MessageType.Info);
                                 }
-                                EditorGUILayout.HelpBox (
-                                    "You can configure packing tag name with \"*\" to include group name in your sprite tag.", 
-                                    MessageType.Info);
+                                GUILayout.Space (10);
                             }
-                            GUILayout.Space (10);
                         }
                     }
 

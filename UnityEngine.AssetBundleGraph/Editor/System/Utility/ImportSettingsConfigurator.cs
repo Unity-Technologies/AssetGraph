@@ -104,10 +104,24 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             importer.textureType = reference.textureType;
 
-            TextureImporterSettings settings = new TextureImporterSettings ();
+            TextureImporterSettings dstSettings = new TextureImporterSettings ();
+            TextureImporterSettings srcSettings = new TextureImporterSettings ();
 
-            reference.ReadTextureSettings (settings);
-            importer.SetTextureSettings (settings);
+            importer.ReadTextureSettings (srcSettings);
+            reference.ReadTextureSettings (dstSettings);
+
+            if (opt.keepSpriteSheet) {
+                dstSettings.spriteAlignment = srcSettings.spriteAlignment;
+                dstSettings.spriteBorder    = srcSettings.spriteBorder;
+                dstSettings.spriteExtrude   = srcSettings.spriteExtrude;
+                dstSettings.spriteMode      = srcSettings.spriteMode;
+                dstSettings.spriteMeshType  = srcSettings.spriteMeshType;
+                dstSettings.spritePivot     = srcSettings.spritePivot;
+                dstSettings.spritePixelsPerUnit = srcSettings.spritePixelsPerUnit;
+                dstSettings.spriteTessellationDetail = srcSettings.spriteTessellationDetail;
+            }
+
+            importer.SetTextureSettings (dstSettings);
 
             // some unity version do not properly copy properties via TextureSettings,
             // so also perform manual copy
@@ -132,19 +146,12 @@ namespace UnityEngine.AssetBundles.GraphTool
             importer.normalmapFilter = reference.normalmapFilter;
             importer.npotScale = reference.npotScale;
 
-            importer.spriteBorder = reference.spriteBorder;
-            importer.spriteImportMode = reference.spriteImportMode;
             if (!opt.keepPackingTag) {
                 if (!string.IsNullOrEmpty (opt.customPackingTag)) {
                     importer.spritePackingTag = opt.customPackingTag;
                 } else {
                     importer.spritePackingTag = reference.spritePackingTag;
                 }
-            }
-            importer.spritePivot = reference.spritePivot;
-            importer.spritePixelsPerUnit = reference.spritePixelsPerUnit;
-            if (!opt.keepSpriteSheet) {
-                importer.spritesheet = reference.spritesheet;
             }
 
             importer.wrapMode = reference.wrapMode;
@@ -217,6 +224,17 @@ namespace UnityEngine.AssetBundles.GraphTool
             target.ReadTextureSettings (targetSetting);
             reference.ReadTextureSettings (referenceSetting);
 
+            if (opt.keepSpriteSheet) {
+                referenceSetting.spriteAlignment = targetSetting.spriteAlignment;
+                referenceSetting.spriteBorder    = targetSetting.spriteBorder;
+                referenceSetting.spriteExtrude   = targetSetting.spriteExtrude;
+                referenceSetting.spriteMode      = targetSetting.spriteMode;
+                referenceSetting.spriteMeshType  = targetSetting.spriteMeshType;
+                referenceSetting.spritePivot     = targetSetting.spritePivot;
+                referenceSetting.spritePixelsPerUnit = targetSetting.spritePixelsPerUnit;
+                referenceSetting.spriteTessellationDetail = targetSetting.spriteTessellationDetail;
+            }
+
             if (!TextureImporterSettings.Equal (targetSetting, referenceSetting)) {
                 return false;
             }
@@ -233,6 +251,11 @@ namespace UnityEngine.AssetBundles.GraphTool
                 }
 
                 if (!opt.keepSpriteSheet) {
+                    if (target.spriteBorder != reference.spriteBorder) return false;
+                    if (target.spriteImportMode != reference.spriteImportMode) return false;
+                    if (target.spritePivot != reference.spritePivot) return false;
+                    if (target.spritePixelsPerUnit != reference.spritePixelsPerUnit) return false;
+
                     var s1 = target.spritesheet;
                     var s2 = reference.spritesheet;
 
@@ -273,10 +296,6 @@ namespace UnityEngine.AssetBundles.GraphTool
             if (target.mipmapFilter != reference.mipmapFilter) return false;
             if (target.normalmapFilter != reference.normalmapFilter) return false;
             if (target.npotScale != reference.npotScale) return false;
-            if (target.spriteBorder != reference.spriteBorder) return false;
-            if (target.spriteImportMode != reference.spriteImportMode) return false;
-            if (target.spritePivot != reference.spritePivot) return false;
-            if (target.spritePixelsPerUnit != reference.spritePixelsPerUnit) return false;
 
             /* read only properties */
             // target.qualifiesForSpritePacking
