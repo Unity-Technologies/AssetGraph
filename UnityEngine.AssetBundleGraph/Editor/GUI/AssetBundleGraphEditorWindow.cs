@@ -955,7 +955,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				// set rect for scroll.
 				if (nodes.Any()) {
 					UpdateSpacerRect();
-					GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
+                    if (Event.current.type == EventType.Layout) {
+                        GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
+                    }
 				}
 			}
 			if(Event.current.type == EventType.Repaint) {
