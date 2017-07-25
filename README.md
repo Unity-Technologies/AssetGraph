@@ -2,7 +2,7 @@
 
 ![SS](/docs/html/manual_images/top.png)
 
-AssetBundleGraphTool is a visual toolset that lets you configure and create Unity's AssetBundles. It is intended to create visual, rule-based configuration and manage efficient workflow around AssetBundle generation. It is open source project and available for use in your project.
+AssetBundleGraphTool (ABGT) is a tool that aims to reduce the workload of all the effort needed to build workflows around building Asset Bundles and Player Apps.  By using the tool, you can build workflow to create, modify, and change asset settings graphically, and even automate it.  It will free designers and artists from repetitive tasks during game development.
 
 #Getting Started
 - User Manual: [English](https://docs.google.com/document/d/1Al_1pJ7a-7lHu9dPrpWFjm9UCUpyMwmutopLHYCoSOI) |  [Japanese](https://docs.google.com/document/d/1FxGn9Me12cb6jSRHceAl5fQqdCrGapmgr1q7aO0Nqco)
