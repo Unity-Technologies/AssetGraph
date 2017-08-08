@@ -10,6 +10,14 @@ using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
 namespace UnityEngine.AssetBundles.GraphTool {
 	public class FileUtility {
+
+        /// <summary>
+        /// Name of the base directory containing the asset graph tool files.
+        /// Customize this to match your project's setup.
+        /// </summary>
+        /// <value>The name of the base directory.</value>
+        public static string baseDirName{ get { return "UnityAssetBundleGraphTool"; } }
+
 		public static void RemakeDirectory (string localFolderPath) {
 			if (Directory.Exists(localFolderPath)) {
                 FileUtility.DeleteDirectory(localFolderPath, true);

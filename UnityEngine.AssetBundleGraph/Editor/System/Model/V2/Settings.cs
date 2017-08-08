@@ -57,15 +57,13 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
                 get {
                     var cacheDir = EditorUserSettings.GetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR);
                     if (string.IsNullOrEmpty (cacheDir)) {
-                        return Path.CachePath + "AssetBundles/";
+                        return System.IO.Path.Combine(Path.CachePath, "AssetBundles");
                     }
                     return cacheDir;
                 }
 
                 set {
-                    if (!value.EndsWith ("/")) {
-                        value = value + "/";
-                    }
+                    
                     EditorUserSettings.SetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR, value);
                 }
             }
@@ -103,7 +101,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
                         var fileInfo = new FileInfo(configGuiPath);
                         var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
 
-                        Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
+                        Assertions.Assert.AreEqual (FileUtility.baseDirName, baseDir.Name);
 
 						string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
 
@@ -118,28 +116,28 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 
             public const string ASSETS_PATH = "Assets/";
 
-            public static string ScriptTemplatePath     { get { return BasePath + "/Editor/ScriptTemplate/"; } }
-            public static string UserSpacePath          { get { return BasePath + "/Generated/Editor/"; } }
-            public static string CUISpacePath           { get { return BasePath + "/Generated/CUI/"; } }
-            public static string ImporterSettingsPath   { get { return BasePath + "/SavedSettings/ImportSettings/"; } }
+            public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(BasePath, "Editor/ScriptTemplate"); } }
+            public static string UserSpacePath          { get { return System.IO.Path.Combine(BasePath, "Generated/Editor"); } }
+            public static string CUISpacePath           { get { return System.IO.Path.Combine(BasePath, "Generated/CUI"); } }
+            public static string ImporterSettingsPath   { get { return System.IO.Path.Combine(BasePath, "SavedSettings/ImportSettings"); } }
 
-            public static string CachePath              { get { return BasePath + "/Cache/"; } }
-            public static string PrefabBuilderCachePath { get { return CachePath + "Prefabs/"; } }
-            public static string AssetGeneratorCachePath { get { return CachePath + "GeneratedAssets/"; } }
+            public static string CachePath              { get { return System.IO.Path.Combine(BasePath, "Cache"); } }
+            public static string PrefabBuilderCachePath { get { return System.IO.Path.Combine(CachePath, "Prefabs"); } }
+            public static string AssetGeneratorCachePath { get { return System.IO.Path.Combine(CachePath, "GeneratedAssets"); } }
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
-            public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }
-            public static string DatabasePath           { get { return SettingFilePath + "AssetReferenceDB.asset"; } }
-            public static string BuildMapPath           { get { return SettingFilePath + "AssetBundleBuildMap.asset"; } }
-            public static string BatchBuildConfigPath   { get { return SettingFilePath + "BatchBuildConfig.asset"; } }
+            public static string SettingFilePath        { get { return System.IO.Path.Combine(BasePath, "SettingFiles"); } }
+            public static string DatabasePath           { get { return System.IO.Path.Combine(SettingFilePath, "AssetReferenceDB.asset"); } }
+            public static string BuildMapPath           { get { return System.IO.Path.Combine(SettingFilePath, "AssetBundleBuildMap.asset"); } }
+            public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(SettingFilePath, "BatchBuildConfig.asset"); } }
 
-            public static string SettingTemplatePath    { get { return BasePath + "/Editor/SettingTemplate/"; } }
-            public static string SettingTemplateModel   { get { return SettingTemplatePath + "setting.fbx"; } }
-            public static string SettingTemplateAudio   { get { return SettingTemplatePath + "setting.wav"; } }
-            public static string SettingTemplateTexture { get { return SettingTemplatePath + "setting.png"; } }
-            public static string SettingTemplateVideo   { get { return SettingTemplatePath + "setting.m4v"; } }
+            public static string SettingTemplatePath    { get { return System.IO.Path.Combine(BasePath, "Editor/SettingTemplate"); } }
+            public static string SettingTemplateModel   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.fbx"); } }
+            public static string SettingTemplateAudio   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.wav"); } }
+            public static string SettingTemplateTexture { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.png"); } }
+            public static string SettingTemplateVideo   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.m4v"); } }
 
-            public static string GUIResourceBasePath    { get { return BasePath + "/Editor/GUI/GraphicResources/"; } }
+                public static string GUIResourceBasePath { get { return System.IO.Path.Combine(BasePath, "Editor/GUI/GraphicResources"); } }
         }
 
 		public struct BuildAssetBundleOption {
@@ -252,10 +250,10 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
 			public static readonly Color COLOR_CAN_CONNECT = Color.white;//new Color(0.60f, 0.60f, 1.0f, 1.0f);
 			public static readonly Color COLOR_CAN_NOT_CONNECT = new Color(0.33f, 0.33f, 0.33f, 1.0f);
 
-            public static string Skin               { get { return Path.GUIResourceBasePath + "NodeStyle.guiskin"; } }
-            public static string ConnectionPoint    { get { return Path.GUIResourceBasePath + "ConnectionPoint.png"; } }
-            public static string InputBG            { get { return Path.GUIResourceBasePath + "InputBG.png"; } }
-            public static string OutputBG           { get { return Path.GUIResourceBasePath + "OutputBG.png"; } }
+            public static string Skin               { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "NodeStyle.guiskin"); } }
+            public static string ConnectionPoint    { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "ConnectionPoint.png"); } }
+            public static string InputBG            { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "InputBG.png"); } }
+            public static string OutputBG           { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "OutputBG.png"); } }
 		}
 	}
 }

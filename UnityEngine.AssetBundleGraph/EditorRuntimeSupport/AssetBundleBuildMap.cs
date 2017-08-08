@@ -35,9 +35,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     var fileInfo = new FileInfo(configGuiPath);
                     var baseDir = fileInfo.Directory.Parent;
 
-                    Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
-
-					string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
+                    string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
 
                     int index = baseDirPath.LastIndexOf (ASSETS_PATH);
                     Assertions.Assert.IsTrue ( index >= 0 );
