@@ -4,6 +4,8 @@ using UnityEditor;
 using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
+using System.IO;
+using UnityEngine.AssetBundles.GraphTool;
 
 using UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
@@ -13,47 +15,36 @@ public class PathTest {
 	public void PathTestSimplePasses() {
 		// Use the Assert class to test conditions.
 
-        string path;
+        string baseDirName = Settings.Path.ToolDirName;
+        Assert.IsFalse(string.IsNullOrEmpty(baseDirName));
 
-        path = Settings.Path.BasePath;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
+        Assert.IsTrue(Settings.Path.BasePath.Contains(Settings.Path.ToolDirName));
 
-        path = Settings.Path.ScriptTemplatePath;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
+        string basePath = Settings.Path.BasePath;
+        this.TestPath(Path.Combine(basePath, "Editor/ScriptTemplate"), Settings.Path.ScriptTemplatePath);
+        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);
 
-        path = Settings.Path.SettingTemplatePath;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
+        this.TestPath(Path.Combine(basePath, "Generated/Editor"), Settings.Path.UserSpacePath);
+        this.TestPath(Path.Combine(basePath, "Generated/CUI"), Settings.Path.CUISpacePath);
+        this.TestPath(Path.Combine(basePath, "SavedSettings/ImportSettings"), Settings.Path.ImporterSettingsPath);
+        this.TestPath(Path.Combine(basePath, "Cache"), Settings.Path.CachePath);
+        this.TestPath(Path.Combine(basePath, "Cache/Prefabs"), Settings.Path.PrefabBuilderCachePath);
+        this.TestPath(Path.Combine(basePath, "Cache/AssetBundles"), Settings.Path.BundleBuilderCachePath);
+        this.TestPath(Path.Combine(basePath, "SettingFiles"), Settings.Path.SettingFilePath);
+        this.TestPath(Path.Combine(basePath, "SettingFiles/AssetReferenceDB.asset"), Settings.Path.DatabasePath);
+        this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);
+        this.TestPath(Path.Combine(basePath, "SettingFiles/BatchBuildConfig.asset"), Settings.Path.BatchBuildConfigPath);
 
-        path = Settings.Path.UserSpacePath;
-        path = Settings.Path.CUISpacePath;
-        path = Settings.Path.ImporterSettingsPath;
-        path = Settings.Path.CachePath;
-        path = Settings.Path.PrefabBuilderCachePath;
-        path = Settings.Path.BundleBuilderCachePath;
-        path = Settings.Path.SettingFilePath;
-        path = Settings.Path.DatabasePath;
-        path = Settings.Path.BuildMapPath;
-        path = Settings.Path.BatchBuildConfigPath;
-
-        path = Settings.Path.SettingTemplateModel;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.Path.SettingTemplateAudio;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.Path.SettingTemplateTexture;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.Path.SettingTemplateVideo;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.Path.GUIResourceBasePath;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-
-        path = Settings.GUI.ConnectionPoint;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.GUI.InputBG;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.GUI.Skin;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
-        path = Settings.GUI.OutputBG;
-        Assert.AreNotEqual (string.Empty, AssetDatabase.AssetPathToGUID (path));
+        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);
+        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.fbx"), Settings.Path.SettingTemplateModel);
+        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.wav"), Settings.Path.SettingTemplateAudio);
+        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.png"), Settings.Path.SettingTemplateTexture);
+        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.m4v"), Settings.Path.SettingTemplateVideo);
+        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources"), Settings.Path.GUIResourceBasePath);
+        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/ConnectionPoint.png"), Settings.GUI.ConnectionPoint);
+        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/InputBG.png"), Settings.GUI.InputBG);
+        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/NodeStyle.guiskin"), Settings.GUI.Skin);
+        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/OutputBG.png"), Settings.GUI.OutputBG);
     }
 
 	// A UnityTest behaves like a coroutine in PlayMode
@@ -64,5 +55,10 @@ public class PathTest {
 		// yield to skip a frame
 		yield return null;
 	}
+
+    private void TestPath(string expected, string path)
+    {
+        Assert.AreEqual(expected, path);
+    }
 }
 #endif

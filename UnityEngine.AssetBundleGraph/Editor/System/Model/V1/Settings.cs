@@ -61,7 +61,7 @@ namespace AssetBundleGraph {
                         var fileInfo = new FileInfo(configGuiPath);
                         var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
 
-                        Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
+                        Assert.AreEqual (ToolDirName, baseDir.Name);
 
                         s_basePath = baseDir.ToString().Replace( '\\', '/');
                     }
@@ -71,6 +71,12 @@ namespace AssetBundleGraph {
 
             public const string ASSETS_PATH = "Assets/";
 
+            /// <summary>
+            /// Name of the base directory containing the asset graph tool files.
+            /// Customize this to match your project's setup if you need to change.
+            /// </summary>
+            /// <value>The name of the base directory.</value>
+            public static string ToolDirName            { get { return "UnityEngine.AssetBundleGraph"; } }
             public static string ScriptTemplatePath     { get { return BasePath + "Editor/ScriptTemplate/"; } }
             public static string SettingTemplatePath    { get { return BasePath + "Editor/SettingTemplate/"; } }
             public static string UserSpacePath          { get { return BasePath + "Generated/Editor/"; } }
