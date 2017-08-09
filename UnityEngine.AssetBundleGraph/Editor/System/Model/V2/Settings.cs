@@ -52,7 +52,6 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
             private static readonly string PREFKEY_BATCHBUILD_LASTSELECTEDCOLLECTION = "AssetBundles.GraphTool.LastSelectedCollection";
             private static readonly string PREFKEY_BATCHBUILD__USECOLLECTIONSTATE    = "AssetBundles.GraphTool.UseCollection";
 
-
             public static string AssetBundleBuildCacheDir {
                 get {
                     var cacheDir = EditorUserSettings.GetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR);
@@ -101,7 +100,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
                         var fileInfo = new FileInfo(configGuiPath);
                         var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
 
-                        Assertions.Assert.AreEqual (FileUtility.baseDirName, baseDir.Name);
+                        Assertions.Assert.AreEqual (ToolDirName, baseDir.Name);
 
 						string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
 
@@ -115,6 +114,13 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
             }
 
             public const string ASSETS_PATH = "Assets/";
+
+            /// <summary>
+            /// Name of the base directory containing the asset graph tool files.
+            /// Customize this to match your project's setup if you need to change.
+            /// </summary>
+            /// <value>The name of the base directory.</value>
+            public static string ToolDirName            { get { return "UnityEngine.AssetBundleGraph"; } }
 
             public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(BasePath, "Editor/ScriptTemplate"); } }
             public static string UserSpacePath          { get { return System.IO.Path.Combine(BasePath, "Generated/Editor"); } }

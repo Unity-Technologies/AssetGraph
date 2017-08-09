@@ -15,10 +15,10 @@ public class PathTest {
 	public void PathTestSimplePasses() {
 		// Use the Assert class to test conditions.
 
-        string baseDirName = FileUtility.baseDirName;
+        string baseDirName = Settings.Path.ToolDirName;
         Assert.IsFalse(string.IsNullOrEmpty(baseDirName));
 
-        Assert.IsTrue(Settings.Path.BasePath.Contains(FileUtility.baseDirName));
+        Assert.IsTrue(Settings.Path.BasePath.Contains(Settings.Path.ToolDirName));
 
         string basePath = Settings.Path.BasePath;
         this.TestPath(Path.Combine(basePath, "Editor/ScriptTemplate"), Settings.Path.ScriptTemplatePath);
