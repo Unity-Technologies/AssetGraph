@@ -29,20 +29,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
         }
 
-        private Color m_color = Color.white;
-        public Color itemColor
-        {
-            get
-            {
-//                if (m_color.a == 0.0f && m_asset != null)
-//                {
-//                    m_color = m_asset.GetColor();
-//                }
-                return m_color;
-            }
-            set { m_color = value; }
-        }
-
         public string fileSize {
             get {
                 return EditorUtility.FormatBytes(m_asset.GetFileSize());
@@ -181,8 +167,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
         {
             Color oldColor = GUI.color;
             CenterRectUsingSingleLineHeight(ref cellRect);
-            if(column != 3)
-                GUI.color = item.itemColor;
+            GUI.color = Color.white;
 
             switch (column)
             {
@@ -220,7 +205,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             {
                 Object o = AssetDatabase.LoadAssetAtPath<Object>(assetItem.asset.importFrom);
                 EditorGUIUtility.PingObject(o);
-//                Selection.activeObject = o;
             }
         }
 
@@ -239,41 +223,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
         protected override bool CanBeParent(TreeViewItem item)
         {
             return false;
-        }
-
-        protected override void ContextClickedItem(int id)
-        {
-//            if (AssetBundleModel.Model.DataSource.IsReadOnly ()) {
-//                return;
-//            }
-//
-//            List<AssetBundleModel.AssetTreeItem> selectedNodes = new List<AssetBundleModel.AssetTreeItem>();
-//            foreach(var nodeID in GetSelection())
-//            {
-//                selectedNodes.Add(FindItem(nodeID, rootItem) as AssetBundleModel.AssetTreeItem);
-//            }
-//
-//            if(selectedNodes.Count > 0)
-//            {
-//                GenericMenu menu = new GenericMenu();
-//                menu.AddItem(new GUIContent("Remove asset(s) from bundle."), false, RemoveAssets, selectedNodes);
-//                menu.ShowAsContext();
-//            }
-
-        }
-
-        protected override void KeyEvent()
-        {
-//            if (m_SourceBundles.Count > 0 && Event.current.keyCode == KeyCode.Delete && GetSelection().Count > 0)
-//            {
-//                List<AssetBundleModel.AssetTreeItem> selectedNodes = new List<AssetBundleModel.AssetTreeItem>();
-//                foreach (var nodeID in GetSelection())
-//                {
-//                    selectedNodes.Add(FindItem(nodeID, rootItem) as AssetBundleModel.AssetTreeItem);
-//                }
-//
-//                RemoveAssets(selectedNodes);
-//            }
         }
 
         void OnSortingChanged(MultiColumnHeader multiColumnHeader)
@@ -334,13 +283,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
 
         }
-
-//        private void ReloadAndSelect(IList<int> hashCodes)
-//        {
-//            Reload();
-//            SetSelection(hashCodes);
-//            SelectionChanged(hashCodes);
-//        }
     }
 
     static class MyExtensionMethods

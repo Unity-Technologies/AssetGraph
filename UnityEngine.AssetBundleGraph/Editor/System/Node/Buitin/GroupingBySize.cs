@@ -1,5 +1,6 @@
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -26,8 +27,11 @@ namespace UnityEngine.AssetBundles.GraphTool
         [SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
         [SerializeField] private SerializableMultiTargetInt m_groupingType;
         [SerializeField] private GroupViewContext m_groupViewContext;
+        [SerializeField] private bool m_freezeGroups;
+        [SerializeField] private SerializableGroups m_savedGroups;
 
         private GroupViewController m_groupViewController;
+        private Dictionary<string, List<AssetReference>> m_lastOutputGroups;
 
 		public override string ActiveStyle {
 			get {
@@ -51,6 +55,7 @@ namespace UnityEngine.AssetBundles.GraphTool
             m_groupSizeByte = new SerializableMultiTargetInt();
             m_groupingType = new SerializableMultiTargetInt();
             m_groupViewContext = new GroupViewContext ();
+            m_freezeGroups = false;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -60,7 +65,8 @@ namespace UnityEngine.AssetBundles.GraphTool
 			var newNode = new GroupingBySize();
             newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
             newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
-            m_groupViewContext = new GroupViewContext ();
+            newNode.m_groupViewContext = new GroupViewContext ();
+            newNode.m_freezeGroups = m_freezeGroups;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -116,6 +122,29 @@ namespace UnityEngine.AssetBundles.GraphTool
 				}
 			}
 
+            var newFreezeGroups = EditorGUILayout.ToggleLeft ("Freeze group on build", m_freezeGroups);
+            if (newFreezeGroups != m_freezeGroups) {
+                using(new RecordUndoScope("Change Freeze Groups", node, true)){
+                    m_freezeGroups = newFreezeGroups;
+                    onValueChanged();
+                }
+            }
+            EditorGUILayout.HelpBox ("Freezing group will save group when build is performed, and any new asset from there will be put into new group.", 
+                MessageType.Info);
+            using (new GUILayout.HorizontalScope ()) {
+                GUILayout.Label ("Group setting");
+                GUILayout.FlexibleSpace ();
+                if (GUILayout.Button ("Import")) {
+                    if (ImportGroupsWithGUI (node)) {
+                        onValueChanged ();
+                    }
+                }
+                if(GUILayout.Button ("Export")) {
+                    ExportGroupsWithGUI (node);
+                }
+            }
+            GUILayout.Space (8f);
+
             if (m_groupViewController != null) {
                 m_groupViewController.OnGroupViewGUI ();
             }
@@ -129,6 +158,18 @@ namespace UnityEngine.AssetBundles.GraphTool
 		{
 			GroupingOutput(target, node, incoming, connectionsToOutput, Output);
 		}
+
+        public override void Build (BuildTarget target, 
+            Model.NodeData nodeData, 
+            IEnumerable<PerformGraph.AssetGroups> incoming, 
+            IEnumerable<Model.ConnectionData> connectionsToOutput, 
+            PerformGraph.Output outputFunc,
+            Action<Model.NodeData, string, float> progressFunc)
+        {
+            if (m_freezeGroups) {
+                m_savedGroups = new SerializableGroups (m_lastOutputGroups);
+            }
+        }
 
 		private void GroupingOutput (BuildTarget target, 
 			Model.NodeData node, 
@@ -152,13 +193,31 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 			int groupCount = 0;
 			long szGroupCount = 0;
-			var groupName = groupCount.ToString();
+
+            if (m_freezeGroups && m_savedGroups != null) {
+                while (m_savedGroups.ContainsKey (groupCount.ToString ())) {
+                    ++groupCount;
+                }
+            }
+            var groupName = groupCount.ToString();
 
 			if(incoming != null) {
 
 				foreach(var ag in incoming) {
 					foreach (var assets in ag.assetGroups.Values) {
 						foreach(var a in assets) {
+
+                            if (m_freezeGroups && m_savedGroups != null) {
+                                var savedGroupName = m_savedGroups.FindGroupOfAsset (a.importFrom);
+                                if (!string.IsNullOrEmpty (savedGroupName)) {
+                                    if (!outputDict.ContainsKey(savedGroupName)) {
+                                        outputDict[savedGroupName] = new List<AssetReference>();
+                                    }
+                                    outputDict[savedGroupName].Add(a);
+                                    continue;
+                                }
+                            }
+
                             szGroupCount += GetSizeOfAsset(a, (GroupingType)m_groupingType[target]);
 
 							if (!outputDict.ContainsKey(groupName)) {
@@ -168,7 +227,13 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 							if(szGroupCount >= szGroup) {
 								szGroupCount = 0;
-								++groupCount;
+                                if (m_freezeGroups && m_savedGroups != null) {
+                                    while (m_savedGroups.ContainsKey (groupCount.ToString ())) {
+                                        ++groupCount;
+                                    }
+                                } else {
+                                    ++groupCount;
+                                }
 								groupName = groupCount.ToString();
 							}
 						}
@@ -184,6 +249,7 @@ namespace UnityEngine.AssetBundles.GraphTool
                 m_groupViewController = new GroupViewController (m_groupViewContext);
             }
             m_groupViewController.SetGroups (outputDict);
+            m_lastOutputGroups = outputDict;
 		}
 
 		public override bool OnAssetsReimported(
@@ -223,5 +289,44 @@ namespace UnityEngine.AssetBundles.GraphTool
 				InvlaidSize();
 			}
 		}
+
+        private bool ImportGroupsWithGUI(NodeGUI node) {
+            string fileSelected = EditorUtility.OpenFilePanelWithFilters(
+                "Select JSON files to import", 
+                Application.dataPath, new string[] {"JSON files", "json", "All files", "*"});
+            if(string.IsNullOrEmpty(fileSelected)) {
+                return false;
+            }
+
+            var jsonContent = File.ReadAllText (fileSelected, System.Text.Encoding.UTF8);
+
+            if (m_savedGroups != null) {
+                using(new RecordUndoScope("Import Saved Group", node, true)){
+                    EditorJsonUtility.FromJsonOverwrite (jsonContent, m_savedGroups);
+                }
+
+            } else {
+                using(new RecordUndoScope("Import Saved Group", node, true)){
+                    m_savedGroups = new SerializableGroups ();
+                    EditorJsonUtility.FromJsonOverwrite (jsonContent, m_savedGroups);
+                }
+            }
+            return true;
+        }
+
+        private void ExportGroupsWithGUI(NodeGUI node) {
+            string path =
+                EditorUtility.SaveFilePanelInProject(
+                    "Export group setting to JSON file", 
+                    node.Name, "json", 
+                    "Export to:");
+            if(string.IsNullOrEmpty(path)) {
+                return;
+            }
+
+            string jsonString = EditorJsonUtility.ToJson (m_savedGroups, true);
+
+            File.WriteAllText (path, jsonString, System.Text.Encoding.UTF8);
+        }
 	}
 }

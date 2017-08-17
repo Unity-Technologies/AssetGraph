@@ -200,8 +200,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
             else {
                 var groupItem = FindItem(selectedIds[0], rootItem) as GroupTreeViewItem;
-
-                m_controller.GroupSelectionChanged (groupItem.assets);
+                if (groupItem != null) {
+                    m_controller.GroupSelectionChanged (groupItem.assets);
+                } else {
+                    m_controller.UnselectGroup ();
+                }
             }
         }
 
@@ -274,98 +277,5 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
 
         }
-
-
-//        protected override void ContextClicked()
-//        {
-////            if (m_ContextOnItem)
-////            {
-////                m_ContextOnItem = false;
-////                return;
-////            }
-////
-////            List<AssetBundleModel.BundleTreeItem> selectedNodes = new List<AssetBundleModel.BundleTreeItem>();
-////            GenericMenu menu = new GenericMenu();
-////
-////            if (!AssetBundleModel.Model.DataSource.IsReadOnly ()) {
-////                menu.AddItem(new GUIContent("Add new bundle"), false, CreateNewBundle, selectedNodes); 
-////                menu.AddItem(new GUIContent("Add new folder"), false, CreateFolder, selectedNodes);
-////            }
-////
-////            menu.AddItem(new GUIContent("Reload all data"), false, ForceReloadData, selectedNodes);
-////            menu.ShowAsContext();
-//        }
-//
-//        protected override void ContextClickedItem(int id)
-//        {
-////            if (AssetBundleModel.Model.DataSource.IsReadOnly ()) {
-////                return;
-////            }
-////
-////            m_ContextOnItem = true;
-////            List<AssetBundleModel.BundleTreeItem> selectedNodes = new List<AssetBundleModel.BundleTreeItem>();
-////            foreach (var nodeID in GetSelection())
-////            {
-////                selectedNodes.Add(FindItem(nodeID, rootItem) as AssetBundleModel.BundleTreeItem);
-////            }
-////
-////            GenericMenu menu = new GenericMenu();
-////
-////            if(selectedNodes.Count == 1)
-////            {
-////                if ((selectedNodes[0].bundle as AssetBundleModel.BundleFolderConcreteInfo) != null)
-////                {
-////                    menu.AddItem(new GUIContent("Add Child/New Bundle"), false, CreateNewBundle, selectedNodes);
-////                    menu.AddItem(new GUIContent("Add Child/New Folder"), false, CreateFolder, selectedNodes);
-////                    menu.AddItem(new GUIContent("Add Sibling/New Bundle"), false, CreateNewSiblingBundle, selectedNodes);
-////                    menu.AddItem(new GUIContent("Add Sibling/New Folder"), false, CreateNewSiblingFolder, selectedNodes);
-////                }
-////                else if( (selectedNodes[0].bundle as AssetBundleModel.BundleVariantFolderInfo) != null)
-////                {
-////                    menu.AddItem(new GUIContent("Add Child/New Variant"), false, CreateNewVariant, selectedNodes);
-////                    menu.AddItem(new GUIContent("Add Sibling/New Bundle"), false, CreateNewSiblingBundle, selectedNodes);
-////                    menu.AddItem(new GUIContent("Add Sibling/New Folder"), false, CreateNewSiblingFolder, selectedNodes);
-////                }
-////                else
-////                {
-////                    var variant = selectedNodes[0].bundle as AssetBundleModel.BundleVariantDataInfo;
-////                    if (variant == null)
-////                    {
-////                        menu.AddItem(new GUIContent("Add Sibling/New Bundle"), false, CreateNewSiblingBundle, selectedNodes);
-////                        menu.AddItem(new GUIContent("Add Sibling/New Folder"), false, CreateNewSiblingFolder, selectedNodes);
-////                        menu.AddItem(new GUIContent("Convert to variant"), false, ConvertToVariant, selectedNodes);
-////                    }
-////                    else
-////                    {
-////                        menu.AddItem(new GUIContent("Add Sibling/New Variant"), false, CreateNewSiblingVariant, selectedNodes);
-////                    }
-////                }
-////                if(selectedNodes[0].bundle.IsMessageSet(MessageSystem.MessageFlag.AssetsDuplicatedInMultBundles))
-////                    menu.AddItem(new GUIContent("Move duplicates to new bundle"), false, DedupeAllBundles, selectedNodes);
-////                menu.AddItem(new GUIContent("Rename"), false, RenameBundle, selectedNodes);
-////                menu.AddItem(new GUIContent("Delete " + selectedNodes[0].displayName), false, DeleteBundles, selectedNodes);
-////
-////            }
-////            else if (selectedNodes.Count > 1)
-////            { 
-////                menu.AddItem(new GUIContent("Move duplicates shared by selected"), false, DedupeOverlappedBundles, selectedNodes);
-////                menu.AddItem(new GUIContent("Move duplicates existing in any selected"), false, DedupeAllBundles, selectedNodes);
-////                menu.AddItem(new GUIContent("Delete " + selectedNodes.Count + " selected bundles"), false, DeleteBundles, selectedNodes);
-////            }
-////            menu.ShowAsContext();
-//        }
-
-//        protected override void KeyEvent()
-//        {
-////            if (Event.current.keyCode == KeyCode.Delete && GetSelection().Count > 0)
-////            {
-////                List<AssetBundleModel.BundleTreeItem> selectedNodes = new List<AssetBundleModel.BundleTreeItem>();
-////                foreach (var nodeID in GetSelection())
-////                {
-////                    selectedNodes.Add(FindItem(nodeID, rootItem) as AssetBundleModel.BundleTreeItem);
-////                }
-////                DeleteBundles(selectedNodes);
-////            }
-//        }
     }
 }
