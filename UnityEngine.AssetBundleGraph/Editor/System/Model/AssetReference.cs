@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
+#if UNITY_5_5_OR_NEWER
+using UnityEngine.Profiling;
+#endif
+
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -194,6 +198,20 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 
         /// <summary>
+        /// File size (byte)
+        /// </summary>
+        /// <value>File size (byte)</value>
+        public long runtimeMemorySize {
+            get {
+                System.IO.FileInfo fileInfo = new System.IO.FileInfo(absolutePath);
+                if (fileInfo.Exists) {
+                    return fileInfo.Length;
+                }
+                return 0L;
+            }
+        }
+
+        /// <summary>
         /// Gets all data.
         /// </summary>
         /// <value>All data.</value>
@@ -232,6 +250,35 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return m_scene;
 			}
 		}
+
+        public long GetFileSize() {
+            if (string.IsNullOrEmpty (m_importFrom)) {
+                return 0L;
+            }
+            System.IO.FileInfo fileInfo = new System.IO.FileInfo(absolutePath);
+            if (fileInfo.Exists) {
+                return fileInfo.Length;
+            }
+            return 0L;
+        }
+
+        public long GetRuntimeMemorySize() {
+            var releaseAfterLoad = (m_data == null || m_data.Length == 0);
+            var objects = allData;
+            long size = 0L;
+            foreach (var o in objects) {
+                #if UNITY_5_6_OR_NEWER
+                size += Profiler.GetRuntimeMemorySizeLong (o);
+                #else
+                size += Profiler.GetRuntimeMemorySize(o);
+                #endif
+            }
+
+            if (releaseAfterLoad) {
+                ReleaseData ();
+            }
+            return size;
+        }
 
         /// <summary>
         /// Sets the dirty.

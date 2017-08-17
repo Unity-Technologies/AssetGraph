@@ -12,96 +12,61 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	[CustomEditor(typeof(ConnectionGUIInspectorHelper))]
 	public class ConnectionGUIEditor : Editor {
 		
+        private GroupViewController m_groupViewController;
+
 		public override bool RequiresConstantRepaint() {
 			return true;
 		}
 
+        public void OnFocus () {
+        }
+
 		public override void OnInspectorGUI () {
 
 			ConnectionGUIInspectorHelper helper = target as ConnectionGUIInspectorHelper;
+
+            if(m_groupViewController == null ) {
+                m_groupViewController = new GroupViewController(helper.groupViewContext);
+            }
 
 			var con = helper.connectionGUI;
 			if (con == null) {
 				return;
 			}
 
-			var foldouts = helper.foldouts;
+            var count = 0;
+            var assetGroups = helper.assetGroups;
+            if (assetGroups == null)  {
+                return;
+            }
 
-			var count = 0;
-			var assetGroups = helper.assetGroups;
-			if (assetGroups == null)  {
-				return;
-			}
+            foreach (var assets in assetGroups.Values) {
+                count += assets.Count;
+            }
 
-			foreach (var assets in assetGroups.Values) {
-				count += assets.Count;
-			}
+            var groupCount = assetGroups.Keys.Count;
 
-			var groupCount = assetGroups.Keys.Count;
+            GUILayout.Label("Stats", "BoldLabel");
+            EditorGUILayout.LabelField("Total groups", groupCount.ToString());
+            EditorGUILayout.LabelField("Total items" , count.ToString());
+            GUILayout.Space(8f);
 
-			GUILayout.Label("Stats", "BoldLabel");
-			EditorGUILayout.LabelField("Total groups", groupCount.ToString());
-			EditorGUILayout.LabelField("Total items" , count.ToString());
+            #if UNITY_5_6_OR_NEWER
+            #else
+            m_groupViewController.m_foldOuts = helper.foldouts;
 
-			GUILayout.Space(8f);
+            GUILayout.Label("Display", "BoldLabel");
+            helper.filterPattern = EditorGUILayout.TextField("Filter assets", helper.filterPattern);
+            helper.fileNameOnly = EditorGUILayout.ToggleLeft("Show only file names", helper.fileNameOnly);
 
-			GUILayout.Label("Display", "BoldLabel");
-			helper.filterPattern = EditorGUILayout.TextField("Filter assets", helper.filterPattern);
-			helper.fileNameOnly = EditorGUILayout.ToggleLeft("Show only file names", helper.fileNameOnly);
+            m_groupViewController.m_match = helper.filterPattern;
+            m_groupViewController.isFileNameOnly = helper.fileNameOnly;
+            #endif
 
-			Regex match = null;
-			if(!string.IsNullOrEmpty(helper.filterPattern)) {
-				match = new Regex(helper.filterPattern);
-			}
+            GUILayout.Space(4f);
 
-			GUILayout.Space(8f);
-			GUILayout.Label("Groups", "BoldLabel");
-			GUILayout.Space(4f);
-
-			var redColor = new GUIStyle(EditorStyles.label);
-			redColor.normal.textColor = Color.gray;
-
-			var index = 0;
-			foreach (var groupKey in assetGroups.Keys) {
-				var assets = assetGroups[groupKey];
-
-				var foldout = foldouts[index];
-
-				foldout = EditorGUILayout.Foldout(foldout, string.Format("Group name: {0} ({1} items)", groupKey, assets.Count));
-				if (foldout) {
-					EditorGUI.indentLevel = 1;
-					for (var i = 0; i < assets.Count; i++) {
-
-						if(match != null) {
-							if(!match.IsMatch(assets[i].path)) {
-								continue;
-							}
-						}
-
-						var sourceStr = (helper.fileNameOnly) ? assets[i].fileNameAndExtension : assets[i].path;
-						var variantName = assets[i].variantName;
-
-                        using (new EditorGUILayout.HorizontalScope ()) {
-                            if (!string.IsNullOrEmpty (variantName)) {
-                                EditorGUILayout.LabelField (string.Format ("{0}[{1}]", sourceStr, variantName));
-                            } else {
-                                EditorGUILayout.LabelField(sourceStr);
-                            }
-                            if (GUILayout.Button ("Select", GUILayout.Width (50f))) {
-                                var obj = AssetDatabase.LoadMainAssetAtPath(assets[i].path);
-                                if (obj != null) {
-                                    EditorGUIUtility.PingObject(obj);
-                                    Selection.activeObject = obj;
-                                }
-                            }
-                        }
-					}
-					EditorGUI.indentLevel = 0;
-				}
-				foldouts[index] = foldout;
-
-				index++;
-			}
+            m_groupViewController.SetGroups (assetGroups);
+            m_groupViewController.OnGroupViewGUI ();
 		}
 	}
 }

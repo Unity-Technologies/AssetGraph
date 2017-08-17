@@ -25,6 +25,9 @@ namespace UnityEngine.AssetBundles.GraphTool
 
         [SerializeField] private SerializableMultiTargetInt m_groupSizeByte;
         [SerializeField] private SerializableMultiTargetInt m_groupingType;
+        [SerializeField] private GroupViewContext m_groupViewContext;
+
+        private GroupViewController m_groupViewController;
 
 		public override string ActiveStyle {
 			get {
@@ -47,6 +50,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 		public override void Initialize(Model.NodeData data) {
             m_groupSizeByte = new SerializableMultiTargetInt();
             m_groupingType = new SerializableMultiTargetInt();
+            m_groupViewContext = new GroupViewContext ();
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -56,6 +60,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 			var newNode = new GroupingBySize();
             newNode.m_groupSizeByte = new SerializableMultiTargetInt(m_groupSizeByte);
             newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
+            m_groupViewContext = new GroupViewContext ();
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -110,6 +115,10 @@ namespace UnityEngine.AssetBundles.GraphTool
 					}
 				}
 			}
+
+            if (m_groupViewController != null) {
+                m_groupViewController.OnGroupViewGUI ();
+            }
 		}
 
 		public override void Prepare (BuildTarget target, 
@@ -170,6 +179,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 				null : connectionsToOutput.First();
 			Output(dst, outputDict);
+
+            if (m_groupViewController == null) {
+                m_groupViewController = new GroupViewController (m_groupViewContext);
+            }
+            m_groupViewController.SetGroups (outputDict);
 		}
 
 		public override bool OnAssetsReimported(
@@ -194,21 +208,9 @@ namespace UnityEngine.AssetBundles.GraphTool
             }
 
             if (t == GroupingType.ByRuntimeMemorySize) {
-                var objects = a.allData;
-                foreach (var o in objects) {
-                    #if UNITY_5_6_OR_NEWER
-                    size += Profiler.GetRuntimeMemorySizeLong (o);
-                    #else
-                    size += Profiler.GetRuntimeMemorySize(o);
-                    #endif
-                }
-
-                a.ReleaseData ();
+                size = a.GetRuntimeMemorySize ();
             } else if (t == GroupingType.ByFileSize) {
-                System.IO.FileInfo fileInfo = new System.IO.FileInfo(a.absolutePath);
-                if (fileInfo.Exists) {
-                    size = fileInfo.Length;
-                }
+                size = a.GetFileSize ();
             }
 
 			return size;
