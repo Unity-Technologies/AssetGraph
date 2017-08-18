@@ -169,6 +169,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return cacheDir;
 		}
 
+        public static string EnsureGroupingCacheDirExists(BuildTarget t, Model.NodeData node) {
+            var cacheDir = FileUtility.PathCombine(Model.Settings.Path.GroupingCachePath, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+
+            if (!Directory.Exists(cacheDir)) {
+                Directory.CreateDirectory(cacheDir);
+            }
+            if (!cacheDir.EndsWith(Model.Settings.UNITY_FOLDER_SEPARATOR.ToString())) {
+                cacheDir = cacheDir + Model.Settings.UNITY_FOLDER_SEPARATOR.ToString();
+            }
+            return cacheDir;
+        }
+
         public static string EnsureAssetGeneratorCacheDirExists(BuildTarget t, Model.NodeData node) {
             var cacheDir = FileUtility.PathCombine(Model.Settings.Path.AssetGeneratorCachePath, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 

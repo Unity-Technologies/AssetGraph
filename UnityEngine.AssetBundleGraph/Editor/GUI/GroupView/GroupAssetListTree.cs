@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_5_6_OR_NEWER
+using UnityEditor;
 using UnityEditorInternal;
 using UnityEditor.IMGUI.Controls;
 
@@ -312,3 +313,4 @@ namespace UnityEngine.AssetBundles.GraphTool {
         }
     }
 }
+#endif

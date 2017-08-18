@@ -142,6 +142,12 @@ namespace UnityEngine.AssetBundles.GraphTool
                 if(GUILayout.Button ("Export")) {
                     ExportGroupsWithGUI (node);
                 }
+                if(GUILayout.Button ("Reset")) {
+                    if (EditorUtility.DisplayDialog ("Do you want to reset group setting?", "This will erase current saved group setting.", "OK", "Cancel")) {
+                        m_savedGroups = null;
+                        onValueChanged ();
+                    }
+                }
             }
             GUILayout.Space (8f);
 
@@ -168,6 +174,13 @@ namespace UnityEngine.AssetBundles.GraphTool
         {
             if (m_freezeGroups) {
                 m_savedGroups = new SerializableGroups (m_lastOutputGroups);
+
+                // export current setting to file
+                var prefabOutputDir = FileUtility.EnsureGroupingCacheDirExists(target, nodeData);
+                var outputFilePath = Path.Combine (prefabOutputDir, nodeData.Name + ".json");
+
+                string jsonString = JsonUtility.ToJson (m_savedGroups, true);
+                File.WriteAllText (outputFilePath, jsonString, System.Text.Encoding.UTF8);
             }
         }
 
@@ -227,12 +240,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 							if(szGroupCount >= szGroup) {
 								szGroupCount = 0;
+                                ++groupCount;
                                 if (m_freezeGroups && m_savedGroups != null) {
                                     while (m_savedGroups.ContainsKey (groupCount.ToString ())) {
                                         ++groupCount;
                                     }
-                                } else {
-                                    ++groupCount;
                                 }
 								groupName = groupCount.ToString();
 							}
@@ -302,13 +314,13 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             if (m_savedGroups != null) {
                 using(new RecordUndoScope("Import Saved Group", node, true)){
-                    EditorJsonUtility.FromJsonOverwrite (jsonContent, m_savedGroups);
+                    JsonUtility.FromJsonOverwrite (jsonContent, m_savedGroups);
                 }
 
             } else {
                 using(new RecordUndoScope("Import Saved Group", node, true)){
                     m_savedGroups = new SerializableGroups ();
-                    EditorJsonUtility.FromJsonOverwrite (jsonContent, m_savedGroups);
+                    JsonUtility.FromJsonOverwrite (jsonContent, m_savedGroups);
                 }
             }
             return true;
@@ -324,7 +336,7 @@ namespace UnityEngine.AssetBundles.GraphTool
                 return;
             }
 
-            string jsonString = EditorJsonUtility.ToJson (m_savedGroups, true);
+            string jsonString = JsonUtility.ToJson (m_savedGroups, true);
 
             File.WriteAllText (path, jsonString, System.Text.Encoding.UTF8);
         }

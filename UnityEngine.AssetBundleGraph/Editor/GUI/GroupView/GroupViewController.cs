@@ -1,6 +1,8 @@
 ﻿using UnityEditor;
 using UnityEditorInternal;
+#if UNITY_5_6_OR_NEWER
 using UnityEditor.IMGUI.Controls;
+#endif
 
 using System;
 using System.IO;
@@ -36,33 +38,65 @@ namespace UnityEngine.AssetBundles.GraphTool {
         }
 
         #else
-        public GroupViewContext() {
-        this.foldouts = new List<bool>();
-        if(assetGroups != null) {
-        for (var i = 0; i < this.assetGroups.Count; i++) {
-        foldouts.Add(true);
-        }
-        }
+        public List<bool> foldouts;
+        public bool showFileNameOnly;
+        public string filterCondition;
 
+        public GroupViewContext() {
+            foldouts = new List<bool> ();
+            filterCondition = string.Empty;
         }
         #endif
     }
 
-    #if UNITY_5_6_OR_NEWER
 	public class GroupViewController {
+
+        private Dictionary<string, List<AssetReference>> m_groups;
+        private Dictionary<string, List<AssetReference>> m_filteredGroups;
+        private GroupViewContext m_ctx;
+
+        private Dictionary<string, List<AssetReference>> ApplyFilter() {
+            if (string.IsNullOrEmpty (m_ctx.filterCondition)) {
+                return m_groups;
+            }
+
+            Regex match = new Regex(m_ctx.filterCondition);
+            var newGroups = new Dictionary<string, List<AssetReference>> ();
+
+            foreach (var key in m_groups.Keys) {
+                var assets = m_groups[key];
+                var filteredAssets = new List<AssetReference> ();
+
+                foreach (var a in assets) {
+                    if (match.IsMatch (a.path)) {
+                        filteredAssets.Add (a);
+                    }
+                }
+
+                newGroups [key] = filteredAssets;
+            }
+
+            return newGroups;
+        }
+
+        public void SetGroups(Dictionary<string, List<AssetReference>> g) {
+            if (m_groups != g) {
+                m_groups = g;
+                m_filteredGroups = ApplyFilter ();
+                ReloadAndSelect ();
+            }
+        }
+
+        #if UNITY_5_6_OR_NEWER
+        private GroupListTree m_groupListTree;
+        private GroupAssetListTree m_assetListTree;
+        private AssetReference m_selectedAsset;
 
         private struct ResizeContext {
             public bool isResizeNow;
             public Vector2 dragStartPt;
             public Rect dragStartRect;
         }
-
-        private Dictionary<string, List<AssetReference>> m_groups;
-        private Dictionary<string, List<AssetReference>> m_filteredGroups;
-        private GroupListTree m_groupListTree;
-        private GroupAssetListTree m_assetListTree;
-        private GroupViewContext m_ctx;
-        private AssetReference m_selectedAsset;
 
         private ResizeContext m_groupListResize;
         private ResizeContext m_assetListResize;
@@ -118,38 +152,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             }
 		}
 
-        public void SetGroups(Dictionary<string, List<AssetReference>> g) {
-            if (m_groups != g) {
-                m_groups = g;
-                m_filteredGroups = ApplyFilter ();
-                ReloadAndSelect ();
-            }
-        }
-
-        private Dictionary<string, List<AssetReference>> ApplyFilter() {
-            if (string.IsNullOrEmpty (m_ctx.filterCondition)) {
-                return m_groups;
-            }
-
-            Regex match = new Regex(m_ctx.filterCondition);
-            var newGroups = new Dictionary<string, List<AssetReference>> ();
-
-            foreach (var key in m_groups.Keys) {
-                var assets = m_groups[key];
-                var filteredAssets = new List<AssetReference> ();
-
-                foreach (var a in assets) {
-                    if (match.IsMatch (a.path)) {
-                        filteredAssets.Add (a);
-                    }
-                }
-
-                newGroups [key] = filteredAssets;
-            }
-
-            return newGroups;
-        }
-
         public void ReloadAndSelect() {
             m_groupListTree.Reload ();
             m_assetListTree.Reload ();
@@ -192,65 +194,63 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 rc.isResizeNow = false;
             }
         }
-	}
-
     #else
-    public class GroupViewController {
-
-        private Dictionary<string, List<AssetReference>> m_groups;
-        public List<bool> m_foldouts = new List<bool>();
-        public string m_match = "";
-        public bool isFileNameOnly;
-
-        public Dictionary<string, List<AssetReference>> GroupModel {
-            get {
-                return m_groups;
-            }
+        public GroupViewController(GroupViewContext ctx) {
+            m_ctx = ctx;
         }
 
-        public GroupViewController(GroupViewContext ctx) {
+        public void ReloadAndSelect() {
+            if (m_ctx.foldouts.Count < m_filteredGroups.Keys.Count) {
+                for (int i = m_ctx.foldouts.Count; i < m_filteredGroups.Keys.Count; ++i) {
+                    m_ctx.foldouts.Add (false);
+                }
+            }
         }
 
         public void OnGroupViewGUI() {
 
-            int count = 0;
-
-            foreach (var assets in m_groups.Values) {
-                count += assets.Count;
+            GUILayout.Label("Display", "BoldLabel");
+            var newFilterString = EditorGUILayout.TextField ("Filter", m_ctx.filterCondition);
+            if (newFilterString != m_ctx.filterCondition) {
+                m_ctx.filterCondition = newFilterString;
+                m_filteredGroups = ApplyFilter ();
+                ReloadAndSelect ();
             }
+            m_ctx.showFileNameOnly = EditorGUILayout.ToggleLeft("Show only file names", m_ctx.showFileNameOnly);
 
-            var groupCount = m_groups.Keys.Count;
-
-            Regex match = null;
-            if(!string.IsNullOrEmpty(m_match)) {
-                match = new Regex(m_match);
-            }
 
             GUILayout.Space(8f);
-            GUILayout.Label("Groups", "BoldLabel");
+            using (new EditorGUILayout.HorizontalScope ()) {
+                GUILayout.Label("Groups", "BoldLabel");
+                GUILayout.FlexibleSpace ();
+                if (GUILayout.Button ("Collapse All")) {
+                    for (int i = 0; i < m_ctx.foldouts.Count; ++i) {
+                        m_ctx.foldouts [i] = false;
+                    }
+                }
+                if (GUILayout.Button ("Expand All")) {
+                    for (int i = 0; i < m_ctx.foldouts.Count; ++i) {
+                        m_ctx.foldouts [i] = true;
+                    }
+                }
+            }
             GUILayout.Space(4f);
 
             var redColor = new GUIStyle(EditorStyles.label);
             redColor.normal.textColor = Color.gray;
 
             var index = 0;
-            foreach (var groupKey in m_groups.Keys) {
-                var assets = m_groups[groupKey];
+            foreach (var groupKey in m_filteredGroups.Keys) {
+                var assets = m_filteredGroups[groupKey];
 
-                var foldout = m_foldouts[index];
+                var foldout = m_ctx.foldouts[index];
 
                 foldout = EditorGUILayout.Foldout(foldout, string.Format("Group name: {0} ({1} items)", groupKey, assets.Count));
                 if (foldout) {
                     EditorGUI.indentLevel = 1;
                     for (var i = 0; i < assets.Count; i++) {
 
-                        if(match != null) {
-                            if(!match.IsMatch(assets[i].path)) {
-                                continue;
-                            }
-                        }
-
-                        var sourceStr = (isFileNameOnly) ? assets[i].fileNameAndExtension : assets[i].path;
+                        var sourceStr = (m_ctx.showFileNameOnly) ? assets[i].fileNameAndExtension : assets[i].path;
                         var variantName = assets[i].variantName;
 
                         using (new EditorGUILayout.HorizontalScope ()) {
@@ -270,15 +270,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     }
                     EditorGUI.indentLevel = 0;
                 }
-                m_foldouts[index] = foldout;
+                m_ctx.foldouts[index] = foldout;
 
                 index++;
             }
         }
-
-        public void SetGroups(Dictionary<string, List<AssetReference>> g) {
-            m_groups = g;
-        }
+        #endif
     }
-    #endif
 }

@@ -51,20 +51,6 @@ namespace UnityEngine.AssetBundles.GraphTool {
             EditorGUILayout.LabelField("Total items" , count.ToString());
             GUILayout.Space(8f);
 
-            #if UNITY_5_6_OR_NEWER
-            #else
-            m_groupViewController.m_foldOuts = helper.foldouts;
-
-            GUILayout.Label("Display", "BoldLabel");
-            helper.filterPattern = EditorGUILayout.TextField("Filter assets", helper.filterPattern);
-            helper.fileNameOnly = EditorGUILayout.ToggleLeft("Show only file names", helper.fileNameOnly);
-
-            m_groupViewController.m_match = helper.filterPattern;
-            m_groupViewController.isFileNameOnly = helper.fileNameOnly;
-            #endif
-
-            GUILayout.Space(4f);
-
             m_groupViewController.SetGroups (assetGroups);
             m_groupViewController.OnGroupViewGUI ();
 		}
