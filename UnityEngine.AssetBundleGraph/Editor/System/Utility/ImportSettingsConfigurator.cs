@@ -693,7 +693,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 			if (target.importLights != reference.importLights) 	 return false;
 			if (target.normalCalculationMode != reference.normalCalculationMode) return false;
 
-            if (target.extraUserProperties != reference.extraUserProperties) return false;
+
+            if(target.extraUserProperties.Length != reference.extraUserProperties.Length) return false;
+            for(int i=0; i<target.extraUserProperties.Length; ++i) {
+                if(target.extraUserProperties[i] != reference.extraUserProperties[i]) return false;
+            }
+
             if (target.importCameras != reference.importCameras) return false;
             if (target.importLights != reference.importLights) return false;
             if (target.importVisibility != reference.importVisibility) return false;
