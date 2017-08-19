@@ -2,10 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using UnityEditor;
 using UnityEditor.Animations;
+
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if UNITY_2017_1_OR_NEWER
+using UnityEngine.U2D;
+using UnityEngine.Playables;
+using UnityEngine.Timeline;
+#endif
 
 using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
 
@@ -32,16 +39,18 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			typeof(Flare).ToString(),
 			typeof(Font).ToString(),
 			typeof(GUISkin).ToString(),
-			// typeof(LightmapParameters).ToString(),
 			typeof(Material).ToString(),
 			typeof(PhysicMaterial).ToString(),
 			typeof(PhysicsMaterial2D).ToString(),
 			typeof(RenderTexture).ToString(),
-			// typeof(SceneAsset).ToString(),
 			typeof(Shader).ToString(),
 			typeof(Scene).ToString(),
             typeof(GameObject).ToString(),
             typeof(Audio.AudioMixer).ToString(),
+            #if UNITY_2017_1_OR_NEWER
+            typeof(PlayableAsset).ToString(),
+            typeof(SpriteAtlas).ToString(),
+            #endif
 		};
 		
         private static readonly Dictionary<string, Type> FilterTypeBindingByExtension = new Dictionary<string, Type>{
@@ -80,7 +89,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			{".yaml", typeof(TextAsset)},
 			{".fnt", typeof(TextAsset)},
 			{".asset", typeof(Object)},
-			{".prefab", typeof(UnityEngine.GameObject)}
+            {".prefab", typeof(UnityEngine.GameObject)},
+            #if UNITY_2017_1_OR_NEWER
+            {".playable", typeof(PlayableAsset)},
+            {".spriteatlas", typeof(SpriteAtlas)},
+            #endif
 
 			// {"", typeof(Sprite)},
 		};
