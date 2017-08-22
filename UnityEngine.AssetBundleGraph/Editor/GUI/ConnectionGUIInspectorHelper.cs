@@ -10,20 +10,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	public class ConnectionGUIInspectorHelper : ScriptableObject {
 		public ConnectionGUI connectionGUI;
 		public Dictionary<string, List<AssetReference>> assetGroups;
-		public List<bool> foldouts;
-		public bool fileNameOnly;
-		public string filterPattern;
+        public GroupViewContext groupViewContext;
 
 		public void UpdateInspector (ConnectionGUI con, Dictionary<string, List<AssetReference>> assetGroups) {
 			this.connectionGUI = con;
 			this.assetGroups = assetGroups;
 
-			this.foldouts = new List<bool>();
-			if(assetGroups != null) {
-				for (var i = 0; i < this.assetGroups.Count; i++) {
-					foldouts.Add(true);
-				}
-			}
+            if (groupViewContext == null) {
+                groupViewContext = new GroupViewContext ();
+            }
 		}
 
 		public void UpdateAssetGroups(Dictionary<string, List<AssetReference>> assetGroups) {

@@ -130,6 +130,7 @@ namespace UnityEngine.AssetBundles.GraphTool.DataModel.Version2 {
             public static string CachePath              { get { return System.IO.Path.Combine(BasePath, "Cache"); } }
             public static string PrefabBuilderCachePath { get { return System.IO.Path.Combine(CachePath, "Prefabs"); } }
             public static string AssetGeneratorCachePath { get { return System.IO.Path.Combine(CachePath, "GeneratedAssets"); } }
+            public static string GroupingCachePath      { get { return System.IO.Path.Combine(CachePath, "Grouping"); } }
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
             public static string SettingFilePath        { get { return System.IO.Path.Combine(BasePath, "SettingFiles"); } }

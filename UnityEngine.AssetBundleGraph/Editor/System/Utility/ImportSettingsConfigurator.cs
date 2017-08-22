@@ -488,6 +488,14 @@ namespace UnityEngine.AssetBundles.GraphTool
             var reference = referenceImporter as ModelImporter;
             UnityEngine.Assertions.Assert.IsNotNull(reference);
 
+            importer.importMaterials = reference.importMaterials;
+            importer.importAnimation = reference.importAnimation;
+            importer.meshCompression = reference.meshCompression;
+            importer.importNormals = reference.importNormals;
+            importer.optimizeGameObjects = reference.optimizeGameObjects;
+            importer.motionNodeName = reference.motionNodeName;
+            importer.useFileUnits = reference.useFileUnits;
+
             importer.addCollider = reference.addCollider;
             importer.animationCompression = reference.animationCompression;
             importer.animationPositionError = reference.animationPositionError;
@@ -534,24 +542,19 @@ namespace UnityEngine.AssetBundles.GraphTool
             importer.useFileScale = reference.useFileScale;
 #endif
 
+
             /* 
              read only properties.
-             
+
 			importer.importedTakeInfos
 			importer.defaultClipAnimations
-			importer.importAnimation
 			importer.isTangentImportSupported
-			importer.meshCompression
-			importer.importNormals
-			importer.optimizeGameObjects
 			importer.referencedClips
 			importer.fileScale
-			importer.importMaterials
 			importer.isUseFileUnitsSupported
 			importer.motionNodeName
 			importer.isBakeIKSupported
 			importer.isFileScaleUsed
-			importer.useFileUnits
 			importer.transformPaths
 			*/
 
@@ -569,6 +572,14 @@ namespace UnityEngine.AssetBundles.GraphTool
         {
             ModelImporter reference = referenceImporter as ModelImporter;
             UnityEngine.Assertions.Assert.IsNotNull(reference);
+
+            if (target.importMaterials != reference.importMaterials ) return false;
+            if (target.importAnimation != reference.importAnimation ) return false;
+            if (target.meshCompression != reference.meshCompression ) return false;
+            if (target.importNormals != reference.importNormals ) return false;
+            if (target.optimizeGameObjects != reference.optimizeGameObjects ) return false;
+            if (target.motionNodeName != reference.motionNodeName ) return false;
+            if (target.useFileUnits != reference.useFileUnits ) return false;
 
             if (target.addCollider != reference.addCollider) return false;
             if (target.animationCompression != reference.animationCompression) return false;
@@ -693,7 +704,12 @@ namespace UnityEngine.AssetBundles.GraphTool
 			if (target.importLights != reference.importLights) 	 return false;
 			if (target.normalCalculationMode != reference.normalCalculationMode) return false;
 
-            if (target.extraUserProperties != reference.extraUserProperties) return false;
+
+            if(target.extraUserProperties.Length != reference.extraUserProperties.Length) return false;
+            for(int i=0; i<target.extraUserProperties.Length; ++i) {
+                if(target.extraUserProperties[i] != reference.extraUserProperties[i]) return false;
+            }
+
             if (target.importCameras != reference.importCameras) return false;
             if (target.importLights != reference.importLights) return false;
             if (target.importVisibility != reference.importVisibility) return false;
