@@ -48,15 +48,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private string m_prefabBuilderVersion;
 		[SerializeField] private int m_replacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
 		[SerializeField] private List<UsedAsset> m_usedAssets;
+        [SerializeField] private string m_buildDir;
 
 		public PrefabBuildInfo() {}
 
-		public void Initialize(string groupKey, string className, string instanceData, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
+		public void Initialize(string buildDir, string groupKey, string className, string instanceData, string version, ReplacePrefabOptions opt, List<AssetReference> assets) {
 			m_groupKey = groupKey;
 			m_builderClass = className;
 			m_instanceData = instanceData;
 			m_prefabBuilderVersion = version;
 			m_replacePrefabOptions = (int)opt;
+            m_buildDir = buildDir;
 
 			m_usedAssets = new List<UsedAsset> ();
 			assets.ForEach(a => m_usedAssets.Add(new UsedAsset(a.importFrom)));
@@ -70,7 +72,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return AssetDatabase.LoadAssetAtPath<PrefabBuildInfo>(buildInfoPath);
 		}
 
-		static public bool DoesPrefabNeedRebuilding(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
+		static public bool DoesPrefabNeedRebuilding(string buildPath, PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
 			var buildInfo = GetPrefabBuildInfo(builder, node, target, groupKey);
 
 			// need rebuilding if no buildInfo found
@@ -78,7 +80,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return true;
 			}
 
-			// need rebuilding if given builder is changed
+            // need rebuilding if build path is changed
+            if(buildInfo.m_buildDir != buildPath) {
+                return true;
+            }
+
+            // need rebuilding if given builder is changed
 			if(buildInfo.m_builderClass != builder.Builder.ClassName) {
 				return true;
 			}
@@ -122,7 +129,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return false;
 		}
 
-		static public void SavePrefabBuildInfo(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
+		static public void SavePrefabBuildInfo(string buildPath, PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
 
 			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
@@ -130,7 +137,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder.ClassName);
 
 			var buildInfo = ScriptableObject.CreateInstance<PrefabBuildInfo>();
-			buildInfo.Initialize(groupKey, builder.Builder.ClassName, builder.Builder[target], version, builder.Options, assets);
+            buildInfo.Initialize(buildPath, groupKey, builder.Builder.ClassName, builder.Builder[target], version, builder.Options, assets);
 
 			AssetDatabase.CreateAsset(buildInfo, buildInfoPath);		
 		}
