@@ -89,6 +89,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			// Do nothing
 		}
 
+        public virtual void Prepare (NodeBuildContext ctx) 
+        {
+            Prepare (ctx.target, ctx.nodeData, ctx.incoming, ctx.connectionsToOutput, ctx.outputFunc);
+        }
+
+
         /// <summary>
         /// Build is the method which actualy performs the build. It is always called after Setup() is performed.
         /// </summary>
@@ -107,6 +113,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		{
 			// Do nothing
 		}
+
+        public virtual void Build (NodeBuildContext ctx) 
+        {
+            Build (ctx.target, ctx.nodeData, ctx.incoming, ctx.connectionsToOutput, ctx.outputFunc, ctx.progressFunc);
+        }
 
 		#endregion
 
