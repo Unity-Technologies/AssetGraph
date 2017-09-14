@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 using System;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
         [SerializeField] private SerializableMultiTargetString m_outputDir;
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
+        [SerializeField] private bool m_preserveUserAddedComponentsAndObjects;
 
 		public UnityEditor.ReplacePrefabOptions Options {
 			get {
@@ -59,6 +61,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_instance = new SerializableMultiTargetInstance();
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
+            m_preserveUserAddedComponentsAndObjects = false;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -69,6 +72,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			m_replacePrefabOptions = v1.ReplacePrefabOptions;
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
+            m_preserveUserAddedComponentsAndObjects = false;
 		}
 
 		public override Node Clone(Model.NodeData newData) {
@@ -77,6 +81,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
             newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
             newNode.m_outputOption = new SerializableMultiTargetInt(m_outputOption);
+            newNode.m_preserveUserAddedComponentsAndObjects = m_preserveUserAddedComponentsAndObjects;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -129,6 +134,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 							onValueChanged();
 						}
 					}
+
+                    bool preserve = EditorGUILayout.ToggleLeft ("Preserve User Added Components", m_preserveUserAddedComponentsAndObjects);
+                    if(m_preserveUserAddedComponentsAndObjects != preserve) {
+                        using(new RecordUndoScope("Change Preserve User Modifications", node, true)) {
+                            m_preserveUserAddedComponentsAndObjects = preserve;
+                            onValueChanged();
+                        }
+                    }
+
 				} else {
 					if(!string.IsNullOrEmpty(m_instance.ClassName)) {
 						EditorGUILayout.HelpBox(
@@ -327,8 +341,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 						node.Name, guiName, key, guiName,thresold), node.Id);
 				}
 
+                GameObject previousPrefab = null; //TODO
+
 				List<UnityEngine.Object> allAssets = LoadAllAssets(assets);
-				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
+                var prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
 				if(output != null && prefabFileName != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
@@ -392,8 +408,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				var assets = aggregatedGroups[key];
 
 				var allAssets = LoadAllAssets(assets);
+                GameObject previousPrefab = null; //TODO
 
-				var prefabFileName = builder.CanCreatePrefab(key, allAssets);
+                var prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
 				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
 
 				if (!Directory.Exists(Path.GetDirectoryName(prefabSavePath))) {
@@ -401,7 +418,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 
                 if(PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets)) {
-					UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets);
+                    UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets, previousPrefab);
 					if(obj == null) {
 						throw new AssetBundleGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
 							node.Name, builder.GetType().FullName, key));
@@ -413,7 +430,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", prefabFileName), 0.5f);
 
-					PrefabUtility.CreatePrefab(prefabSavePath, obj, m_replacePrefabOptions);
+                    if (m_preserveUserAddedComponentsAndObjects) {
+                        //PreserveUserAddedComponentsAndObjects (node, prefabSavePath, obj);
+                    }
+
+                    PrefabUtility.CreatePrefab(prefabSavePath, obj, m_replacePrefabOptions);
                     PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
 				}
@@ -468,10 +489,12 @@ namespace UnityEngine.AssetBundles.GraphTool {
 								}
 							}
 							if(isAllGoodAssets) {
+                                GameObject previousPrefab = null; //TODO
+
 								// do not call LoadAllAssets() unless all assets have importFrom
 								var al = ag.assetGroups[key];
 								List<UnityEngine.Object> allAssets = LoadAllAssets(al);
-								if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets))) {
+                                if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets, previousPrefab))) {
 									canNotCreatePrefab(key);
 								}
 								UnloadAllAssets(al);

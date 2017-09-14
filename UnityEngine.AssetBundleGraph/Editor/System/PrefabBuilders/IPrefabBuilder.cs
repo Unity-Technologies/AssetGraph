@@ -26,7 +26,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
         /// <returns><c>true</c> if this instance can create prefab the specified groupKey objects; otherwise, <c>false</c>.</returns>
         /// <param name="groupKey">Group key.</param>
         /// <param name="objects">Objects.</param>
-		string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects);
+        string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, UnityEngine.GameObject previous);
 
         /// <summary>
         /// Creates the prefab.
@@ -34,7 +34,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
         /// <returns>The prefab.</returns>
         /// <param name="groupKey">Group key.</param>
         /// <param name="objects">Objects.</param>
-		UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects);
+        UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects, UnityEngine.GameObject previous);
 
         /// <summary>
         /// Draw Inspector GUI for this PrefabBuilder.
@@ -103,7 +103,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		}
 	}
 
-	public class PrefabBuilderUtility {
+	public partial class PrefabBuilderUtility {
 
         private static  Dictionary<string, string> s_attributeAssemblyQualifiedNameMap;
 

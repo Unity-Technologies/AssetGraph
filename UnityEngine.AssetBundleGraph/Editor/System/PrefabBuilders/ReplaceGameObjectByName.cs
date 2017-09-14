@@ -26,7 +26,7 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.
 		 */
-	public string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
+    public string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, GameObject previous) {
 
         var go = objects.Find(o => o.GetType() == typeof(UnityEngine.GameObject) &&
             ((GameObject)o).transform.parent == null );
@@ -41,7 +41,7 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
 	/**
 	 * Create Prefab.
 	 */ 
-	public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
+    public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects, GameObject previous) {
 
         GameObject src = (GameObject)objects.Find(o => o.GetType() == typeof(UnityEngine.GameObject) &&
             ((GameObject)o).transform.parent == null );
