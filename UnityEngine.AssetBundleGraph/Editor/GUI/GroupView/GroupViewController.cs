@@ -174,7 +174,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
         private void HandleHorizontalResize(Rect horizontalSpritRect, ref Rect dragTargetRect, ref ResizeContext rc)
         {
             EditorGUIUtility.AddCursorRect(horizontalSpritRect, MouseCursor.ResizeVertical);
-            if (Event.current.type == EventType.mouseDown &&
+            if (Event.current.type == EventType.MouseDown &&
                 horizontalSpritRect.Contains (Event.current.mousePosition)) 
             {
                 rc.isResizeNow = true;
