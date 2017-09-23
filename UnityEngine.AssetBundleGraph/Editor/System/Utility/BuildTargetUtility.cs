@@ -42,8 +42,10 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return "OSX Standalone";
 			case BuildTarget.StandaloneOSXIntel64:
 				return "OSX Standalone(64-bit)";
-			case BuildTarget.StandaloneOSXUniversal:
-				return "OSX Standalone(Universal)";
+            #if !UNITY_2017_2_OR_NEWER
+            case BuildTarget.StandaloneOSX:
+                return "OSX Standalone(Universal)";
+            #endif
 			case BuildTarget.StandaloneWindows:
 				return "Windows Standalone";
 			case BuildTarget.StandaloneWindows64:
@@ -128,7 +130,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			return "Linux";
 			case BuildTarget.StandaloneOSXIntel:
 			case BuildTarget.StandaloneOSXIntel64:
-			case BuildTarget.StandaloneOSXUniversal:
+            #if !UNITY_2017_2_OR_NEWER
+            case BuildTarget.StandaloneOSX:
+            #endif
 			return "OSX";
             case BuildTarget.StandaloneWindows:
             case BuildTarget.StandaloneWindows64:
@@ -263,7 +267,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			case BuildTarget.StandaloneLinuxUniversal:
 			case BuildTarget.StandaloneOSXIntel:
 			case BuildTarget.StandaloneOSXIntel64:
-			case BuildTarget.StandaloneOSXUniversal:
+            #if !UNITY_2017_2_OR_NEWER
+            case BuildTarget.StandaloneOSX:
+            #endif
 			case BuildTarget.StandaloneWindows:
 			case BuildTarget.StandaloneWindows64:
 				return BuildTargetGroup.Standalone;
