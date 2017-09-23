@@ -14,7 +14,9 @@ namespace UnityEngine.AssetBundles.GraphTool
 	[CustomNode("Group Assets/Group By File", 42)]
 	public class GroupingByFile : Node {
 
-		public override string ActiveStyle {
+        [SerializeField] private SerializableMultiTargetString m_groupNameFormat;
+
+        public override string ActiveStyle {
 			get {
 				return "node 2 on";
 			}
@@ -33,12 +35,15 @@ namespace UnityEngine.AssetBundles.GraphTool
 		}
 
 		public override void Initialize(Model.NodeData data) {
+            m_groupNameFormat = new SerializableMultiTargetString();
+
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
 		}
 
 		public override Node Clone(Model.NodeData newData) {
             var newNode = new GroupingByFile();
+            newNode.m_groupNameFormat = new SerializableMultiTargetString(m_groupNameFormat);
 
             newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -49,6 +54,37 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 			EditorGUILayout.HelpBox("Group By File: Create group per individual asset.", MessageType.Info);
 			editor.UpdateNodeName(node);
+
+            GUILayout.Space(4f);
+
+            //Show target configuration tab
+            editor.DrawPlatformSelector(node);
+            using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+                var disabledScope = editor.DrawOverrideTargetToggle (node, m_groupNameFormat.ContainsValueOf (editor.CurrentEditingGroup), (bool enabled) => {
+                    using (new RecordUndoScope ("Remove Target Grouping Settings", node, true)) {
+                        if (enabled) {
+                            m_groupNameFormat [editor.CurrentEditingGroup] = m_groupNameFormat.DefaultValue;
+                        } else {
+                            m_groupNameFormat.Remove (editor.CurrentEditingGroup);
+                        }
+                        onValueChanged ();
+                    }
+                });
+
+                using (disabledScope) {
+                    var newGroupNameFormat = EditorGUILayout.TextField ("Group Name Format", m_groupNameFormat [editor.CurrentEditingGroup]);
+                    EditorGUILayout.HelpBox (
+                        "You can customize group name. You can use variable $0 for old group name and $1 for current matching name.", 
+                        MessageType.Info);
+
+                    if (newGroupNameFormat != m_groupNameFormat [editor.CurrentEditingGroup]) {
+                        using (new RecordUndoScope ("Change Group Name", node, true)) {
+                            m_groupNameFormat [editor.CurrentEditingGroup] = newGroupNameFormat;
+                            onValueChanged ();
+                        }
+                    }
+                }
+            }
 		}
 
 		public override void Prepare (BuildTarget target, 
@@ -66,9 +102,17 @@ namespace UnityEngine.AssetBundles.GraphTool
             if(incoming != null) {
                 int i = 0;
                 foreach(var ag in incoming) {
-                    foreach (var assets in ag.assetGroups.Values) {
+                    foreach (var g in ag.assetGroups.Keys) {
+                        var assets = ag.assetGroups [g];
                         foreach(var a in assets) {
                             var key = i.ToString ();
+
+                            if (!string.IsNullOrEmpty (m_groupNameFormat [target])) {
+                                key = m_groupNameFormat [target]
+                                    .Replace ("$1", key)
+                                    .Replace ("$0", g);
+                            }
+
                             outputDict[key] = new List<AssetReference>();
                             outputDict [key].Add (a);
                             ++i;

@@ -21,7 +21,8 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 		[SerializeField] private SerializableMultiTargetString m_groupingKeyword;
 		[SerializeField] private SerializableMultiTargetInt m_patternType;
-		[SerializeField] private bool m_allowSlash;
+        [SerializeField] private bool m_allowSlash;
+        [SerializeField] private SerializableMultiTargetString m_groupNameFormat;
 
 		public override string ActiveStyle {
 			get {
@@ -45,6 +46,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 			m_groupingKeyword = new SerializableMultiTargetString(Model.Settings.GROUPING_KEYWORD_DEFAULT);
 			m_patternType = new SerializableMultiTargetInt((int)GroupingPatternType.WildCard);
 			m_allowSlash = false;
+            m_groupNameFormat = new SerializableMultiTargetString();
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -54,6 +56,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 			m_groupingKeyword = new SerializableMultiTargetString(v1.GroupingKeywords);
 			m_patternType = new SerializableMultiTargetInt((int)GroupingPatternType.WildCard);
 			m_allowSlash = true;
+            m_groupNameFormat = new SerializableMultiTargetString();
 		}
 
 		public override Node Clone(Model.NodeData newData) {
@@ -61,6 +64,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 			newNode.m_groupingKeyword = new SerializableMultiTargetString(m_groupingKeyword);
 			newNode.m_patternType = new SerializableMultiTargetInt(m_patternType);
 			newNode.m_allowSlash = m_allowSlash;
+            newNode.m_groupNameFormat = new SerializableMultiTargetString(m_groupNameFormat);
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -97,9 +101,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 						if(enabled) {
 							m_groupingKeyword[editor.CurrentEditingGroup] = m_groupingKeyword.DefaultValue;
 							m_patternType[editor.CurrentEditingGroup] = m_patternType.DefaultValue;
+                            m_groupNameFormat[editor.CurrentEditingGroup] = m_groupNameFormat.DefaultValue;
 						} else {
 							m_groupingKeyword.Remove(editor.CurrentEditingGroup);
 							m_patternType.Remove(editor.CurrentEditingGroup);
+                            m_groupNameFormat.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
@@ -132,6 +138,18 @@ namespace UnityEngine.AssetBundles.GraphTool
 							onValueChanged();
 						}
 					}
+
+                    var newGroupNameFormat = EditorGUILayout.TextField("Group Name Format",m_groupNameFormat[editor.CurrentEditingGroup]);
+                    EditorGUILayout.HelpBox(
+                        "You can customize group name. You can use variable $0 for old group name and $1 for current matching name.", 
+                        MessageType.Info);
+
+                    if (newGroupNameFormat != m_groupNameFormat[editor.CurrentEditingGroup]) {
+                        using(new RecordUndoScope("Change Group Name", node, true)){
+                            m_groupNameFormat[editor.CurrentEditingGroup] = newGroupNameFormat;
+                            onValueChanged();
+                        }
+                    }
 				}
 			}
 		}
@@ -189,7 +207,8 @@ namespace UnityEngine.AssetBundles.GraphTool
 				}
 
 				foreach(var ag in incoming) {
-					foreach (var assets in ag.assetGroups.Values) {
+                    foreach (var g in ag.assetGroups.Keys) {
+                        var assets = ag.assetGroups [g];
 						foreach(var a in assets) {
 							var targetPath = a.path;
 
@@ -197,6 +216,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 
 							if (match.Success) {
 								var newGroupingKey = match.Groups[1].Value;
+                                if (!string.IsNullOrEmpty (m_groupNameFormat [target])) {
+                                    newGroupingKey = m_groupNameFormat [target]
+                                        .Replace ("$1", newGroupingKey)
+                                        .Replace ("$0", g);
+                                }
 
 								if(!m_allowSlash && newGroupingKey.Contains("/")) {
 									throw new NodeException(String.Format("Grouping Keyword with directory separator('/') found: \"{0}\" from asset: {1}", 

@@ -29,6 +29,7 @@ namespace UnityEngine.AssetBundles.GraphTool
         [SerializeField] private GroupViewContext m_groupViewContext;
         [SerializeField] private bool m_freezeGroups;
         [SerializeField] private SerializableGroups m_savedGroups;
+        [SerializeField] private SerializableMultiTargetString m_groupNameFormat;
 
         private GroupViewController m_groupViewController;
         private Dictionary<string, List<AssetReference>> m_lastOutputGroups;
@@ -56,6 +57,7 @@ namespace UnityEngine.AssetBundles.GraphTool
             m_groupingType = new SerializableMultiTargetInt();
             m_groupViewContext = new GroupViewContext ();
             m_freezeGroups = false;
+            m_groupNameFormat = new SerializableMultiTargetString();
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -67,6 +69,7 @@ namespace UnityEngine.AssetBundles.GraphTool
             newNode.m_groupingType = new SerializableMultiTargetInt(m_groupingType);
             newNode.m_groupViewContext = new GroupViewContext ();
             newNode.m_freezeGroups = m_freezeGroups;
+            newNode.m_groupNameFormat = new SerializableMultiTargetString(m_groupNameFormat);
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -92,9 +95,11 @@ namespace UnityEngine.AssetBundles.GraphTool
 						if(enabled) {
 							m_groupSizeByte[editor.CurrentEditingGroup] = m_groupSizeByte.DefaultValue;
                             m_groupingType[editor.CurrentEditingGroup] = m_groupingType.DefaultValue;
+                            m_groupNameFormat[editor.CurrentEditingGroup] = m_groupNameFormat.DefaultValue;
 						} else {
 							m_groupSizeByte.Remove(editor.CurrentEditingGroup);
                             m_groupingType.Remove(editor.CurrentEditingGroup);
+                            m_groupNameFormat.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
@@ -119,6 +124,18 @@ namespace UnityEngine.AssetBundles.GraphTool
 							onValueChanged();
 						}
 					}
+
+                    var newGroupNameFormat = EditorGUILayout.TextField ("Group Name Format", m_groupNameFormat [editor.CurrentEditingGroup]);
+                    EditorGUILayout.HelpBox (
+                        "You can customize group name. You can use variable $0 for old group name and $1 for current matching name.", 
+                        MessageType.Info);
+
+                    if (newGroupNameFormat != m_groupNameFormat [editor.CurrentEditingGroup]) {
+                        using (new RecordUndoScope ("Change Group Name", node, true)) {
+                            m_groupNameFormat [editor.CurrentEditingGroup] = newGroupNameFormat;
+                            onValueChanged ();
+                        }
+                    }
 				}
 			}
 
@@ -184,6 +201,16 @@ namespace UnityEngine.AssetBundles.GraphTool
             }
         }
 
+        private string GetGroupName(BuildTarget target, string oldGroupName, int groupCount) {
+            if (!string.IsNullOrEmpty (m_groupNameFormat [target])) {
+                return m_groupNameFormat [target]
+                    .Replace ("$1", groupCount.ToString ())
+                    .Replace ("$0", oldGroupName);
+            } else {
+                return groupCount.ToString ();
+            }
+        }
+
 		private void GroupingOutput (BuildTarget target, 
 			Model.NodeData node, 
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
@@ -212,12 +239,13 @@ namespace UnityEngine.AssetBundles.GraphTool
                     ++groupCount;
                 }
             }
-            var groupName = groupCount.ToString();
 
 			if(incoming != null) {
 
 				foreach(var ag in incoming) {
-					foreach (var assets in ag.assetGroups.Values) {
+                    foreach (var g in ag.assetGroups.Keys) {
+                        var assets = ag.assetGroups[g];
+                        var groupName = GetGroupName(target, g, groupCount);
 						foreach(var a in assets) {
 
                             if (m_freezeGroups && m_savedGroups != null) {
@@ -246,7 +274,7 @@ namespace UnityEngine.AssetBundles.GraphTool
                                         ++groupCount;
                                     }
                                 }
-								groupName = groupCount.ToString();
+                                groupName = GetGroupName(target, g, groupCount);
 							}
 						}
 					}
