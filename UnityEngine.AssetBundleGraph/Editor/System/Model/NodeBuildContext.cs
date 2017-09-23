@@ -44,5 +44,19 @@ namespace UnityEngine.AssetBundles.GraphTool {
         /// The progress func.
         /// </summary>
         public Action<Model.NodeData, string, float> progressFunc;
+
+        public Dictionary<string, string> groupName;
+
+        public bool HasConnectionToOutput() {
+            return connectionsToOutput != null && connectionsToOutput.Any ();
+        }
+
+        public bool CanOutput() {
+            return outputFunc != null && HasConnectionToOutput ();
+        }
+
+        public Model.ConnectionData GetFirstOutputConnectionData() {
+            return (HasConnectionToOutput ()) ? connectionsToOutput.First () : null;
+        }
 	}
 }
