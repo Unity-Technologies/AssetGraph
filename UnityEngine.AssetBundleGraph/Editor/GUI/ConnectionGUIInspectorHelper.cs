@@ -10,15 +10,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 	public class ConnectionGUIInspectorHelper : ScriptableObject {
 		public ConnectionGUI connectionGUI;
 		public Dictionary<string, List<AssetReference>> assetGroups;
-        public GroupViewContext groupViewContext;
+        public GroupViewContext groupViewContext = new GroupViewContext ();
 
 		public void UpdateInspector (ConnectionGUI con, Dictionary<string, List<AssetReference>> assetGroups) {
 			this.connectionGUI = con;
 			this.assetGroups = assetGroups;
-
-            if (groupViewContext == null) {
-                groupViewContext = new GroupViewContext ();
-            }
 		}
 
 		public void UpdateAssetGroups(Dictionary<string, List<AssetReference>> assetGroups) {
