@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	public class GraphBackground {
 
 		protected const float kNodeGridSize = 12.0f;
@@ -46,7 +46,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		{
 			// Unity has a built-in shader that is useful for drawing
 			// simple colored things.
-			Shader shader = Shader.Find ("Hidden/AssetBundleGraph/LineDraw");
+            Shader shader = Shader.Find ("Hidden/AssetGraph/LineDraw");
 			Material m = new Material (shader);
 			m.hideFlags = HideFlags.HideAndDontSave;
 			return m;

@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model = UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool
+namespace UnityEngine.AssetGraph
 {
     public struct ConfigurationOption {
         public bool keepPackingTag;
@@ -30,7 +30,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             if (importer.GetType() != referenceImporter.GetType())
             {
-                throw new AssetBundleGraphException("Importer type does not match.");
+                throw new AssetGraphException("Importer type does not match.");
             }
 
             if (importer.GetType() == typeof(UnityEditor.TextureImporter))
@@ -53,7 +53,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 #endif
             else
             {
-                throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
+                throw new AssetGraphException("Unknown importer type found:" + importer.GetType());
             }
         }
 
@@ -68,7 +68,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 
             if (importer.GetType() != referenceImporter.GetType())
             {
-                throw new AssetBundleGraphException("Importer type does not match.");
+                throw new AssetGraphException("Importer type does not match.");
             }
 
             if (importer.GetType() == typeof(UnityEditor.TextureImporter))
@@ -91,7 +91,7 @@ namespace UnityEngine.AssetBundles.GraphTool
 #endif
             else
             {
-                throw new AssetBundleGraphException("Unknown importer type found:" + importer.GetType());
+                throw new AssetGraphException("Unknown importer type found:" + importer.GetType());
             }
         }
 

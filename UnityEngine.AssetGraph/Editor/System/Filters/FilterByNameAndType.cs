@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[CustomFilter("Filter by Filename and Type")]
 	public class FilterByNameAndType : IFilter {

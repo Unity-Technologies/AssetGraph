@@ -1,15 +1,15 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	class AssetReferenceDatabasePostprocessor : AssetPostprocessor 
 	{
 		static void OnPostprocessAllAssets (string[] importedAssets, 
 			string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
 		{
-			LogUtility.Logger.Log("[OnPostprocessAllAssets]");
+			//LogUtility.Logger.Log("[OnPostprocessAllAssets]");
 
 			foreach (string str in deletedAssets) 
 			{
@@ -23,7 +23,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			NotifyAssetPostprocessorGraphs (importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 
-			AssetBundleGraphEditorWindow.NotifyAssetsReimportedToAllWindows(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+			AssetGraphEditorWindow.NotifyAssetsReimportedToAllWindows(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 		}
 
 		static void NotifyAssetPostprocessorGraphs(string[] importedAssets, 

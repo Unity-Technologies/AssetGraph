@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	public class LogUtility {
 
@@ -20,7 +20,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 //			}
 //		}
 
-		public static readonly string kTag = "AssetBundle";
+		public static readonly string kTag = "AssetGraph";
 
 		private static Logger s_logger;
 

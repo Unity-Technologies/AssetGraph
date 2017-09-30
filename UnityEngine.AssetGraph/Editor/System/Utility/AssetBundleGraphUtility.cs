@@ -6,9 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
     /// <summary>
     /// Execute graph result.
@@ -85,7 +85,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BuildTarget t, string collectionName) {
 			var c = BatchBuildConfig.GetConfig().Find(collectionName);
 			if(c == null) {
-				throw new AssetBundleGraphException(
+				throw new AssetGraphException(
 					string.Format("Failed to build with graph collection. Graph collection '{0}' not found. ", collectionName)
 				);
 			}
@@ -168,7 +168,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 			LogUtility.Logger.LogFormat(LogType.Log, "Executing graph:{0}", assetPath);
 
-			AssetBundleGraphController c = new AssetBundleGraphController(graph);
+			AssetGraphController c = new AssetGraphController(graph);
 
 			// perform setup. Fails if any exception raises.
 			c.Perform(target, false, true, null);

@@ -9,7 +9,7 @@ using System.Linq;
 using UnityEditor;
 #endif
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	public class AssetBundleBuildMap : ScriptableObject {
 
 		[SerializeField] private List<AssetBundleEntry> m_assetBundles;
@@ -35,7 +35,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                     var fileInfo = new FileInfo(configGuiPath);
                     var baseDir = fileInfo.Directory.Parent;
 
-                    Assertions.Assert.AreEqual ("UnityEngine.AssetBundleGraph", baseDir.Name);
+                    Assertions.Assert.AreEqual ("UnityEngine.AssetGraph", baseDir.Name);
 
 					string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
 

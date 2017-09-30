@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using UnityEditor;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Load Assets/Load By Search Filter", 11)]
 	public class LoaderBySearch : Node {

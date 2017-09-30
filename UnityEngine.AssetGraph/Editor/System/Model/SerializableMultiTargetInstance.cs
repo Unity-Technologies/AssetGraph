@@ -3,9 +3,9 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[Serializable] 
 	public class SerializableMultiTargetInstance {

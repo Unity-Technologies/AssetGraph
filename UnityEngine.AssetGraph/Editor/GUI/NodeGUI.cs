@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	[Serializable] 
 	public class NodeGUI {
 
@@ -99,7 +99,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public NodeGUI (AssetBundleGraphController controller, Model.NodeData data) {
+		public NodeGUI (AssetGraphController controller, Model.NodeData data) {
 			m_nodeWindowId = 0;
 			m_graph = controller.TargetGraph;
 			m_data = data;
@@ -110,7 +110,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			Inspector.controller = controller;
 		}
 
-		public NodeGUI Duplicate (AssetBundleGraphController controller, float newX, float newY) {
+		public NodeGUI Duplicate (AssetGraphController controller, float newX, float newY) {
 			var data = m_data.Duplicate();
 			data.X = newX;
 			data.Y = newY;

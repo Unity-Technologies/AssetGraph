@@ -14,9 +14,9 @@ using UnityEngine.Playables;
 using UnityEngine.Timeline;
 #endif
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	public static class TypeUtility {
 		public static readonly List<string> KeyTypes = new List<string>{
 			// empty

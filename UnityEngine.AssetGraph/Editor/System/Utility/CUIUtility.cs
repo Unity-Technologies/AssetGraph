@@ -6,12 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	public class CUIUtility {
 
-		private static readonly string kCommandMethod = "UnityEngine.AssetBundles.GraphTool.CUIUtility.BuildFromCommandline";
+		private static readonly string kCommandMethod = "UnityEngine.AssetGraph.CUIUtility.BuildFromCommandline";
 
 		private static readonly string kCommandStr = 
 			"\"{0}\" -batchmode -quit -projectPath \"{1}\" -logFile abbuild.log -executeMethod {2} {3}";
@@ -59,7 +59,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 					var newTarget = BuildTargetUtility.BuildTargetFromString(arguments[targetIndex+1]);
 					if(!BuildTargetUtility.IsBuildTargetSupported(newTarget)) {
-						throw new AssetBundleGraphException(newTarget + " is not supported to build with this Unity. Please install platform support with installer(s).");
+						throw new AssetGraphException(newTarget + " is not supported to build with this Unity. Please install platform support with installer(s).");
 					}
 
 					if(newTarget != target) {

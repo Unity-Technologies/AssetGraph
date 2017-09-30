@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Create Assets/Create Prefab From Group", 50)]
 	public class PrefabBuilder : Node, Model.NodeDataImporter {
@@ -420,7 +420,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 if(PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets)) {
                     UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets, previousPrefab);
 					if(obj == null) {
-						throw new AssetBundleGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
+						throw new AssetGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
 							node.Name, builder.GetType().FullName, key));
 					}
 

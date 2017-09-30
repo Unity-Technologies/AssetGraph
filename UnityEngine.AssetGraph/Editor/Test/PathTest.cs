@@ -5,9 +5,9 @@ using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
 using System.IO;
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
-using UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using UnityEngine.AssetGraph.DataModel.Version2;
 
 public class PathTest {
 

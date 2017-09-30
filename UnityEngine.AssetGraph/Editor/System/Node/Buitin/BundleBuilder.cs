@@ -7,9 +7,9 @@ using System.Linq;
 using System.Collections.Generic;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Build/Build Asset Bundles", 90)]
 	public class BundleBuilder : Node, Model.NodeDataImporter {

@@ -3,10 +3,10 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-using UnityEngine.AssetBundles.GraphTool;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool.Modifiers {
+namespace UnityEngine.AssetGraph.Modifiers {
 
 	/*
 	 * Code template for Font modifier.

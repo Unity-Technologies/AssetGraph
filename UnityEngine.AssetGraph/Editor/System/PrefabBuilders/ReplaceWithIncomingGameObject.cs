@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
 [CustomPrefabBuilder("[Experimental]Replace With Incoming GameObject", "v1.0", 50)]
 public class ReplaceWithIncomingGameObject : IPrefabBuilder {

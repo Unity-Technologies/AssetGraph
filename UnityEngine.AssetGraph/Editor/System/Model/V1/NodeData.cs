@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
 namespace AssetBundleGraph {
 
@@ -565,7 +565,7 @@ namespace AssetBundleGraph {
 				break;
 
 			default:
-				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
+				throw new AssetGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
 			}
 		}
 
@@ -626,7 +626,7 @@ namespace AssetBundleGraph {
 				break;
 
 			default:
-				throw new AssetBundleGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
+				throw new AssetGraphException("[FATAL]Unhandled nodekind. unimplmented:"+ m_kind);
 			}
 
 			return newData;
@@ -761,7 +761,7 @@ namespace AssetBundleGraph {
 					return;
 				}
 			}
-			throw new AssetBundleGraphException(m_name + ": Tried to access invalid method or property.");
+			throw new AssetGraphException(m_name + ": Tried to access invalid method or property.");
 		}
 
 		public bool Validate (List<NodeData> allNodes, List<ConnectionData> allConnections) {

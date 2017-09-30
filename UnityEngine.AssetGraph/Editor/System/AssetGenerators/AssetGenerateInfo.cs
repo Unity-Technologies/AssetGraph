@@ -7,9 +7,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	public class AssetGenerateInfo : ScriptableObject {
 

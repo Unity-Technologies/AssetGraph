@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	[System.Serializable]
 	public class SerializedInstance<T> where T: class {
 

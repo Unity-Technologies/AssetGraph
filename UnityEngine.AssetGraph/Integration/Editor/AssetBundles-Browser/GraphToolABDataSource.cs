@@ -8,7 +8,7 @@
  */
  
 using UnityEditor;
-using Model = UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model = UnityEngine.AssetGraph.DataModel.Version2;
 using System;
 using System.Collections.Generic;
 
@@ -18,13 +18,13 @@ namespace UnityEngine.AssetBundles.AssetBundleDataSource
     public partial interface ABDataSource { }
 }
 
-namespace UnityEngine.AssetBundles.GraphTool {
-	public class GraphToolABDataSource : AssetBundleDataSource.ABDataSource
+namespace UnityEngine.AssetGraph {
+    public class GraphToolABDataSource : UnityEngine.AssetBundles.AssetBundleDataSource.ABDataSource
     {
-        public static List<AssetBundleDataSource.ABDataSource> CreateDataSources()
+        public static List<UnityEngine.AssetBundles.AssetBundleDataSource.ABDataSource> CreateDataSources()
         {
             var op = new GraphToolABDataSource();
-            var retList = new List<AssetBundleDataSource.ABDataSource>();
+            var retList = new List<UnityEngine.AssetBundles.AssetBundleDataSource.ABDataSource>();
             retList.Add(op);
             return retList;
         }
@@ -37,7 +37,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		public string ProviderName {
 			get {
-				return "GraphTool";
+				return "AssetGraph";
 			}
 		}
 
@@ -80,7 +80,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			get { return false; } 
 		}
 
-		public bool BuildAssetBundles (AssetBundleDataSource.ABBuildInfo info) {
+        public bool BuildAssetBundles (UnityEngine.AssetBundles.AssetBundleDataSource.ABBuildInfo info) {
 			
             AssetBundleBuildMap.GetBuildMap ().Clear ();
 

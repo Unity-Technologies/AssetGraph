@@ -9,10 +9,10 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
-	public class AssetBundleGraphController {
+namespace UnityEngine.AssetGraph {
+	public class AssetGraphController {
 
 		private List<NodeException> m_nodeExceptions;
 		private AssetReferenceStreamManager m_streamManager;
@@ -57,7 +57,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		public AssetBundleGraphController(Model.ConfigGraph graph) {
+		public AssetGraphController(Model.ConfigGraph graph) {
 			m_targetGraph = graph;
 			m_nodeExceptions = new List<NodeException>();
 			m_streamManager = new AssetReferenceStreamManager(m_targetGraph);
@@ -197,7 +197,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
                 foreach (var t in ppTypes) {
                     var postprocessScriptInstance = assembly.CreateInstance(t.FullName);
                     if (postprocessScriptInstance == null) {
-                        throw new AssetBundleGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
+                        throw new AssetGraphException("Postprocess " + t.Name + " failed to run (failed to create instance from assembly).");
                     }
 
                     var postprocessInstance = (IPostprocess)postprocessScriptInstance;

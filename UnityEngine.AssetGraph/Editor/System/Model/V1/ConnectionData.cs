@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
 namespace AssetBundleGraph {
 
@@ -125,7 +125,7 @@ namespace AssetBundleGraph {
 
 		public static void ValidateConnection (NodeData from, NodeData to) {
 			if(!CanConnect(from, to)) {
-				throw new AssetBundleGraphException(to.Kind + " does not accept connection from " + from.Kind);
+				throw new AssetGraphException(to.Kind + " does not accept connection from " + from.Kind);
 			}
 		}
 

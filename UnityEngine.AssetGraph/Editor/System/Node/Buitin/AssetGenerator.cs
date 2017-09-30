@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Create Assets/Generate Asset", 51)]
 	public class AssetGenerator : Node {
@@ -327,11 +327,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
                                 var assetSavePath = FileUtility.PathCombine (assetSaveDir, a.fileName + generator.GetAssetExtension(a));
 
                                 if (!generator.GenerateAsset (a, assetSavePath)) {
-                                    throw new AssetBundleGraphException(string.Format("{0} :Failed to generate asset for {1}", 
+                                    throw new AssetGraphException(string.Format("{0} :Failed to generate asset for {1}", 
                                         node.Name, entry.m_name));
                                 }
                                 if (!File.Exists (assetSavePath)) {
-                                    throw new AssetBundleGraphException(string.Format("{0} :{1} returned success, but generated asset not found.", 
+                                    throw new AssetGraphException(string.Format("{0} :{1} returned success, but generated asset not found.", 
                                         node.Name, entry.m_name));
                                 }
 

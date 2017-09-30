@@ -7,16 +7,16 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 
 	[CustomEditor(typeof(Model.ConfigGraph))]
 	public class ConfigGraphEditor : Editor {
 
 		private class Styles {
 			public static readonly string kEDITBUTTON_LABEL		= "Open in Graph Editor";
-			public static readonly string kEDITBUTTON_DESCRIPTION	= "Opens in the AssetBundle Graph Editor, which will allow you to configure the graph";
+			public static readonly string kEDITBUTTON_DESCRIPTION	= "Opens graph in editor to modify the graph.";
 			public static readonly GUIContent kEDITBUTTON = new GUIContent(kEDITBUTTON_LABEL, kEDITBUTTON_DESCRIPTION);
 		}
 
@@ -29,7 +29,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				if (GUILayout.Button(Styles.kEDITBUTTON, GUILayout.Width(150f), GUILayout.ExpandWidth(false)))
 				{
 					// Get the target we are inspecting and open the graph
-					var window = EditorWindow.GetWindow<AssetBundleGraphEditorWindow>();
+					var window = EditorWindow.GetWindow<AssetGraphEditorWindow>();
 					window.OpenGraph(graph);
 				}
 			}

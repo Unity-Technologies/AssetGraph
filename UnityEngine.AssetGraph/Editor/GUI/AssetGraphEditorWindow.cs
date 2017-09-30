@@ -8,10 +8,10 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
-	public class AssetBundleGraphEditorWindow : EditorWindow {
+namespace UnityEngine.AssetGraph {
+	public class AssetGraphEditorWindow : EditorWindow {
 		[Serializable]
 		public class SavedSelection {
 			[SerializeField] public List<NodeGUI> nodes;
@@ -83,7 +83,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			public void Clear(AssetBundleGraphController controller, bool deactivate = false) {
+			public void Clear(AssetGraphController controller, bool deactivate = false) {
 
 				if(deactivate) {
 					foreach(var n in nodes) {
@@ -148,15 +148,15 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private string graphAssetPath;
 		private string graphAssetName;
 
-		private AssetBundleGraphController controller;
+		private AssetGraphController controller;
 		private BuildTarget target;
 
 		private Vector2 m_LastMousePosition;
 		private Vector2 m_DragNodeDistance;
 		private readonly Dictionary<NodeGUI, Vector2> m_InitialDragNodePositions = new Dictionary<NodeGUI, Vector2> ();
 
-		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetBundles.GraphTool.LastEditedGraph";
-		static readonly int kDragNodesControlID = "AssetBundleGraphTool.HandleDragNodes".GetHashCode();
+		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetGraph.LastEditedGraph";
+        static readonly int kDragNodesControlID = "AssetGraph.HandleDragNodes".GetHashCode();
 
 		private GUIContent ReloadButtonTexture {
 			get {
@@ -178,11 +178,11 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		/*
 		 * An alternative way to get Window, becuase
-		 * GetWindow<AssetBundleGraphEditorWindow>() forces window to be active and present
+		 * GetWindow<AssetGraphEditorWindow>() forces window to be active and present
 		 */ 
-		private static AssetBundleGraphEditorWindow Window {
+		private static AssetGraphEditorWindow Window {
 			get {
-				AssetBundleGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetBundleGraphEditorWindow>();
+				AssetGraphEditorWindow[] windows = Resources.FindObjectsOfTypeAll<AssetGraphEditorWindow>();
 				if(windows.Length > 0) {
 					return windows[0];
 				}
@@ -285,7 +285,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_OPEN, false, 1)]
 		public static void Open () {
-			GetWindow<AssetBundleGraphEditorWindow>();
+			GetWindow<AssetGraphEditorWindow>();
 		}
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
@@ -319,7 +319,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 101)]
 		public static void BuildFromMenu () {
-			var window = GetWindow<AssetBundleGraphEditorWindow>();
+			var window = GetWindow<AssetGraphEditorWindow>();
 			window.SaveGraph();
 			window.Run();
 		}
@@ -379,7 +379,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void Init() {
 			LogUtility.Logger.filterLogType = LogType.Warning;
 
-			this.titleContent = new GUIContent("AssetBundle");
+			this.titleContent = new GUIContent("AssetGraph");
 			this.minSize = new Vector2(600f, 300f);
 			this.wantsMouseMove = true;
 
@@ -434,7 +434,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		{
 			var graph = EditorUtility.InstanceIDToObject( instanceID ) as Model.ConfigGraph;
 			if(graph != null) {
-				var window = GetWindow<AssetBundleGraphEditorWindow>();
+				var window = GetWindow<AssetGraphEditorWindow>();
 				window.OpenGraph(graph);
 				return true;
 			}
@@ -444,7 +444,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public void OpenGraph (string path) {
 			Model.ConfigGraph graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
 			if(graph == null) {
-				throw new AssetBundleGraphException("Could not open graph:" + path);
+				throw new AssetGraphException("Could not open graph:" + path);
 			}
 			OpenGraph(graph);
 		}
@@ -464,7 +464,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			activeSelection = null;
 			currentEventSource = null;
 
-			controller = new AssetBundleGraphController(graph);
+			controller = new AssetGraphController(graph);
 			ConstructGraphGUI();
 			Setup();
 
@@ -491,9 +491,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void CreateNewGraphFromDialog() {
 			string path =
 			EditorUtility.SaveFilePanelInProject(
-				"Create New AssetBundle Graph", 
-				"AssetBundle Graph", "asset", 
-				"Create a new asset bundle graph:");
+				"Create New Asset Graph", 
+				"Asset Graph", "asset", 
+				"Create a new asset graph:");
 			if(string.IsNullOrEmpty(path)) {
 				return;
 			}
@@ -505,9 +505,9 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		private void CreateNewGraphFromImport() {
 			string path =
 				EditorUtility.SaveFilePanelInProject(
-					"Import AssetBundle Graph", 
-					"AssetBundle Graph", "asset", 
-					"Create a new asset bundle graph from previous version data:");
+					"Import Asset Graph", 
+					"Asset Graph", "asset", 
+					"Create a new asset graph from previous version data:");
 			if(string.IsNullOrEmpty(path)) {
 				return;
 			}
@@ -659,7 +659,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 					float currentNodeProgress = progress * (1.0f / totalCount);
 					float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
 
-					string title = string.Format("Processing AssetBundle Graph[{0}/{1}]", currentCount, totalCount);
+					string title = string.Format("Processing Asset Graph[{0}/{1}]", currentCount, totalCount);
 					string info  = string.Format("{0}:{1}", node.Name, message);
 
 					EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
@@ -687,23 +687,17 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				return;
 			}
 
-			switch (Selection.activeObject.GetType().ToString()) {
-				case "AssetBundleGraph.ConnectionGUIInspectorHelper": {
-					var con = ((ConnectionGUIInspectorHelper)Selection.activeObject).connectionGUI;
-					
-					// null when multiple connection deleted.
-					if (string.IsNullOrEmpty(con.Id)) {
-						return; 
-					}
+            if (Selection.activeObject.GetType () == typeof(ConnectionGUIInspectorHelper)) {
+                var curObj = Selection.activeObject as ConnectionGUIInspectorHelper;
+                var con = curObj.connectionGUI;
 
-					((ConnectionGUIInspectorHelper)Selection.activeObject).UpdateAssetGroups(streamManager.FindAssetGroup(con.Id));
-					break;
-				}
-				default: {
-					// do nothing.
-					break;
-				}
-			}
+                // null when multiple connection deleted.
+                if (string.IsNullOrEmpty(con.Id)) {
+                    return; 
+                }
+
+                curObj.UpdateAssetGroups(streamManager.FindAssetGroup(con.Id));
+            }
 		}
 
 		private void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
@@ -844,7 +838,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 			}
 		}
 
-		static readonly string kGUIDELINETEXT = "To configure asset bundle workflow, create an AssetBundle Graph.";
+		static readonly string kGUIDELINETEXT = "To configure asset workflow, create an asset graph.";
 		static readonly string kCREATEBUTTON  = "Create";
 		static readonly string kIMPORTBUTTON  = "Import previous version";
 

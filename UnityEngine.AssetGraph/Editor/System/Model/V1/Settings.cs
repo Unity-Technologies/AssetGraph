@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using System.IO;
 
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
 namespace AssetBundleGraph {
 	public class Settings {
@@ -14,17 +14,18 @@ namespace AssetBundleGraph {
 		*/
 		public const bool IGNORE_META = true;
 
-		public const string GUI_TEXT_MENU_OPEN = "Window/AssetBundleGraph/Open Graph Editor";
-		public const string GUI_TEXT_MENU_BUILD = "Window/AssetBundleGraph/Build Bundles for Current Platform";
-		public const string GUI_TEXT_MENU_GENERATE = "Window/AssetBundleGraph/Create Node Script";
+        public const string GUI_TEXT_MENU_BASE = "Window/AssetGraph";
+        public const string GUI_TEXT_MENU_OPEN = GUI_TEXT_MENU_BASE + "/Open Graph Editor";
+        public const string GUI_TEXT_MENU_BUILD = GUI_TEXT_MENU_BASE + "/Build Bundles for Current Platform";
+        public const string GUI_TEXT_MENU_GENERATE = GUI_TEXT_MENU_BASE + "/Create Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
 		public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";
-		public const string GUI_TEXT_MENU_GENERATE_CUITOOL = "Window/AssetBundleGraph/Create CUI Tool";
+        public const string GUI_TEXT_MENU_GENERATE_CUITOOL = GUI_TEXT_MENU_BASE + "/Create CUI Tool";
 
 		public const string GUI_TEXT_MENU_GENERATE_POSTPROCESS = GUI_TEXT_MENU_GENERATE + "/Postprocess Script";
-		public const string GUI_TEXT_MENU_DELETE_CACHE = "Window/AssetBundleGraph/Clear Build Cache";
+        public const string GUI_TEXT_MENU_DELETE_CACHE = GUI_TEXT_MENU_BASE + "/Clear Build Cache";
 		
-		public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = "Window/AssetBundleGraph/Clear Saved ImportSettings";
+        public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = GUI_TEXT_MENU_BASE + "/Clear Saved ImportSettings";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string UNITY_LOCAL_DATAPATH = "Assets";
@@ -76,7 +77,7 @@ namespace AssetBundleGraph {
             /// Customize this to match your project's setup if you need to change.
             /// </summary>
             /// <value>The name of the base directory.</value>
-            public static string ToolDirName            { get { return "UnityEngine.AssetBundleGraph"; } }
+            public static string ToolDirName            { get { return "UnityEngine.AssetGraph"; } }
             public static string ScriptTemplatePath     { get { return BasePath + "Editor/ScriptTemplate/"; } }
             public static string SettingTemplatePath    { get { return BasePath + "Editor/SettingTemplate/"; } }
             public static string UserSpacePath          { get { return BasePath + "Generated/Editor/"; } }

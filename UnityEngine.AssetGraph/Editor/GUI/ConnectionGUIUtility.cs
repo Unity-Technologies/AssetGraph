@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	public class ConnectionGUIUtility {
 
 		public static Action<ConnectionEvent> ConnectionEventHandler {
@@ -23,7 +23,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 		public static Material HandleMaterial {
 			get {
 				if(ConnectionGUISingleton.s.handleMat == null) {
-					Shader shader = Shader.Find ("Hidden/AssetBundleGraph/LineDraw");
+					Shader shader = Shader.Find ("Hidden/AssetGraph/LineDraw");
 					Material m = new Material (shader);
 					m.hideFlags = HideFlags.HideAndDontSave;
 					ConnectionGUISingleton.s.handleMat = m;

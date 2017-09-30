@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
     /// <summary>
     /// Asset bundle build report.
     /// </summary>

@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	
 	[CustomNode("Modify Assets/Overwrite Import Setting", 60)]
 	public class ImportSetting : Node, Model.NodeDataImporter {

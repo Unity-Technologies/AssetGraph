@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
 [CustomPrefabBuilder("[Experimental]Replace GameObject By Name", "v1.0", 1)]
 public class ReplaceGameObjectByName : IPrefabBuilder {

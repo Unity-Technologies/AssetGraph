@@ -6,9 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetBundles.GraphTool.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetBundles.GraphTool {
+namespace UnityEngine.AssetGraph {
 	public class NodeGUIUtility {
 
 		public static Texture2D LoadTextureFromFile(string path) {
@@ -89,7 +89,7 @@ namespace UnityEngine.AssetBundles.GraphTool {
 				}
 			}
 
-			throw new AssetBundleGraphException("Fatal: unknown target group requsted(can't happen)" + g);
+			throw new AssetGraphException("Fatal: unknown target group requsted(can't happen)" + g);
 		}
 
 		public static List<string> allNodeNames {
