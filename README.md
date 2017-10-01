@@ -1,13 +1,13 @@
-# AssetBundleGraphTool
+# AssetGraph
 
 ![SS](/docs/html/manual_images/top.png)
 
-AssetBundleGraphTool (ABGT) is a tool that aims to reduce the workload of all the effort needed to build workflows around building Asset Bundles and Player Apps.  By using the tool, you can build workflow to create, modify, and change asset settings graphically, and even automate it.  It will free designers and artists from repetitive tasks during game development.
+AssetGraph is a tool that aims to reduce the workload of all the effort needed to build workflows around asset importing, building Asset Bundles and building Player Apps.  By using the tool, you can build workflow to create, modify, and change asset settings graphically, and even automate it.  It will free designers and artists from repetitive tasks during game development.
 
 #Getting Started
 - User Manual: [English](https://docs.google.com/document/d/1Al_1pJ7a-7lHu9dPrpWFjm9UCUpyMwmutopLHYCoSOI) |  [Japanese](https://docs.google.com/document/d/1FxGn9Me12cb6jSRHceAl5fQqdCrGapmgr1q7aO0Nqco)
-- [Quick Q&A](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Home)
-- [Release Notes](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Release%20Notes) for the latest version info.
+- [Quick Q&A](https://bitbucket.org/Unity-Technologies/assetgraph/wiki/Home)
+- [Release Notes](https://bitbucket.org/Unity-Technologies/assetgraph/wiki/Release%20Notes) for the latest version info.
 - If you find any bugs/issues or feature request, please create new Issue from [Issue Section](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/issues?status=new&status=open).
 
 #License
