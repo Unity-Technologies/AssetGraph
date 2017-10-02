@@ -95,7 +95,7 @@ namespace UnityEngine.AssetGraph {
                     if (targetInfo.GetValue(info, null) is BuildTarget)
                     {
                         BuildTarget target = (BuildTarget)targetInfo.GetValue(info, null);
-                        var result = AssetBundleGraphUtility.ExecuteGraph(target, graph);
+                        var result = AssetGraphUtility.ExecuteGraph(target, graph);
                         if (result.IsAnyIssueFound)
                         {
                             return false;

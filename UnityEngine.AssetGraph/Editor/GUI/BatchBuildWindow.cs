@@ -331,7 +331,7 @@ namespace UnityEngine.AssetGraph {
 				collection = CreateNewCollection(true);
 			}
 
-			m_result = AssetBundleGraphUtility.ExecuteGraphCollection(m_activeBuildTarget, collection);
+			m_result = AssetGraphUtility.ExecuteGraphCollection(m_activeBuildTarget, collection);
 
 			foreach(var r in m_result) {
 				if(r.IsAnyIssueFound) {

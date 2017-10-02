@@ -38,7 +38,7 @@ namespace UnityEngine.AssetGraph {
 					foreach(var n in graph.Nodes) {
 						n.Operation.Object.OnAssetsReimported(n, null, EditorUserBuildSettings.activeBuildTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 					}
-					AssetBundleGraphUtility.ExecuteGraph (graph);
+					AssetGraphUtility.ExecuteGraph (graph);
 				}
 			}
 		}

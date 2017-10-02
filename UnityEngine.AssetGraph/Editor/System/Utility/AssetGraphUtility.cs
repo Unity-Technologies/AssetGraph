@@ -65,7 +65,7 @@ namespace UnityEngine.AssetGraph {
     /// <summary>
     /// The helper utility to execute graph and graph collection from API.
     /// </summary>
-	public class AssetBundleGraphUtility {
+	public class AssetGraphUtility {
 
         /// <summary>
         /// Executes the graph collection.

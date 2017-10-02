@@ -95,7 +95,7 @@ namespace UnityEngine.AssetGraph {
 						return;
 					}
 
-					var result = AssetBundleGraphUtility.ExecuteGraph(target, graph);
+					var result = AssetGraphUtility.ExecuteGraph(target, graph);
 
 					if(result.IsAnyIssueFound) {
 						LogUtility.Logger.Log("Building asset bundles terminated because of following errors. Please fix issues by opening editor.");
@@ -121,7 +121,7 @@ namespace UnityEngine.AssetGraph {
 						return;
 					}
 
-					var result = AssetBundleGraphUtility.ExecuteGraphCollection(target, c);
+					var result = AssetGraphUtility.ExecuteGraphCollection(target, c);
 
 					foreach(var r in result) {
 						if(r.IsAnyIssueFound) {
