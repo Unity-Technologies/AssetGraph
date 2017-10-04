@@ -4,7 +4,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-using UnityEngine.AssetBundles.GraphTool;
+using UnityEngine.AssetGraph;
 
 [CustomModifier("MyModifier", typeof(RenderTexture))]
 public class MyModifier : IModifier {
