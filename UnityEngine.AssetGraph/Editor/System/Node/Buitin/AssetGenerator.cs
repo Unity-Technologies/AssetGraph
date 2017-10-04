@@ -34,9 +34,17 @@ namespace UnityEngine.AssetGraph {
                 m_instance = new SerializableMultiTargetInstance(i);
             }
         }
+            
+        public enum OutputOption : int {
+            CreateInCacheDirectory,
+            CreateInSelectedDirectory,
+            RelativeToSourceAsset
+        }
 
         [SerializeField] private List<GeneratorEntry> m_entries;
         [SerializeField] private string m_defaultOutputPointId;
+        [SerializeField] private SerializableMultiTargetString m_outputDir;
+        [SerializeField] private SerializableMultiTargetInt m_outputOption;
 
         private GeneratorEntry m_removingEntry;
 
@@ -61,6 +69,9 @@ namespace UnityEngine.AssetGraph {
 		public override void Initialize(Model.NodeData data) {
             m_entries = new List<GeneratorEntry>();
 
+            m_outputDir = new SerializableMultiTargetString();
+            m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
+
             data.AddDefaultInputPoint();
             var point = data.AddDefaultOutputPoint();
             m_defaultOutputPointId = point.Id;
@@ -72,6 +83,9 @@ namespace UnityEngine.AssetGraph {
             newData.AddDefaultOutputPoint();
             var point = newData.AddDefaultOutputPoint();
             newNode.m_defaultOutputPointId = point.Id;
+
+            newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
+            newNode.m_outputOption = new SerializableMultiTargetInt(m_outputOption);
 
             newNode.m_entries = new List<GeneratorEntry>();
             foreach(var s in m_entries) {
@@ -187,6 +201,100 @@ namespace UnityEngine.AssetGraph {
 			EditorGUILayout.HelpBox("Generate Asset: Generate new asset from incoming asset.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
+            GUILayout.Space(8f);
+
+            OutputOption opt = (OutputOption)m_outputOption[editor.CurrentEditingGroup];
+            var newOption = (OutputOption)EditorGUILayout.EnumPopup("Output Option", opt);
+            if(newOption != opt) {
+                using(new RecordUndoScope("Change Output Option", node, true)){
+                    m_outputOption[editor.CurrentEditingGroup] = (int)newOption;
+                    onValueChanged();
+                }
+                opt = newOption;
+            }
+            if (opt != OutputOption.CreateInCacheDirectory) {
+                EditorGUILayout.HelpBox ("When you are not creating assets under cache directory, make sure your generators are not overwriting assets each other.", MessageType.Info);
+            }
+
+            using (new EditorGUI.DisabledScope (opt == OutputOption.CreateInCacheDirectory)) {
+                var newDirPath = m_outputDir[editor.CurrentEditingGroup];
+
+                if (opt == OutputOption.CreateInSelectedDirectory) {
+                    newDirPath = editor.DrawFolderSelector ("Output Directory", "Select Output Folder", 
+                        m_outputDir [editor.CurrentEditingGroup],
+                        Application.dataPath,
+                        (string folderSelected) => {
+                            string basePath = Application.dataPath;
+
+                            if (basePath == folderSelected) {
+                                folderSelected = string.Empty;
+                            } else {
+                                var index = folderSelected.IndexOf (basePath);
+                                if (index >= 0) {
+                                    folderSelected = folderSelected.Substring (basePath.Length + index);
+                                    if (folderSelected.IndexOf ('/') == 0) {
+                                        folderSelected = folderSelected.Substring (1);
+                                    }
+                                }
+                            }
+                            return folderSelected;
+                        }
+                    );
+                } else if (opt == OutputOption.RelativeToSourceAsset) {
+                    newDirPath = EditorGUILayout.TextField("Relative Path", m_outputDir[editor.CurrentEditingGroup]);
+                }
+
+                if (newDirPath != m_outputDir[editor.CurrentEditingGroup]) {
+                    using(new RecordUndoScope("Change Output Directory", node, true)){
+                        m_outputDir[editor.CurrentEditingGroup] = newDirPath;
+                        onValueChanged();
+                    }
+                }
+
+                var dirPath = Path.Combine (Application.dataPath, m_outputDir [editor.CurrentEditingGroup]);
+
+                if (opt == OutputOption.CreateInSelectedDirectory && 
+                    !string.IsNullOrEmpty(m_outputDir [editor.CurrentEditingGroup]) &&
+                    !Directory.Exists (dirPath)) 
+                {
+                    using (new EditorGUILayout.HorizontalScope()) {
+                        EditorGUILayout.LabelField(m_outputDir[editor.CurrentEditingGroup] + " does not exist.");
+                        if(GUILayout.Button("Create directory")) {
+                            Directory.CreateDirectory(dirPath);
+                            AssetDatabase.Refresh ();
+                        }
+                    }
+                    EditorGUILayout.Space();
+
+                    string parentDir = Path.GetDirectoryName(m_outputDir[editor.CurrentEditingGroup]);
+                    if(Directory.Exists(parentDir)) {
+                        EditorGUILayout.LabelField("Available Directories:");
+                        string[] dirs = Directory.GetDirectories(parentDir);
+                        foreach(string s in dirs) {
+                            EditorGUILayout.LabelField(s);
+                        }
+                    }
+                    EditorGUILayout.Space();
+                }
+
+                if (opt == OutputOption.CreateInSelectedDirectory || opt == OutputOption.CreateInCacheDirectory) {
+                    var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, null);
+
+                    using (new EditorGUI.DisabledScope (!Directory.Exists (outputDir))) 
+                    {
+                        using (new EditorGUILayout.HorizontalScope ()) {
+                            GUILayout.FlexibleSpace ();
+                            if (GUILayout.Button ("Highlight in Project Window", GUILayout.Width (180f))) {
+                                var folder = AssetDatabase.LoadMainAssetAtPath (outputDir);
+                                EditorGUIUtility.PingObject (folder);
+                            }
+                        }
+                    }
+                }
+            }
+
+            GUILayout.Space(8f);
+
             foreach (var s in m_entries) {
                 DrawGeneratorSetting (s, node, streamManager, editor, onValueChanged);
             }
@@ -273,11 +381,11 @@ namespace UnityEngine.AssetGraph {
                 foreach(var groupKey in ag.assetGroups.Keys) {
                     foreach(var a in ag.assetGroups [groupKey]) {
                         foreach (var entry in m_entries) {
-                            var assetOutputDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
+                            var assetOutputDir = PrepareOutputDirectory(target, node, a);
                             var generator = entry.m_instance.Get<IAssetGenerator>(target);
                             UnityEngine.Assertions.Assert.IsNotNull(generator);
 
-                            var newItem = FileUtility.PathCombine (assetOutputDir, entry.m_id, a.fileName + generator.GetAssetExtension (a));
+                            var newItem = FileUtility.PathCombine (assetOutputDir, GetGeneratorIdForSubPath(target, entry), a.fileName + generator.GetAssetExtension (a));
                             var output = allOutput[entry.m_id];
                             if(!output.ContainsKey(groupKey)) {
                                 output[groupKey] = new List<AssetReference>();
@@ -312,18 +420,17 @@ namespace UnityEngine.AssetGraph {
                 var generator = entry.m_instance.Get<IAssetGenerator>(target);
                 UnityEngine.Assertions.Assert.IsNotNull(generator);
 
-                var assetOutputDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
-                var assetSaveDir  = FileUtility.PathCombine (assetOutputDir, entry.m_id);
-
-                if (!Directory.Exists (assetSaveDir)) {
-                    Directory.CreateDirectory (assetSaveDir);
-                }
-
                 foreach(var ag in incoming) {
                     foreach(var assets in ag.assetGroups.Values) {
                         foreach (var a in assets) {
                             if(AssetGenerateInfo.DoesAssetNeedRegenerate(entry, node, target, a)) {
 
+                                var assetOutputDir = PrepareOutputDirectory (target, node, a);
+                                var assetSaveDir  = FileUtility.PathCombine (assetOutputDir, GetGeneratorIdForSubPath(target, entry));
+
+                                if (!Directory.Exists (assetSaveDir)) {
+                                    Directory.CreateDirectory (assetSaveDir);
+                                }
                                 var assetSavePath = FileUtility.PathCombine (assetSaveDir, a.fileName + generator.GetAssetExtension(a));
 
                                 if (!generator.GenerateAsset (a, assetSavePath)) {
@@ -386,6 +493,31 @@ namespace UnityEngine.AssetGraph {
             UnityEngine.Assertions.Assert.IsNotNull(p);
 
             p.Label = e.m_name;
+        }
+
+        private string GetGeneratorIdForSubPath(BuildTarget target, GeneratorEntry e) {
+            var outputOption = (OutputOption)m_outputOption [target];
+            if(outputOption == OutputOption.CreateInCacheDirectory) {
+                return e.m_id;
+            }
+            return string.Empty;
+        }
+
+        private string PrepareOutputDirectory(BuildTarget target, Model.NodeData node, AssetReference a) {
+
+            var outputOption = (OutputOption)m_outputOption [target];
+
+            if (outputOption == OutputOption.CreateInSelectedDirectory) {
+                return Path.Combine("Assets", m_outputDir [target]);
+            }
+
+            if(outputOption == OutputOption.CreateInCacheDirectory) {
+                return FileUtility.EnsureAssetGeneratorCacheDirExists (target, node);
+            }
+
+            var sourceDir = Path.GetDirectoryName (a.importFrom);
+
+            return FileUtility.PathCombine (sourceDir, m_outputDir [target]);
         }
 
 		public void ValidateAssetGenerator (

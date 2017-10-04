@@ -133,6 +133,7 @@ namespace UnityEngine.AssetGraph {
 							m_replacePrefabOptions = opt;
 							onValueChanged();
 						}
+                        opt = m_replacePrefabOptions;
 					}
 
                     bool preserve = EditorGUILayout.ToggleLeft ("Preserve User Added Components", m_preserveUserAddedComponentsAndObjects);
@@ -183,6 +184,7 @@ namespace UnityEngine.AssetGraph {
                                 m_outputOption[editor.CurrentEditingGroup] = (int)newOption;
                                 onValueChanged();
                             }
+                            opt = newOption;
                         }
 
                         using (new EditorGUI.DisabledScope (opt == OutputOption.CreateInCacheDirectory)) {
