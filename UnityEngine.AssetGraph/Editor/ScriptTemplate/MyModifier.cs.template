@@ -12,12 +12,12 @@ public class MyModifier : IModifier {
 	[SerializeField] private bool doSomething;
 
 	// Test if asset is different from intended configuration 
-	public bool IsModified (UnityEngine.Object[] assets) {
+	public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 		return false;
 	}
 
 	// Actually change asset configurations. 
-	public void Modify (UnityEngine.Object[] assets) {
+	public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
 	}
 
 	// Draw inspector gui 
