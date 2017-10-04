@@ -485,6 +485,15 @@ namespace UnityEngine.AssetGraph {
 				foreach(var groupKey in ag.assetGroups.Keys) {
 					var assets = ag.assetGroups[groupKey];
 					foreach(var asset in assets) {
+
+                        // skip if incoming asset is this custom setting asset
+                        if (m_useCustomSettingAsset) {
+                            var assetGuid = AssetDatabase.AssetPathToGUID (asset.importFrom);
+                            if (assetGuid == m_customSettingAssetGuid) {
+                                continue;
+                            }
+                        }
+
 						var importer = AssetImporter.GetAtPath(asset.importFrom);
 						bool importerModified = false;
                         opt.customPackingTag = GetTagName(target, groupKey);
