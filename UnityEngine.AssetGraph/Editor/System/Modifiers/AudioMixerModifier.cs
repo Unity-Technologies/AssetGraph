@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -23,7 +24,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
             updateMode = AudioMixerUpdateMode.Normal;
 		}
 
-		public bool IsModified (UnityEngine.Object[] assets) {
+        public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
             var mixer = assets[0] as AudioMixer;
 
 			var changed = false;
@@ -35,7 +36,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (UnityEngine.Object[] assets) {
+        public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
             var mixer = assets[0] as AudioMixer;
 
             mixer.updateMode = updateMode;

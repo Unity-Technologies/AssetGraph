@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
+
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -19,7 +21,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 		
 		public AvatarMaskModifier () {}
 
-		public bool IsModified (UnityEngine.Object[] assets) {
+        public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 			//var anim = assets[0] as AvatarMask;
 
 			// Do your work here
@@ -28,7 +30,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (UnityEngine.Object[] assets) {
+        public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
 			//var anim = assets[0] as AvatarMask;
 
 			// Do your work here

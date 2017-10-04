@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
+
 using UnityEditor;
 using UnityEngine;
 
@@ -20,7 +22,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 
 		public ShaderModifier () {}
 
-		public bool IsModified (UnityEngine.Object[] assets) {
+        public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 			var shader = assets[0] as Shader;
 
 			var changed = false;
@@ -32,7 +34,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (UnityEngine.Object[] assets) {
+        public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
 			var shader = assets[0] as Shader;
 
 			shader.maximumLOD = this.maximumLOD;

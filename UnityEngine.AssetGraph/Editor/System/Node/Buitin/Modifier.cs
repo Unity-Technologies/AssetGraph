@@ -231,8 +231,8 @@ namespace UnityEngine.AssetGraph {
 			foreach(var ag in incoming) {
 				foreach(var assets in ag.assetGroups.Values) {
 					foreach(var asset in assets) {
-						if(modifier.IsModified(asset.allData)) {
-							modifier.Modify(asset.allData);
+						if(modifier.IsModified(asset.allData, assets)) {
+							modifier.Modify(asset.allData, assets);
 							asset.SetDirty();
 							isAnyAssetModified = true;
 

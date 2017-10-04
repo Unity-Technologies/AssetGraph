@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
+
 using UnityEditor;
 using UnityEngine;
 
@@ -24,7 +26,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			
 		}
 
-		public bool IsModified (UnityEngine.Object[] assets) {
+        public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 			var physicsMaterial2D = assets[0] as PhysicsMaterial2D;
 
 			var changed = false;
@@ -35,7 +37,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (UnityEngine.Object[] assets) {
+        public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
 			var physicsMaterial2D = assets[0] as PhysicsMaterial2D;
 
 			physicsMaterial2D.friction = this.friction;

@@ -1,6 +1,8 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Collections.Generic;
+
 using UnityEditor;
 using UnityEngine;
 
@@ -29,7 +31,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			wrapMode = TextureWrapMode.Clamp;
 		}
 
-		public bool IsModified (UnityEngine.Object[] assets) {
+        public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 			var cubemap = assets[0] as Cubemap;
 
 			var changed = false;
@@ -42,7 +44,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 			return changed; 
 		}
 
-		public void Modify (UnityEngine.Object[] assets) {
+        public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
 			var cubemap = assets[0] as Cubemap;
 
 			cubemap.anisoLevel = this.anisoLevel;
