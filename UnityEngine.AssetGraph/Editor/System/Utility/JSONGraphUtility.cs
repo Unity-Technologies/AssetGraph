@@ -25,6 +25,8 @@ namespace UnityEngine.AssetGraph {
             string jsonString = EditorJsonUtility.ToJson (graph, true);
 
             File.WriteAllText (path, jsonString, System.Text.Encoding.UTF8);
+
+            AssetDatabase.Refresh();
 		}
 
         public static void ExportAllGraphsToJSONFromDialog() {
@@ -48,6 +50,8 @@ namespace UnityEngine.AssetGraph {
 
                 File.WriteAllText (jsonFilePath, jsonString, System.Text.Encoding.UTF8);
             }
+
+            AssetDatabase.Refresh();
         }
 
         public static Model.ConfigGraph ImportJSONToGraphFromDialog(Model.ConfigGraph graph) {
