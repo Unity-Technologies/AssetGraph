@@ -256,40 +256,35 @@ namespace UnityEngine.AssetGraph {
 				return;
 			}
 
-			// SOMEWHERE_FULLPATH/PROJECT_FOLDER/Assets/
-			var assetsFolderPath = Application.dataPath + Model.Settings.UNITY_FOLDER_SEPARATOR;
-
 			var outputSource = new List<AssetReference>();
-			var targetFilePaths = FileUtility.GetAllFilePathsInFolder(GetLoaderFullLoadPath(target));
+            var targetFiles = AssetDatabase.FindAssets("",  new string[] { "Assets/" + m_loadPath[target] });
 
-			foreach (var targetFilePath in targetFilePaths) {
+            foreach (var assetGuid in targetFiles) {
+                var targetFilePath = AssetDatabase.GUIDToAssetPath (assetGuid);
 
-				// already contained into Assets/ folder.
-				// imported path is Assets/SOMEWHERE_FILE_EXISTS.
-				if (targetFilePath.StartsWith(assetsFolderPath)) {
-                    var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.Path.ASSETS_PATH);
+                if (TypeUtility.IsGraphToolSystemAsset (targetFilePath)) {
+                    continue;
+                }
 
-                    if (TypeUtility.IsGraphToolSystemAsset (relativePath)) {
-                        continue;
-                    }
+                // Skip folders
+                var type = AssetDatabase.GetMainAssetTypeAtPath (targetFilePath);
+                if (type == typeof(UnityEditor.DefaultAsset) && AssetDatabase.IsValidFolder(targetFilePath) ) {
+                    continue;
+                }
 
-					var r = AssetReferenceDatabase.GetReference(relativePath);
+                var r = AssetReferenceDatabase.GetReference(targetFilePath);
 
-                    if (r == null) {
-                        continue;
-                    }
+                if (r == null) {
+                    continue;
+                }
 
-					if(!TypeUtility.IsLoadingAsset(r)) {
-						continue;
-					}
+                if(!TypeUtility.IsLoadingAsset(r)) {
+                    continue;
+                }
 
-					if(r != null) {
-						outputSource.Add(r);
-					}
-					continue;
-				}
-
-				throw new NodeException(node.Name + ": Invalid Load Path. Path must start with Assets/", node.Name);
+                if(r != null) {
+                    outputSource.Add(r);
+                }
 			}
 
 			var output = new Dictionary<string, List<AssetReference>> {
