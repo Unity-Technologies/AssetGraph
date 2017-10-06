@@ -18,9 +18,9 @@ public class PathTest {
         string baseDirName = Settings.Path.ToolDirName;
         Assert.IsFalse(string.IsNullOrEmpty(baseDirName));
 
-        Assert.IsTrue(Settings.Path.BasePath.Contains(Settings.Path.ToolDirName));
+        Assert.IsTrue(AssetGraphBasePath.BasePath.Contains(Settings.Path.ToolDirName));
 
-        string basePath = Settings.Path.BasePath;
+        string basePath = AssetGraphBasePath.BasePath;
         this.TestPath(Path.Combine(basePath, "Editor/ScriptTemplate"), Settings.Path.ScriptTemplatePath);
         this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);
 
@@ -30,7 +30,7 @@ public class PathTest {
         this.TestPath(Path.Combine(basePath, "Cache"), Settings.Path.CachePath);
         this.TestPath(Path.Combine(basePath, "Cache/Prefabs"), Settings.Path.PrefabBuilderCachePath);
         this.TestPath(Path.Combine(basePath, "Cache/AssetBundles"), Settings.Path.BundleBuilderCachePath);
-        this.TestPath(Path.Combine(basePath, "SettingFiles"), Settings.Path.SettingFilePath);
+        this.TestPath(Path.Combine(basePath, "SettingFiles"), AssetGraphBasePath.SettingFilePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetReferenceDB.asset"), Settings.Path.DatabasePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/BatchBuildConfig.asset"), Settings.Path.BatchBuildConfigPath);

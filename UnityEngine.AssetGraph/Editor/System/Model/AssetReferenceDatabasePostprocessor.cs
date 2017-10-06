@@ -9,7 +9,11 @@ namespace UnityEngine.AssetGraph {
 		static void OnPostprocessAllAssets (string[] importedAssets, 
 			string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
 		{
-			//LogUtility.Logger.Log("[OnPostprocessAllAssets]");
+            foreach (string movedFrom in movedFromAssetPaths) {
+                if (movedFrom == AssetGraphBasePath.BasePath) {
+                    AssetGraphBasePath.ResetBasePath ();
+                }
+            }
 
 			foreach (string str in deletedAssets) 
 			{

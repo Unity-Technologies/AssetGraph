@@ -51,7 +51,7 @@ namespace UnityEngine.AssetGraph {
 					s_config.m_collections = new List<GraphCollection>();
 					s_config.m_version = VERSION;
 
-                    var SettingDir = Model.Settings.Path.SettingFilePath;
+                    var SettingDir = AssetGraphBasePath.SettingFilePath;
 
 					if (!Directory.Exists(SettingDir)) {
 						Directory.CreateDirectory(SettingDir);

@@ -16,7 +16,7 @@ namespace UnityEngine.AssetGraph {
 
 		[SerializeField] private List<AssetReference> m_assets;
 		[SerializeField] private int m_version;
-		private SortedList<string, AssetReference> m_dictionary;
+        private Dictionary<string, AssetReference> m_dictionary;
 
 		private static AssetReferenceDatabase s_database;
 
@@ -26,10 +26,10 @@ namespace UnityEngine.AssetGraph {
 					// Create vanilla db
 					s_database = ScriptableObject.CreateInstance<AssetReferenceDatabase>();
 					s_database.m_assets = new List<AssetReference>();
-					s_database.m_dictionary = new SortedList<string, AssetReference>();
+                    s_database.m_dictionary = new Dictionary<string, AssetReference> ();
 					s_database.m_version = DB_VERSION;
 
-                    var DBDir = Model.Settings.Path.SettingFilePath;
+                    var DBDir = AssetGraphBasePath.SettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);
@@ -54,10 +54,10 @@ namespace UnityEngine.AssetGraph {
 					AssetReferenceDatabase db = AssetDatabase.LoadAssetAtPath<AssetReferenceDatabase>(dbPath);
 
 					if(db != null && db.m_version == DB_VERSION) {
-						db.m_dictionary = new SortedList<string, AssetReference>();
+                        db.m_dictionary = new Dictionary<string, AssetReference>();
 
 						foreach(var r in db.m_assets) {
-							db.m_dictionary.Add(r.importFrom, r);
+                            db.m_dictionary.Add(r.importFrom, r);
 						}
 
 						s_database = db;
@@ -102,7 +102,7 @@ namespace UnityEngine.AssetGraph {
 		public static void DeleteReference(string relativePath) {
 			AssetReferenceDatabase db = GetDatabase();
 
-			if(db.m_dictionary.ContainsKey(relativePath)) {
+            if(db.m_dictionary.ContainsKey(relativePath)) {
 				var r = db.m_dictionary[relativePath];
 				db.m_assets.Remove(r);
 				db.m_dictionary.Remove(relativePath);
@@ -113,7 +113,7 @@ namespace UnityEngine.AssetGraph {
 		public static void MoveReference(string oldPath, string newPath) {
 			AssetReferenceDatabase db = GetDatabase();
 
-			if(db.m_dictionary.ContainsKey(oldPath)) {
+            if(db.m_dictionary.ContainsKey(oldPath)) {
 				var r = db.m_dictionary[oldPath];
 				db.m_dictionary.Remove(oldPath);
 				db.m_dictionary[newPath]= r;
@@ -124,7 +124,7 @@ namespace UnityEngine.AssetGraph {
 		private static AssetReference GetReference(string relativePath, CreateReference creator) {
 			AssetReferenceDatabase db = GetDatabase();
 
-			if(db.m_dictionary.ContainsKey(relativePath)) {
+            if(db.m_dictionary.ContainsKey(relativePath)) {
 				return db.m_dictionary[relativePath];
 			} else {
 				try {

@@ -49,46 +49,23 @@ namespace AssetBundleGraph {
 		}
 
         public class Path {
-            private static string s_basePath;
-
-            public static string BasePath {
-                get {
-                    if (string.IsNullOrEmpty (s_basePath)) {
-                        var obj = ScriptableObject.CreateInstance<SaveData> ();
-                        MonoScript s = MonoScript.FromScriptableObject (obj);
-                        var configGuiPath = AssetDatabase.GetAssetPath( s );
-                        UnityEngine.Object.DestroyImmediate (obj);
-
-                        var fileInfo = new FileInfo(configGuiPath);
-                        var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
-
-                        Assert.AreEqual (ToolDirName, baseDir.Name);
-
-                        s_basePath = baseDir.ToString().Replace( '\\', '/');
-                    }
-                    return s_basePath;
-                }
-            }
-
-            public const string ASSETS_PATH = "Assets/";
-
             /// <summary>
             /// Name of the base directory containing the asset graph tool files.
             /// Customize this to match your project's setup if you need to change.
             /// </summary>
             /// <value>The name of the base directory.</value>
             public static string ToolDirName            { get { return "UnityEngine.AssetGraph"; } }
-            public static string ScriptTemplatePath     { get { return BasePath + "Editor/ScriptTemplate/"; } }
-            public static string SettingTemplatePath    { get { return BasePath + "Editor/SettingTemplate/"; } }
-            public static string UserSpacePath          { get { return BasePath + "Generated/Editor/"; } }
-            public static string CUISpacePath           { get { return BasePath + "Generated/CUI/"; } }
-            public static string ImporterSettingsPath   { get { return BasePath + "SavedSettings/ImportSettings"; } }
+            public static string ScriptTemplatePath     { get { return AssetGraphBasePath.BasePath + "Editor/ScriptTemplate/"; } }
+            public static string SettingTemplatePath    { get { return AssetGraphBasePath.BasePath + "Editor/SettingTemplate/"; } }
+            public static string UserSpacePath          { get { return AssetGraphBasePath.BasePath + "Generated/Editor/"; } }
+            public static string CUISpacePath           { get { return AssetGraphBasePath.BasePath + "Generated/CUI/"; } }
+            public static string ImporterSettingsPath   { get { return AssetGraphBasePath.BasePath + "SavedSettings/ImportSettings"; } }
 
-            public static string CachePath              { get { return BasePath + "Cache/"; } }
+            public static string CachePath              { get { return AssetGraphBasePath.BasePath + "Cache/"; } }
             public static string PrefabBuilderCachePath { get { return CachePath + "Prefabs"; } }
             public static string BundleBuilderCachePath { get { return CachePath + "AssetBundles"; } }
 
-            public static string SettingFilePath        { get { return BasePath + "SettingFiles"; } }
+            public static string SettingFilePath        { get { return AssetGraphBasePath.BasePath + "SettingFiles"; } }
             public static string JSONPath               { get { return SettingFilePath + "AssetBundleGraph.json"; } }
             public static string AssetBundleGraphPath   { get { return SettingFilePath + "AssetBundleGraph.asset"; } }
             public static string DatabasePath           { get { return SettingFilePath + "AssetReferenceDB.asset"; } }
@@ -97,7 +74,7 @@ namespace AssetBundleGraph {
             public static string SettingTemplateAudio   { get { return SettingTemplatePath + "setting.wav"; } }
             public static string SettingTemplateTexture { get { return SettingTemplatePath + "setting.png"; } }
 
-            public static string GUIResourceBasePath    { get { return BasePath + "Editor/GUI/GraphicResources/"; } }
+            public static string GUIResourceBasePath    { get { return AssetGraphBasePath.BasePath + "Editor/GUI/GraphicResources/"; } }
         }
 
 		public static List<BuildAssetBundleOption> BundleOptionSettings = new List<BuildAssetBundleOption> {

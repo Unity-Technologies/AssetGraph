@@ -21,37 +21,8 @@ namespace UnityEngine.AssetGraph {
 		private static AssetBundleBuildMap s_map;
 
         #if UNITY_EDITOR
-        class Config {
-            private static string s_basePath;
-
-            public static string BasePath {
-                get {
-                    //if (string.IsNullOrEmpty (s_basePath)) {
-                    var obj = ScriptableObject.CreateInstance<AssetBundleBuildMap> ();
-                    MonoScript s = MonoScript.FromScriptableObject (obj);
-                    var configGuiPath = AssetDatabase.GetAssetPath( s );
-                    UnityEngine.Object.DestroyImmediate (obj);
-
-                    var fileInfo = new FileInfo(configGuiPath);
-                    var baseDir = fileInfo.Directory.Parent;
-
-                    Assertions.Assert.AreEqual ("UnityEngine.AssetGraph", baseDir.Name);
-
-					string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
-
-                    int index = baseDirPath.LastIndexOf (ASSETS_PATH);
-                    Assertions.Assert.IsTrue ( index >= 0 );
-
-                    baseDirPath = baseDirPath.Substring (index);
-
-					s_basePath = baseDirPath;
-                    //}
-                    return s_basePath;
-                }
-            }
-            public const string ASSETS_PATH = "Assets/";
-            public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }
-            public static string BuildMapPath           { get { return SettingFilePath + "AssetBundleBuildMap.asset"; } }
+        public class Config {
+            public static string BuildMapPath           { get { return AssetGraphBasePath.SettingFilePath + "AssetBundleBuildMap.asset"; } }
         }
         #endif
 
@@ -64,7 +35,7 @@ namespace UnityEngine.AssetGraph {
                     #if UNITY_EDITOR
 					s_map.m_version = VERSION;
 
-                    var DBDir = Config.SettingFilePath;
+                    var DBDir = AssetGraphBasePath.SettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);

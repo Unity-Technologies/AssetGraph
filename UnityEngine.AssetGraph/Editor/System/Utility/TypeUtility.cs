@@ -141,7 +141,7 @@ namespace UnityEngine.AssetGraph {
 
         public static bool IsGraphToolSystemAsset(string assetPath) {
             return 
-                assetPath.Contains (Model.Settings.Path.BasePath) || 
+                assetPath.Contains (AssetGraphBasePath.BasePath) || 
                 IsGraphToolSystemAssetType (GetTypeOfAsset(assetPath));
         }
 

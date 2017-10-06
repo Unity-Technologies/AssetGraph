@@ -251,6 +251,11 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
+        public override int GetHashCode ()
+        {
+            return m_guid.GetHashCode ();
+        }
+
         public long GetFileSize() {
             if (string.IsNullOrEmpty (m_importFrom)) {
                 return 0L;
