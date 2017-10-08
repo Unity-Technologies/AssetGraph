@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditorInternal;
 
 using System;
 using System.Linq;
@@ -59,6 +60,10 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		[SerializeField] private List<FilterEntry> m_filter;
+        ReorderableList m_filterList;
+
+        NodeGUI m_node;
+        Action m_OnValueChanged;
 
 		public override string ActiveStyle {
 			get {
@@ -128,95 +133,136 @@ namespace UnityEngine.AssetGraph {
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
+            if (m_filterList == null) {
+                m_filterList = new ReorderableList(m_filter, typeof(FilterEntry), true, false, true, true);
+                m_filterList.onReorderCallback = ReorderFilterEntryList;
+                m_filterList.onAddCallback = AddToFilterEntryList;
+                m_filterList.onRemoveCallback = RemoveFromFilterEntryList;
+                m_filterList.onCanRemoveCallback = CanRemoveFilterEntry;
+                m_filterList.drawElementCallback = DrawFilterEntryListElement;
+                m_filterList.elementHeight = EditorGUIUtility.singleLineHeight + 8f;
+                m_filterList.headerHeight = 3;
+            }
+
+            m_node = node;
+            m_OnValueChanged = onValueChanged;
+
 			EditorGUILayout.HelpBox("Split By Filter: Split incoming assets by filter conditions.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				GUILayout.Label("Filter Settings:");
-				FilterEntry removing = null;
-				for (int i= 0; i < m_filter.Count; ++i) {
-					var cond = m_filter[i];
-
-					Action messageAction = null;
-
-					using (new GUILayout.HorizontalScope()) {
-						if (GUILayout.Button("-", GUILayout.Width(30))) {
-							removing = cond;
-						}
-						else {
-							IFilter filter = cond.Instance.Object;
-							if(filter == null) {
-								using (new GUILayout.VerticalScope()) {
-									EditorGUILayout.HelpBox(string.Format("Failed to deserialize assigned filter({0}). Please select valid class.", cond.Instance.ClassName), MessageType.Error);
-									if (GUILayout.Button(cond.Instance.ClassName, "Popup", GUILayout.MinWidth(150f))) {
-                                        var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
-										NodeGUI.ShowTypeNamesMenu(cond.Instance.ClassName, map.Keys.ToList(), (string selectedGUIName) => 
-											{
-												using(new RecordUndoScope("Change Filter Setting", node)) {
-													var newFilter = FilterUtility.CreateFilter(selectedGUIName);
-													cond.Instance = new FilterInstance(newFilter);
-													onValueChanged();
-												}
-											}  
-										);
-									}
-								}
-							} else {
-								cond.Instance.Object.OnInspectorGUI(() => {
-									using(new RecordUndoScope("Change Filter Setting", node)) {
-										cond.Instance.Save();
-										UpdateFilterEntry(node.Data, cond);
-										// event must raise to propagate change to connection associated with point
-										NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, cond)));
-										onValueChanged();
-									}
-								});
-							}
-						}
-					}
-
-					if(messageAction != null) {
-						using (new GUILayout.HorizontalScope()) {
-							messageAction.Invoke();
-						}
-					}
-				}
-
-				// add contains keyword interface.
-				if (GUILayout.Button("+")) {
-
-					var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
-					if(map.Keys.Count > 1) {
-						GenericMenu menu = new GenericMenu();
-						foreach(var name in map.Keys) {
-							var guiName = name;
-							menu.AddItem(new GUIContent(guiName), false, () => {
-								using(new RecordUndoScope("Add Filter Condition", node)){
-									var filter = FilterUtility.CreateFilter(guiName);
-									AddFilterCondition(node.Data, filter);
-									onValueChanged();
-								}
-							});
-						}
-						menu.ShowAsContext();
-					} else {
-						using(new RecordUndoScope("Add Filter Condition", node)){
-							AddFilterCondition(node.Data, new FilterByNameAndType());
-							onValueChanged();
-						}
-					}
-				}
-
-				if(removing != null) {
-					using(new RecordUndoScope("Remove Filter Condition", node, true)){
-						// event must raise to remove connection associated with point
-						NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, GetConnectionPoint(node.Data, removing)));
-						RemoveFilterCondition(node.Data, removing);
-						onValueChanged();
-					}
-				}
-			}
+            EditorGUILayout.LabelField ("Filter Conditions");
+            m_filterList.DoLayoutList();
+            EditorGUILayout.HelpBox("Assets are filtered by filter conditions applied from the top of the list to bottom. You may want to reorder conditions to get desired result.", MessageType.Info);
 		}
+
+        void AddToFilterEntryList(ReorderableList list) {
+            var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
+            if(map.Keys.Count > 1) {
+                GenericMenu menu = new GenericMenu();
+                foreach(var name in map.Keys) {
+                    var guiName = name;
+                    menu.AddItem(new GUIContent(guiName), false, () => {
+                        using(new RecordUndoScope("Add Filter Condition", m_node)){
+                            var filter = FilterUtility.CreateFilter(guiName);
+                            AddFilterCondition(m_node.Data, filter);
+                            m_OnValueChanged();
+                        }
+                        list.index = m_filter.Count - 1;
+                    });
+                }
+                menu.ShowAsContext();
+            } else {
+                using(new RecordUndoScope("Add Filter Condition", m_node)){
+                    AddFilterCondition(m_node.Data, new FilterByNameAndType());
+                    m_OnValueChanged();
+                    list.index = m_filter.Count - 1;
+                }
+            }
+        }
+
+        public void ReorderFilterEntryList(ReorderableList list) {
+            m_node.Data.OutputPoints.Sort ((Model.ConnectionPointData x, Model.ConnectionPointData y) => {
+                int xIndex = m_filter.FindIndex(f => f.ConnectionPointId == x.Id );
+                int yIndex = m_filter.FindIndex(f => f.ConnectionPointId == y.Id );
+
+                return xIndex - yIndex;
+            });
+            m_OnValueChanged ();
+            // redo node output due to filter condition change
+            NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_UPDATED, m_node));
+        }
+
+        private void RemoveFromFilterEntryList(ReorderableList list) {
+
+            // how is removing taking effect?
+            // -> list.index
+
+            var removingItem = m_filter [list.index];
+
+            using(new RecordUndoScope("Remove Filter Condition", m_node, true)){
+                // event must raise to remove connection associated with point
+                NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, m_node, Vector2.zero, GetConnectionPoint(m_node.Data, removingItem)));
+                RemoveFilterCondition(m_node.Data, removingItem);
+                m_OnValueChanged();
+            }
+        }
+
+        private bool CanEditFilterEntry(int index) {
+            if (index < 0 || index >= m_filter.Count) {
+                return false;
+            }
+            return true;
+        }
+
+        private bool CanRemoveFilterEntry(ReorderableList list)
+        {
+            return CanEditFilterEntry(list.index);
+        }
+
+        private void DrawFilterEntryListElement(Rect rect, int index, bool selected, bool focused)
+        {
+            //rect.height -= 2; // nicer looking with selected list row and a text field in it
+
+            // De-indent by the drag handle width, so the text field lines up with others in the inspector.
+            // Will have space in front of label for more space between it and the drag handle.
+            // rect.xMin -= ReorderableList.Defaults.dragHandleWidth;
+
+            bool oldEnabled = GUI.enabled;
+            GUI.enabled = CanEditFilterEntry(index);
+
+            var cond = m_filter[index];
+            IFilter filter = cond.Instance.Object;
+            if(filter == null) {
+                using (new GUILayout.VerticalScope()) {
+                    EditorGUILayout.HelpBox(string.Format("Failed to deserialize assigned filter({0}). Please select valid class.", cond.Instance.ClassName), MessageType.Error);
+                    if (GUILayout.Button(cond.Instance.ClassName, "Popup", GUILayout.MinWidth(150f))) {
+                        var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
+                        NodeGUI.ShowTypeNamesMenu(cond.Instance.ClassName, map.Keys.ToList(), (string selectedGUIName) => 
+                            {
+                                using(new RecordUndoScope("Change Filter Setting", m_node)) {
+                                    var newFilter = FilterUtility.CreateFilter(selectedGUIName);
+                                    cond.Instance = new FilterInstance(newFilter);
+                                    m_OnValueChanged();
+                                }
+                            }  
+                        );
+                    }
+                }
+            } else {
+                cond.Instance.Object.OnInspectorGUI(rect, () => {
+                    using(new RecordUndoScope("Change Filter Setting", m_node)) {
+                        cond.Instance.Save();
+                        UpdateFilterEntry(m_node.Data, cond);
+                        // event must raise to propagate change to connection associated with point
+                        NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, m_node, Vector2.zero, GetConnectionPoint(m_node.Data, cond)));
+                        m_OnValueChanged();
+                    }
+                });
+            }
+
+
+            GUI.enabled = oldEnabled;
+        }
 
 		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 

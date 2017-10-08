@@ -55,28 +55,33 @@ namespace UnityEngine.AssetGraph {
 			return match;
 		}
 
-		public void OnInspectorGUI (Action onValueChanged) {
+        public void OnInspectorGUI (Rect rect, Action onValueChanged) {
 
 			var keyword = m_filterKeyword;
 
 			GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
 
-			using (new EditorGUILayout.HorizontalScope()) {
-				keyword = EditorGUILayout.TextField(m_filterKeyword, s, GUILayout.Width(120));
-				if (GUILayout.Button(m_filterKeytype , "Popup")) {
-					NodeGUI.ShowFilterKeyTypeMenu(
-						m_filterKeytype,
-						(string selectedTypeStr) => {
-							m_filterKeytype = selectedTypeStr;
-							onValueChanged();
-						} 
-					);
-				}
-				if (keyword != m_filterKeyword) {
-					m_filterKeyword = keyword;
-					onValueChanged();
-				}
-			}
+            Rect filerKeywordRect = rect;
+            Rect popupRect = rect;
+            filerKeywordRect.width = 120f;
+            popupRect.x     += 124f;
+            popupRect.width -= 124f;
+
+            keyword = EditorGUI.TextField(filerKeywordRect, m_filterKeyword, s);
+            if (GUI.Button(popupRect, m_filterKeytype , "Popup")) {
+                NodeGUI.ShowFilterKeyTypeMenu(
+                    m_filterKeytype,
+                    (string selectedTypeStr) => {
+                        m_filterKeytype = selectedTypeStr;
+                        onValueChanged();
+                    } 
+                );
+            }
+            if (keyword != m_filterKeyword) {
+                m_filterKeyword = keyword;
+                onValueChanged();
+            }
+
 		}
 	}
 }

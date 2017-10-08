@@ -31,12 +31,13 @@ public class MyFilter : IFilter {
 			RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);	
 	}
 
-	public void OnInspectorGUI (Action onValueChanged) {
+	public void OnInspectorGUI (Rect rect, Action onValueChanged) {
 
 		var keyword = m_filterKeyword;
 
 		using (new EditorGUILayout.HorizontalScope()) {
-			keyword = EditorGUILayout.TextField(m_filterKeyword);
+            GUIStyle s = new GUIStyle((GUIStyle)"TextFieldDropDownText");
+            keyword = EditorGUI.TextField(rect, m_filterKeyword, s);
 			if (keyword != m_filterKeyword) {
 				m_filterKeyword = keyword;
 				onValueChanged();

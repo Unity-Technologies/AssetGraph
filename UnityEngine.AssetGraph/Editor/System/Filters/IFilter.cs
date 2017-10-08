@@ -36,7 +36,7 @@ namespace UnityEngine.AssetGraph {
         /// It will save state of AssetGenerator object.
         /// </summary>
         /// <param name="onValueChanged">Action to call when inspector value changed.</param>
-		void OnInspectorGUI (Action onValueChanged);
+		void OnInspectorGUI (Rect rect, Action onValueChanged);
 	}
 
 	[AttributeUsage(AttributeTargets.Class)] 
