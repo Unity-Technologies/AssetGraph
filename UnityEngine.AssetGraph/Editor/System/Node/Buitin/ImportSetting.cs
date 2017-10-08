@@ -478,8 +478,8 @@ namespace UnityEngine.AssetGraph {
 			var configurator = new ImportSettingsConfigurator(referenceImporter);
 
             ConfigurationOption opt;
-            opt.keepPackingTag  = !m_overwritePackingTag;
-            opt.keepSpriteSheet = !m_overwriteSpriteSheet;
+            opt.overwritePackingTag  = m_overwritePackingTag;
+            opt.overwriteSpriteSheet = m_overwriteSpriteSheet;
 
 			foreach(var ag in incoming) {
 				foreach(var groupKey in ag.assetGroups.Keys) {

@@ -10,8 +10,8 @@ using Model = UnityEngine.AssetGraph.DataModel.Version2;
 namespace UnityEngine.AssetGraph
 {
     public struct ConfigurationOption {
-        public bool keepPackingTag;
-        public bool keepSpriteSheet;
+        public bool overwritePackingTag;
+        public bool overwriteSpriteSheet;
         public string customPackingTag;
     }
 
@@ -110,7 +110,7 @@ namespace UnityEngine.AssetGraph
             importer.ReadTextureSettings (srcSettings);
             reference.ReadTextureSettings (dstSettings);
 
-            if (opt.keepSpriteSheet) {
+            if (opt.overwriteSpriteSheet) {
                 dstSettings.spriteAlignment = srcSettings.spriteAlignment;
                 dstSettings.spriteBorder    = srcSettings.spriteBorder;
                 dstSettings.spriteExtrude   = srcSettings.spriteExtrude;
@@ -119,6 +119,7 @@ namespace UnityEngine.AssetGraph
                 dstSettings.spritePivot     = srcSettings.spritePivot;
                 dstSettings.spritePixelsPerUnit = srcSettings.spritePixelsPerUnit;
                 dstSettings.spriteTessellationDetail = srcSettings.spriteTessellationDetail;
+                importer.spritesheet = reference.spritesheet;
             }
 
             importer.SetTextureSettings (dstSettings);
@@ -146,7 +147,7 @@ namespace UnityEngine.AssetGraph
             importer.normalmapFilter = reference.normalmapFilter;
             importer.npotScale = reference.npotScale;
 
-            if (!opt.keepPackingTag) {
+            if (opt.overwritePackingTag) {
                 if (!string.IsNullOrEmpty (opt.customPackingTag)) {
                     importer.spritePackingTag = opt.customPackingTag;
                 } else {
@@ -224,7 +225,9 @@ namespace UnityEngine.AssetGraph
             target.ReadTextureSettings (targetSetting);
             reference.ReadTextureSettings (referenceSetting);
 
-            if (opt.keepSpriteSheet) {
+            // if opt.overwriteSpriteSheet is true, following properties
+            // should be ignored
+            if (opt.overwriteSpriteSheet) {
                 referenceSetting.spriteAlignment = targetSetting.spriteAlignment;
                 referenceSetting.spriteBorder    = targetSetting.spriteBorder;
                 referenceSetting.spriteExtrude   = targetSetting.spriteExtrude;
@@ -240,7 +243,7 @@ namespace UnityEngine.AssetGraph
             }
 
             if (target.textureType == TextureImporterType.Sprite) {
-                if (!opt.keepPackingTag) {
+                if (opt.overwritePackingTag) {
                     if (!string.IsNullOrEmpty (opt.customPackingTag)) {
                         if (target.spritePackingTag != opt.customPackingTag)
                             return false;
@@ -250,7 +253,7 @@ namespace UnityEngine.AssetGraph
                     }
                 }
 
-                if (!opt.keepSpriteSheet) {
+                if (opt.overwriteSpriteSheet) {
                     if (target.spriteBorder != reference.spriteBorder) return false;
                     if (target.spriteImportMode != reference.spriteImportMode) return false;
                     if (target.spritePivot != reference.spritePivot) return false;
@@ -788,14 +791,23 @@ namespace UnityEngine.AssetGraph
                     var r = reference.GetTargetSettings (platformName);
                     var t = target.GetTargetSettings (platformName);
 
+                    // if both targets are null - keep going
+                    if(r == null && t == null) {
+                        continue;
+                    }
+
+                    if(r == null || t == null) {
+                        return false;
+                    }
+
                     if(!IsEqual(r, t)) {
                         return false;
                     }
 
                 } catch (Exception e) {
-                    LogUtility.Logger.LogWarning ("VideoClipImporter", 
-                        string.Format ("Failed to set override setting for platform {0}: file :{1} \\nreason:{2}", 
-                            platformName, target.assetPath, e.Message));
+                    LogUtility.Logger.LogError ("VideoClipImporter", 
+                        string.Format ("Failed to test equality setting for {0}: file :{1} type:{3} reason:{2}", 
+                            platformName, target.assetPath, e.Message, e.GetType().ToString()));
                 }
             }
 
