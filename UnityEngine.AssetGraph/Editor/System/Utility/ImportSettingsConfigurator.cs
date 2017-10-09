@@ -17,7 +17,6 @@ namespace UnityEngine.AssetGraph
 
     public class ImportSettingsConfigurator
     {
-
         private readonly AssetImporter referenceImporter;
 
         public ImportSettingsConfigurator(AssetImporter referenceImporter)
@@ -193,6 +192,9 @@ namespace UnityEngine.AssetGraph
             importer.textureCompression = reference.textureCompression;
             importer.crunchedCompression = reference.crunchedCompression;
 
+            var defaultPlatformSetting = reference.GetDefaultPlatformTextureSettings();
+            importer.SetPlatformTextureSettings(defaultPlatformSetting);
+
             foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
             {
                 var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
@@ -342,6 +344,10 @@ namespace UnityEngine.AssetGraph
             if (target.textureCompression != reference.textureCompression) return false;
             if (target.crunchedCompression != reference.crunchedCompression) return false;
 
+            var refDefault = reference.GetDefaultPlatformTextureSettings();
+            var impDefault = target.GetDefaultPlatformTextureSettings();
+            if (!CompareImporterPlatformSettings(refDefault, impDefault)) return false;
+
             foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
             {
                 var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
@@ -373,6 +379,9 @@ namespace UnityEngine.AssetGraph
             if (c1.name != c2.name) return false;
             if (c1.overridden != c2.overridden) return false;
             if (c1.textureCompression != c2.textureCompression) return false;
+        #if UNITY_2017_2_OR_NEWER
+            if (c1.resizeAlgorithm != c2.resizeAlgorithm) return false;
+        #endif
 
             return true;
         }
@@ -410,10 +419,7 @@ namespace UnityEngine.AssetGraph
                 }
             }
 
-            // using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
-#if !UNITY_5_6_OR_NEWER
             importer.loadInBackground = reference.loadInBackground;
-#endif
 
 #if UNITY_2017_1_OR_NEWER
             importer.ambisonic = reference.ambisonic;
@@ -454,11 +460,8 @@ namespace UnityEngine.AssetGraph
 
             if (target.forceToMono != reference.forceToMono)
                 return false;
-            // using "!UNITY_5_6_OR_NEWER" instead of "Unity_5_6" because loadInBackground became obsolete after Unity 5.6b3.
-#if !UNITY_5_6_OR_NEWER
             if (target.loadInBackground != reference.loadInBackground)
                 return false;
-#endif
 
 #if UNITY_2017_1_OR_NEWER
             if (target.ambisonic != reference.ambisonic)
@@ -545,6 +548,9 @@ namespace UnityEngine.AssetGraph
             importer.useFileScale = reference.useFileScale;
 #endif
 
+#if UNITY_2017_2_OR_NEWER
+            importer.importAnimatedCustomProperties = reference.importAnimatedCustomProperties;
+#endif
 
             /* 
              read only properties.
@@ -706,21 +712,22 @@ namespace UnityEngine.AssetGraph
 			if (target.importCameras != reference.importCameras) return false;
 			if (target.importLights != reference.importLights) 	 return false;
 			if (target.normalCalculationMode != reference.normalCalculationMode) return false;
-
+            if (target.importVisibility != reference.importVisibility) return false;
+            if (target.useFileScale != reference.useFileScale) return false;
 
             if(target.extraUserProperties.Length != reference.extraUserProperties.Length) return false;
             for(int i=0; i<target.extraUserProperties.Length; ++i) {
                 if(target.extraUserProperties[i] != reference.extraUserProperties[i]) return false;
             }
 
-            if (target.importCameras != reference.importCameras) return false;
-            if (target.importLights != reference.importLights) return false;
-            if (target.importVisibility != reference.importVisibility) return false;
-            if (target.normalCalculationMode != reference.normalCalculationMode) return false;
-            if (target.useFileScale != reference.useFileScale) return false;
-
 #else
             if (target.fileScale != reference.fileScale) return false;
+#endif
+
+#if UNITY_2017_2_OR_NEWER
+            if(target.importAnimatedCustomProperties != reference.importAnimatedCustomProperties) {
+                return false;
+            }
 #endif
 
             return true;
