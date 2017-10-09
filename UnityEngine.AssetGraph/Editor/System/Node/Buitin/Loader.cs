@@ -282,6 +282,10 @@ namespace UnityEngine.AssetGraph {
                     continue;
                 }
 
+                if (outputSource.Contains (r)) {
+                    continue;
+                }
+
                 if(r != null) {
                     outputSource.Add(r);
                 }
