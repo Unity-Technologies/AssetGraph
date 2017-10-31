@@ -133,16 +133,16 @@ namespace UnityEngine.AssetGraph {
 
         public string DrawFolderSelector(string label, 
             string dialogTitle, 
-            string currentDirPath, 
+            string dirTextFieldValue, 
             string directoryOpenPath, 
             Func<string, string> onValidFolderSelected = null) 
         {
             string newDirPath;
             using(new EditorGUILayout.HorizontalScope()) {
                 if (string.IsNullOrEmpty (label)) {
-                    newDirPath = EditorGUILayout.TextField(currentDirPath);
+                    newDirPath = EditorGUILayout.TextField(dirTextFieldValue);
                 } else {
-                    newDirPath = EditorGUILayout.TextField(label, currentDirPath);
+                    newDirPath = EditorGUILayout.TextField(label, dirTextFieldValue);
                 }
 
                 if(GUILayout.Button("Select", GUILayout.Width(50f))) {
