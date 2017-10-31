@@ -23,51 +23,6 @@ namespace UnityEngine.AssetGraph {
 
 	public static class FilterTypeUtility {
         
-//        private static readonly Dictionary<string, Type> FilterTypeBindingByExtension = new Dictionary<string, Type>{
-//			// others(Assets)
-//            {".png", typeof(TextureImporter)},
-//            {".jpg", typeof(TextureImporter)},
-//            {".tga", typeof(TextureImporter)},
-//            {".exr", typeof(TextureImporter)},
-//            {".anim", typeof(Animation)},
-//			{".controller", typeof(Animator)},
-//			{".mask", typeof(AvatarMask)},
-//			{".cubemap", typeof(Cubemap)},
-//			{".flare", typeof(Flare)},
-//            {".fontsettings", typeof(Font)},
-//            {".ttf", typeof(Font)},
-//            {".otf", typeof(Font)},
-//            {".compute", typeof(ComputeShader)},
-//			{".guiskin", typeof(GUISkin)},
-//			// typeof(LightmapParameters).ToString(),
-//			{".mat", typeof(Material)},
-//			{".physicmaterial", typeof(PhysicMaterial)},
-//			{".physicsmaterial2d", typeof(PhysicsMaterial2D)},
-//			{".rendertexture", typeof(RenderTexture)},
-//            {".shader", typeof(Shader)},
-//            {".cg", typeof(Shader)},
-//            {".cginc", typeof(Shader)},
-//            {".mixer", typeof(Audio.AudioMixer)},
-//			{".unity", typeof(Scene)},
-//			{".txt", typeof(TextAsset)},
-//			{".html", typeof(TextAsset)},
-//			{".htm", typeof(TextAsset)},
-//			{".xml", typeof(TextAsset)},
-//			{".bytes", typeof(TextAsset)},
-//			{".json", typeof(TextAsset)},
-//			{".csv", typeof(TextAsset)},
-//			{".yaml", typeof(TextAsset)},
-//			{".fnt", typeof(TextAsset)},
-//			{".asset", typeof(Object)},
-//            {".prefab", typeof(UnityEngine.GameObject)},
-//            #if UNITY_2017_1_OR_NEWER
-//            {".playable", typeof(PlayableAsset)},
-//            {".spriteatlas", typeof(SpriteAtlas)},
-//            #endif
-//
-//			// {"", typeof(Sprite)},
-//		};
-
         private static readonly List<string> IgnoredAssetTypeExtension = new List<string>{
 			string.Empty,
 			".manifest",
@@ -185,14 +140,6 @@ namespace UnityEngine.AssetGraph {
             }
 
             return TypeUtility.GetMainAssetTypeAtPath (assetPath);
-
-//			if (FilterTypeBindingByExtension.ContainsKey(extension)) {
-//				return FilterTypeBindingByExtension[extension];
-//			}
-			
-			// unhandled.
-//			LogUtility.Logger.LogWarning(LogUtility.kTag, "Unknown file type found:" + extension + "\n. AssetReference:" + assetPath + "\n Assume 'object'.");
-//			return typeof(object);
 		}			
 	}
 }
