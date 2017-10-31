@@ -109,9 +109,17 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
+        public bool ContainsValueOf (BuildTarget target) {
+            return ContainsValueOf(BuildTargetUtility.TargetToGroup(target));
+        }
+
 		public bool ContainsValueOf (BuildTargetGroup group) {
 			return m_values.FindIndex(v => v.targetGroup == group) >= 0;
 		}
+
+        public void Remove (BuildTarget target) {
+            Remove(BuildTargetUtility.TargetToGroup(target));
+        }
 
 		public void Remove (BuildTargetGroup group) {
 			int index = m_values.FindIndex(v => v.targetGroup == group);
