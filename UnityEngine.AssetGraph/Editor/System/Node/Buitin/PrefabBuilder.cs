@@ -27,6 +27,8 @@ namespace UnityEngine.AssetGraph {
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
         [SerializeField] private bool m_preserveUserAddedComponentsAndObjects;
 
+        public static readonly string kCacheDirName = "Prefabs";
+
 		public UnityEditor.ReplacePrefabOptions Options {
 			get {
 				return m_replacePrefabOptions;
@@ -512,7 +514,7 @@ namespace UnityEngine.AssetGraph {
             var outputOption = (OutputOption)m_outputOption [target];
 
             if(outputOption == OutputOption.CreateInCacheDirectory) {
-                return FileUtility.EnsurePrefabBuilderCacheDirExists (target, node);
+                return FileUtility.EnsureCacheDirExists (target, node, kCacheDirName);
             }
 
             return Path.Combine("Assets", m_outputDir [target]);

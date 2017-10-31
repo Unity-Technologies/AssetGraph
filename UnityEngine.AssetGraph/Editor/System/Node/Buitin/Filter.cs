@@ -109,28 +109,6 @@ namespace UnityEngine.AssetGraph {
 			return newNode;
 		}
 
-		private void ShowFilterKeyTypeMenu (string current, Action<string> ExistSelected) {
-			var menu = new GenericMenu();
-
-			menu.AddDisabledItem(new GUIContent(current));
-
-			menu.AddSeparator(string.Empty);
-
-			for (var i = 0; i < TypeUtility.KeyTypes.Count; i++) {
-				var type = TypeUtility.KeyTypes[i];
-				if (type == current) continue;
-
-				menu.AddItem(
-					new GUIContent(type),
-					false,
-					() => {
-						ExistSelected(type);
-					}
-				);
-			}
-			menu.ShowAsContext();
-		}
-
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
             if (m_filterList == null) {

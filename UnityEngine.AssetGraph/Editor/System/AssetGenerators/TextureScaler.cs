@@ -56,7 +56,7 @@ namespace UnityEngine.AssetGraph {
         }
 
         public bool CanGenerateAsset (AssetReference asset, out string message) {
-            if (asset.filterType != typeof(TextureImporter)) {
+            if (asset.importerType != typeof(TextureImporter)) {
                 message = string.Format ("Texture Scaler needs texture source asset. Source: {0} ", asset.importFrom);
                 return false;
             }

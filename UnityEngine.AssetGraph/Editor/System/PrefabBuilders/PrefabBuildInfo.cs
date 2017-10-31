@@ -66,7 +66,7 @@ namespace UnityEngine.AssetGraph {
 
 		static private PrefabBuildInfo GetPrefabBuildInfo(PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey) {
 
-			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
+            var prefabCacheDir = FileUtility.EnsureCacheDirExists(target, node, PrefabBuilder.kCacheDirName);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
 
 			return AssetDatabase.LoadAssetAtPath<PrefabBuildInfo>(buildInfoPath);
@@ -131,7 +131,7 @@ namespace UnityEngine.AssetGraph {
 
 		static public void SavePrefabBuildInfo(string buildPath, PrefabBuilder builder, Model.NodeData node, BuildTarget target, string groupKey, List<AssetReference> assets) {
 
-			var prefabCacheDir = FileUtility.EnsurePrefabBuilderCacheDirExists(target, node);
+            var prefabCacheDir = FileUtility.EnsureCacheDirExists(target, node, PrefabBuilder.kCacheDirName);
 			var buildInfoPath = FileUtility.PathCombine(prefabCacheDir, groupKey + ".asset");
 
 			var version = PrefabBuilderUtility.GetPrefabBuilderVersion(builder.Builder.ClassName);

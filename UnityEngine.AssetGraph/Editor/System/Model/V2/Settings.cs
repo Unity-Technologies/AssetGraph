@@ -29,14 +29,10 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 		public const string GUI_TEXT_MENU_GENERATE_NODE = GUI_TEXT_MENU_GENERATE + "/Custom Node Script";
         public const string GUI_TEXT_MENU_DELETE_CACHE = GUI_TEXT_MENU_BASE + "/Clear Build Cache";
 		
-        public const string GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS = GUI_TEXT_MENU_BASE + "/Clear Saved ImportSettings";
+        public const string GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS = GUI_TEXT_MENU_BASE + "/Clean Up SavedSettings";
 
 		public const string GRAPH_SEARCH_CONDITION = "t:UnityEngine.AssetGraph.DataModel.Version2.ConfigGraph";
-
-		public const string GUI_TEXT_SETTINGTEMPLATE_MODEL	= "Model";
-		public const string GUI_TEXT_SETTINGTEMPLATE_AUDIO	= "Audio";
-		public const string GUI_TEXT_SETTINGTEMPLATE_TEXTURE= "Texture";
-		public const string GUI_TEXT_SETTINGTEMPLATE_VIDEO	= "Video";
+        public const string SETTING_TEMPLATE_DIR_SEARCH_CONDITION = "SettingTemplate";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
 		public const string DOTSTART_HIDDEN_FILE_HEADSTRING = ".";
@@ -100,23 +96,20 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/ScriptTemplate"); } }
             public static string UserSpacePath          { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Generated/Editor"); } }
             public static string CUISpacePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Generated/CUI"); } }
-            public static string ImporterSettingsPath   { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "SavedSettings/ImportSettings"); } }
+            public static string SavedSettingsPath      { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "SavedSettings"); } }
 
             public static string CachePath              { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Cache"); } }
-            public static string PrefabBuilderCachePath { get { return System.IO.Path.Combine(CachePath, "Prefabs"); } }
-            public static string AssetGeneratorCachePath { get { return System.IO.Path.Combine(CachePath, "GeneratedAssets"); } }
-            public static string GroupingCachePath      { get { return System.IO.Path.Combine(CachePath, "Grouping"); } }
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
             public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "AssetReferenceDB.asset"); } }
             public static string BuildMapPath           { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "AssetBundleBuildMap.asset"); } }
             public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "BatchBuildConfig.asset"); } }
 
-            public static string SettingTemplatePath    { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/SettingTemplate"); } }
-            public static string SettingTemplateModel   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.fbx"); } }
-            public static string SettingTemplateAudio   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.wav"); } }
-            public static string SettingTemplateTexture { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.png"); } }
-            public static string SettingTemplateVideo   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.m4v"); } }
+//            public static string SettingTemplatePath    { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/SettingTemplate"); } }
+//            public static string SettingTemplateModel   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.fbx"); } }
+//            public static string SettingTemplateAudio   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.wav"); } }
+//            public static string SettingTemplateTexture { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.png"); } }
+//            public static string SettingTemplateVideo   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.m4v"); } }
 
             public static string GUIResourceBasePath { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/GUI/GraphicResources"); } }
         }

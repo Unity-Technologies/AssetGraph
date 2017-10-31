@@ -82,7 +82,7 @@ namespace UnityEngine.AssetGraph {
 			// if loadPath is null/empty, loader load everything except for settings
 			if(string.IsNullOrEmpty(loadPath)) {
 				// ignore config file path update
-                var notConfigFilePath = importedAssets.Where(path => !TypeUtility.IsGraphToolSystemAsset(path));
+                var notConfigFilePath = importedAssets.Where(path => !TypeUtility.IsAssetGraphSystemAsset(path));
                 if(notConfigFilePath.Any()) {
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
 					return true;
@@ -262,7 +262,7 @@ namespace UnityEngine.AssetGraph {
             foreach (var assetGuid in targetFiles) {
                 var targetFilePath = AssetDatabase.GUIDToAssetPath (assetGuid);
 
-                if (TypeUtility.IsGraphToolSystemAsset (targetFilePath)) {
+                if (TypeUtility.IsAssetGraphSystemAsset (targetFilePath)) {
                     continue;
                 }
 

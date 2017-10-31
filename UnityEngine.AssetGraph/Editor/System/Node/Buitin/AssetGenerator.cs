@@ -48,6 +48,8 @@ namespace UnityEngine.AssetGraph {
 
         private GeneratorEntry m_removingEntry;
 
+        public static readonly string kCacheDirName = "GeneratedAssets";
+
 		public override string ActiveStyle {
 			get {
 				return "node 4 on";
@@ -512,7 +514,7 @@ namespace UnityEngine.AssetGraph {
             }
 
             if(outputOption == OutputOption.CreateInCacheDirectory) {
-                return FileUtility.EnsureAssetGeneratorCacheDirExists (target, node);
+                return FileUtility.EnsureCacheDirExists (target, node, kCacheDirName);
             }
 
             var sourceDir = Path.GetDirectoryName (a.importFrom);

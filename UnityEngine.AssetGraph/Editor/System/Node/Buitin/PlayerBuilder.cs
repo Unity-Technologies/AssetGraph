@@ -204,7 +204,7 @@ namespace UnityEngine.AssetGraph
                                         onValueChanged();
                                         continue;
                                     }
-                                    var type = TypeUtility.GetTypeOfAsset(path);
+                                    var type = TypeUtility.GetMainAssetTypeAtPath(path);
                                     if (type != typeof(UnityEditor.SceneAsset))
                                     {
                                         continue;

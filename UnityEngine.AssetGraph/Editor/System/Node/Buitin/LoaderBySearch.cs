@@ -148,7 +148,7 @@ namespace UnityEngine.AssetGraph {
 
 				var targetFilePath = AssetDatabase.GUIDToAssetPath(guid);
 
-                if (TypeUtility.IsGraphToolSystemAsset (targetFilePath)) {
+                if (TypeUtility.IsAssetGraphSystemAsset (targetFilePath)) {
                     continue;
                 }
 

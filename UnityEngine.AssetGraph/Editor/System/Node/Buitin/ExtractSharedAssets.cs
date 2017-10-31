@@ -264,7 +264,7 @@ namespace UnityEngine.AssetGraph {
     		var dependencies = AssetDatabase.GetDependencies(assetPaths);
     		foreach(var d in dependencies) {
                 // AssetBundle must not include script asset
-                if (TypeUtility.GetTypeOfAsset (d) == typeof(MonoScript)) {
+                if (TypeUtility.GetMainAssetTypeAtPath (d) == typeof(MonoScript)) {
                     continue;
                 }
 

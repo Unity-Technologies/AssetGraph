@@ -112,7 +112,7 @@ namespace UnityEngine.AssetGraph {
 
         static private AssetGenerateInfo GetAssetGenerateInfo(AssetGenerator.GeneratorEntry entry, Model.NodeData node, BuildTarget target, AssetReference asset) {
 
-            var cacheDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
+            var cacheDir = FileUtility.EnsureCacheDirExists(target, node, AssetGenerator.kCacheDirName);
             var generateInfoDir = FileUtility.PathCombine (cacheDir, entry.m_id);
             var generatorInfoPath = FileUtility.PathCombine(generateInfoDir, asset.fileNameAndExtension + ".asset");
 
@@ -121,7 +121,7 @@ namespace UnityEngine.AssetGraph {
 
         static public void SaveAssetGenerateInfo(AssetGenerator.GeneratorEntry entry, Model.NodeData node, BuildTarget target, AssetReference asset) {
 
-            var cacheDir = FileUtility.EnsureAssetGeneratorCacheDirExists(target, node);
+            var cacheDir = FileUtility.EnsureCacheDirExists(target, node, AssetGenerator.kCacheDirName);
             var generateInfoDir = FileUtility.PathCombine (cacheDir, entry.m_id);
             if (!Directory.Exists (generateInfoDir)) {
                 Directory.CreateDirectory (generateInfoDir);

@@ -150,7 +150,9 @@ namespace UnityEngine.AssetGraph {
 		public virtual void OnContextMenuGUI(GenericMenu menu) {
 			// Do nothing
 		}
+		#endregion
 
+        #region Events
         /// <summary>
         /// OnAssetsReimported() is called when there are changes of assets during editing graph.
         /// </summary>
@@ -161,19 +163,26 @@ namespace UnityEngine.AssetGraph {
         /// <param name="deletedAssets">Deleted asset paths.</param>
         /// <param name="movedAssets">Moved asset paths.</param>
         /// <param name="movedFromAssetPaths">Original paths of moved assets.</param>
-		public virtual bool OnAssetsReimported(
-			Model.NodeData nodeData,
-			AssetReferenceStreamManager streamManager,
-			BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
-		{
-			return false;
-		}
+        public virtual bool OnAssetsReimported(
+            Model.NodeData nodeData,
+            AssetReferenceStreamManager streamManager,
+            BuildTarget target, 
+            string[] importedAssets, 
+            string[] deletedAssets, 
+            string[] movedAssets, 
+            string[] movedFromAssetPaths)
+        {
+            return false;
+        }
 
-		#endregion
+        /// <summary>
+        /// OnNodeDelete() is called when node is about to be deleted.
+        /// </summary>
+        /// <param name="nodeData">NodeGUI instance for this node.</param>
+        public virtual void OnNodeDelete(Model.NodeData nodeData) {
+            // default does nothing
+        }
+        #endregion
 	}
 
     /// <summary>

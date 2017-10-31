@@ -29,7 +29,8 @@ namespace UnityEngine.AssetGraph {
 		private UnityEngine.Object[] m_data;
 		private SceneManagement.Scene m_scene;
 		private Type m_assetType;
-		private Type m_filterType;
+        private Type m_filterType;
+        private Type m_importerType;
 
         /// <summary>
         /// Gets the identifier.
@@ -94,7 +95,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
         /// <summary>
-        /// Gets the type of the asset.
+        /// Gets main asset type.
         /// </summary>
         /// <value>The type of the asset.</value>
 		public Type assetType {
@@ -102,7 +103,7 @@ namespace UnityEngine.AssetGraph {
 				if(m_assetType == null) {
 					m_assetType = Type.GetType(m_assetTypeString);
 					if(m_assetType == null) {
-						m_assetType = TypeUtility.GetTypeOfAsset(importFrom);
+						m_assetType = TypeUtility.GetMainAssetTypeAtPath(importFrom);
 						m_assetTypeString = m_assetType.AssemblyQualifiedName;
 					}
 				}
@@ -111,17 +112,34 @@ namespace UnityEngine.AssetGraph {
 		}
 
         /// <summary>
-        /// Gets the type of the filter.
+        /// Get type of asset used by filtering.
+        /// filterType will be variation of AssetImporter if asset has importer,
+        /// otherwise returns asset type.
+        /// filterType may be null if this asset should be ignored by loading/filtering (manifest, etc)
         /// </summary>
         /// <value>The type of the filter.</value>
 		public Type filterType {
 			get {
 				if(m_filterType == null) {
-                    m_filterType = TypeUtility.FindAssetFilterType(m_importFrom);
+                    m_filterType = FilterTypeUtility.FindAssetFilterType (m_importFrom);
 				}
 				return m_filterType;
 			}
 		}
+
+        /// <summary>
+        /// Get type of asset importer. Returns null if asset does not have importer.
+        /// </summary>
+        /// <value>The type of the filter.</value>
+        public Type importerType {
+            get {
+                if(m_importerType == null) {
+                    m_importerType = TypeUtility.GetAssetImporterTypeAtPath (m_importFrom);
+                }
+                return m_importerType;
+            }
+        }
+
 
         /// <summary>
         /// Gets the file name and extension.
@@ -237,7 +255,7 @@ namespace UnityEngine.AssetGraph {
 		/// <value><c>true</c> if is scene asset; otherwise, <c>false</c>.</value>
 		public bool isSceneAsset {
 			get {
-				return filterType == typeof (SceneManagement.Scene);
+                return assetType == typeof (UnityEditor.SceneAsset);
 			}
 		}
 
@@ -352,7 +370,7 @@ namespace UnityEngine.AssetGraph {
 				guid: Guid.NewGuid(),
 				assetDatabaseId:AssetDatabase.AssetPathToGUID(importFrom),
 				importFrom:importFrom,
-				assetType:TypeUtility.GetTypeOfAsset(importFrom)
+				assetType:TypeUtility.GetMainAssetTypeAtPath(importFrom)
 			);
 		}
 
@@ -443,4 +461,7 @@ namespace UnityEngine.AssetGraph {
 			this.m_variantName = variantName;
 		}
 	}
+
+    public class AssetBundleReference {}
+    public class AssetBundleManifestReference {}
 }

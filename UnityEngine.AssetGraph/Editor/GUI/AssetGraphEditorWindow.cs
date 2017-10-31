@@ -288,21 +288,44 @@ namespace UnityEngine.AssetGraph {
 			GetWindow<AssetGraphEditorWindow>();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] public static void DeleteCache () {
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] 
+        public static void DeleteCache () {
             FileUtility.RemakeDirectory(Model.Settings.Path.CachePath);
 
 			AssetDatabase.Refresh();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_IMPORTSETTING_SETTINGS)] public static void DeleteImportSettingSample () {
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS)] 
+        public static void CleanupSavedSettings () {
 
-			var result = EditorUtility.DisplayDialog("Erase All Import Settings", "Do you want to erase settings for all ImportSetting node? " +
-				"This operation is not undoable. It will affect all graphs in this project.", "Yes", "Cancel");
+            if (!Directory.Exists (Model.Settings.Path.SavedSettingsPath)) {
+                return;
+            }
 
-			if(result) {
-                FileUtility.RemakeDirectory(Model.Settings.Path.ImporterSettingsPath);
-				AssetDatabase.Refresh();
-			}
+            var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+
+            var validNodeIds = new List<string> ();
+
+            foreach (var guid in guids) {
+                var graphPath = AssetDatabase.GUIDToAssetPath (guid);
+                var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphPath);
+                validNodeIds.AddRange ( graph.Nodes.Select(n => n.Id) );
+            }
+
+            var saveSettingRoots = Directory.GetDirectories(Model.Settings.Path.SavedSettingsPath);
+            foreach (var dir in saveSettingRoots) {
+                var nodeSettings = Directory.GetDirectories (dir);
+
+                foreach (var nodeSettingPath in nodeSettings) {
+                    var dirName = Path.GetFileName (nodeSettingPath);
+
+                    if (!validNodeIds.Contains (dirName)) {
+                        FileUtility.DeleteDirectory (nodeSettingPath, true);
+                    }
+                }
+            }
+
+            AssetDatabase.Refresh ();
 		}
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 101)]
@@ -1754,6 +1777,7 @@ namespace UnityEngine.AssetGraph {
 			var deletedNodeIndex = nodes.FindIndex(node => node.Id == deletingNodeId);
 			if (0 <= deletedNodeIndex) {
 				var n = nodes[deletedNodeIndex];
+                n.Data.Operation.Object.OnNodeDelete (n.Data);
 				n.SetActive(false);
 				nodes.RemoveAt(deletedNodeIndex);
 			}

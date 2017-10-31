@@ -64,14 +64,15 @@ namespace UnityEngine.AssetGraph {
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
-				Type incomingType = TypeUtility.FindFirstIncomingAssetType(streamManager, node.Data.InputPoints[0]);
+                var a = AssetReferenceUtility.FindFirstIncomingAssetReference(streamManager, node.Data.InputPoints[0]);
+                Type incomingType = a.assetType;
 
 				var modifier = m_instance.Get<IModifier>(editor.CurrentEditingGroup);
 
 				if(incomingType == null) {
 					// if there is no asset input to determine incomingType,
 					// retrieve from assigned Modifier.
-					incomingType = ModifierUtility.GetModifierTargetType(m_instance.ClassName);
+                    incomingType = ModifierUtility.GetModifierTargetType(m_instance.ClassName);
 
 					if(incomingType == null) {
 						EditorGUILayout.HelpBox("Modifier needs a single type from incoming assets.", MessageType.Info);
@@ -82,13 +83,13 @@ namespace UnityEngine.AssetGraph {
 				Dictionary<string, string> map = null;
 
 				if(incomingType != null) {
-					map = ModifierUtility.GetAttributeAssemblyQualifiedNameMap(incomingType);
+                    map = ModifierUtility.GetAttributeAssemblyQualifiedNameMap(incomingType);
 				}
 
 				if(map != null  && map.Count > 0) {
 					using(new GUILayout.HorizontalScope()) {
 						GUILayout.Label("Modifier");
-						var guiName = ModifierUtility.GetModifierGUIName(m_instance.ClassName);
+                        var guiName = ModifierUtility.GetModifierGUIName(m_instance.ClassName);
 						if (GUILayout.Button(guiName, "Popup", GUILayout.MinWidth(150f))) {
 							var builders = map.Keys.ToList();
 
@@ -96,7 +97,7 @@ namespace UnityEngine.AssetGraph {
 								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
 									{
 										using(new RecordUndoScope("Change Modifier class", node, true)) {
-											modifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
+                                            modifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
 											m_instance.Set(editor.CurrentEditingGroup,modifier);
 											onValueChanged();
 										}
@@ -276,12 +277,13 @@ namespace UnityEngine.AssetGraph {
 		) {
 			Type expectedType = null;
 			if(incoming != null) {
-				expectedType = TypeUtility.FindFirstIncomingAssetType(incoming);
+                var firstAsset = AssetReferenceUtility.FindFirstIncomingAssetReference (incoming);
+                expectedType = firstAsset.assetType;
 				if(expectedType != null) {
 					foreach(var ag in incoming) {
 						foreach(var assets in ag.assetGroups.Values) {
 							foreach(var a in assets) {
-								Type assetType = a.filterType;
+                                Type assetType = a.assetType;
 								if(assetType != expectedType) {
 									multipleAssetTypeFound(expectedType, assetType, a);
 								}
@@ -291,8 +293,6 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 
-//			var modifier = ModifierUtility.CreateModifier(node, target);
-//
 			if(m_instance.Get<IModifier>(target) == null) {
 				failedToCreateModifier();
 			}
@@ -301,7 +301,7 @@ namespace UnityEngine.AssetGraph {
 			// right type of asset is coming in - so we'll just skip the test
 			// expectedType is not null when there is at least one incoming asset
 			if(incoming != null && expectedType != null) {
-				var targetType = ModifierUtility.GetModifierTargetType(m_instance.Get<IModifier>(target));
+                var targetType = ModifierUtility.GetModifierTargetType(m_instance.Get<IModifier>(target));
 				if( targetType != expectedType ) {
 					incomingTypeMismatch(targetType, expectedType);
 				}

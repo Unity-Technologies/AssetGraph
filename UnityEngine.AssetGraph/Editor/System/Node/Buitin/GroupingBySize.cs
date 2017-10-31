@@ -34,6 +34,8 @@ namespace UnityEngine.AssetGraph
         private GroupViewController m_groupViewController;
         private Dictionary<string, List<AssetReference>> m_lastOutputGroups;
 
+        public static readonly string kCacheDirName = "Grouping";
+
 		public override string ActiveStyle {
 			get {
 				return "node 2 on";
@@ -193,7 +195,7 @@ namespace UnityEngine.AssetGraph
                 m_savedGroups = new SerializableGroups (m_lastOutputGroups);
 
                 // export current setting to file
-                var prefabOutputDir = FileUtility.EnsureGroupingCacheDirExists(target, nodeData);
+                var prefabOutputDir = FileUtility.EnsureCacheDirExists(target, nodeData, kCacheDirName);
                 var outputFilePath = Path.Combine (prefabOutputDir, nodeData.Name + ".json");
 
                 string jsonString = JsonUtility.ToJson (m_savedGroups, true);

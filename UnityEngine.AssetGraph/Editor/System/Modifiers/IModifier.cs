@@ -22,13 +22,13 @@ namespace UnityEngine.AssetGraph {
         /// </summary>
         /// <returns><c>true</c> if this instance is modified the specified assets; otherwise, <c>false</c>.</returns>
         /// <param name="assets">Assets.</param>
-        bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group);
+        bool IsModified (UnityEngine.Object[] assets, List<AssetReference> subAssets);
 
         /// <summary>
         /// Modify incoming assets.
         /// </summary>
         /// <param name="assets">Assets.</param>
-        void Modify (UnityEngine.Object[] assets, List<AssetReference> group);
+        void Modify (UnityEngine.Object[] assets, List<AssetReference> subAssets);
 
         /// <summary>
         /// Draw Inspector GUI for this Modifier.

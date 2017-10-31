@@ -549,15 +549,17 @@ namespace UnityEngine.AssetGraph {
 
 			menu.AddSeparator(string.Empty);
 
-			for (var i = 0; i < TypeUtility.KeyTypes.Count; i++) {
-				var type = TypeUtility.KeyTypes[i];
-				if (type == current) continue;
+            var guiNames = FilterTypeUtility.GetFilterGUINames ();
+
+            for (var i = 0; i < guiNames.Count; i++) {
+                var name = guiNames[i];
+				if (name == current) continue;
 
 				menu.AddItem(
-					new GUIContent(type),
+					new GUIContent(name),
 					false,
 					() => {
-						Selected(type);
+						Selected(name);
 					}
 				);
 			}
