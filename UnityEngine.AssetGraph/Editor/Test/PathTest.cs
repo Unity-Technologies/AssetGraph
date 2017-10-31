@@ -28,10 +28,10 @@ public class PathTest {
         this.TestPath(Path.Combine(basePath, "Generated/CUI"), Settings.Path.CUISpacePath);
         this.TestPath(Path.Combine(basePath, "SavedSettings"), Settings.Path.SavedSettingsPath);
         this.TestPath(Path.Combine(basePath, "Cache"), Settings.Path.CachePath);
-        this.TestPath(Path.Combine(basePath, "SettingFiles"), AssetGraphBasePath.SettingFilePath);
+        this.TestPath(Path.Combine(basePath, "SettingFiles"), AssetGraphBasePath.TemporalSettingFilePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetReferenceDB.asset"), Settings.Path.DatabasePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);
-        this.TestPath(Path.Combine(basePath, "SettingFiles/BatchBuildConfig.asset"), Settings.Path.BatchBuildConfigPath);
+        this.TestPath(Path.Combine(basePath, "SavedSettings/BatchBuildConfig/BatchBuildConfig.asset"), Settings.Path.BatchBuildConfigPath);
 
 //        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);
 //        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.fbx"), Settings.Path.SettingTemplateModel);
