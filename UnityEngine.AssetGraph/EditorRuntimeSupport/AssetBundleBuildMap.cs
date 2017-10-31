@@ -22,7 +22,7 @@ namespace UnityEngine.AssetGraph {
 
         #if UNITY_EDITOR
         public class Config {
-            public static string BuildMapPath           { get { return AssetGraphBasePath.SettingFilePath + "AssetBundleBuildMap.asset"; } }
+            public static string BuildMapPath           { get { return AssetGraphBasePath.TemporalSettingFilePath + "AssetBundleBuildMap.asset"; } }
         }
         #endif
 
@@ -35,7 +35,7 @@ namespace UnityEngine.AssetGraph {
                     #if UNITY_EDITOR
 					s_map.m_version = VERSION;
 
-                    var DBDir = AssetGraphBasePath.SettingFilePath;
+                    var DBDir = AssetGraphBasePath.TemporalSettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);

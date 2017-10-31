@@ -52,7 +52,8 @@ namespace UnityEngine.AssetGraph {
         public static string ToolDirName            { get { return "UnityEngine.AssetGraph"; } }
 
         public const string ASSETS_PATH = "Assets/";
-        public static string SettingFilePath        { get { return BasePath + "/SettingFiles/"; } }
+        public static string SettingFilePath            { get { return BasePath + "/SettingFiles/"; } }
+        public static string TemporalSettingFilePath    { get { return BasePath + "/TemporalSettingFiles/"; } }
     }
     #endif
 }

@@ -43,6 +43,9 @@ namespace UnityEngine.AssetGraph {
 
 		private static BatchBuildConfig s_config;
 
+        private static string OldBatchBuildConfigPath   
+        { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "BatchBuildConfig.asset"); } }
+
 		public static BatchBuildConfig GetConfig() {
 			if(s_config == null) {
 				if(!Load()) {
@@ -51,18 +54,22 @@ namespace UnityEngine.AssetGraph {
 					s_config.m_collections = new List<GraphCollection>();
 					s_config.m_version = VERSION;
 
-                    var SettingDir = AssetGraphBasePath.SettingFilePath;
-
-					if (!Directory.Exists(SettingDir)) {
-						Directory.CreateDirectory(SettingDir);
-					}
-
-                    AssetDatabase.CreateAsset(s_config, Model.Settings.Path.BatchBuildConfigPath);
+                    CreateBatchBuildConfigAsset (s_config);
 				}
 			}
 
 			return s_config;
 		}
+
+        private static void CreateBatchBuildConfigAsset(BatchBuildConfig c) {
+            var SettingDir = Path.Combine(Model.Settings.Path.SavedSettingsPath, "BatchBuildConfig");
+
+            if (!Directory.Exists(SettingDir)) {
+                Directory.CreateDirectory(SettingDir);
+            }
+
+            AssetDatabase.CreateAsset(s_config, Model.Settings.Path.BatchBuildConfigPath);
+        }
 
 		private static bool Load() {
 
@@ -78,7 +85,21 @@ namespace UnityEngine.AssetGraph {
 						s_config = db;
 						loaded = true;
 					}
-				}
+                } 
+
+                // try loading pre-1.4 config
+                else {
+                    var oldConfigPath = OldBatchBuildConfigPath;
+                    if(File.Exists(oldConfigPath)) 
+                    {
+                        BatchBuildConfig db = AssetDatabase.LoadAssetAtPath<BatchBuildConfig>(oldConfigPath);
+                        if(db.m_version == VERSION) {
+                            s_config = db;
+                            loaded = true;
+                            AssetDatabase.MoveAsset(oldConfigPath, configPath);
+                        }
+                    }
+                }
 			} catch(Exception e) {
 				LogUtility.Logger.LogWarning(LogUtility.kTag, e);
 			}

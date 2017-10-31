@@ -101,15 +101,10 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             public static string CachePath              { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Cache"); } }
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
-            public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "AssetReferenceDB.asset"); } }
-            public static string BuildMapPath           { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "AssetBundleBuildMap.asset"); } }
-            public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "BatchBuildConfig.asset"); } }
+            public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetReferenceDB.asset"); } }
+            public static string BuildMapPath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetBundleBuildMap.asset"); } }
 
-//            public static string SettingTemplatePath    { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/SettingTemplate"); } }
-//            public static string SettingTemplateModel   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.fbx"); } }
-//            public static string SettingTemplateAudio   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.wav"); } }
-//            public static string SettingTemplateTexture { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.png"); } }
-//            public static string SettingTemplateVideo   { get { return System.IO.Path.Combine(SettingTemplatePath, "setting.m4v"); } }
+            public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(SavedSettingsPath, "BatchBuildConfig/BatchBuildConfig.asset"); } }
 
             public static string GUIResourceBasePath { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/GUI/GraphicResources"); } }
         }
