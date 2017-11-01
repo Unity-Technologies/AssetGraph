@@ -14,7 +14,8 @@ namespace UnityEngine.AssetGraph {
 	[CustomNode("Load Assets/Load From Directory", 10)]
 	public class Loader : Node, Model.NodeDataImporter {
 
-		[SerializeField] private SerializableMultiTargetString m_loadPath;
+        [SerializeField] private SerializableMultiTargetString m_loadPath;
+        [SerializeField] private SerializableMultiTargetString m_loadPathGuid;
 
 		public override string ActiveStyle {
 			get {
@@ -42,12 +43,18 @@ namespace UnityEngine.AssetGraph {
 
         public Loader() {}
         public Loader(string path) {
-            m_loadPath = new SerializableMultiTargetString(NormalizeLoadPath(path));
+            var normalizedPath = NormalizeLoadPath (path);
+            var loadPath = FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, normalizedPath);
+            m_loadPath = new SerializableMultiTargetString(normalizedPath);
+            m_loadPathGuid = new SerializableMultiTargetString (loadPath);
         }
 
 		public override void Initialize(Model.NodeData data) {
             if (m_loadPath == null) {
                 m_loadPath = new SerializableMultiTargetString();
+            }
+            if (m_loadPathGuid == null) {
+                m_loadPathGuid = new SerializableMultiTargetString();
             }
 
 			data.AddDefaultOutputPoint();
@@ -55,15 +62,44 @@ namespace UnityEngine.AssetGraph {
 
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 			m_loadPath = new SerializableMultiTargetString(v1.LoaderLoadPath);
+            var loadPath = FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, v1.LoaderLoadPath);
+            m_loadPathGuid = new SerializableMultiTargetString(loadPath);
 		}
 
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Loader();
-			newNode.m_loadPath = new SerializableMultiTargetString(m_loadPath);
+            newNode.m_loadPath = new SerializableMultiTargetString(m_loadPath);
+            newNode.m_loadPathGuid = new SerializableMultiTargetString(m_loadPathGuid);
 
 			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
+
+        private void CheckAndCorrectPath(BuildTarget target) {
+            var loadPath = string.Format ("Assets/{0}", m_loadPath[target]);
+            var pathFromGuid = AssetDatabase.GUIDToAssetPath (m_loadPathGuid[target]);
+
+            // fix load path from guid (adopting folder rename)
+            if (!AssetDatabase.IsValidFolder (loadPath)) {
+                if (!string.IsNullOrEmpty (pathFromGuid)) {
+                    if (m_loadPath.ContainsValueOf (target)) {
+                        m_loadPath [target] = NormalizeLoadPath (pathFromGuid);
+                    } else {
+                        m_loadPath.DefaultValue = NormalizeLoadPath (pathFromGuid);
+                    }
+                }
+            } 
+            // if folder is valid and guid is invalid, reflect folder to guid
+            else {
+                if (string.IsNullOrEmpty (pathFromGuid)) {
+                    if (m_loadPath.ContainsValueOf (target)) {
+                        m_loadPathGuid [target] = AssetDatabase.AssetPathToGUID (loadPath);
+                    } else {
+                        m_loadPathGuid.DefaultValue = AssetDatabase.AssetPathToGUID (loadPath);
+                    }
+                }
+            }
+        }
 
 		public override bool OnAssetsReimported(
 			Model.NodeData nodeData,
@@ -77,6 +113,8 @@ namespace UnityEngine.AssetGraph {
 			if (streamManager == null) {
 				return true;
 			}
+
+            CheckAndCorrectPath (target);
 
 			var loadPath = m_loadPath[target];
 			// if loadPath is null/empty, loader load everything except for settings
@@ -163,9 +201,11 @@ namespace UnityEngine.AssetGraph {
 				var disabledScope = editor.DrawOverrideTargetToggle(node, m_loadPath.ContainsValueOf(editor.CurrentEditingGroup), (bool b) => {
 					using(new RecordUndoScope("Remove Target Load Path Settings", node, true)) {
 						if(b) {
-							m_loadPath[editor.CurrentEditingGroup] = m_loadPath.DefaultValue;
+                            m_loadPath[editor.CurrentEditingGroup] = m_loadPath.DefaultValue;
+                            m_loadPathGuid[editor.CurrentEditingGroup] = m_loadPathGuid.DefaultValue;
 						} else {
 							m_loadPath.Remove(editor.CurrentEditingGroup);
+                            m_loadPathGuid.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
@@ -182,14 +222,17 @@ namespace UnityEngine.AssetGraph {
                         FileUtility.PathCombine(Model.Settings.Path.ASSETS_PATH, path),
                         (string folderSelected) => { return NormalizeLoadPath(folderSelected); }
                     );
+
+                    var dirPath = Path.Combine(Model.Settings.Path.ASSETS_PATH,newLoadPath);
+
 					if (newLoadPath != path) {
 						using(new RecordUndoScope("Load Path Changed", node, true)){
 							m_loadPath[editor.CurrentEditingGroup] = newLoadPath;
+                            m_loadPathGuid [editor.CurrentEditingGroup] = AssetDatabase.AssetPathToGUID (dirPath);
 							onValueChanged();
 						}
 					}
 
-                    var dirPath = Path.Combine(Model.Settings.Path.ASSETS_PATH,newLoadPath);
 					bool dirExists = Directory.Exists(dirPath);
 
 					GUILayout.Space(10f);
@@ -231,6 +274,8 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
+            CheckAndCorrectPath (target);
+
 			ValidateLoadPath(
 				m_loadPath[target],
 				GetLoaderFullLoadPath(target),
