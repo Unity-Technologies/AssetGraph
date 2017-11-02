@@ -132,7 +132,7 @@ namespace UnityEngine.AssetGraph {
 
             GUILayout.Space (8f);
 
-            Rect assetListTreeRect = GUILayoutUtility.GetRect (m_ctx.assetListTreeRect.width, m_ctx.assetListTreeRect.height, GUILayout.ExpandWidth (true));
+            Rect assetListTreeRect = GUILayoutUtility.GetRect (m_ctx.assetListTreeRect.width, m_ctx.assetListTreeRect.height, GUILayout.ExpandWidth (true), GUILayout.ExpandHeight (true));
             Rect assetListResizeRect = GUILayoutUtility.GetRect (100f, 4f, GUILayout.ExpandWidth (true));
 
             m_groupListTree.OnGUI (groupListTreeRect);
