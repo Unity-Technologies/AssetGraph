@@ -146,8 +146,10 @@ namespace UnityEngine.AssetGraph {
 		}
 
         public override void OnNodeDelete(Model.NodeData nodeData) {
-            var sampleFileDir = FileUtility.PathCombine(Model.Settings.Path.SavedSettingsPath, "ImportSettings", nodeData.Id);
-            FileUtility.DeleteDirectory (sampleFileDir, true);
+            var savedSettingDir = FileUtility.PathCombine(Model.Settings.Path.SavedSettingsPath, "ImportSettings", nodeData.Id);
+            if (AssetDatabase.IsValidFolder (savedSettingDir)) {
+                FileUtility.DeleteDirectory (savedSettingDir, true);
+            }
         }
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
