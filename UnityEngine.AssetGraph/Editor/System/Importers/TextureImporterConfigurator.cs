@@ -124,9 +124,9 @@ namespace UnityEngine.AssetGraph
             target.ReadTextureSettings (targetSetting);
             reference.ReadTextureSettings (referenceSetting);
 
-            // if m_overwriteSpriteSheet is true, following properties
+            // if m_overwriteSpriteSheet is false, following properties
             // should be ignored
-            if (m_overwriteSpriteSheet) {
+            if (!m_overwriteSpriteSheet) {
                 referenceSetting.spriteAlignment = targetSetting.spriteAlignment;
                 referenceSetting.spriteBorder = targetSetting.spriteBorder;
                 referenceSetting.spriteExtrude = targetSetting.spriteExtrude;
@@ -310,7 +310,7 @@ namespace UnityEngine.AssetGraph
             target.ReadTextureSettings (srcSettings);
             reference.ReadTextureSettings (dstSettings);
 
-            if (m_overwriteSpriteSheet) {
+            if (!m_overwriteSpriteSheet) {
                 dstSettings.spriteAlignment = srcSettings.spriteAlignment;
                 dstSettings.spriteBorder = srcSettings.spriteBorder;
                 dstSettings.spriteExtrude = srcSettings.spriteExtrude;
