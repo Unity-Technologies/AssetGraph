@@ -223,6 +223,10 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             public static string ConnectionPoint    { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "ConnectionPoint.png"); } }
             public static string InputBG            { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "InputBG.png"); } }
             public static string OutputBG           { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "OutputBG.png"); } }
+        
+            public static string GraphIcon          { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "ConfigGraphIcon.psd"); } }
+            public static string WindowIcon         { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "AssetGraphWindow.png"); } }
+            public static string WindowIconPro      { get { return System.IO.Path.Combine(Path.GUIResourceBasePath, "d_AssetGraphWindow.png"); } }
 		}
 	}
 }

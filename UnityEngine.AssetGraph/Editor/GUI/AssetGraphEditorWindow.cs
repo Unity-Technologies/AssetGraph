@@ -402,7 +402,9 @@ namespace UnityEngine.AssetGraph {
 		private void Init() {
 			LogUtility.Logger.filterLogType = LogType.Warning;
 
-			this.titleContent = new GUIContent("AssetGraph");
+            var windowIcon = (EditorGUIUtility.isProSkin) ? NodeGUIUtility.windowIconPro : NodeGUIUtility.windowIcon;
+
+            this.titleContent = new GUIContent("AssetGraph", windowIcon);
 			this.minSize = new Vector2(600f, 300f);
 			this.wantsMouseMove = true;
 
