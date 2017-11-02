@@ -15,6 +15,7 @@ namespace UnityEngine.AssetGraph {
 		public void UpdateNode (AssetGraphController c, NodeGUI node) {
 			this.controller = c;
 			this.node = node;
+            this.name = node.Data.Name;
 		}
 
 		public void UpdateErrors (List<string> errorsSource) {

@@ -41,6 +41,7 @@ namespace UnityEngine.AssetGraph {
 			}
 			set {
 				m_data.Name = value;
+                Inspector.name = value;
 			}
 		}
 
@@ -74,6 +75,7 @@ namespace UnityEngine.AssetGraph {
 					m_nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
 					m_nodeInsp.hideFlags = HideFlags.DontSave;
 					m_nodeInsp.node = this;
+                    m_nodeInsp.name = this.Name;
 				}
 				return m_nodeInsp;
 			}
@@ -108,6 +110,7 @@ namespace UnityEngine.AssetGraph {
 
 			m_nodeSyle = data.Operation.Object.InactiveStyle;
 			Inspector.controller = controller;
+            Inspector.name = data.Name;
 		}
 
 		public NodeGUI Duplicate (AssetGraphController controller, float newX, float newY) {
