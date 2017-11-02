@@ -65,7 +65,11 @@ namespace UnityEngine.AssetGraph {
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 
                 var a = AssetReferenceUtility.FindFirstIncomingAssetReference(streamManager, node.Data.InputPoints[0]);
-                Type incomingType = a.assetType;
+                Type incomingType = null;
+
+                if (a != null) {
+                    incomingType = a.assetType;
+                }
 
 				var modifier = m_instance.Get<IModifier>(editor.CurrentEditingGroup);
 
