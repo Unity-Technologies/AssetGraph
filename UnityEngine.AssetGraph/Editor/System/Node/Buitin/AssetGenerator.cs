@@ -192,8 +192,11 @@ namespace UnityEngine.AssetGraph {
 
                 GUILayout.Space (4);
 
-                if (GUILayout.Button ("Remove Generator")) {
-                    m_removingEntry = entry;
+                using (new EditorGUILayout.HorizontalScope ()) {
+                    GUILayout.FlexibleSpace ();
+                    if (GUILayout.Button ("Remove")) {
+                        m_removingEntry = entry;
+                    }
                 }
             }
         }
@@ -205,90 +208,106 @@ namespace UnityEngine.AssetGraph {
 
             GUILayout.Space(8f);
 
-            OutputOption opt = (OutputOption)m_outputOption[editor.CurrentEditingGroup];
-            var newOption = (OutputOption)EditorGUILayout.EnumPopup("Output Option", opt);
-            if(newOption != opt) {
-                using(new RecordUndoScope("Change Output Option", node, true)){
-                    m_outputOption[editor.CurrentEditingGroup] = (int)newOption;
+            editor.DrawPlatformSelector(node);
+            using (new EditorGUILayout.VerticalScope()) {
+                var disabledScope = editor.DrawOverrideTargetToggle(node, m_outputOption.ContainsValueOf(editor.CurrentEditingGroup), (bool enabled) => {
+                    if(enabled) {
+                        m_outputOption[editor.CurrentEditingGroup] = m_outputOption.DefaultValue;
+                        m_outputDir[editor.CurrentEditingGroup] = m_outputDir.DefaultValue;
+                    } else {
+                        m_outputOption.Remove(editor.CurrentEditingGroup);
+                        m_outputDir.Remove(editor.CurrentEditingGroup);
+                    }
                     onValueChanged();
-                }
-                opt = newOption;
-            }
-            if (opt != OutputOption.CreateInCacheDirectory) {
-                EditorGUILayout.HelpBox ("When you are not creating assets under cache directory, make sure your generators are not overwriting assets each other.", MessageType.Info);
-            }
+                });
 
-            using (new EditorGUI.DisabledScope (opt == OutputOption.CreateInCacheDirectory)) {
-                var newDirPath = m_outputDir[editor.CurrentEditingGroup];
+                using (disabledScope) {
+                    OutputOption opt = (OutputOption)m_outputOption[editor.CurrentEditingGroup];
+                    var newOption = (OutputOption)EditorGUILayout.EnumPopup("Output Option", opt);
+                    if(newOption != opt) {
+                        using(new RecordUndoScope("Change Output Option", node, true)){
+                            m_outputOption[editor.CurrentEditingGroup] = (int)newOption;
+                            onValueChanged();
+                        }
+                        opt = newOption;
+                    }
+                    if (opt != OutputOption.CreateInCacheDirectory) {
+                        EditorGUILayout.HelpBox ("When you are not creating assets under cache directory, make sure your generators are not overwriting assets each other.", MessageType.Info);
+                    }
 
-                if (opt == OutputOption.CreateInSelectedDirectory) {
-                    newDirPath = editor.DrawFolderSelector ("Output Directory", "Select Output Folder", 
-                        m_outputDir [editor.CurrentEditingGroup],
-                        Application.dataPath,
-                        (string folderSelected) => {
-                            string basePath = Application.dataPath;
+                    using (new EditorGUI.DisabledScope (opt == OutputOption.CreateInCacheDirectory)) {
+                        var newDirPath = m_outputDir[editor.CurrentEditingGroup];
 
-                            if (basePath == folderSelected) {
-                                folderSelected = string.Empty;
-                            } else {
-                                var index = folderSelected.IndexOf (basePath);
-                                if (index >= 0) {
-                                    folderSelected = folderSelected.Substring (basePath.Length + index);
-                                    if (folderSelected.IndexOf ('/') == 0) {
-                                        folderSelected = folderSelected.Substring (1);
+                        if (opt == OutputOption.CreateInSelectedDirectory) {
+                            newDirPath = editor.DrawFolderSelector ("Output Directory", "Select Output Folder", 
+                                m_outputDir [editor.CurrentEditingGroup],
+                                Application.dataPath,
+                                (string folderSelected) => {
+                                    string basePath = Application.dataPath;
+
+                                    if (basePath == folderSelected) {
+                                        folderSelected = string.Empty;
+                                    } else {
+                                        var index = folderSelected.IndexOf (basePath);
+                                        if (index >= 0) {
+                                            folderSelected = folderSelected.Substring (basePath.Length + index);
+                                            if (folderSelected.IndexOf ('/') == 0) {
+                                                folderSelected = folderSelected.Substring (1);
+                                            }
+                                        }
                                     }
+                                    return folderSelected;
+                                }
+                            );
+                        } else if (opt == OutputOption.RelativeToSourceAsset) {
+                            newDirPath = EditorGUILayout.TextField("Relative Path", m_outputDir[editor.CurrentEditingGroup]);
+                        }
+
+                        if (newDirPath != m_outputDir[editor.CurrentEditingGroup]) {
+                            using(new RecordUndoScope("Change Output Directory", node, true)){
+                                m_outputDir[editor.CurrentEditingGroup] = newDirPath;
+                                onValueChanged();
+                            }
+                        }
+
+                        var dirPath = Path.Combine (Application.dataPath, m_outputDir [editor.CurrentEditingGroup]);
+
+                        if (opt == OutputOption.CreateInSelectedDirectory && 
+                            !string.IsNullOrEmpty(m_outputDir [editor.CurrentEditingGroup]) &&
+                            !Directory.Exists (dirPath)) 
+                        {
+                            using (new EditorGUILayout.HorizontalScope()) {
+                                EditorGUILayout.LabelField(m_outputDir[editor.CurrentEditingGroup] + " does not exist.");
+                                if(GUILayout.Button("Create directory")) {
+                                    Directory.CreateDirectory(dirPath);
+                                    AssetDatabase.Refresh ();
                                 }
                             }
-                            return folderSelected;
+                            EditorGUILayout.Space();
+
+                            string parentDir = Path.GetDirectoryName(m_outputDir[editor.CurrentEditingGroup]);
+                            if(Directory.Exists(parentDir)) {
+                                EditorGUILayout.LabelField("Available Directories:");
+                                string[] dirs = Directory.GetDirectories(parentDir);
+                                foreach(string s in dirs) {
+                                    EditorGUILayout.LabelField(s);
+                                }
+                            }
+                            EditorGUILayout.Space();
                         }
-                    );
-                } else if (opt == OutputOption.RelativeToSourceAsset) {
-                    newDirPath = EditorGUILayout.TextField("Relative Path", m_outputDir[editor.CurrentEditingGroup]);
-                }
 
-                if (newDirPath != m_outputDir[editor.CurrentEditingGroup]) {
-                    using(new RecordUndoScope("Change Output Directory", node, true)){
-                        m_outputDir[editor.CurrentEditingGroup] = newDirPath;
-                        onValueChanged();
-                    }
-                }
+                        if (opt == OutputOption.CreateInSelectedDirectory || opt == OutputOption.CreateInCacheDirectory) {
+                            var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, null);
 
-                var dirPath = Path.Combine (Application.dataPath, m_outputDir [editor.CurrentEditingGroup]);
-
-                if (opt == OutputOption.CreateInSelectedDirectory && 
-                    !string.IsNullOrEmpty(m_outputDir [editor.CurrentEditingGroup]) &&
-                    !Directory.Exists (dirPath)) 
-                {
-                    using (new EditorGUILayout.HorizontalScope()) {
-                        EditorGUILayout.LabelField(m_outputDir[editor.CurrentEditingGroup] + " does not exist.");
-                        if(GUILayout.Button("Create directory")) {
-                            Directory.CreateDirectory(dirPath);
-                            AssetDatabase.Refresh ();
-                        }
-                    }
-                    EditorGUILayout.Space();
-
-                    string parentDir = Path.GetDirectoryName(m_outputDir[editor.CurrentEditingGroup]);
-                    if(Directory.Exists(parentDir)) {
-                        EditorGUILayout.LabelField("Available Directories:");
-                        string[] dirs = Directory.GetDirectories(parentDir);
-                        foreach(string s in dirs) {
-                            EditorGUILayout.LabelField(s);
-                        }
-                    }
-                    EditorGUILayout.Space();
-                }
-
-                if (opt == OutputOption.CreateInSelectedDirectory || opt == OutputOption.CreateInCacheDirectory) {
-                    var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, null);
-
-                    using (new EditorGUI.DisabledScope (!Directory.Exists (outputDir))) 
-                    {
-                        using (new EditorGUILayout.HorizontalScope ()) {
-                            GUILayout.FlexibleSpace ();
-                            if (GUILayout.Button ("Highlight in Project Window", GUILayout.Width (180f))) {
-                                var folder = AssetDatabase.LoadMainAssetAtPath (outputDir);
-                                EditorGUIUtility.PingObject (folder);
+                            using (new EditorGUI.DisabledScope (!Directory.Exists (outputDir))) 
+                            {
+                                using (new EditorGUILayout.HorizontalScope ()) {
+                                    GUILayout.FlexibleSpace ();
+                                    if (GUILayout.Button ("Highlight in Project Window", GUILayout.Width (180f))) {
+                                        var folder = AssetDatabase.LoadMainAssetAtPath (outputDir);
+                                        EditorGUIUtility.PingObject (folder);
+                                    }
+                                }
                             }
                         }
                     }
@@ -299,6 +318,7 @@ namespace UnityEngine.AssetGraph {
 
             foreach (var s in m_entries) {
                 DrawGeneratorSetting (s, node, streamManager, editor, onValueChanged);
+                GUILayout.Space (10f);
             }
 
             if (m_removingEntry != null) {
