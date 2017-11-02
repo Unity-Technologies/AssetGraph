@@ -45,8 +45,10 @@ namespace UnityEngine.AssetGraph {
         public Loader(string path) {
             var normalizedPath = NormalizeLoadPath (path);
             var loadPath = FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, normalizedPath);
+            var guid = AssetDatabase.AssetPathToGUID (loadPath);
+
             m_loadPath = new SerializableMultiTargetString(normalizedPath);
-            m_loadPathGuid = new SerializableMultiTargetString (loadPath);
+            m_loadPathGuid = new SerializableMultiTargetString (guid);
         }
 
 		public override void Initialize(Model.NodeData data) {
@@ -62,8 +64,11 @@ namespace UnityEngine.AssetGraph {
 
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 			m_loadPath = new SerializableMultiTargetString(v1.LoaderLoadPath);
-            var loadPath = FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, v1.LoaderLoadPath);
-            m_loadPathGuid = new SerializableMultiTargetString(loadPath);
+            m_loadPathGuid = new SerializableMultiTargetString();
+            foreach (var v in m_loadPath.Values) {
+                var loadPath = FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, v.value);
+                m_loadPathGuid [v.targetGroup] = AssetDatabase.AssetPathToGUID (loadPath);
+            }
 		}
 
 		public override Node Clone(Model.NodeData newData) {
@@ -76,7 +81,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
         private void CheckAndCorrectPath(BuildTarget target) {
-            var loadPath = string.Format ("Assets/{0}", m_loadPath[target]);
+            var loadPath = GetLoadPath (target);
             var pathFromGuid = AssetDatabase.GUIDToAssetPath (m_loadPathGuid[target]);
 
             // fix load path from guid (adopting folder rename)
@@ -130,8 +135,7 @@ namespace UnityEngine.AssetGraph {
 			var assetGroup = streamManager.FindAssetGroup(nodeData.OutputPoints[0]);
 
 			if( assetGroup.Count > 0 ) {
-
-				var importPath = string.Format("Assets/{0}", m_loadPath[target]);
+                var importPath = GetLoadPath (target);
 
 				foreach(var path in importedAssets) {
 					if(path.StartsWith(importPath)) {
@@ -302,7 +306,9 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			var outputSource = new List<AssetReference>();
-            var targetFiles = AssetDatabase.FindAssets("",  new string[] { "Assets/" + m_loadPath[target] });
+
+            var loadPath = GetLoadPath (target);
+            var targetFiles = AssetDatabase.FindAssets("",  new string[] { loadPath });
 
             foreach (var assetGuid in targetFiles) {
                 var targetFilePath = AssetDatabase.GUIDToAssetPath (assetGuid);
@@ -349,6 +355,15 @@ namespace UnityEngine.AssetGraph {
 			if (string.IsNullOrEmpty(currentLoadPath)) NullOrEmpty();
 			if (!Directory.Exists(combinedPath)) NotExist();
 		}
+
+        private string GetLoadPath(BuildTarget g) {
+            var path = m_loadPath [g];
+            if (string.IsNullOrEmpty (path)) {
+                return "Assets";
+            } else {
+                return FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, path);
+            }
+        }
 
 		private string GetLoaderFullLoadPath(BuildTarget g) {
 			return FileUtility.PathCombine(Application.dataPath, m_loadPath[g]);
