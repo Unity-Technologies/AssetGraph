@@ -221,7 +221,7 @@ namespace UnityEngine.AssetGraph {
 		{
             var modifier = m_instance.Get<IModifier> (target);
             if (modifier != null && string.IsNullOrEmpty (m_modifierType)) {
-                m_modifierType = ModifierUtility.GetModifierTargetType (m_instance.ClassName);
+                m_modifierType = ModifierUtility.GetModifierTargetType (m_instance.ClassName).AssemblyQualifiedName;
             }
 
             ValidateModifier (node, target, incoming);
@@ -253,27 +253,35 @@ namespace UnityEngine.AssetGraph {
             Type targetType = ModifierUtility.GetModifierTargetType (m_instance.ClassName);
 			bool isAnyAssetModified = false;
 
-			foreach(var ag in incoming) {
-				foreach(var assets in ag.assetGroups.Values) {
-					foreach(var asset in assets) {
-                        if (asset.assetType == targetType) {
-                            if(modifier.IsModified(asset.allData, assets)) {
-                                modifier.Modify(asset.allData, assets);
-                                asset.SetDirty();
-                                isAnyAssetModified = true;
+            var aggregatedGroups = new Dictionary<string, List<AssetReference>>();
+            foreach(var ag in incoming) {
+                foreach(var name in ag.assetGroups.Keys) {
+                    if(!aggregatedGroups.ContainsKey(name)) {
+                        aggregatedGroups[name] = new List<AssetReference>();
+                    }
+                    aggregatedGroups[name].AddRange(ag.assetGroups[name].AsEnumerable());
+                }
+            }
 
-                                // apply asset setting changes to AssetDatabase.
-                                if (asset.isSceneAsset) {
-                                    if (!EditorSceneManager.SaveScene (asset.scene)) {
-                                        throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
-                                    }
-                                } else {
-                                    AssetDatabase.SaveAssets ();
+            foreach(var assets in aggregatedGroups.Values) {
+				foreach(var asset in assets) {
+                    if (asset.assetType == targetType) {
+                        if(modifier.IsModified(asset.allData, assets)) {
+                            modifier.Modify(asset.allData, assets);
+                            asset.SetDirty();
+                            isAnyAssetModified = true;
+
+                            // apply asset setting changes to AssetDatabase.
+                            if (asset.isSceneAsset) {
+                                if (!EditorSceneManager.SaveScene (asset.scene)) {
+                                    throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
                                 }
+                            } else {
+                                AssetDatabase.SaveAssets ();
                             }
-                            asset.ReleaseData ();
                         }
-					}
+                        asset.ReleaseData ();
+                    }
 				}
 			}
 
@@ -286,9 +294,7 @@ namespace UnityEngine.AssetGraph {
 				var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
 					null : connectionsToOutput.First();
 
-				foreach(var ag in incoming) {
-					Output(dst, ag.assetGroups);
-				}
+                Output(dst, aggregatedGroups);
 			}
 		}
 
