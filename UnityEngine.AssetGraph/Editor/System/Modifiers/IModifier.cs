@@ -79,16 +79,10 @@ namespace UnityEngine.AssetGraph {
 	public class ModifierUtility {
         private static Dictionary<Type, Dictionary<string, string>> s_attributeAssemblyQualifiedNameMap;
 
-		public static Dictionary<string, string> GetAttributeAssemblyQualifiedNameMap (Type targetType) {
+        private static Dictionary<Type, Dictionary<string, string>> GetAttributeAssemblyQualifiedNameMap() {
 
-			UnityEngine.Assertions.Assert.IsNotNull(targetType);
-
-			if(s_attributeAssemblyQualifiedNameMap == null) {
-				s_attributeAssemblyQualifiedNameMap =  new Dictionary<Type, Dictionary<string, string>>();
-			}
-
-			if(!s_attributeAssemblyQualifiedNameMap.Keys.Contains(targetType)) {
-				var map = new Dictionary<string, string>(); 
+            if(s_attributeAssemblyQualifiedNameMap == null) {
+                s_attributeAssemblyQualifiedNameMap =  new Dictionary<Type, Dictionary<string, string>>();
 
                 var allBuilders = new List<Type>();
 
@@ -99,21 +93,34 @@ namespace UnityEngine.AssetGraph {
                     allBuilders.AddRange (builders);
                 }
 
-                foreach (var type in allBuilders) {
-					CustomModifier attr = 
-						type.GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+                foreach (var builder in allBuilders) {
+                    CustomModifier attr = 
+                        builder.GetCustomAttributes(typeof(CustomModifier), false).FirstOrDefault() as CustomModifier;
+                    
+                    if (attr != null) {
+                        if (!s_attributeAssemblyQualifiedNameMap.ContainsKey (attr.For)) {
+                            s_attributeAssemblyQualifiedNameMap[attr.For] = new Dictionary<string, string>();
+                        }
+                        var map = s_attributeAssemblyQualifiedNameMap[attr.For];
 
-					if (attr != null && attr.For == targetType) {
-						if (!map.ContainsKey(attr.Name)) {
-							map[attr.Name] = type.AssemblyQualifiedName;
-						} else {
-							LogUtility.Logger.LogWarning(LogUtility.kTag, "Multiple CustomModifier class with the same name/type found. Ignoring " + type.Name);
-						}
-					}
-				}
-				s_attributeAssemblyQualifiedNameMap[targetType] = map;
-			}
-			return s_attributeAssemblyQualifiedNameMap[targetType];
+                        if (!map.ContainsKey(attr.Name)) {
+                            map[attr.Name] = builder.AssemblyQualifiedName;
+                        } else {
+                            LogUtility.Logger.LogWarning(LogUtility.kTag, "Multiple CustomModifier class with the same name/type found. Ignoring " + builder.Name);
+                        }
+                    }
+                }
+            }
+            return s_attributeAssemblyQualifiedNameMap;
+        }
+
+        public static IEnumerable<Type> GetModifyableTypes () {
+            return GetAttributeAssemblyQualifiedNameMap().Keys.AsEnumerable();
+        }
+
+		public static Dictionary<string, string> GetAttributeAssemblyQualifiedNameMap (Type targetType) {
+			UnityEngine.Assertions.Assert.IsNotNull(targetType);
+            return GetAttributeAssemblyQualifiedNameMap()[targetType];
 		}
 
 		public static string GetModifierGUIName(IModifier m) {

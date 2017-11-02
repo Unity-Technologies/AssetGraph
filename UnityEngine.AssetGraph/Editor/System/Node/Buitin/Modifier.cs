@@ -16,6 +16,7 @@ namespace UnityEngine.AssetGraph {
 	public class Modifier : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
+        [SerializeField] private string m_modifierType;
 
 		public override string ActiveStyle {
 			get {
@@ -37,6 +38,7 @@ namespace UnityEngine.AssetGraph {
 
 		public override void Initialize(Model.NodeData data) {
 			m_instance = new SerializableMultiTargetInstance();
+            m_modifierType = string.Empty;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -44,14 +46,17 @@ namespace UnityEngine.AssetGraph {
 
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 			m_instance = new SerializableMultiTargetInstance(v1.ScriptClassName, v1.InstanceData);
+            m_modifierType = string.Empty;
 		}
 
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new Modifier();
 			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
+            newNode.m_modifierType = m_modifierType;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
+
 			return newNode;
 		}
 
@@ -63,31 +68,40 @@ namespace UnityEngine.AssetGraph {
 			GUILayout.Space(10f);
 
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+                if (string.IsNullOrEmpty (m_modifierType)) {
+                    EditorGUILayout.HelpBox ("Select asset type to modify with this node.", MessageType.Info);
+                    using (new EditorGUILayout.HorizontalScope ()) {
+                        EditorGUILayout.LabelField ("Asset Type");
+                        if (GUILayout.Button ("", "Popup", GUILayout.MinWidth (150f))) {
 
-                var a = AssetReferenceUtility.FindFirstIncomingAssetReference(streamManager, node.Data.InputPoints[0]);
-                Type incomingType = null;
+                            var menu = new GenericMenu ();
 
-                if (a != null) {
-                    incomingType = a.assetType;
+                            var types = ModifierUtility.GetModifyableTypes ().ToArray();
+
+                            for (var i = 0; i < types.Length; i++) {
+                                var index = i;
+                                menu.AddItem (
+                                    new GUIContent (types [i].Name),
+                                    false,
+                                    () => {
+                                        ResetConfig();
+                                        m_modifierType = types[index].AssemblyQualifiedName;
+                                    }
+                                );
+                            }
+                            menu.ShowAsContext ();
+                        }
+                    }
+                    return;
                 }
 
+                var targetType = Type.GetType (m_modifierType);
 				var modifier = m_instance.Get<IModifier>(editor.CurrentEditingGroup);
-
-				if(incomingType == null) {
-					// if there is no asset input to determine incomingType,
-					// retrieve from assigned Modifier.
-                    incomingType = ModifierUtility.GetModifierTargetType(m_instance.ClassName);
-
-					if(incomingType == null) {
-						EditorGUILayout.HelpBox("Modifier needs a single type from incoming assets.", MessageType.Info);
-						return;
-					}
-				}
 
 				Dictionary<string, string> map = null;
 
-				if(incomingType != null) {
-                    map = ModifierUtility.GetAttributeAssemblyQualifiedNameMap(incomingType);
+                if(targetType != null) {
+                    map = ModifierUtility.GetAttributeAssemblyQualifiedNameMap(targetType);
 				}
 
 				if(map != null  && map.Count > 0) {
@@ -101,7 +115,7 @@ namespace UnityEngine.AssetGraph {
 								NodeGUI.ShowTypeNamesMenu(guiName, builders, (string selectedGUIName) => 
 									{
 										using(new RecordUndoScope("Change Modifier class", node, true)) {
-                                            modifier = ModifierUtility.CreateModifier(selectedGUIName, incomingType);
+                                            modifier = ModifierUtility.CreateModifier(selectedGUIName, targetType);
 											m_instance.Set(editor.CurrentEditingGroup,modifier);
 											onValueChanged();
 										}
@@ -123,7 +137,7 @@ namespace UnityEngine.AssetGraph {
 
 					string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER.Split('/');
 
-					if (incomingType == null) {
+                    if (targetType == null) {
 						EditorGUILayout.HelpBox(
 							string.Format(
 								"You need to create at least one Modifier script to select script for Modifier. " +
@@ -136,7 +150,7 @@ namespace UnityEngine.AssetGraph {
 								"No CustomModifier found for {3} type. \n" +
 								"You need to create at least one Modifier script to select script for Modifier. " +
 								"To start, select {0}>{1}>{2} menu and create a new script.",
-								menuNames[1],menuNames[2], menuNames[3], incomingType.FullName
+                                menuNames[1],menuNames[2], menuNames[3], targetType.FullName
 							), MessageType.Info);
 					}
 				}
@@ -167,6 +181,22 @@ namespace UnityEngine.AssetGraph {
 						}
 					}
 				}
+
+                GUILayout.Space (40f);
+                using (new EditorGUILayout.HorizontalScope (GUI.skin.box)) {
+                    GUILayout.Space (4f);
+                    EditorGUILayout.LabelField ("Reset Modifier Setting");
+
+                    if (GUILayout.Button ("Clear")) {
+                        if (EditorUtility.DisplayDialog ("Clear Modifier Setting", 
+                            string.Format ("Do you want to reset modifier for \"{0}\"?", node.Name), "OK", "Cancel")) 
+                        {
+                            using (new RecordUndoScope ("Clear Modifier Setting", node)) {
+                                ResetConfig ();
+                            }
+                        }
+                    }
+                }
 			}
 		}
 			
@@ -189,23 +219,12 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			ValidateModifier(node, target, incoming,
-				(Type expectedType, Type foundType, AssetReference foundAsset) => {
-					throw new NodeException(string.Format("{3} :Modifier expect {0}, but different type of incoming asset is found({1} {2})", 
-						expectedType.FullName, foundType.FullName, foundAsset.fileNameAndExtension, node.Name), node.Id);
-				},
-				() => {
-					throw new NodeException(node.Name + " :Modifier is not configured. Please configure from Inspector.", node.Id);
-				},
-				() => {
-					throw new NodeException(node.Name + " :Failed to create Modifier from settings. Please fix settings from Inspector.", node.Id);
-				},
-				(Type expectedType, Type incomingType) => {
-					throw new NodeException(string.Format("{0} :Incoming asset type is does not match with this Modifier (Expected type:{1}, Incoming type:{2}).",
-						node.Name, (expectedType != null)?expectedType.FullName:"null", (incomingType != null)?incomingType.FullName:"null"), node.Id);
-				}
-			);
+            var modifier = m_instance.Get<IModifier> (target);
+            if (modifier != null && string.IsNullOrEmpty (m_modifierType)) {
+                m_modifierType = ModifierUtility.GetModifierTargetType (m_instance.ClassName);
+            }
 
+            ValidateModifier (node, target, incoming);
 
 			if(incoming != null && Output != null) {
 				// Modifier does not add, filter or change structure of group, so just pass given group of assets
@@ -231,26 +250,29 @@ namespace UnityEngine.AssetGraph {
 			}
 			var modifier = m_instance.Get<IModifier>(target);
 			UnityEngine.Assertions.Assert.IsNotNull(modifier);
+            Type targetType = ModifierUtility.GetModifierTargetType (m_instance.ClassName);
 			bool isAnyAssetModified = false;
 
 			foreach(var ag in incoming) {
 				foreach(var assets in ag.assetGroups.Values) {
 					foreach(var asset in assets) {
-						if(modifier.IsModified(asset.allData, assets)) {
-							modifier.Modify(asset.allData, assets);
-							asset.SetDirty();
-							isAnyAssetModified = true;
+                        if (asset.assetType == targetType) {
+                            if(modifier.IsModified(asset.allData, assets)) {
+                                modifier.Modify(asset.allData, assets);
+                                asset.SetDirty();
+                                isAnyAssetModified = true;
 
-							// apply asset setting changes to AssetDatabase.
-							if (asset.isSceneAsset) {
-								if (!EditorSceneManager.SaveScene (asset.scene)) {
-									throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
-								}
-							} else {
-								AssetDatabase.SaveAssets ();
-							}
-						}
-						asset.ReleaseData ();
+                                // apply asset setting changes to AssetDatabase.
+                                if (asset.isSceneAsset) {
+                                    if (!EditorSceneManager.SaveScene (asset.scene)) {
+                                        throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
+                                    }
+                                } else {
+                                    AssetDatabase.SaveAssets ();
+                                }
+                            }
+                            asset.ReleaseData ();
+                        }
 					}
 				}
 			}
@@ -269,47 +291,31 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 		}
+
+        private void ResetConfig() {
+            m_modifierType = string.Empty;
+            m_instance = new SerializableMultiTargetInstance ();
+        }
 			
 		public void ValidateModifier (
 			Model.NodeData node,
 			BuildTarget target,
-			IEnumerable<PerformGraph.AssetGroups> incoming,
-			Action<Type, Type, AssetReference> multipleAssetTypeFound,
-			Action noModiferData,
-			Action failedToCreateModifier,
-			Action<Type, Type> incomingTypeMismatch
-		) {
-			Type expectedType = null;
-			if(incoming != null) {
-                var firstAsset = AssetReferenceUtility.FindFirstIncomingAssetReference (incoming);
-                expectedType = firstAsset.assetType;
-				if(expectedType != null) {
-					foreach(var ag in incoming) {
-						foreach(var assets in ag.assetGroups.Values) {
-							foreach(var a in assets) {
-                                Type assetType = a.assetType;
-								if(assetType != expectedType) {
-									multipleAssetTypeFound(expectedType, assetType, a);
-								}
-							}
-						}
-					}
-				}
+			IEnumerable<PerformGraph.AssetGroups> incoming) 
+        {
+            if (string.IsNullOrEmpty (m_modifierType)) {
+                throw new NodeException(node.Name + " :Modifier asset type not set. Please select asset type to modify from Inspector.", node.Id);
+            }
+            var modifier = m_instance.Get<IModifier> (target);
+            if(modifier == null) {
+                throw new NodeException(node.Name + " :Failed to create Modifier. Please select modifier form Inspector.", node.Id);
 			}
 
-			if(m_instance.Get<IModifier>(target) == null) {
-				failedToCreateModifier();
-			}
+            Type expected = Type.GetType (m_modifierType);
+            Type modifierFor = ModifierUtility.GetModifierTargetType (m_instance.ClassName);
 
-			// if there is no incoming assets, there is no way to check if 
-			// right type of asset is coming in - so we'll just skip the test
-			// expectedType is not null when there is at least one incoming asset
-			if(incoming != null && expectedType != null) {
-                var targetType = ModifierUtility.GetModifierTargetType(m_instance.Get<IModifier>(target));
-				if( targetType != expectedType ) {
-					incomingTypeMismatch(targetType, expectedType);
-				}
-			}
+            if (expected != modifierFor) {
+                throw new NodeException(node.Name + " :Modifier type does not match. Please reset setting or fix Modifier code.", node.Id);
+            }
 		}			
 	}
 }
