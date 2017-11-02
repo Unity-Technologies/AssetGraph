@@ -161,49 +161,44 @@ namespace UnityEngine.AssetGraph {
             node.SetActive (true);
 
 			using (new EditorGUILayout.VerticalScope()) {
-                var a = AssetReferenceUtility.FindFirstIncomingAssetReference(streamManager, node.Data.InputPoints[0]);
+
                 Type importerType = null;
                 Type assetType = null;
 
-                if (a == null) {
-                    var referenceImporter = GetReferenceAssetImporter (node.Data, false);
-                    if (referenceImporter != null) {
-                        importerType = referenceImporter.GetType ();
-                        assetType = TypeUtility.GetMainAssetTypeAtPath (AssetDatabase.GUIDToAssetPath (m_referenceAssetGuid));
-                    } else {
-                        GUILayout.Space(10f);
-                        using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
-                            EditorGUILayout.HelpBox ("Import setting type can be set by incoming asset, or you can specify by selecting.", MessageType.Info);
-                            using (new EditorGUILayout.HorizontalScope ()) {
-                                EditorGUILayout.LabelField ("Importer Type");
-                                if (GUILayout.Button ("", "Popup", GUILayout.MinWidth (150f))) {
+                var referenceImporter = GetReferenceAssetImporter (node.Data, false);
+                if (referenceImporter != null) {
+                    importerType = referenceImporter.GetType ();
+                    assetType = TypeUtility.GetMainAssetTypeAtPath (AssetDatabase.GUIDToAssetPath (m_referenceAssetGuid));
+                } else {
+                    GUILayout.Space(10f);
+                    using (new EditorGUILayout.VerticalScope (GUI.skin.box)) {
+                        EditorGUILayout.HelpBox ("Import setting type can be set by incoming asset, or you can specify by selecting.", MessageType.Info);
+                        using (new EditorGUILayout.HorizontalScope ()) {
+                            EditorGUILayout.LabelField ("Importer Type");
+                            if (GUILayout.Button ("", "Popup", GUILayout.MinWidth (150f))) {
 
-                                    var menu = new GenericMenu ();
+                                var menu = new GenericMenu ();
 
-                                    var guiMap = ImporterConfiguratorUtility.GetImporterConfiguratorGuiNameTypeMap ();
-                                    var guiNames = guiMap.Keys.ToArray ();
+                                var guiMap = ImporterConfiguratorUtility.GetImporterConfiguratorGuiNameTypeMap ();
+                                var guiNames = guiMap.Keys.ToArray ();
 
-                                    for (var i = 0; i < guiNames.Length; i++) {
-                                        var index = i;
-                                        menu.AddItem (
-                                            new GUIContent (guiNames [i]),
-                                            false,
-                                            () => {
-                                                ResetConfig (node.Data);
-                                                var typeFor = guiMap [guiNames [index]];
-                                                CreateConfigurator (node.Data, typeFor);
-                                            }
-                                        );
-                                    }
-                                    menu.ShowAsContext ();
+                                for (var i = 0; i < guiNames.Length; i++) {
+                                    var index = i;
+                                    menu.AddItem (
+                                        new GUIContent (guiNames [i]),
+                                        false,
+                                        () => {
+                                            ResetConfig (node.Data);
+                                            var typeFor = guiMap [guiNames [index]];
+                                            CreateConfigurator (node.Data, typeFor);
+                                        }
+                                    );
                                 }
+                                menu.ShowAsContext ();
                             }
                         }
-                        return;
                     }
-                } else {
-                    importerType = a.importerType;
-                    assetType = a.assetType;
+                    return;
                 }
 
                 if (importerType != null && assetType != null) {
@@ -212,9 +207,9 @@ namespace UnityEngine.AssetGraph {
                 }
 
                 // get reference importer again (enabling custom asset this time)
-                var importer = GetReferenceAssetImporter (node.Data, true);
+                referenceImporter = GetReferenceAssetImporter (node.Data, true);
 
-                if (importer != null) {
+                if (referenceImporter != null) {
                     var configurator = m_configuratorInstance.Get<IAssetImporterConfigurator> (editor.CurrentEditingGroup);
                     if (configurator != null) {
                         GUILayout.Space (10f);
@@ -226,11 +221,11 @@ namespace UnityEngine.AssetGraph {
                             }
                         };
 
-                        configurator.OnInspectorGUI (importer, editor.CurrentEditingGroup, onChangedAction);
+                        configurator.OnInspectorGUI (referenceImporter, editor.CurrentEditingGroup, onChangedAction);
                     }
 
                     if (m_importerEditor == null) {
-                        m_importerEditor = Editor.CreateEditor (importer);
+                        m_importerEditor = Editor.CreateEditor (referenceImporter);
                     }
                 }
 
