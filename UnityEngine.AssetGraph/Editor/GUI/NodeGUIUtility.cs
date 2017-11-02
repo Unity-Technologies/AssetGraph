@@ -46,6 +46,33 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
+        public static Texture2D windowIcon {
+            get {
+                if(NodeSingleton.s.graphIcon == null) {
+                    NodeSingleton.s.windowIcon = LoadTextureFromFile(Model.Settings.GUI.WindowIcon);
+                }
+                return NodeSingleton.s.windowIcon;
+            }
+        }
+
+        public static Texture2D windowIconPro {
+            get {
+                if(NodeSingleton.s.graphIcon == null) {
+                    NodeSingleton.s.windowIconPro = LoadTextureFromFile(Model.Settings.GUI.WindowIconPro);
+                }
+                return NodeSingleton.s.windowIconPro;
+            }
+        }
+
+        public static Texture2D configGraphIcon {
+            get {
+                if(NodeSingleton.s.graphIcon == null) {
+                    NodeSingleton.s.graphIcon = LoadTextureFromFile(Model.Settings.GUI.GraphIcon);
+                }
+                return NodeSingleton.s.graphIcon;
+            }
+        }
+
 		public static Texture2D inputPointBG {
 			get {
 				if(NodeSingleton.s.inputPointBG == null) {
@@ -131,6 +158,11 @@ namespace UnityEngine.AssetGraph {
 
 		private class NodeSingleton {
 			public Action<NodeEvent> emitAction;
+
+            public Texture2D graphIcon;
+
+            public Texture2D windowIcon;
+            public Texture2D windowIconPro;
 
 			public Texture2D inputPointBG;
 			public Texture2D outputPointBG;
