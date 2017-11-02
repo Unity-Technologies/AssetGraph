@@ -22,6 +22,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
         public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";
         public const string GUI_TEXT_MENU_GENERATE_ASSETGENERATOR = GUI_TEXT_MENU_GENERATE + "/AssetGenerator Script";
+        public const string GUI_TEXT_MENU_GENERATE_IMPORTSETTINGSCONFIGURATOR = GUI_TEXT_MENU_GENERATE + "/ImportSettingsConfigurator Script";
         public const string GUI_TEXT_MENU_GENERATE_CUITOOL = GUI_TEXT_MENU_BASE + "/Create CUI Tool";
 
 		public const string GUI_TEXT_MENU_GENERATE_POSTPROCESS = GUI_TEXT_MENU_GENERATE + "/Postprocess Script";

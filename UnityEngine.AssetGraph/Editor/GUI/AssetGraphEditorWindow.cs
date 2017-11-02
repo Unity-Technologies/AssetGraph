@@ -124,7 +124,8 @@ namespace UnityEngine.AssetGraph {
 			SCRIPT_POSTPROCESS,
 			SCRIPT_NODE,
 			SCRIPT_FILTER,
-            SCRIPT_ASSETGENERATOR
+            SCRIPT_ASSETGENERATOR,
+            SCRIPT_IMPORTSETTINGSCONFIGURATOR
 		}
 			
 		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
@@ -229,6 +230,11 @@ namespace UnityEngine.AssetGraph {
                     destinationFileName = "MyGenerator{0}{1}";
                     break;
                 }
+            case ScriptType.SCRIPT_IMPORTSETTINGSCONFIGURATOR: {
+                    sourceFileName = FileUtility.PathCombine(Model.Settings.Path.ScriptTemplatePath, "MyImportSettingsConfigurator.cs.template");
+                    destinationFileName = "MyImportSettingsConfigurator{0}{1}";
+                    break;
+                }
 			default: {
 					LogUtility.Logger.LogError(LogUtility.kTag, "Unknown script type found:" + scriptType);
 					break;
@@ -281,6 +287,10 @@ namespace UnityEngine.AssetGraph {
         [MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_ASSETGENERATOR)]
         public static void GenerateAssetGenerator () {
             GenerateScript(ScriptType.SCRIPT_ASSETGENERATOR);
+        }
+        [MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_IMPORTSETTINGSCONFIGURATOR)]
+        public static void GenerateImportSettingsConfigurator () {
+            GenerateScript(ScriptType.SCRIPT_IMPORTSETTINGSCONFIGURATOR);
         }
 			
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_OPEN, false, 1)]
