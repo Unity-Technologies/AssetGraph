@@ -101,6 +101,8 @@ namespace UnityEngine.AssetGraph {
 				Dictionary<string, string> map = null;
 
                 if(targetType != null) {
+                    EditorGUILayout.LabelField ("Asset Type", targetType.Name);
+
                     map = ModifierUtility.GetAttributeAssemblyQualifiedNameMap(targetType);
 				}
 
