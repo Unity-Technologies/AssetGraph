@@ -16,7 +16,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 	 */ 
 
 	[Serializable] 
-	[CustomModifier("Default Modifier(Scene)", typeof(UnityEngine.SceneManagement.Scene))]
+    [CustomModifier("Default Modifier(Scene)", typeof(UnityEditor.SceneAsset))]
 	public class SceneModifier : IModifier {
 		
 		public SceneModifier () {}
