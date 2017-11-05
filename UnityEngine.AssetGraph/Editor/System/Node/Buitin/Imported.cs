@@ -64,8 +64,8 @@ namespace UnityEngine.AssetGraph {
 				m_lastImportedAssetPaths = new List<string> ();
 			}
 		
-            var imported = importedAssets.Where (path => !TypeUtility.IsAssetGraphSystemAsset (path));
-            var moved = movedAssets.Where (path => !TypeUtility.IsAssetGraphSystemAsset (path));
+            var imported = importedAssets.Where (path => TypeUtility.IsLoadingAsset (path));
+            var moved = movedAssets.Where (path => TypeUtility.IsLoadingAsset (path));
 
 			if (imported.Any () || moved.Any ()) {
 				m_lastImportedAssetPaths.Clear ();
@@ -123,17 +123,13 @@ namespace UnityEngine.AssetGraph {
 
 			if (m_lastImportedAssetPaths != null) {
 				foreach (var path in m_lastImportedAssetPaths) {
-                    if (TypeUtility.IsAssetGraphSystemAsset (path)) {
+                    if (!TypeUtility.IsLoadingAsset (path)) {
                         continue;
                     }
 
 					var r = AssetReferenceDatabase.GetReference(path);
 
-					if(!TypeUtility.IsLoadingAsset(r)) {
-						continue;
-					}
-
-					if(r != null) {
+                    if(r != null) {
 						outputSource.Add(r);
 					}
 				}

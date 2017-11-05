@@ -39,10 +39,13 @@ namespace UnityEngine.AssetGraph {
 				string path = AssetDatabase.GUIDToAssetPath(guid);
 				var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
                 if (graph != null && graph.UseAsAssetPostprocessor) {
+                    bool isAnyNodeAffected = false;
 					foreach(var n in graph.Nodes) {
-						n.Operation.Object.OnAssetsReimported(n, null, EditorUserBuildSettings.activeBuildTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+                        isAnyNodeAffected |= n.Operation.Object.OnAssetsReimported(n, null, EditorUserBuildSettings.activeBuildTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 					}
-					AssetGraphUtility.ExecuteGraph (graph);
+                    if (isAnyNodeAffected) {
+                        AssetGraphUtility.ExecuteGraph (graph);
+                    }
 				}
 			}
 		}

@@ -115,56 +115,36 @@ namespace UnityEngine.AssetGraph {
 			string[] movedAssets, 
 			string[] movedFromAssetPaths)
 		{
-			if (streamManager == null) {
-				return true;
-			}
-
             CheckAndCorrectPath (target);
+            var loadPath = GetLoadPath (target);
 
-			var loadPath = m_loadPath[target];
-			// if loadPath is null/empty, loader load everything except for settings
-			if(string.IsNullOrEmpty(loadPath)) {
-				// ignore config file path update
-                var notConfigFilePath = importedAssets.Where(path => !TypeUtility.IsAssetGraphSystemAsset(path));
-                if(notConfigFilePath.Any()) {
-					LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
-					return true;
-				}
-			}
+            foreach(var path in importedAssets) {
+                if(!TypeUtility.IsLoadingAsset(path)) {
+                    continue;
+                }
+                if (path.StartsWith (loadPath)) {
+                    return true;
+                }
+            }
 
-			var assetGroup = streamManager.FindAssetGroup(nodeData.OutputPoints[0]);
+            foreach(var path in deletedAssets) {
+                if (!TypeUtility.IsLoadingAsset (path)) {
+                    continue;
+                }
+                if (path.StartsWith (loadPath)) {
+                    return true;
+                }
+            }
 
-			if( assetGroup.Count > 0 ) {
-                var importPath = GetLoadPath (target);
+            foreach(var path in movedAssets) {
+                if (!TypeUtility.IsLoadingAsset (path)) {
+                    continue;
+                }
+                if (path.StartsWith (loadPath)) {
+                    return true;
+                }
+            }
 
-				foreach(var path in importedAssets) {
-					if(path.StartsWith(importPath)) {
-						// if this is reimport, we don't need to redo Loader
-						if ( assetGroup["0"].Find(x => x.importFrom == path) == null ) {
-							LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
-							return true;
-						}
-					}
-				}
-				foreach(var path in deletedAssets) {
-					if(path.StartsWith(importPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
-						return true;
-					}
-				}
-				foreach(var path in movedAssets) {
-					if(path.StartsWith(importPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
-						return true;
-					}
-				}
-				foreach(var path in movedFromAssetPaths) {
-					if(path.StartsWith(importPath)) {
-						LogUtility.Logger.LogFormat(LogType.Log, "{0} is marked to revisit", nodeData.Name);
-						return true;
-					}
-				}
-			}
 			return false;
 		}
 
@@ -313,7 +293,7 @@ namespace UnityEngine.AssetGraph {
             foreach (var assetGuid in targetFiles) {
                 var targetFilePath = AssetDatabase.GUIDToAssetPath (assetGuid);
 
-                if (TypeUtility.IsAssetGraphSystemAsset (targetFilePath)) {
+                if (!TypeUtility.IsLoadingAsset (targetFilePath)) {
                     continue;
                 }
 
@@ -326,10 +306,6 @@ namespace UnityEngine.AssetGraph {
                 var r = AssetReferenceDatabase.GetReference(targetFilePath);
 
                 if (r == null) {
-                    continue;
-                }
-
-                if(!TypeUtility.IsLoadingAsset(r)) {
                     continue;
                 }
 

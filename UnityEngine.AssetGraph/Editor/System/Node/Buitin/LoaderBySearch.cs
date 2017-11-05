@@ -148,17 +148,13 @@ namespace UnityEngine.AssetGraph {
 
 				var targetFilePath = AssetDatabase.GUIDToAssetPath(guid);
 
-                if (TypeUtility.IsAssetGraphSystemAsset (targetFilePath)) {
+                if(!TypeUtility.IsLoadingAsset(targetFilePath)) {
                     continue;
                 }
 
                 var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.Path.ASSETS_PATH);
 
 				var r = AssetReferenceDatabase.GetReference(relativePath);
-
-				if(!TypeUtility.IsLoadingAsset(r)) {
-					continue;
-				}
 
 				if(r != null) {
 					outputSource.Add(AssetReferenceDatabase.GetReference(relativePath));
