@@ -21,6 +21,8 @@ namespace UnityEngine.AssetGraph {
 		private int gIndex;
 
 		private BuildTarget m_lastTarget;
+        private AssetProcessEvent m_beginEvent;
+        private AssetProcessEvent m_endEvent;
 
 		private bool m_isBuilding;
 
@@ -66,6 +68,8 @@ namespace UnityEngine.AssetGraph {
 				new PerformGraph(m_streamManager)
 			};
 			gIndex = 0;
+            m_beginEvent = AssetProcessEventRecord.GetGraphBeginEvent();
+            m_endEvent = AssetProcessEventRecord.GetGraphEndEvent();
 		}
 
 		/**
@@ -82,6 +86,7 @@ namespace UnityEngine.AssetGraph {
 
 			if(isBuild) {
 				AssetBundleBuildReport.ClearReports();
+                AssetProcessEventRecord.LogEvent (m_beginEvent, m_targetGraph);
 			}
 
 			foreach(var e in m_nodeExceptions) {
@@ -127,6 +132,9 @@ namespace UnityEngine.AssetGraph {
 
 			m_isBuilding = false;
 			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build END---" : "---Setup END---");
+            if (isBuild) {
+                AssetProcessEventRecord.LogEvent (m_endEvent, m_targetGraph);
+            }
 		}
 
 		public void Validate (

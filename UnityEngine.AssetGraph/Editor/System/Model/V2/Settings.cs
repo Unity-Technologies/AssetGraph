@@ -104,6 +104,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 
             public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetReferenceDB.asset"); } }
             public static string BuildMapPath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetBundleBuildMap.asset"); } }
+            public static string EventRecordPath        { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetProcessEventRecord.asset"); } }
 
             public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(SavedSettingsPath, "BatchBuildConfig/BatchBuildConfig.asset"); } }
 
