@@ -27,7 +27,7 @@ public class PathTest {
         this.TestPath(Path.Combine(basePath, "Generated/Editor"), Settings.Path.UserSpacePath);
         this.TestPath(Path.Combine(basePath, "Generated/CUI"), Settings.Path.CUISpacePath);
         this.TestPath(Path.Combine(basePath, "SavedSettings"), Settings.Path.SavedSettingsPath);
-        this.TestPath(Path.Combine(basePath, "Cache"), Settings.Path.CachePath);
+//        this.TestPath(Path.Combine(basePath, "Cache"), AssetGraphBasePath.CachePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles"), AssetGraphBasePath.TemporalSettingFilePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetReferenceDB.asset"), Settings.Path.DatabasePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);

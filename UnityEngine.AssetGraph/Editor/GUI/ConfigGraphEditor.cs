@@ -37,6 +37,13 @@ namespace UnityEngine.AssetGraph {
 			using(new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				EditorGUILayout.LabelField("Version", graph.Version.ToString());
 				EditorGUILayout.LabelField("Last Modified", graph.LastModified.ToString());
+                GUILayout.Space (10f);
+
+                var newOrder = EditorGUILayout.IntField ("Execution Order", graph.ExecuteOrderPriority);
+                if (newOrder != graph.ExecuteOrderPriority) {
+                    graph.ExecuteOrderPriority = newOrder;
+                }
+
 				using(new EditorGUILayout.HorizontalScope()) {
 					GUILayout.Label("Description", GUILayout.Width(100f));
 					string newdesc = EditorGUILayout.TextArea(graph.Descrption, GUILayout.MaxHeight(100f));

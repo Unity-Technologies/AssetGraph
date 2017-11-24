@@ -445,15 +445,15 @@ namespace UnityEngine.AssetGraph {
                 foreach(var ag in incoming) {
                     foreach(var assets in ag.assetGroups.Values) {
                         foreach (var a in assets) {
-                            if(AssetGenerateInfo.DoesAssetNeedRegenerate(entry, node, target, a)) {
+                            var assetOutputDir = PrepareOutputDirectory (target, node, a);
+                            var assetSaveDir  = FileUtility.PathCombine (assetOutputDir, GetGeneratorIdForSubPath(target, entry));
+                            var assetSavePath = FileUtility.PathCombine (assetSaveDir, a.fileName + generator.GetAssetExtension(a));
 
-                                var assetOutputDir = PrepareOutputDirectory (target, node, a);
-                                var assetSaveDir  = FileUtility.PathCombine (assetOutputDir, GetGeneratorIdForSubPath(target, entry));
-
+                            if(!File.Exists(assetSavePath) || AssetGenerateInfo.DoesAssetNeedRegenerate(entry, node, target, a)) 
+                            {
                                 if (!Directory.Exists (assetSaveDir)) {
                                     Directory.CreateDirectory (assetSaveDir);
                                 }
-                                var assetSavePath = FileUtility.PathCombine (assetSaveDir, a.fileName + generator.GetAssetExtension(a));
 
                                 if (!generator.GenerateAsset (a, assetSavePath)) {
                                     throw new AssetGraphException(string.Format("{0} :Failed to generate asset for {1}", 

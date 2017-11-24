@@ -24,11 +24,10 @@ namespace UnityEngine.AssetGraph {
 		[SerializeField] private string m_importFrom;
 		[SerializeField] private string m_exportTo;
 		[SerializeField] private string m_variantName;
-		[SerializeField] private string m_assetTypeString;
 
 		private UnityEngine.Object[] m_data;
 		private SceneManagement.Scene m_scene;
-		private Type m_assetType;
+        private Type m_assetType;
         private Type m_filterType;
         private Type m_importerType;
 
@@ -100,14 +99,10 @@ namespace UnityEngine.AssetGraph {
         /// <value>The type of the asset.</value>
 		public Type assetType {
 			get {
-				if(m_assetType == null) {
-					m_assetType = Type.GetType(m_assetTypeString);
-					if(m_assetType == null) {
-						m_assetType = TypeUtility.GetMainAssetTypeAtPath(importFrom);
-						m_assetTypeString = m_assetType.AssemblyQualifiedName;
-					}
-				}
-				return m_assetType;
+                if (m_assetType == null) {
+                    m_assetType = TypeUtility.GetMainAssetTypeAtPath (importFrom);
+                }
+                return m_assetType;
 			}
 		}
 
@@ -353,6 +348,12 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
+        public void InvalidateTypeCache() {
+            m_assetType = null;
+            m_importerType = null;
+            m_filterType = null;
+        }
+
         /// <summary>
         /// Touchs the import asset.
         /// </summary>
@@ -456,8 +457,6 @@ namespace UnityEngine.AssetGraph {
 			this.m_importFrom = importFrom;
 			this.m_exportTo = exportTo;
 			this.m_assetDatabaseId = assetDatabaseId;
-			this.m_assetType = assetType;
-			this.m_assetTypeString = assetType.AssemblyQualifiedName;
 			this.m_variantName = variantName;
 		}
 	}

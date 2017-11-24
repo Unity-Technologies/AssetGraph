@@ -63,10 +63,6 @@ namespace UnityEngine.AssetGraph {
 		 * Get type of asset from give path.
 		 */
 		public static Type GetMainAssetTypeAtPath (string assetPath) {
-			if (assetPath.EndsWith(Model.Settings.UNITY_METAFILE_EXTENSION)) {
-				return typeof(string);
-			}
-
 			Type t = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
             if(t == typeof(MonoBehaviour)) {
                 UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(assetPath);

@@ -337,7 +337,7 @@ namespace UnityEngine.AssetGraph {
 				if(r.IsAnyIssueFound) {
 					foreach(var e in r.Issues) {
 						
-						LogUtility.Logger.LogError(LogUtility.kTag, r.Graph.name + ":" + e.reason);
+						LogUtility.Logger.LogError(LogUtility.kTag, r.Graph.name + ":" + e.Reason);
 					}
 				}
 			}

@@ -72,10 +72,8 @@ namespace UnityEngine.AssetGraph {
     		Model.NodeData nodeData,
     		AssetReferenceStreamManager streamManager,
     		BuildTarget target, 
-    		string[] importedAssets, 
-    		string[] deletedAssets, 
-    		string[] movedAssets, 
-    		string[] movedFromAssetPaths)
+            AssetPostprocessorContext ctx,
+            bool isBuilding)
     	{
     		return true;
     	}

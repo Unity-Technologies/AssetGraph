@@ -25,6 +25,7 @@ namespace UnityEngine.AssetGraph {
 
         private Object m_customSettingAssetObject;
         private Editor m_importerEditor;
+        private Type m_configureImporterFor;
 
 		public override string ActiveStyle {
 			get {
@@ -92,6 +93,7 @@ namespace UnityEngine.AssetGraph {
             m_customSettingAssetGuid = string.Empty;
             m_overwriteSpriteSheet = false;
             m_referenceAssetGuid = string.Empty;
+            m_configureImporterFor = null;
 
             m_configuratorInstance = new SerializableMultiTargetInstance ();
 
@@ -113,6 +115,7 @@ namespace UnityEngine.AssetGraph {
             newNode.m_overwriteSpriteSheet = m_overwriteSpriteSheet;
             newNode.m_configuratorInstance = new SerializableMultiTargetInstance (m_configuratorInstance);
             newNode.m_referenceAssetGuid = string.Empty;
+            newNode.m_configureImporterFor = null;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -123,15 +126,13 @@ namespace UnityEngine.AssetGraph {
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
+            AssetPostprocessorContext ctx,
+            bool isBuilding)
 		{
             var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.Path.SavedSettingsPath, "ImportSettings", nodeData.Id);
 
-			foreach(var imported in importedAssets) {
-				if(imported.StartsWith(samplingDirectoryPath)) {
+            foreach(var importedAsset in ctx.ImportedAssets) {
+                if(importedAsset.importFrom.StartsWith(samplingDirectoryPath)) {
 					return true;
 				}
                 // Test this later
@@ -189,8 +190,9 @@ namespace UnityEngine.AssetGraph {
                                         false,
                                         () => {
                                             ResetConfig (node.Data);
-                                            var typeFor = guiMap [guiNames [index]];
-                                            CreateConfigurator (node.Data, typeFor);
+                                            m_configureImporterFor = guiMap [guiNames [index]];
+                                            // call Validate
+                                            NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_UPDATED, node));
                                         }
                                     );
                                 }
@@ -312,6 +314,10 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
+            if (m_configureImporterFor != null) {
+                CreateConfigurator (node, m_configureImporterFor);
+            }
+
             if (string.IsNullOrEmpty (m_referenceAssetGuid)) {
                 // give a try first in sampling file
                 var a = AssetReferenceUtility.FindFirstIncomingAssetReference(incoming);
@@ -376,6 +382,7 @@ namespace UnityEngine.AssetGraph {
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
             m_referenceAssetGuid = AssetDatabase.AssetPathToGUID (targetFilePath);
+            m_configureImporterFor = null;
 		}
 
 		public void ResetConfig(Model.NodeData node) {

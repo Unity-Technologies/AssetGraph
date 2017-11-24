@@ -104,6 +104,7 @@ namespace UnityEngine.AssetGraph {
 
             if(db.m_dictionary.ContainsKey(relativePath)) {
 				var r = db.m_dictionary[relativePath];
+                r.InvalidateTypeCache ();
 				db.m_assets.Remove(r);
 				db.m_dictionary.Remove(relativePath);
 				SetDBDirty();
@@ -115,6 +116,7 @@ namespace UnityEngine.AssetGraph {
 
             if(db.m_dictionary.ContainsKey(oldPath)) {
 				var r = db.m_dictionary[oldPath];
+                r.InvalidateTypeCache ();
 				db.m_dictionary.Remove(oldPath);
 				db.m_dictionary[newPath]= r;
 				r.importFrom = newPath;

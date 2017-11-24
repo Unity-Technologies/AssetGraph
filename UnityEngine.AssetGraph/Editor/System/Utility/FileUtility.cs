@@ -158,7 +158,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
         public static string EnsureCacheDirExists(BuildTarget t, Model.NodeData node, string name) {
-            var cacheDir = FileUtility.PathCombine(Model.Settings.Path.CachePath, name, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+            var cacheDir = FileUtility.PathCombine(AssetGraph.AssetGraphBasePath.CachePath, name, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 
             if (!Directory.Exists(cacheDir)) {
                 Directory.CreateDirectory(cacheDir);

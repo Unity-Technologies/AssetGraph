@@ -54,7 +54,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
                 get {
                     var cacheDir = EditorUserSettings.GetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR);
                     if (string.IsNullOrEmpty (cacheDir)) {
-                        return System.IO.Path.Combine(Path.CachePath, "AssetBundles");
+                        return System.IO.Path.Combine(AssetGraph.AssetGraphBasePath.CachePath, "AssetBundles");
                     }
                     return cacheDir;
                 }
@@ -99,7 +99,6 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             public static string CUISpacePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Generated/CUI"); } }
             public static string SavedSettingsPath      { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "SavedSettings"); } }
 
-            public static string CachePath              { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Cache"); } }
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
             public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetReferenceDB.asset"); } }

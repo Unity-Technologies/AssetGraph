@@ -271,6 +271,7 @@ namespace UnityEngine.AssetGraph {
                         if(modifier.IsModified(asset.allData, assets)) {
                             modifier.Modify(asset.allData, assets);
                             asset.SetDirty();
+                            AssetGraphPostprocessor.Postprocessor.AddModifiedAsset (asset);
                             isAnyAssetModified = true;
 
                             // apply asset setting changes to AssetDatabase.
@@ -278,8 +279,6 @@ namespace UnityEngine.AssetGraph {
                                 if (!EditorSceneManager.SaveScene (asset.scene)) {
                                     throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
                                 }
-                            } else {
-                                AssetDatabase.SaveAssets ();
                             }
                         }
                         asset.ReleaseData ();
@@ -288,6 +287,7 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			if(isAnyAssetModified) {
+                AssetDatabase.SaveAssets ();
 				AssetDatabase.Refresh();
 			}
 

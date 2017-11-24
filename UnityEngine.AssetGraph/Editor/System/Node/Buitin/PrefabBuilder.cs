@@ -407,6 +407,8 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 
+            var anyPrefabCreated = false;
+
 			foreach(var key in aggregatedGroups.Keys) {
 
 				var assets = aggregatedGroups[key];
@@ -421,7 +423,7 @@ namespace UnityEngine.AssetGraph {
 					Directory.CreateDirectory(Path.GetDirectoryName(prefabSavePath));
 				}
 
-                if(PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets)) {
+                if(!File.Exists(prefabSavePath) || PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets)) {
                     UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets, previousPrefab);
 					if(obj == null) {
 						throw new AssetGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
@@ -441,8 +443,13 @@ namespace UnityEngine.AssetGraph {
                     PrefabUtility.CreatePrefab(prefabSavePath, obj, m_replacePrefabOptions);
                     PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
+                    anyPrefabCreated = true;
 				}
 				UnloadAllAssets(assets);
+
+                if (anyPrefabCreated) {
+                    AssetDatabase.SaveAssets ();
+                }
 
 				if(output != null) {
 					output[key] = new List<AssetReference> () {

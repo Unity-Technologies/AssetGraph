@@ -28,7 +28,8 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 		[SerializeField] private string m_lastModified;
 		[SerializeField] private int m_version;
 		[SerializeField] private string m_graphDescription;
-		[SerializeField] private bool m_useAsAssetPostprocessor;
+        [SerializeField] private bool m_useAsAssetPostprocessor;
+        [SerializeField] private int m_graphExecOrderPriority;
 
 		void OnEnable() {
 			Initialize();
@@ -46,6 +47,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 				m_allConnections = new List<ConnectionData>();
 				m_version = ABG_FILE_VERSION;
 				m_graphDescription = String.Empty;
+                m_graphExecOrderPriority = 0;
 				EditorUtility.SetDirty(this);
 			}
 		}
@@ -100,6 +102,15 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 			}
 		}
 
+        public int ExecuteOrderPriority {
+            get {
+                return m_graphExecOrderPriority;
+            }
+            set {
+                m_graphExecOrderPriority = value;
+            }
+        }
+
 		public List<NodeData> Nodes {
 			get{ 
 				return m_allNodes;
@@ -132,6 +143,15 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 		public void SetGraphDirty() {
 			EditorUtility.SetDirty(this);
 		}
+
+        public string GetGraphName() {
+            var path = AssetDatabase.GetAssetOrScenePath (this);
+            return Path.GetFileNameWithoutExtension (path);
+        }
+
+        public string GetGraphGuid() {
+            return AssetDatabase.AssetPathToGUID (AssetDatabase.GetAssetPath(this));
+        }
 
 		//
 		// Save/Load to disk

@@ -28,7 +28,7 @@ namespace UnityEngine.AssetGraph {
         /// <value><c>true</c> if this instance is any issue found; otherwise, <c>false</c>.</value>
 		public bool IsAnyIssueFound {
 			get {
-				return issues.Count > 0;
+                return issues != null && issues.Count > 0;
 			}
 		}
 
@@ -57,7 +57,10 @@ namespace UnityEngine.AssetGraph {
         /// </summary>
 		public IEnumerable<NodeException> Issues {
 			get {
-				return issues.AsEnumerable();
+                if (issues != null) {
+                    issues.AsEnumerable();
+                }
+                return null;
 			}
 		}
 	}
@@ -111,13 +114,14 @@ namespace UnityEngine.AssetGraph {
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BuildTarget t, BatchBuildConfig.GraphCollection c) {
 
             AssetBundleBuildMap.GetBuildMap ().Clear ();
+            AssetProcessEventRecord.Clear ();
 
             List<ExecuteGraphResult> resultCollection = new List<ExecuteGraphResult>(c.GraphGUIDs.Count);
 
 			foreach(var guid in c.GraphGUIDs) {
 				string path = AssetDatabase.GUIDToAssetPath(guid);
 				if(path != null) {
-					var r = ExecuteGraph(t, path);
+                    var r = ExecuteGraph(t, path, false);
 					resultCollection.Add(r);
 				} else {
 					LogUtility.Logger.LogFormat(LogType.Warning, "Failed to build graph in collection {0}: graph with guid {1} not found.",
@@ -133,8 +137,8 @@ namespace UnityEngine.AssetGraph {
         /// </summary>
         /// <returns>The graph.</returns>
         /// <param name="graphAssetPath">Graph asset path.</param>
-		public static ExecuteGraphResult ExecuteGraph(string graphAssetPath) {
-			return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graphAssetPath);
+        public static ExecuteGraphResult ExecuteGraph(string graphAssetPath, bool clearRecord = true) {
+            return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graphAssetPath, clearRecord);
 		}
 
         /// <summary>
@@ -142,8 +146,8 @@ namespace UnityEngine.AssetGraph {
         /// </summary>
         /// <returns>The graph.</returns>
         /// <param name="graph">Graph.</param>
-		public static ExecuteGraphResult ExecuteGraph(Model.ConfigGraph graph) {
-			return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graph);
+        public static ExecuteGraphResult ExecuteGraph(Model.ConfigGraph graph, bool clearRecord = true) {
+            return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graph, clearRecord);
 		}
 
         /// <summary>
@@ -152,8 +156,8 @@ namespace UnityEngine.AssetGraph {
         /// <returns>The graph.</returns>
         /// <param name="target">Target.</param>
         /// <param name="graphAssetPath">Graph asset path.</param>
-		public static ExecuteGraphResult ExecuteGraph(BuildTarget target, string graphAssetPath) {
-			return ExecuteGraph(target, AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphAssetPath));
+        public static ExecuteGraphResult ExecuteGraph(BuildTarget target, string graphAssetPath, bool clearRecord = true) {
+            return ExecuteGraph(target, AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphAssetPath), clearRecord);
 		}
 
         /// <summary>
@@ -162,7 +166,11 @@ namespace UnityEngine.AssetGraph {
         /// <returns>The graph.</returns>
         /// <param name="target">Target.</param>
         /// <param name="graph">Graph.</param>
-		public static ExecuteGraphResult ExecuteGraph(BuildTarget target, Model.ConfigGraph graph) {
+        public static ExecuteGraphResult ExecuteGraph(BuildTarget target, Model.ConfigGraph graph, bool clearRecord = true) {
+
+            if (clearRecord) {
+                AssetProcessEventRecord.Clear ();
+            }
 
 			string assetPath = AssetDatabase.GetAssetPath(graph);
 
@@ -202,7 +210,6 @@ namespace UnityEngine.AssetGraph {
 			c.Perform(target, true, true, updateHandler);
 
 			AssetDatabase.Refresh();
-
 			return new ExecuteGraphResult(graph, c.Issues);
 		}
 	}

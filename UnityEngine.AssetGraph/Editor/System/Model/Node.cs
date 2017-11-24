@@ -159,18 +159,13 @@ namespace UnityEngine.AssetGraph {
         /// <param name="nodeData">NodeGUI instance for this node.</param>
         /// <param name="streamManager">Manager instance to retrieve graph's incoming/outgoing group.</param>
         /// <param name="target">Target platform.</param>
-        /// <param name="importedAssets">Imported asset paths.</param>
-        /// <param name="deletedAssets">Deleted asset paths.</param>
-        /// <param name="movedAssets">Moved asset paths.</param>
-        /// <param name="movedFromAssetPaths">Original paths of moved assets.</param>
+        /// <param name="ctx">Reimport context.</param>
         public virtual bool OnAssetsReimported(
             Model.NodeData nodeData,
             AssetReferenceStreamManager streamManager,
             BuildTarget target, 
-            string[] importedAssets, 
-            string[] deletedAssets, 
-            string[] movedAssets, 
-            string[] movedFromAssetPaths)
+            AssetPostprocessorContext ctx,
+            bool isBuilding)
         {
             return false;
         }

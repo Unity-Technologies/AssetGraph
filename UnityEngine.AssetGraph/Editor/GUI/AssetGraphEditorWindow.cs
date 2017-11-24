@@ -83,7 +83,7 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 
-			public void Clear(AssetGraphController controller, bool deactivate = false) {
+			public void Clear(bool deactivate = false) {
 
 				if(deactivate) {
 					foreach(var n in nodes) {
@@ -300,7 +300,7 @@ namespace UnityEngine.AssetGraph {
 
 		[MenuItem(Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] 
         public static void DeleteCache () {
-            FileUtility.RemakeDirectory(Model.Settings.Path.CachePath);
+            FileUtility.RemakeDirectory(AssetGraph.AssetGraphBasePath.CachePath);
 
 			AssetDatabase.Refresh();
 		}
@@ -442,7 +442,7 @@ namespace UnityEngine.AssetGraph {
 		private void ShowErrorOnNodes () {
 			foreach (var node in nodes) {
 				node.ResetErrorStatus();
-				var errorsForeachNode = controller.Issues.Where(e => e.Id == node.Id).Select(e => e.reason).ToList();
+				var errorsForeachNode = controller.Issues.Where(e => e.NodeId == node.Id).Select(e => e.Reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}
@@ -675,6 +675,7 @@ namespace UnityEngine.AssetGraph {
 			try {
 				AssetDatabase.SaveAssets();
                 AssetBundleBuildMap.GetBuildMap ().Clear ();
+                AssetProcessEventRecord.Clear();
 
 				float currentCount = 0f;
 				float totalCount = (float)controller.TargetGraph.Nodes.Count;
@@ -709,6 +710,7 @@ namespace UnityEngine.AssetGraph {
 				}
 				RefreshInspector(controller.StreamManager);
 				AssetDatabase.Refresh();
+
 				ShowErrorOnNodes();
 			} catch(Exception e) {
 				LogUtility.Logger.LogError(LogUtility.kTag, e);
@@ -735,28 +737,28 @@ namespace UnityEngine.AssetGraph {
             }
 		}
 
-		private void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+        private void OnAssetsReimported(AssetPostprocessorContext ctx) {
 			if(controller != null) {
-				controller.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+				controller.OnAssetsReimported(ctx);
 			}
 
 			if(!string.IsNullOrEmpty(graphAssetPath)) {
-				if(deletedAssets.Contains(graphAssetPath)) {
+                if(ctx.DeletedAssetPaths.Contains(graphAssetPath)) {
 					CloseGraph();
 					return;
 				}
 
-				int moveIndex = Array.FindIndex(movedFromAssetPaths, p => p == graphAssetPath);
+                int moveIndex = Array.FindIndex(ctx.MovedFromAssetPaths, p => p == graphAssetPath);
 				if(moveIndex >= 0) {
-					SetGraphAssetPath(movedAssets[moveIndex]);
+                    SetGraphAssetPath(ctx.MovedAssetPaths[moveIndex]);
 				}
 			}
 		}
 
-		public static void NotifyAssetsReimportedToAllWindows(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+        public static void NotifyAssetsReimportedToAllWindows(AssetPostprocessorContext ctx) {
 			var w = Window;
 			if(w != null) {
-				w.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+                w.OnAssetsReimported(ctx);
 			}
 		}
 
@@ -915,9 +917,9 @@ namespace UnityEngine.AssetGraph {
 			{
 				using (new EditorGUILayout.VerticalScope()) {
 					foreach(NodeException e in controller.Issues) {
-						EditorGUILayout.HelpBox(e.reason, MessageType.Error);
+						EditorGUILayout.HelpBox(e.Reason, MessageType.Error);
 						if( GUILayout.Button("Go to Node") ) {
-							SelectNode(e.Id);
+							SelectNode(e.NodeId);
 						}
 					}
 				}
@@ -1074,7 +1076,7 @@ namespace UnityEngine.AssetGraph {
 
 							// if shift key is not pressed, clear current selection
 							if(!Event.current.shift) {
-								activeSelection.Clear(controller);
+								activeSelection.Clear();
 							}
 
 							var selectedRect = new Rect(x, y, width, height);
@@ -1221,7 +1223,7 @@ namespace UnityEngine.AssetGraph {
 					if (activeSelection != null && activeSelection.IsSelected) {
 						Undo.RecordObject(this, "Unselect");
 
-						activeSelection.Clear(controller);
+						activeSelection.Clear();
 						UpdateActiveObjects(activeSelection);
 					}
 
@@ -1314,7 +1316,7 @@ namespace UnityEngine.AssetGraph {
 							foreach (var c in activeSelection.connections) {
 								DeleteConnection(c.Id);
 							}
-							activeSelection.Clear(controller);
+							activeSelection.Clear();
 							UpdateActiveObjects(activeSelection);
 
 							Setup();
@@ -1359,7 +1361,7 @@ namespace UnityEngine.AssetGraph {
 								activeSelection = new SavedSelection();
 							}
 
-							activeSelection.Clear(controller);
+							activeSelection.Clear();
 							nodes.ForEach(n => activeSelection.Add(n));
 							connections.ForEach(c => activeSelection.Add(c));
 
@@ -1389,7 +1391,7 @@ namespace UnityEngine.AssetGraph {
 				DeleteConnection(c.Id);
 			}
 
-			activeSelection.Clear(controller);
+			activeSelection.Clear();
 			UpdateActiveObjects(activeSelection);
 
 			Setup();
@@ -1597,7 +1599,7 @@ namespace UnityEngine.AssetGraph {
 						if(activeSelection == null) {
 							activeSelection = new SavedSelection();
 						}
-						activeSelection.Clear(controller);
+						activeSelection.Clear();
 						activeSelection.Add(clickedNode);
 					}
 					
@@ -1816,7 +1818,7 @@ namespace UnityEngine.AssetGraph {
 								if(activeSelection == null) {
 									activeSelection = new SavedSelection();
 								}
-								activeSelection.Clear(controller);
+								activeSelection.Clear();
 								activeSelection.Add(e.eventSourceCon);
 								UpdateActiveObjects(activeSelection);
 								break;
@@ -1828,7 +1830,7 @@ namespace UnityEngine.AssetGraph {
 							var deletedConnectionId = e.eventSourceCon.Id;
 
 							DeleteConnection(deletedConnectionId);
-							activeSelection.Clear(controller);
+							activeSelection.Clear();
 							UpdateActiveObjects(activeSelection);
 
 							Setup();

@@ -18,11 +18,10 @@ namespace UnityEngine.AssetGraph {
 		private AssetReferenceStreamManager m_streamManager;
 		private Model.ConfigGraph m_targetGraph;
 		private PerformGraph[] m_performGraph;
+        private Model.NodeData m_currentNode;
 		private int gIndex;
 
 		private BuildTarget m_lastTarget;
-        private AssetProcessEvent m_beginEvent;
-        private AssetProcessEvent m_endEvent;
 
 		private bool m_isBuilding;
 
@@ -31,6 +30,12 @@ namespace UnityEngine.AssetGraph {
 				return m_nodeExceptions.Count > 0;
 			}
 		}
+
+        public Model.NodeData CurrentNode {
+            get {
+                return m_currentNode;
+            }
+        }
 
 		public List<NodeException> Issues {
 			get {
@@ -68,29 +73,32 @@ namespace UnityEngine.AssetGraph {
 				new PerformGraph(m_streamManager)
 			};
 			gIndex = 0;
-            m_beginEvent = AssetProcessEventRecord.GetGraphBeginEvent();
-            m_endEvent = AssetProcessEventRecord.GetGraphEndEvent();
+            m_currentNode = null;
 		}
 
 		/**
 		 * Execute Run operations using current graph
 		 */
-		public void Perform (
+		public bool Perform (
 			BuildTarget target,
 			bool isBuild,
 			bool forceVisitAll,
 			Action<Model.NodeData, string, float> updateHandler) 
 		{
+            if (!AssetGraphPostprocessor.Postprocessor.PushController (this)) {
+                LogUtility.Logger.LogFormat(LogType.Log, "[Perform - Skip] Re-entering graph on stack: {0}", m_targetGraph.GetGraphName());
+                return false;
+            }
+
 			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
 
 			if(isBuild) {
 				AssetBundleBuildReport.ClearReports();
-                AssetProcessEventRecord.LogEvent (m_beginEvent, m_targetGraph);
 			}
 
 			foreach(var e in m_nodeExceptions) {
-				var errorNode = m_targetGraph.Nodes.Find(n => n.Id == e.Id);
+				var errorNode = m_targetGraph.Nodes.Find(n => n.Id == e.NodeId);
 				// errorNode may not be found if user delete it on graph
 				if(errorNode != null) {
 					LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} is marked to revisit due to last error", errorNode.Name);
@@ -132,16 +140,17 @@ namespace UnityEngine.AssetGraph {
 
 			m_isBuilding = false;
 			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build END---" : "---Setup END---");
-            if (isBuild) {
-                AssetProcessEventRecord.LogEvent (m_endEvent, m_targetGraph);
-            }
+
+            AssetGraphPostprocessor.Postprocessor.PopController ();
+
+            return true;
 		}
 
 		public void Validate (
 			NodeGUI node, 
 			BuildTarget target) 
 		{
-			m_nodeExceptions.RemoveAll(e => e.Id == node.Data.Id);
+			m_nodeExceptions.RemoveAll(e => e.NodeId == node.Data.Id);
 
 			try {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
@@ -150,9 +159,11 @@ namespace UnityEngine.AssetGraph {
 					(Model.ConnectionData dst, Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
 
-				LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
+                if(!IsAnyIssueFound) {
+                    LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
+                    Perform(target, false, false, null);
+                }
 
-				Perform(target, false, false, null);
 				m_isBuilding = false;
 			} catch (NodeException e) {
 				m_nodeExceptions.Add(e);
@@ -172,6 +183,8 @@ namespace UnityEngine.AssetGraph {
 			Action<Model.NodeData, string, float> updateHandler) 
 		{
 			try {
+                m_currentNode = currentNodeData;
+
 				if (updateHandler != null) {
 					updateHandler(currentNodeData, "Starting...", 0f);
 				}
@@ -194,6 +207,7 @@ namespace UnityEngine.AssetGraph {
 				m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1} (See Console for detail)", e.GetType().ToString(), e.Message), currentNodeData.Id));
 				LogUtility.Logger.LogException(e);
 			}
+            m_currentNode = null;
 		}
 
 		private void Postprocess () 
@@ -214,7 +228,7 @@ namespace UnityEngine.AssetGraph {
             }
 		}
 
-		public void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
+        public void OnAssetsReimported(AssetPostprocessorContext ctx) {
 
 			// ignore asset reimport event during build
 			if(m_isBuilding) {
@@ -228,7 +242,7 @@ namespace UnityEngine.AssetGraph {
 			bool isAnyNodeAffected = false;
 
 			foreach(var n in m_targetGraph.Nodes) {
-				bool affected = n.Operation.Object.OnAssetsReimported(n, m_streamManager, m_lastTarget, importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
+                bool affected = n.Operation.Object.OnAssetsReimported(n, m_streamManager, m_lastTarget, ctx, false);
 				if(affected) {
 					n.NeedsRevisit = true;
 				}

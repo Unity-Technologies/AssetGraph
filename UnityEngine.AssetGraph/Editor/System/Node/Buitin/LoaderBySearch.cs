@@ -15,6 +15,7 @@ namespace UnityEngine.AssetGraph {
 	public class LoaderBySearch : Node {
 
 		[SerializeField] private SerializableMultiTargetString m_searchFilter;
+        [SerializeField] private bool m_respondToAssetChange;
 
 		public override string ActiveStyle {
 			get {
@@ -42,6 +43,7 @@ namespace UnityEngine.AssetGraph {
 
 		public override void Initialize(Model.NodeData data) {
 			m_searchFilter = new SerializableMultiTargetString();
+            m_respondToAssetChange = false;
 
 			data.AddDefaultOutputPoint();
 		}
@@ -49,6 +51,7 @@ namespace UnityEngine.AssetGraph {
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new LoaderBySearch();
 			newNode.m_searchFilter = new SerializableMultiTargetString(m_searchFilter);
+            newNode.m_respondToAssetChange = m_respondToAssetChange;
 
 			newData.AddDefaultOutputPoint();
 			return newNode;
@@ -58,12 +61,39 @@ namespace UnityEngine.AssetGraph {
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
+            AssetPostprocessorContext ctx,
+            bool isBuilding)
 		{
-			return true;
+            if (isBuilding && !m_respondToAssetChange) {
+                return false;
+            }
+
+            if (m_searchFilter == null) {
+                return false;
+            }
+
+            var cond = m_searchFilter[target];
+            var guids = AssetDatabase.FindAssets(cond);
+            if (guids.Length == 0) {
+                return false;
+            }
+
+            List<string> reimportedAssetGuids = new List<string> ();
+
+            foreach (var a in ctx.ImportedAssets) {
+                reimportedAssetGuids.Add (a.assetDatabaseId);
+            }
+            foreach (var a in ctx.MovedAssets) {
+                reimportedAssetGuids.Add (a.assetDatabaseId);
+            }
+
+            foreach (var guid in guids) {
+                if (reimportedAssetGuids.Contains (guid)) {
+                    return true;
+                }
+            }
+
+            return false;
 		}
 
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
@@ -76,6 +106,15 @@ namespace UnityEngine.AssetGraph {
 			editor.UpdateNodeName(node);
 
 			GUILayout.Space(10f);
+
+            bool bRespondAP = EditorGUILayout.ToggleLeft ("Respond To Asset Change", m_respondToAssetChange);
+            if (bRespondAP != m_respondToAssetChange) {
+                using (new RecordUndoScope ("Remove Target Load Path Settings", node, true)) {
+                    m_respondToAssetChange = bRespondAP;
+                }
+            }
+
+            GUILayout.Space(4f);
 
 			//Show target configuration tab
 			editor.DrawPlatformSelector(node);
@@ -139,7 +178,6 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			var cond = m_searchFilter[target];
-			var assetsFolderPath = Application.dataPath + Model.Settings.UNITY_FOLDER_SEPARATOR;
 			var outputSource = new List<AssetReference>();
 
 			var guids = AssetDatabase.FindAssets(cond);
@@ -152,12 +190,11 @@ namespace UnityEngine.AssetGraph {
                     continue;
                 }
 
-                var relativePath = targetFilePath.Replace(assetsFolderPath, Model.Settings.Path.ASSETS_PATH);
 
-				var r = AssetReferenceDatabase.GetReference(relativePath);
+                var r = AssetReferenceDatabase.GetReference(targetFilePath);
 
 				if(r != null) {
-					outputSource.Add(AssetReferenceDatabase.GetReference(relativePath));
+                    outputSource.Add(AssetReferenceDatabase.GetReference(targetFilePath));
 				}
 			}
 

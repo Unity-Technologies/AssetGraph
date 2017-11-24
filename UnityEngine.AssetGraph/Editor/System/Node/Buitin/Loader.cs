@@ -16,6 +16,7 @@ namespace UnityEngine.AssetGraph {
 
         [SerializeField] private SerializableMultiTargetString m_loadPath;
         [SerializeField] private SerializableMultiTargetString m_loadPathGuid;
+        [SerializeField] private bool m_respondToAssetChange;
 
 		public override string ActiveStyle {
 			get {
@@ -49,6 +50,8 @@ namespace UnityEngine.AssetGraph {
 
             m_loadPath = new SerializableMultiTargetString(normalizedPath);
             m_loadPathGuid = new SerializableMultiTargetString (guid);
+
+            m_respondToAssetChange = false;
         }
 
 		public override void Initialize(Model.NodeData data) {
@@ -58,6 +61,8 @@ namespace UnityEngine.AssetGraph {
             if (m_loadPathGuid == null) {
                 m_loadPathGuid = new SerializableMultiTargetString();
             }
+
+            m_respondToAssetChange = false;
 
 			data.AddDefaultOutputPoint();
 		}
@@ -75,6 +80,7 @@ namespace UnityEngine.AssetGraph {
 			var newNode = new Loader();
             newNode.m_loadPath = new SerializableMultiTargetString(m_loadPath);
             newNode.m_loadPathGuid = new SerializableMultiTargetString(m_loadPathGuid);
+            newNode.m_respondToAssetChange = m_respondToAssetChange;
 
 			newData.AddDefaultOutputPoint();
 			return newNode;
@@ -110,36 +116,35 @@ namespace UnityEngine.AssetGraph {
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
+            AssetPostprocessorContext ctx,
+            bool isBuilding)
 		{
+            if (isBuilding && !m_respondToAssetChange) {
+                return false;
+            }
+
             CheckAndCorrectPath (target);
             var loadPath = GetLoadPath (target);
 
-            foreach(var path in importedAssets) {
-                if(!TypeUtility.IsLoadingAsset(path)) {
-                    continue;
+            foreach(var asset in ctx.ImportedAssets) {
+                if (asset.importFrom.StartsWith (loadPath)) {
+                    return true;
                 }
+            }
+
+            foreach(var asset in ctx.MovedAssets) {
+                if (asset.importFrom.StartsWith (loadPath)) {
+                    return true;
+                }
+            }
+
+            foreach (var path in ctx.MovedFromAssetPaths) {
                 if (path.StartsWith (loadPath)) {
                     return true;
                 }
             }
 
-            foreach(var path in deletedAssets) {
-                if (!TypeUtility.IsLoadingAsset (path)) {
-                    continue;
-                }
-                if (path.StartsWith (loadPath)) {
-                    return true;
-                }
-            }
-
-            foreach(var path in movedAssets) {
-                if (!TypeUtility.IsLoadingAsset (path)) {
-                    continue;
-                }
+            foreach (var path in ctx.DeletedAssetPaths) {
                 if (path.StartsWith (loadPath)) {
                     return true;
                 }
@@ -179,7 +184,16 @@ namespace UnityEngine.AssetGraph {
 
 			GUILayout.Space(10f);
 
-			//Show target configuration tab
+            bool bRespondAP = EditorGUILayout.ToggleLeft ("Respond To Asset Change", m_respondToAssetChange);
+            if (bRespondAP != m_respondToAssetChange) {
+                using (new RecordUndoScope ("Remove Target Load Path Settings", node, true)) {
+                    m_respondToAssetChange = bRespondAP;
+                }
+            }
+
+            GUILayout.Space(4f);
+
+            //Show target configuration tab
 			editor.DrawPlatformSelector(node);
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
 				var disabledScope = editor.DrawOverrideTargetToggle(node, m_loadPath.ContainsValueOf(editor.CurrentEditingGroup), (bool b) => {

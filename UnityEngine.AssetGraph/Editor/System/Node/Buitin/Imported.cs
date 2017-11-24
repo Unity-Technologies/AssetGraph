@@ -14,7 +14,7 @@ namespace UnityEngine.AssetGraph {
 	[CustomNode("Load Assets/Last Imported Items", 19)]
 	public class Imported : Node {
 
-		private List<string> m_lastImportedAssetPaths;
+        private List<AssetReference> m_lastImportedAssets;
 
 		public override string ActiveStyle {
 			get {
@@ -55,37 +55,16 @@ namespace UnityEngine.AssetGraph {
 			Model.NodeData nodeData,
 			AssetReferenceStreamManager streamManager,
 			BuildTarget target, 
-			string[] importedAssets, 
-			string[] deletedAssets, 
-			string[] movedAssets, 
-			string[] movedFromAssetPaths)
+            AssetPostprocessorContext ctx,
+            bool isBuilding)
 		{
-			if (m_lastImportedAssetPaths == null) {
-				m_lastImportedAssetPaths = new List<string> ();
+            if (m_lastImportedAssets == null) {
+                m_lastImportedAssets = new List<AssetReference> ();
 			}
 		
-            var imported = importedAssets.Where (path => TypeUtility.IsLoadingAsset (path));
-            var moved = movedAssets.Where (path => TypeUtility.IsLoadingAsset (path));
-
-			if (imported.Any () || moved.Any ()) {
-				m_lastImportedAssetPaths.Clear ();
-				m_lastImportedAssetPaths.AddRange (imported);
-				m_lastImportedAssetPaths.AddRange (moved);
-			}
-
-//			var assetsFolderPath = Application.dataPath + Model.Settings.UNITY_FOLDER_SEPARATOR;
-//
-//			foreach (var path in importedAssets) {
-//				if (path.StartsWith (assetsFolderPath)) {
-//					m_lastImportedAssetPaths.Add( path.Replace (assetsFolderPath, Model.Settings.ASSETS_PATH) );
-//				}
-//			}
-//
-//			foreach (var path in movedAssets) {
-//				if (path.StartsWith (assetsFolderPath)) {
-//					m_lastImportedAssetPaths.Add( path.Replace (assetsFolderPath, Model.Settings.ASSETS_PATH) );
-//				}
-//			}
+            m_lastImportedAssets.Clear ();
+            m_lastImportedAssets.AddRange (ctx.ImportedAssets);
+            m_lastImportedAssets.AddRange (ctx.MovedAssets);
 
 			return true;
 		}
@@ -104,8 +83,8 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			if (m_lastImportedAssetPaths != null) {
-				m_lastImportedAssetPaths.RemoveAll (path => !File.Exists (path));
+			if (m_lastImportedAssets != null) {
+				m_lastImportedAssets.RemoveAll (a => a == null);
 			}
 
 			Load(target, node, connectionsToOutput, Output);
@@ -119,25 +98,9 @@ namespace UnityEngine.AssetGraph {
 			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
-			var outputSource = new List<AssetReference>();
-
-			if (m_lastImportedAssetPaths != null) {
-				foreach (var path in m_lastImportedAssetPaths) {
-                    if (!TypeUtility.IsLoadingAsset (path)) {
-                        continue;
-                    }
-
-					var r = AssetReferenceDatabase.GetReference(path);
-
-                    if(r != null) {
-						outputSource.Add(r);
-					}
-				}
-			}
-
 
 			var output = new Dictionary<string, List<AssetReference>> {
-				{"0", outputSource}
+                {"0", m_lastImportedAssets}
 			};
 
 			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
