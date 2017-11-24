@@ -14,11 +14,13 @@ namespace UnityEngine.AssetGraph {
 
 	public class UserPreference : MonoBehaviour {
 
-		static readonly string kKEY_USERPREF_GRID = "UnityEngine.AssetGraph.UserPref.GridSize";
+        static readonly string kKEY_USERPREF_GRID = "UnityEngine.AssetGraph.UserPref.GridSize";
+        static readonly string kKEY_USERPREF_DEFAULTVERBOSELOG = "UnityEngine.AssetGraph.UserPref.DefaultVerboseLog";
 
 		private static bool s_prefsLoaded = false;
 
-		private static float s_editorWindowGridSize;
+        private static float s_editorWindowGridSize;
+        private static bool s_defaultVerboseLog;
 
 		public static float EditorWindowGridSize {
 			get {
@@ -31,10 +33,22 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
+        public static bool DefaultVerboseLog {
+            get {
+                LoadAllPreferenceValues ();
+                return s_defaultVerboseLog;
+            }
+            set {
+                s_defaultVerboseLog = value;
+                SaveAllPreferenceValues ();
+            }
+        }
+
 		private static void LoadAllPreferenceValues() {
 			if (!s_prefsLoaded)
 			{
-				s_editorWindowGridSize = EditorPrefs.GetFloat(kKEY_USERPREF_GRID, 12f);
+                s_editorWindowGridSize = EditorPrefs.GetFloat(kKEY_USERPREF_GRID, 12f);
+                s_defaultVerboseLog = EditorPrefs.GetBool(kKEY_USERPREF_DEFAULTVERBOSELOG, false);
 
 				s_prefsLoaded = true;
 			}
@@ -48,7 +62,8 @@ namespace UnityEngine.AssetGraph {
 		public static void PreferencesGUI() {
 			LoadAllPreferenceValues();
 
-			s_editorWindowGridSize = EditorGUILayout.FloatField("Graph Editor Grid Size", s_editorWindowGridSize);
+			s_editorWindowGridSize = EditorGUILayout.FloatField("Graph editor grid size", s_editorWindowGridSize);
+            s_defaultVerboseLog = EditorGUILayout.ToggleLeft ("Default show verbose log", s_defaultVerboseLog);
 
 			if (GUI.changed) {
 				SaveAllPreferenceValues();

@@ -420,6 +420,9 @@ namespace UnityEngine.AssetGraph {
 
 			target = EditorUserBuildSettings.activeBuildTarget;
 
+            this.showVerboseLog = UserPreference.DefaultVerboseLog;
+            LogUtility.ShowVerboseLog (showVerboseLog);
+
 			Undo.undoRedoPerformed += () => {
 				Setup();
 				Repaint();
@@ -841,7 +844,7 @@ namespace UnityEngine.AssetGraph {
 				GUILayout.Space(4);
 
 				showVerboseLog = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
-				LogUtility.Logger.filterLogType = (showVerboseLog)? LogType.Log : LogType.Warning;
+                LogUtility.ShowVerboseLog (showVerboseLog);
 
 				controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle(controller.TargetGraph.UseAsAssetPostprocessor, "Use As Postprocessor", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 

@@ -32,10 +32,18 @@ namespace UnityEngine.AssetGraph {
 					#else
 					s_logger = new Logger(Debug.logger.logHandler);
 					#endif
+                    ShowVerboseLog (UserPreference.DefaultVerboseLog);
 				}
 
 				return s_logger;
 			}
 		}
+
+        public static void ShowVerboseLog(bool bVerbose) {
+            var curValue = (bVerbose)? LogType.Log : LogType.Warning;
+            if (curValue != Logger.filterLogType) {
+                Logger.filterLogType = curValue;
+            }
+        }
 	}
 }
