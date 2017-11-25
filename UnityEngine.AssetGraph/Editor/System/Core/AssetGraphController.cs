@@ -60,7 +60,7 @@ namespace UnityEngine.AssetGraph {
 				return m_lastTarget;
 			}
 			set {
-				Perform(value, false, false, null);
+				Perform(value, false, false, false, null);
 			}
 		}
 
@@ -81,7 +81,8 @@ namespace UnityEngine.AssetGraph {
 		 */
 		public bool Perform (
 			BuildTarget target,
-			bool isBuild,
+            bool isBuild,
+            bool logIssues,
 			bool forceVisitAll,
 			Action<Model.NodeData, string, float> updateHandler) 
 		{
@@ -141,6 +142,10 @@ namespace UnityEngine.AssetGraph {
 			m_isBuilding = false;
 			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build END---" : "---Setup END---");
 
+            if (logIssues) {
+                LogIssues ();
+            }
+
             AssetGraphPostprocessor.Postprocessor.PopController ();
 
             return true;
@@ -161,7 +166,7 @@ namespace UnityEngine.AssetGraph {
 
                 if(!IsAnyIssueFound) {
                     LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
-                    Perform(target, false, false, null);
+                    Perform(target, false, false, false, null);
                 }
 
 				m_isBuilding = false;
@@ -169,6 +174,13 @@ namespace UnityEngine.AssetGraph {
 				m_nodeExceptions.Add(e);
 			}
 		}
+
+        private void LogIssues() {
+            var r = AssetProcessEventRecord.GetRecord();
+            foreach (var e in m_nodeExceptions) {
+                r.LogError (e);
+            }
+        }
 
 		/**
 			Perform Run or Setup from parent of given terminal node recursively.
@@ -204,7 +216,7 @@ namespace UnityEngine.AssetGraph {
 			} 
 			// Minimize impact of errors happened during node operation
 			catch (Exception e) {
-				m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1} (See Console for detail)", e.GetType().ToString(), e.Message), currentNodeData.Id));
+                m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1} (See Console for detail)", e.GetType().ToString(), e.Message), currentNodeData));
 				LogUtility.Logger.LogException(e);
 			}
             m_currentNode = null;
@@ -250,7 +262,7 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			if(isAnyNodeAffected) {
-				Perform(m_lastTarget, false, false, null);
+				Perform(m_lastTarget, false, false, false, null);
 			}
 		}
 	}

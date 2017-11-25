@@ -30,7 +30,7 @@ public class PathTest {
 //        this.TestPath(Path.Combine(basePath, "Cache"), AssetGraphBasePath.CachePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles"), AssetGraphBasePath.TemporalSettingFilePath);
         this.TestPath(Path.Combine(basePath, "SettingFiles/AssetReferenceDB.asset"), Settings.Path.DatabasePath);
-        this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);
+//        this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);
         this.TestPath(Path.Combine(basePath, "SavedSettings/BatchBuildConfig/BatchBuildConfig.asset"), Settings.Path.BatchBuildConfigPath);
 
 //        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);

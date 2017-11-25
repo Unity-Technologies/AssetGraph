@@ -22,7 +22,11 @@ namespace UnityEngine.AssetGraph {
 
         #if UNITY_EDITOR
         public class Config {
-            public static string BuildMapPath           { get { return AssetGraphBasePath.TemporalSettingFilePath + "AssetBundleBuildMap.asset"; } }
+            public static string BuildMapPath { 
+                get { 
+                    return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetBundleBuildMap.asset"); 
+                } 
+            }
         }
         #endif
 

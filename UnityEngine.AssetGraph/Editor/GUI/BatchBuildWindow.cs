@@ -83,11 +83,8 @@ namespace UnityEngine.AssetGraph {
 
 
 		private void Init() {
-			LogUtility.Logger.filterLogType = LogType.Warning;
-
 			this.titleContent = new GUIContent("Batch Build");
 			this.minSize = new Vector2(150f, 100f);
-			this.maxSize = new Vector2(300f, 600f);
 			m_graphsInProject = new List<GraphEntry>();
 
 			m_activeBuildTarget = EditorUserBuildSettings.activeBuildTarget;
@@ -355,17 +352,6 @@ namespace UnityEngine.AssetGraph {
 					}
 				}
 				return false;
-			}
-		}
-
-		private void OnAssetsReimported(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
-			UpdateGraphList();
-		}
-
-		public static void NotifyAssetsReimportedToAllWindows(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
-			var windows = Resources.FindObjectsOfTypeAll<BatchBuildWindow>();
-			foreach(var w in windows) {
-				w.OnAssetsReimported(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths);
 			}
 		}
 	}

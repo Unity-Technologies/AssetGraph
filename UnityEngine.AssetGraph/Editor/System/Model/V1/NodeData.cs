@@ -672,7 +672,7 @@ namespace AssetBundleGraph {
 
 			if( overlap != null && throwException ) {
 				var element = overlap.First();
-				throw new NodeException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", element.FilterKeyword, element.FilterKeytype), Id);
+                throw new AssetGraphException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", element.FilterKeyword, element.FilterKeytype));
 			}
 			return overlap != null;
 		}

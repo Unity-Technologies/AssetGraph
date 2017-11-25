@@ -218,11 +218,11 @@ namespace UnityEngine.AssetGraph {
 				m_exportPath[target],
 				GetExportPath(m_exportPath[target]),
 				() => {
-					throw new NodeException(node.Name + ":Export Path is empty.", node.Id);
+					throw new NodeException(node.Name + ":Export Path is empty.", node);
 				},
 				() => {
 					if( m_exportOption[target] == (int)ExportOption.ErrorIfNoExportDirectoryFound ) {
-						throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + m_exportPath[target], node.Id);
+						throw new NodeException(node.Name + ":Directory set to Export Path does not exist. Path:" + m_exportPath[target], node);
 					}
 				}
 			);

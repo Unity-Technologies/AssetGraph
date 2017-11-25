@@ -277,7 +277,7 @@ namespace UnityEngine.AssetGraph {
                             // apply asset setting changes to AssetDatabase.
                             if (asset.isSceneAsset) {
                                 if (!EditorSceneManager.SaveScene (asset.scene)) {
-                                    throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node.Id);
+                                    throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node);
                                 }
                             }
                         }
@@ -311,18 +311,18 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<PerformGraph.AssetGroups> incoming) 
         {
             if (string.IsNullOrEmpty (m_modifierType)) {
-                throw new NodeException(node.Name + " :Modifier asset type not set. Please select asset type to modify from Inspector.", node.Id);
+                throw new NodeException(node.Name + " :Modifier asset type not set. Please select asset type to modify from Inspector.", node);
             }
             var modifier = m_instance.Get<IModifier> (target);
             if(modifier == null) {
-                throw new NodeException(node.Name + " :Failed to create Modifier. Please select modifier form Inspector.", node.Id);
+                throw new NodeException(node.Name + " :Failed to create Modifier. Please select modifier form Inspector.", node);
 			}
 
             Type expected = Type.GetType (m_modifierType);
             Type modifierFor = ModifierUtility.GetModifierTargetType (m_instance.ClassName);
 
             if (expected != modifierFor) {
-                throw new NodeException(node.Name + " :Modifier type does not match. Please reset setting or fix Modifier code.", node.Id);
+                throw new NodeException(node.Name + " :Modifier type does not match. Please reset setting or fix Modifier code.", node);
             }
 		}			
 	}

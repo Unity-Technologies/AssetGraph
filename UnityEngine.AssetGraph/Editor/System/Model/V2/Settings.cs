@@ -15,6 +15,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
         public const string GUI_TEXT_MENU_BASE = "Window/AssetGraph";
         public const string GUI_TEXT_MENU_OPEN = GUI_TEXT_MENU_BASE + "/Open Graph Editor";
         public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Batch Build Window";
+        public const string GUI_TEXT_MENU_ASSETLOGWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Asset Log Window";
         public const string GUI_TEXT_MENU_PROJECTWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Project Window";
         public const string GUI_TEXT_MENU_BUILD = GUI_TEXT_MENU_BASE + "/Build Bundles for Current Platform";
         public const string GUI_TEXT_MENU_BATCHBUILD = GUI_TEXT_MENU_BASE + "/Build Current Graph Selections";
@@ -102,7 +103,6 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
             public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetReferenceDB.asset"); } }
-            public static string BuildMapPath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetBundleBuildMap.asset"); } }
             public static string EventRecordPath        { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetProcessEventRecord.asset"); } }
 
             public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(SavedSettingsPath, "BatchBuildConfig/BatchBuildConfig.asset"); } }

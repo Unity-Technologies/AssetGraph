@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
@@ -129,9 +129,6 @@ namespace UnityEngine.AssetGraph {
 
             // if modification happens inside graph, record it.
             if (m_controllers.Count > 0) {
-                foreach (var a in ctx.ImportedAssets) {
-                    AssetProcessEventRecord.GetRecord().LogModify(a.assetDatabaseId);
-                }
                 m_ppQueue.Enqueue (ctx);
                 return;
             }
@@ -143,6 +140,7 @@ namespace UnityEngine.AssetGraph {
             m_contexts.Push (ctx);
             NotifyAssetPostprocessorGraphs (ctx);
             AssetGraphEditorWindow.NotifyAssetsReimportedToAllWindows(ctx);
+            AssetProcessEventLogWindow.NotifyAssetsReimportedToAllWindows(ctx);
             m_contexts.Pop ();
         }
 

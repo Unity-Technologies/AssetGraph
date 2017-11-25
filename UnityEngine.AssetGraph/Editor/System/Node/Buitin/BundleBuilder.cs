@@ -467,12 +467,12 @@ namespace UnityEngine.AssetGraph {
 
             if (throwException) {
                 if(string.IsNullOrEmpty(outputDir)) {
-                    throw new NodeException (node.Name + ":Output directory is empty.", node.Id);
+                    throw new NodeException (node.Name + ":Output directory is empty.", node);
                 }
 
                 if(outputOption == OutputOption.ErrorIfNoOutputDirectoryFound) {
                     if (!Directory.Exists (outputDir)) {
-                        throw new NodeException (node.Name + ":Output directory not found.", node.Id);
+                        throw new NodeException (node.Name + ":Output directory not found.", node);
                     }
                 }
             }

@@ -114,7 +114,6 @@ namespace UnityEngine.AssetGraph {
 		public static List<ExecuteGraphResult> ExecuteGraphCollection(BuildTarget t, BatchBuildConfig.GraphCollection c) {
 
             AssetBundleBuildMap.GetBuildMap ().Clear ();
-            AssetProcessEventRecord.Clear ();
 
             List<ExecuteGraphResult> resultCollection = new List<ExecuteGraphResult>(c.GraphGUIDs.Count);
 
@@ -133,11 +132,40 @@ namespace UnityEngine.AssetGraph {
 		}
 
         /// <summary>
+        /// Executes all given graphs
+        /// </summary>
+        /// <returns>collection of graph execute result.</returns>
+        /// <param name="graphGuids">List of graph asset's guid.</param>
+        /// <param name="sortExecuteOrder">Wheather to sort execute order by ExecuteOrderPriority.</param>
+        public static List<ExecuteGraphResult> ExecuteAllGraphs(List<string> graphGuids, bool sortExecuteOrder = true) {
+
+            List<ExecuteGraphResult> resultCollection = new List<ExecuteGraphResult>(graphGuids.Count);
+            List<Model.ConfigGraph> graphs = new List<Model.ConfigGraph> ();
+
+            foreach(var guid in graphGuids) {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var g = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph> (path);
+
+                if (g != null) {
+                    graphs.Add (g);
+                }
+            }
+
+            foreach (var graph in graphs.OrderBy(g => g.ExecuteOrderPriority)) {
+                var r = ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graph, false);
+                resultCollection.Add(r);
+            }
+
+            return  resultCollection;
+        }
+
+
+        /// <summary>
         /// Executes the graph.
         /// </summary>
         /// <returns>The graph.</returns>
         /// <param name="graphAssetPath">Graph asset path.</param>
-        public static ExecuteGraphResult ExecuteGraph(string graphAssetPath, bool clearRecord = true) {
+        public static ExecuteGraphResult ExecuteGraph(string graphAssetPath, bool clearRecord = false) {
             return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graphAssetPath, clearRecord);
 		}
 
@@ -146,7 +174,7 @@ namespace UnityEngine.AssetGraph {
         /// </summary>
         /// <returns>The graph.</returns>
         /// <param name="graph">Graph.</param>
-        public static ExecuteGraphResult ExecuteGraph(Model.ConfigGraph graph, bool clearRecord = true) {
+        public static ExecuteGraphResult ExecuteGraph(Model.ConfigGraph graph, bool clearRecord = false) {
             return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graph, clearRecord);
 		}
 
@@ -156,7 +184,7 @@ namespace UnityEngine.AssetGraph {
         /// <returns>The graph.</returns>
         /// <param name="target">Target.</param>
         /// <param name="graphAssetPath">Graph asset path.</param>
-        public static ExecuteGraphResult ExecuteGraph(BuildTarget target, string graphAssetPath, bool clearRecord = true) {
+        public static ExecuteGraphResult ExecuteGraph(BuildTarget target, string graphAssetPath, bool clearRecord = false) {
             return ExecuteGraph(target, AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphAssetPath), clearRecord);
 		}
 
@@ -166,10 +194,10 @@ namespace UnityEngine.AssetGraph {
         /// <returns>The graph.</returns>
         /// <param name="target">Target.</param>
         /// <param name="graph">Graph.</param>
-        public static ExecuteGraphResult ExecuteGraph(BuildTarget target, Model.ConfigGraph graph, bool clearRecord = true) {
+        public static ExecuteGraphResult ExecuteGraph(BuildTarget target, Model.ConfigGraph graph, bool clearRecord = false) {
 
             if (clearRecord) {
-                AssetProcessEventRecord.Clear ();
+                AssetProcessEventRecord.GetRecord().Clear (false);
             }
 
 			string assetPath = AssetDatabase.GetAssetPath(graph);
@@ -179,7 +207,7 @@ namespace UnityEngine.AssetGraph {
 			AssetGraphController c = new AssetGraphController(graph);
 
 			// perform setup. Fails if any exception raises.
-			c.Perform(target, false, true, null);
+			c.Perform(target, false, true, true, null);
 
 			// if there is error reported, then run
 			if(c.IsAnyIssueFound) {
@@ -207,9 +235,10 @@ namespace UnityEngine.AssetGraph {
 			};
 
 			// run datas.
-			c.Perform(target, true, true, updateHandler);
+			c.Perform(target, true, true, true, updateHandler);
 
 			AssetDatabase.Refresh();
+
 			return new ExecuteGraphResult(graph, c.Issues);
 		}
 	}

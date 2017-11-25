@@ -67,7 +67,11 @@ public class MyImportSettingsConfigurator : IAssetImporterConfigurator
 }
 /*
 
-// ScriptedImporter Sample code
+/**
+	ScriptedImporter Sample code
+	IMPORTANT:
+	XYZObject class must be placed in "XYZObject.cs" file to be properly serialized. 
+*/
 
 using System.IO;
 using System.Collections;

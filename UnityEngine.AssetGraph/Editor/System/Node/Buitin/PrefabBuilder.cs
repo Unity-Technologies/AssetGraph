@@ -295,19 +295,19 @@ namespace UnityEngine.AssetGraph {
 		{
 			ValidatePrefabBuilder(node, target, incoming,
                 () => {
-                    throw new NodeException (node.Name + ":Output directory not found.", node.Id);
+                    throw new NodeException (node.Name + ":Output directory not found.", node);
                 },
 				() => {
-					throw new NodeException(node.Name + " :PrefabBuilder is not configured. Please configure from Inspector.", node.Id);
+					throw new NodeException(node.Name + " :PrefabBuilder is not configured. Please configure from Inspector.", node);
 				},
 				() => {
-					throw new NodeException(node.Name + " :Failed to create PrefabBuilder from settings. Please fix settings from Inspector.", node.Id);
+					throw new NodeException(node.Name + " :Failed to create PrefabBuilder from settings. Please fix settings from Inspector.", node);
 				},
 				(string groupKey) => {
-					throw new NodeException(string.Format("{0} :Can not create prefab with incoming assets for group {1}.", node.Name, groupKey), node.Id);
+					throw new NodeException(string.Format("{0} :Can not create prefab with incoming assets for group {1}.", node.Name, groupKey), node);
 				},
 				(AssetReference badAsset) => {
-					throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node.Id);
+					throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node);
 				}
 			);
 
@@ -342,7 +342,7 @@ namespace UnityEngine.AssetGraph {
 				if( thresold < assets.Count ) {
 					var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName);
 					throw new NodeException(string.Format("{0} :Too many assets passed to {1} for group:{2}. {3}'s threshold is set to {4}", 
-						node.Name, guiName, key, guiName,thresold), node.Id);
+						node.Name, guiName, key, guiName,thresold), node);
 				}
 
                 GameObject previousPrefab = null; //TODO
@@ -444,6 +444,7 @@ namespace UnityEngine.AssetGraph {
                     PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
                     anyPrefabCreated = true;
+                    AssetProcessEventRecord.GetRecord ().LogModify (AssetDatabase.AssetPathToGUID(prefabSavePath));
 				}
 				UnloadAllAssets(assets);
 

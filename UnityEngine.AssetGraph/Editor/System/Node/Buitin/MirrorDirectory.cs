@@ -191,13 +191,13 @@ namespace UnityEngine.AssetGraph {
 			PerformGraph.Output Output) 
 		{
             if (string.IsNullOrEmpty(m_srcPath [target])) {
-                throw new NodeException(node.Name + ":Mirror Directory can not set project directory as source.", node.Id);
+                throw new NodeException(node.Name + ":Mirror Directory can not set project directory as source.", node);
             }
             if (string.IsNullOrEmpty(m_dstPath [target])) {
-                throw new NodeException(node.Name + ":Mirror Directory can not set project directory as destination.", node.Id);
+                throw new NodeException(node.Name + ":Mirror Directory can not set project directory as destination.", node);
             }
             if (!Directory.Exists (GetNormalizedPath (m_srcPath [target]))) {
-                throw new NodeException(node.Name + ":Source Directory does not exist. Path:" + m_srcPath[target], node.Id);
+                throw new NodeException(node.Name + ":Source Directory does not exist. Path:" + m_srcPath[target], node);
             }
 
             // MirrorDirectory does not add, filter or change structure of group, so just pass given group of assets
@@ -277,7 +277,7 @@ namespace UnityEngine.AssetGraph {
                 }
 
             } catch(Exception e) {
-                throw new NodeException(node.Name + ":" + e.Message, node.Id);
+                throw new NodeException(node.Name + ":" + e.Message, node);
             }
 		}
 

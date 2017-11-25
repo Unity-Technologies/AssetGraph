@@ -21,7 +21,6 @@ namespace UnityEngine.AssetGraph {
 		}
 
         private void Init() {
-			LogUtility.Logger.filterLogType = LogType.Warning;
 			this.titleContent = new GUIContent("Project Settings");
 			this.minSize = new Vector2(300f, 100f);
 			this.maxSize = new Vector2(1000f, 400f);

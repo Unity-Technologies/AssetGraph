@@ -16,18 +16,44 @@ namespace UnityEngine.AssetGraph {
         private delegate AssetProcessEvent EventCreator ();
 
         [SerializeField] private List<AssetProcessEvent> m_events;
-		[SerializeField] private int m_version;
+        [SerializeField] private int m_errorEventCount;
+        [SerializeField] private int m_infoEventCount;
+        [SerializeField] private int m_version;
         [SerializeField] private int m_processStartIndex;
 
+        public delegate void AssetProcessEventCallback(AssetProcessEvent e);
+        public event AssetProcessEventCallback onAssetProcessEvent;
+
         private static AssetProcessEventRecord s_record;
+
+        private List<AssetProcessEvent> m_filteredEvents;
+        private bool m_includeError;
+        private bool m_includeInfo;
+
+        public List<AssetProcessEvent> Events {
+            get {
+                return m_filteredEvents;
+            }
+        }
+
+        public int InfoEventCount {
+            get {
+                return m_infoEventCount;
+            }
+        }
+
+        public int ErrorEventCount {
+            get {
+                return m_errorEventCount;
+            }
+        }
 
         public static AssetProcessEventRecord GetRecord() {
 			if(s_record == null) {
 				if(!Load()) {
 					// Create vanilla db
                     s_record = ScriptableObject.CreateInstance<AssetProcessEventRecord>();
-                    s_record.m_events = new List<AssetProcessEvent>();
-					s_record.m_version = VERSION;
+                    s_record.Init ();
 
                     var DBDir = AssetGraphBasePath.TemporalSettingFilePath;
 
@@ -73,6 +99,41 @@ namespace UnityEngine.AssetGraph {
 			EditorUtility.SetDirty(s_record);
 		}
 
+        private void Init() {
+            m_events = new List<AssetProcessEvent>();
+            m_filteredEvents = new List<AssetProcessEvent>();
+            m_errorEventCount = 0;
+            m_infoEventCount = 0;
+            m_includeError = true;
+            m_includeInfo = true;
+            m_version = VERSION;
+
+        }
+
+        public void SetFilterCondition(bool includeInfo, bool includeError) {
+
+            if (includeInfo != m_includeInfo || includeError != m_includeError) {
+                m_includeInfo = includeInfo;
+                m_includeError = includeError;
+
+                RebuildFilteredEvents ();
+            }
+        }
+
+        private void RebuildFilteredEvents() {
+            m_filteredEvents.Clear ();
+            m_filteredEvents.Capacity = m_events.Count;
+
+            foreach (var e in m_events) {
+                if (m_includeError && e.Kind == AssetProcessEvent.EventKind.Error) {
+                    m_filteredEvents.Add (e);
+                }
+                if (m_includeInfo && e.Kind != AssetProcessEvent.EventKind.Error) {
+                    m_filteredEvents.Add (e);
+                }
+            }
+        }
+
         public void LogGraphBegin() {
             AssetGraphController gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
 
@@ -82,10 +143,7 @@ namespace UnityEngine.AssetGraph {
 
             var newEvent = AssetProcessEvent.CreateGraphBeginEvent (gc.TargetGraph.GetGraphGuid ());
 
-            LogUtility.Logger.LogWarning (LogUtility.kTag, string.Format("[{0}]GraphBegin", gc.TargetGraph.GetGraphName()));
-
-            m_events.Add (newEvent);
-            SetRecordDirty ();
+            AddEvent (newEvent);
         }
 
         public void LogGraphEnd() {
@@ -97,10 +155,7 @@ namespace UnityEngine.AssetGraph {
 
             var newEvent = AssetProcessEvent.CreateGraphEndEvent (gc.TargetGraph.GetGraphGuid ());
 
-            LogUtility.Logger.LogWarning (LogUtility.kTag, string.Format("[{0}]GraphEnd", gc.TargetGraph.GetGraphName()));
-
-            m_events.Add (newEvent);
-            SetRecordDirty ();
+            AddEvent (newEvent);
         }
 
         public void LogModify(string assetGuid) {
@@ -110,13 +165,9 @@ namespace UnityEngine.AssetGraph {
                 throw new AssetGraphException ("Modify event attempt to log but no graph is in stack.");
             }
 
-            var newEvent = AssetProcessEvent.CreateModifyEvent (assetGuid, gc.TargetGraph.GetGraphGuid (), gc.CurrentNode.Id);
+            var newEvent = AssetProcessEvent.CreateModifyEvent (assetGuid, gc.TargetGraph.GetGraphGuid (), gc.CurrentNode);
 
-            LogUtility.Logger.LogWarning (LogUtility.kTag, string.Format("[{0}]Modified: {1} {2}", gc.TargetGraph.GetGraphName(), gc.CurrentNode.Name, 
-                Path.GetFileName ( AssetDatabase.GUIDToAssetPath(assetGuid) )));
-
-            m_events.Add (newEvent);
-            SetRecordDirty ();
+            AddEvent (newEvent);
         }
 
         public void LogError(NodeException e) {
@@ -128,16 +179,49 @@ namespace UnityEngine.AssetGraph {
 
             var newEvent = AssetProcessEvent.CreateErrorEvent (e, gc.TargetGraph.GetGraphGuid ());
 
-            LogUtility.Logger.LogWarning (LogUtility.kTag, string.Format("[{0}]Error: {1} {2}", gc.TargetGraph.GetGraphName(), gc.CurrentNode.Name, 
-                e.Reason, e.HowToFix));
+            AddEvent (newEvent);
+        }
 
-            m_events.Add (newEvent);
+        private void AddEvent(AssetProcessEvent e) {
+            m_events.Add (e);
+
+            if (e.Kind == AssetProcessEvent.EventKind.Error) {
+                ++m_errorEventCount;
+
+                if(m_includeError) {
+                    m_filteredEvents.Add (e);
+                }
+            }
+            if (e.Kind != AssetProcessEvent.EventKind.Error) {
+                ++m_infoEventCount;
+
+                if(m_includeInfo) {
+                    m_filteredEvents.Add (e);
+                }
+            }
+
+            if (onAssetProcessEvent != null) {
+                onAssetProcessEvent (e);
+            }
             SetRecordDirty ();
         }
 
-        public static void Clear() {
-            var r = GetRecord ();
-            r.m_events.Clear ();
+        public void Clear(bool executeGraphsWithError) {
+
+            List<string> graphGuids = null;
+
+            if (executeGraphsWithError) {
+                graphGuids = m_events.Where (e => e.Kind == AssetProcessEvent.EventKind.Error).Select (e => e.GraphGuid).Distinct().ToList ();
+            }
+
+            m_events.Clear ();
+            m_filteredEvents.Clear ();
+            m_errorEventCount = 0;
+            m_infoEventCount = 0;
+
+            if (executeGraphsWithError) {
+                AssetGraphUtility.ExecuteAllGraphs (graphGuids, true);
+            }
         }
 	}
 }

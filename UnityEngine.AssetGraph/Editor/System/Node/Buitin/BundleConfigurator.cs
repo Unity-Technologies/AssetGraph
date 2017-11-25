@@ -274,15 +274,15 @@ namespace UnityEngine.AssetGraph {
 				m_useGroupAsVariants,
 				groupCount,
 				() => {
-					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node.Id);
+					throw new NodeException(node.Name + ":Bundle Name Template is empty.", node);
 				},
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template can not contain '" + Model.Settings.KEYWORD_WILDCARD.ToString() 
-						+ "' when group name is used for variants.", node.Id);
+						+ "' when group name is used for variants.", node);
 				},
 				() => {
 					throw new NodeException(node.Name + ":Bundle Name Template must contain '" + Model.Settings.KEYWORD_WILDCARD.ToString() 
-						+ "' when group name is not used for variants and expecting multiple incoming groups.", node.Id);
+						+ "' when group name is not used for variants and expecting multiple incoming groups.", node);
 				}
 			);
 
@@ -290,13 +290,13 @@ namespace UnityEngine.AssetGraph {
 			foreach(var variant in m_variants) {
 				ValidateVariantName(variant.Name, variantNames, 
 					() => {
-						throw new NodeException(node.Name + ":Variant name is empty.", node.Id);
+						throw new NodeException(node.Name + ":Variant name is empty.", node);
 					},
 					() => {
-						throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + variant.Name + "\".", node.Id);
+						throw new NodeException(node.Name + ":Variant name cannot contain whitespace \"" + variant.Name + "\".", node);
 					},
 					() => {
-						throw new NodeException(node.Name + ":Variant name already exists \"" + variant.Name + "\".", node.Id);
+						throw new NodeException(node.Name + ":Variant name already exists \"" + variant.Name + "\".", node);
 					});
 			}
 
@@ -314,7 +314,7 @@ namespace UnityEngine.AssetGraph {
 				if (invalids.Any()) {
 					throw new NodeException(node.Name + 
 						": Invalid files are found. Following files need to be imported to put into asset bundle: " + 
-						string.Join(", ", invalids.Select(a =>a.absolutePath).ToArray()), node.Id );
+						string.Join(", ", invalids.Select(a =>a.absolutePath).ToArray()), node );
 				}
 			}
 
@@ -327,7 +327,7 @@ namespace UnityEngine.AssetGraph {
 				Dictionary<string, List<string>> variantsInfo = new Dictionary<string, List<string>> ();
 
 				var buildMap = AssetBundleBuildMap.GetBuildMap ();
-				buildMap.ClearFromId (node.Id);
+                buildMap.ClearFromId (node.Id);
 
 				foreach(var ag in incoming) {
 					string variantName = null;
@@ -360,8 +360,8 @@ namespace UnityEngine.AssetGraph {
 							output[bundleName].AddRange(assets);
 						}
 
-						var bundleConfig = buildMap.GetAssetBundleWithNameAndVariant (node.Id, bundleName, variantName);
-						bundleConfig.AddAssets (node.Id, assets.Select(a => a.importFrom));
+                        var bundleConfig = buildMap.GetAssetBundleWithNameAndVariant (node.Id, bundleName, variantName);
+                        bundleConfig.AddAssets (node.Id, assets.Select(a => a.importFrom));
 					}
 				}
 
@@ -429,7 +429,7 @@ namespace UnityEngine.AssetGraph {
 				List<string> variants = variantsInfo [bundleName];
 
 				if (variants.Count < 2) {
-					throw new NodeException (node.Name + ":" + bundleName + " is not configured to create more than 2 variants.", node.Id);
+					throw new NodeException (node.Name + ":" + bundleName + " is not configured to create more than 2 variants.", node);
 				}
 
 				List<AssetReference> assets = output [bundleName];
@@ -439,12 +439,12 @@ namespace UnityEngine.AssetGraph {
 				for(int i = 1; i< variants.Count; ++i) {
 					List<AssetReference> variantAssets = assets.Where (a => a.variantName == variants [i]).ToList ();
 					if(variant0Assets.Count != variantAssets.Count) {
-						throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " variant " + variants [0] + " and " + variants [i] + " do not match containing assets.", node.Id);
+						throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " variant " + variants [0] + " and " + variants [i] + " do not match containing assets.", node);
 					}
 
 					foreach (var a0 in variant0Assets) {
 						if(!variantAssets.Any( a => a.fileName == a0.fileName)) {
-							throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " does not contain " + a0.fileNameAndExtension + " in variant " + variants [i], node.Id);
+							throw new NodeException (node.Name + ":Variant mismatch found." + bundleName + " does not contain " + a0.fileNameAndExtension + " in variant " + variants [i], node);
 						}
 					}
 				}

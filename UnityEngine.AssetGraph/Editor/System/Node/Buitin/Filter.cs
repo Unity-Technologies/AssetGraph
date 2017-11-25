@@ -326,7 +326,7 @@ namespace UnityEngine.AssetGraph {
 
 			foreach(var f in m_filter) {
 				if(f.Instance.Object == null) {
-					throw new NodeException(String.Format("Could not deserialize filter with class {0}. Please open graph and fix Filter.", f.Instance.ClassName), n.Id);
+					throw new NodeException(String.Format("Could not deserialize filter with class {0}. Please open graph and fix Filter.", f.Instance.ClassName), n);
 				}
 			}
 		}
@@ -338,7 +338,7 @@ namespace UnityEngine.AssetGraph {
 
 			if( overlap != null && throwException ) {
 				var element = overlap.First();
-				throw new NodeException(String.Format("Duplicated filter condition found [Label:{0}]", element.Instance.Object.Label), n.Id);
+				throw new NodeException(String.Format("Duplicated filter condition found [Label:{0}]", element.Instance.Object.Label), n);
 			}
 			return overlap != null;
 		}

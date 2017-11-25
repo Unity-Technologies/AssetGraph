@@ -160,7 +160,7 @@ namespace UnityEngine.AssetGraph {
 			ValidateSearchCondition(
 				m_searchFilter[target],
 				() => {
-					throw new NodeException(node.Name + ": Serach filter is empty", node.Id);
+					throw new NodeException(node.Name + ": Serach filter is empty", node);
 				}
 			);
 

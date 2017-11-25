@@ -410,8 +410,6 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		private void Init() {
-			LogUtility.Logger.filterLogType = LogType.Warning;
-
             var windowIcon = (EditorGUIUtility.isProSkin) ? NodeGUIUtility.windowIconPro : NodeGUIUtility.windowIcon;
 
             this.titleContent = new GUIContent("AssetGraph", windowIcon);
@@ -630,7 +628,7 @@ namespace UnityEngine.AssetGraph {
 				// update static all node names.
 				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
 
-				controller.Perform(target, false, forceVisitAll, null);
+				controller.Perform(target, false, false, forceVisitAll, null);
 
 				RefreshInspector(controller.StreamManager);
 				ShowErrorOnNodes();
@@ -678,7 +676,6 @@ namespace UnityEngine.AssetGraph {
 			try {
 				AssetDatabase.SaveAssets();
                 AssetBundleBuildMap.GetBuildMap ().Clear ();
-                AssetProcessEventRecord.Clear();
 
 				float currentCount = 0f;
 				float totalCount = (float)controller.TargetGraph.Nodes.Count;
@@ -705,11 +702,11 @@ namespace UnityEngine.AssetGraph {
 				};
 
 				// perform setup. Fails if any exception raises.
-				controller.Perform(target, false, true,  null);				 
+				controller.Perform(target, false, true, true,  null);				 
 
 				// if there is not error reported, then run
 				if(!controller.IsAnyIssueFound) {
-					controller.Perform(target, true, true, updateHandler);
+					controller.Perform(target, true, true, true, updateHandler);
 				}
 				RefreshInspector(controller.StreamManager);
 				AssetDatabase.Refresh();

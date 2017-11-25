@@ -363,16 +363,16 @@ namespace UnityEngine.AssetGraph {
 
             ValidateAssetGenerator(node, target, incoming,
                 () => {
-                    throw new NodeException(node.Name + " :AssetGenerator is not specified. Please select generator from Inspector.", node.Id);
+                    throw new NodeException(node.Name + " :AssetGenerator is not specified. Please select generator from Inspector.", node);
                 },
                 () => {
-                    throw new NodeException(node.Name + " :Failed to create AssetGenerator from settings. Please fix settings from Inspector.", node.Id);
+                    throw new NodeException(node.Name + " :Failed to create AssetGenerator from settings. Please fix settings from Inspector.", node);
                 },
                 (AssetReference badAsset, string msg) => {
-                    throw new NodeException(string.Format("{0} :{1} : Source: {2}", node.Name, msg, badAsset.importFrom), node.Id);
+                    throw new NodeException(string.Format("{0} :{1} : Source: {2}", node.Name, msg, badAsset.importFrom), node);
                 },
                 (AssetReference badAsset) => {
-                    throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node.Id);
+                    throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node);
                 }
             );
 
@@ -463,6 +463,8 @@ namespace UnityEngine.AssetGraph {
                                     throw new AssetGraphException(string.Format("{0} :{1} returned success, but generated asset not found.", 
                                         node.Name, entry.m_name));
                                 }
+
+                                AssetProcessEventRecord.GetRecord ().LogModify (AssetDatabase.AssetPathToGUID(assetSavePath));
 
                                 isAnyAssetGenerated = true;
 

@@ -279,10 +279,10 @@ namespace UnityEngine.AssetGraph {
 				GetLoaderFullLoadPath(target),
 				() => {
 					//can be empty
-					//throw new NodeException(node.Name + ": Load Path is empty.", node.Id);
+					//throw new NodeException(node.Name + ": Load Path is empty.", node);
 				}, 
 				() => {
-					throw new NodeException(node.Name + ": Directory not found: " + GetLoaderFullLoadPath(target), node.Id);
+					throw new NodeException(node.Name + ": Directory not found: " + GetLoaderFullLoadPath(target), node);
 				}
 			);
 

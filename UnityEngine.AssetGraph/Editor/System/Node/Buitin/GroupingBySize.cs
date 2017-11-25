@@ -222,7 +222,7 @@ namespace UnityEngine.AssetGraph
 			ValidateGroupingKeyword(
 				m_groupSizeByte[target],
 				() => {
-					throw new NodeException("Invalid size.", node.Id);
+					throw new NodeException("Invalid size.", node);
 				}
 			);
 

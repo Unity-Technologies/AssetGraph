@@ -361,7 +361,7 @@ namespace UnityEngine.AssetGraph {
             var configFilePath = AssetDatabase.GUIDToAssetPath (configFileGUID);
 
             if (string.IsNullOrEmpty (configFilePath)) {
-                throw new NodeException(node.Name + " :Setting template file not found. Incoming file type must be properly configured with CustomImporterConfigurator.", node.Id);
+                throw new NodeException(node.Name + " :Setting template file not found. Incoming file type must be properly configured with CustomImporterConfigurator.", node);
             }
 
             var samplingDirectoryPath = FileUtility.PathCombine(Model.Settings.Path.SavedSettingsPath, "ImportSettings", node.Id);
@@ -371,7 +371,7 @@ namespace UnityEngine.AssetGraph {
 
             IAssetImporterConfigurator configurator = ImporterConfiguratorUtility.CreateConfigurator (importerType);
             if (configurator == null) {
-                throw new NodeException(node.Name + " :Failed to create importer configurator for " + importerType.FullName, node.Id);
+                throw new NodeException(node.Name + " :Failed to create importer configurator for " + importerType.FullName, node);
             }
             m_configuratorInstance.SetDefaultValue (configurator);
 
@@ -439,6 +439,7 @@ namespace UnityEngine.AssetGraph {
 
                         if(configurator.IsModified(referenceImporter, importer, target, groupKey)) {
                             configurator.Configure(referenceImporter, importer, target, groupKey);
+                            AssetProcessEventRecord.GetRecord().LogModify(asset.assetDatabaseId);
 							importerModified = true;
 						}
 
@@ -464,7 +465,7 @@ namespace UnityEngine.AssetGraph {
                 firstAssetImporterType = firstAsset.importerType;
                 if (firstAssetImporterType == null) {
                     throw new NodeException(string.Format("{0} : Incoming asset '{1}' does not have importer. (type={2}) Perhaps you want to use Modifier instead?", 
-                        node.Name, firstAsset.fileNameAndExtension, firstAsset.assetType.FullName), node.Id);
+                        node.Name, firstAsset.fileNameAndExtension, firstAsset.assetType.FullName), node);
                 }
             }
 
@@ -475,7 +476,7 @@ namespace UnityEngine.AssetGraph {
                         foreach(var a in assets) {
                             if(a.importerType != firstAssetImporterType) {
                                 throw new NodeException(string.Format("{2} :ImportSetting expect {0}, but different type of incoming asset is found({1}, {2})", 
-                                    firstAssetImporterType.FullName, a.fileNameAndExtension, a.importerType, node.Name), node.Id);
+                                    firstAssetImporterType.FullName, a.fileNameAndExtension, a.importerType, node.Name), node);
                             }
                         }
                     }
@@ -487,13 +488,13 @@ namespace UnityEngine.AssetGraph {
                 var referenceImporter = GetReferenceAssetImporter (node, false);
 
                 if (referenceImporter == null) {
-                    throw new NodeException(string.Format("{0} :Reference importer not found. Please configure it from Inspector.", node.Name), node.Id);
+                    throw new NodeException(string.Format("{0} :Reference importer not found. Please configure it from Inspector.", node.Name), node);
                 }
             }
 
             // check if there is a valid custom setting asset
             if (m_useCustomSettingAsset && CustomSettingAsset == null) {
-                throw new NodeException(string.Format("{0} :You must select custom setting asset.", node.Name), node.Id);
+                throw new NodeException(string.Format("{0} :You must select custom setting asset.", node.Name), node);
             }
 
             // check if reference asset type matches with incoming asset types
@@ -501,7 +502,7 @@ namespace UnityEngine.AssetGraph {
                 Type targetType = GetReferenceAssetImporter(node, false).GetType();
                 if( targetType != firstAssetImporterType ) {
                     throw new NodeException(string.Format("{0} :Incoming asset type is does not match with this ImportSetting (Expected type:{1}, Incoming type:{2}).",
-                        node.Name, targetType.FullName, firstAssetImporterType.FullName), node.Id);
+                        node.Name, targetType.FullName, firstAssetImporterType.FullName), node);
                 }
             }
 
@@ -511,12 +512,12 @@ namespace UnityEngine.AssetGraph {
                 var configuratorType = ImporterConfiguratorUtility.GetConfiguratorTypeFor (importer.GetType());
                 if (configuratorType == null) {
                     throw new NodeException (string.Format ("{0} :Configurator for {1} not found. You must add CustomAssetImporterConfigurator.",
-                        node.Name, importer.GetType().FullName), node.Id);
+                        node.Name, importer.GetType().FullName), node);
                 }
 
                 var c = m_configuratorInstance.Get<IAssetImporterConfigurator> (target);
                 if (c == null) {
-                    throw new NodeException(node.Name + " :Failed to get configurator for " + importer.GetType().FullName, node.Id);
+                    throw new NodeException(node.Name + " :Failed to get configurator for " + importer.GetType().FullName, node);
                 }
             }
 		}
