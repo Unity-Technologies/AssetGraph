@@ -47,7 +47,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 				m_allConnections = new List<ConnectionData>();
 				m_version = ABG_FILE_VERSION;
 				m_graphDescription = String.Empty;
-                m_graphExecOrderPriority = 0;
+                m_graphExecOrderPriority = Settings.GRAPHEXECPRIORITY_DEFAULT;
 				EditorUtility.SetDirty(this);
 			}
 		}

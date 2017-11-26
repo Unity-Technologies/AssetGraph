@@ -45,6 +45,9 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 
 		public const char KEYWORD_WILDCARD = '*';
 
+        public const int GRAPHEXECPRIORITY_DEFAULT = 0;
+
+
         public class UserSettings {
             private static readonly string PREFKEY_AB_BUILD_CACHE_DIR = "AssetBundles.GraphTool.Cache.AssetBundle";
             private static readonly string PREFKEY_AB_BUILD_GRAPH_GUID = "AssetBundles.GraphTool.GraphGuid";

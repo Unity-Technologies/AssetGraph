@@ -30,7 +30,6 @@ namespace UnityEngine.AssetGraph {
         private void Init() {
 			this.titleContent = new GUIContent("Project Settings");
 			this.minSize = new Vector2(300f, 100f);
-			this.maxSize = new Vector2(1000f, 400f);
             m_abTab = new AssetBundlesSettingsTab ();
             m_execTab = new ExecutionOrderSettingsTab ();
             m_mode = Mode.AssetBundleSettings;
@@ -69,7 +68,7 @@ namespace UnityEngine.AssetGraph {
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            float toolbarWidth = position.width - (100f*2f);
+            float toolbarWidth = position.width - (20f*2f);
             string[] labels = new string[] { "Asset Bundles", "Execution Order" };
             m_mode = (Mode)GUILayout.Toolbar((int)m_mode, labels, "LargeButton", GUILayout.Width(toolbarWidth) );
             GUILayout.FlexibleSpace();
