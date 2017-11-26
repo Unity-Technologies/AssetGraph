@@ -54,6 +54,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		public string[] GetAllAssetBundleNames() {
+            UpdateBuildMap ();
 			return AssetBundleBuildMap.GetBuildMap ().GetAllAssetBundleNames ();
 		}
 
@@ -80,29 +81,46 @@ namespace UnityEngine.AssetGraph {
 			get { return false; } 
 		}
 
+        private void UpdateBuildMap() {
+            var graphGuid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
+            string path = AssetDatabase.GUIDToAssetPath(graphGuid);
+
+            if(string.IsNullOrEmpty(path)) {
+                return;
+            }
+
+            AssetBundleBuildMap.GetBuildMap ().Clear ();
+            AssetGraphUtility.ExecuteGraphSetup (path);
+        }
+
         public bool BuildAssetBundles (UnityEngine.AssetBundles.AssetBundleDataSource.ABBuildInfo info) {
 			
             AssetBundleBuildMap.GetBuildMap ().Clear ();
 
-			var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+            var graphGuid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
 
-			foreach(var guid in guids) {
-				string path = AssetDatabase.GUIDToAssetPath(guid);
-				var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
-				if (!graph.UseAsAssetPostprocessor) {
-                    Type infoType = info.GetType();
-                    var targetInfo = infoType.GetProperty("buildTarget");
-                    if (targetInfo.GetValue(info, null) is BuildTarget)
-                    {
-                        BuildTarget target = (BuildTarget)targetInfo.GetValue(info, null);
-                        var result = AssetGraphUtility.ExecuteGraph(target, graph);
-                        if (result.IsAnyIssueFound)
-                        {
-                            return false;
-                        }
-                    }
-				}
-			}
+            if (string.IsNullOrEmpty (graphGuid)) {
+                return false;
+            }
+
+            string path = AssetDatabase.GUIDToAssetPath(graphGuid);
+            if(string.IsNullOrEmpty(path)) {
+                return false;
+            }
+
+            var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
+
+            Type infoType = info.GetType();
+
+            var fieldInfo = infoType.GetField ("buildTarget");
+            if (fieldInfo != null) {
+                BuildTarget target = (BuildTarget)fieldInfo.GetValue (info);
+                var result = AssetGraphUtility.ExecuteGraph(target, graph);
+                if (result.IsAnyIssueFound)
+                {
+                    return false;
+                }
+            }
 
 			return true;
 		}

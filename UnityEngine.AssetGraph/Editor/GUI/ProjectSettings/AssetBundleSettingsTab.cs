@@ -11,32 +11,24 @@ using System.Collections.Generic;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
-	public class ProjectSettingsWindow : EditorWindow {
+	public class AssetBundlesSettingsTab {
 
-        [SerializeField] private string m_cacheDir;
+        private string[] m_graphGuids;
+        private string[] m_graphNames;
 
-        [MenuItem(Model.Settings.GUI_TEXT_MENU_PROJECTWINDOW_OPEN, false, 41)]
-		public static void Open () {
-            GetWindow<ProjectSettingsWindow>();
-		}
+        public AssetBundlesSettingsTab() {
+            Refresh();
+        }
 
-        private void Init() {
-			this.titleContent = new GUIContent("Project Settings");
-			this.minSize = new Vector2(300f, 100f);
-			this.maxSize = new Vector2(1000f, 400f);
-		}
+        public void Refresh() {
+            m_graphGuids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+            m_graphNames = new string[m_graphGuids.Length];
+            for (int i = 0; i < m_graphGuids.Length; ++i) {
+                m_graphNames[i] = Path.GetFileNameWithoutExtension (AssetDatabase.GUIDToAssetPath (m_graphGuids[i]));
+            }
+        }
 
-        public void OnEnable () {
-			Init();
-		}
-
-		public void OnFocus() {
-		}
-
-		public void OnDisable() {
-		}
-
-        public string DrawFolderSelector(string label, 
+        private string DrawFolderSelector(string label, 
             string dialogTitle, 
             string currentDirPath, 
             string directoryOpenPath, 
@@ -65,12 +57,8 @@ namespace UnityEngine.AssetGraph {
             return newDirPath;
         }
 
-		public void OnGUI () {
-
-			using (new EditorGUILayout.VerticalScope()) {
-
-				GUILayout.Label("Project Settings", new GUIStyle("BoldLabel"));
-                GUILayout.Space(8f);
+        private void DrawCacheDirGUI() {
+            using (new EditorGUILayout.VerticalScope()) {
 
                 string cacheDir = Model.Settings.UserSettings.AssetBundleBuildCacheDir;
 
@@ -114,7 +102,36 @@ namespace UnityEngine.AssetGraph {
                         }
                     }
                 }
-			}
+            }
+
+            EditorGUILayout.HelpBox (
+                "Bundle Cache Directory is the default place to save AssetBundles when 'Build Asset Bundles' node performs build. " +
+                "This can be set outside of the project with relative path.", 
+                MessageType.Info);
+        }
+
+        private void DrawABGraphList() {
+            string abGraphGuid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
+
+            int index = ArrayUtility.IndexOf(m_graphGuids, abGraphGuid);
+            var selected = EditorGUILayout.Popup ("Default AssetBundle Graph", index, m_graphNames);
+
+            if (index != selected) {
+                Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid = m_graphGuids [selected];
+            }
+
+            EditorGUILayout.HelpBox (
+                "Default AssetBundle Graph is the default graph to build AssetBundles for this project. " +
+                "This graph will be automatically called in AssetBundle Browser integration.", 
+                MessageType.Info);
+        }
+
+		public void OnGUI () {
+            DrawCacheDirGUI ();
+
+            GUILayout.Space (20f);
+
+            DrawABGraphList ();
 		}
 	}
 }

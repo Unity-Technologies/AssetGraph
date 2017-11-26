@@ -47,6 +47,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 
         public class UserSettings {
             private static readonly string PREFKEY_AB_BUILD_CACHE_DIR = "AssetBundles.GraphTool.Cache.AssetBundle";
+            private static readonly string PREFKEY_AB_BUILD_GRAPH_GUID = "AssetBundles.GraphTool.GraphGuid";
 
             private static readonly string PREFKEY_BATCHBUILD_LASTSELECTEDCOLLECTION = "AssetBundles.GraphTool.LastSelectedCollection";
             private static readonly string PREFKEY_BATCHBUILD__USECOLLECTIONSTATE    = "AssetBundles.GraphTool.UseCollection";
@@ -61,8 +62,17 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
                 }
 
                 set {
-                    
                     EditorUserSettings.SetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR, value);
+                }
+            }
+
+            public static string DefaultAssetBundleBuildGraphGuid {
+                get {
+                    return EditorUserSettings.GetConfigValue (PREFKEY_AB_BUILD_GRAPH_GUID);
+                }
+
+                set {
+                    EditorUserSettings.SetConfigValue (PREFKEY_AB_BUILD_GRAPH_GUID, value);
                 }
             }
 

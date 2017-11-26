@@ -168,6 +168,15 @@ namespace UnityEngine.AssetGraph {
         public static ExecuteGraphResult ExecuteGraph(string graphAssetPath, bool clearRecord = false) {
             return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, graphAssetPath, clearRecord);
 		}
+            
+        /// <summary>
+        /// Executes the graph.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="graphGuid">Graph asset guid.</param>
+        public static ExecuteGraphResult ExecuteGraphByGuid(string graphGuid, bool clearRecord = false) {
+            return ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, AssetDatabase.GUIDToAssetPath(graphGuid), clearRecord);
+        }
 
         /// <summary>
         /// Executes the graph.
@@ -187,6 +196,55 @@ namespace UnityEngine.AssetGraph {
         public static ExecuteGraphResult ExecuteGraph(BuildTarget target, string graphAssetPath, bool clearRecord = false) {
             return ExecuteGraph(target, AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphAssetPath), clearRecord);
 		}
+
+        /// <summary>
+        /// Execute Graph in Setup mode, and do not do Build.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="graphAssetPath">Graph asset path.</param>
+        public static ExecuteGraphResult ExecuteGraphSetup(string graphAssetPath) {
+            return ExecuteGraphSetup(EditorUserBuildSettings.activeBuildTarget, graphAssetPath);
+        }
+
+        /// <summary>
+        /// Execute Graph in Setup mode, and do not do Build.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="graphGuid">Graph asset guid.</param>
+        public static ExecuteGraphResult ExecuteGraphSetupByGuid(string graphGuid) {
+            return ExecuteGraphSetup(EditorUserBuildSettings.activeBuildTarget, AssetDatabase.GUIDToAssetPath(graphGuid));
+        }
+
+        /// <summary>
+        /// Execute Graph in Setup mode, and do not do Build.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="graph">Graph.</param>
+        public static ExecuteGraphResult ExecuteGraphSetup(Model.ConfigGraph graph) {
+            return ExecuteGraphSetup(EditorUserBuildSettings.activeBuildTarget, graph);
+        }
+
+        /// <summary>
+        /// Execute Graph in Setup mode, and do not do Build.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="target">Target.</param>
+        /// <param name="graphAssetPath">Graph asset path.</param>
+        public static ExecuteGraphResult ExecuteGraphSetup(BuildTarget target, string graphAssetPath) {
+            return ExecuteGraphSetup(target, AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphAssetPath));
+        }
+
+        /// <summary>
+        /// Execute Graph in Setup mode, and do not do Build.
+        /// </summary>
+        /// <returns>The graph.</returns>
+        /// <param name="target">Target.</param>
+        /// <param name="graph">Graph.</param>
+        public static ExecuteGraphResult ExecuteGraphSetup(BuildTarget target, Model.ConfigGraph graph) {
+            AssetGraphController c = new AssetGraphController(graph);
+            c.Perform(target, false, true, true, null);
+            return new ExecuteGraphResult(graph, c.Issues);
+        }
 
         /// <summary>
         /// Executes the graph.
