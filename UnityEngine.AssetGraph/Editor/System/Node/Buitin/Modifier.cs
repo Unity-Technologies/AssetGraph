@@ -279,6 +279,8 @@ namespace UnityEngine.AssetGraph {
                                 if (!EditorSceneManager.SaveScene (asset.scene)) {
                                     throw new NodeException (node.Name + " :Failed to save modified scene:" + asset.importFrom, node);
                                 }
+                            } else {
+                                AssetDatabase.SaveAssets ();
                             }
                         }
                         asset.ReleaseData ();
@@ -287,7 +289,6 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			if(isAnyAssetModified) {
-                AssetDatabase.SaveAssets ();
 				AssetDatabase.Refresh();
 			}
 
