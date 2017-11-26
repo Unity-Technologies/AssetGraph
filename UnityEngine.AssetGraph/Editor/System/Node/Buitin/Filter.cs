@@ -199,12 +199,6 @@ namespace UnityEngine.AssetGraph {
 
         private void DrawFilterEntryListElement(Rect rect, int index, bool selected, bool focused)
         {
-            //rect.height -= 2; // nicer looking with selected list row and a text field in it
-
-            // De-indent by the drag handle width, so the text field lines up with others in the inspector.
-            // Will have space in front of label for more space between it and the drag handle.
-            // rect.xMin -= ReorderableList.Defaults.dragHandleWidth;
-
             bool oldEnabled = GUI.enabled;
             GUI.enabled = CanEditFilterEntry(index);
 
