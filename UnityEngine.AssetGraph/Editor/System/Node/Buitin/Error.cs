@@ -16,7 +16,6 @@ namespace UnityEngine.AssetGraph {
 
         [SerializeField] private string m_description;
         [SerializeField] private string m_howtoFix;
-        [SerializeField] private bool m_raiseErrorPerAsset;
 
     	public override string ActiveStyle {
     		get {
@@ -50,14 +49,12 @@ namespace UnityEngine.AssetGraph {
 
     	public override void Initialize(Model.NodeData data) {
             m_description = "Error occured.";
-            m_raiseErrorPerAsset = false;
     		data.AddDefaultInputPoint();
     	}
 
     	public override Node Clone(Model.NodeData newData) {
             var newNode = new Error();
             newNode.m_description = this.m_description;
-            newNode.m_raiseErrorPerAsset = this.m_raiseErrorPerAsset;
     		newData.AddDefaultInputPoint();
     		return newNode;
     	}
@@ -70,7 +67,11 @@ namespace UnityEngine.AssetGraph {
     		GUILayout.Space(10f);
 
             EditorGUILayout.LabelField ("Description");
-            var newDesc = EditorGUILayout.TextArea(m_description, GUILayout.MaxHeight(100f));
+
+            GUIStyle textAreaStyle = new GUIStyle (EditorStyles.textArea);
+            textAreaStyle.wordWrap = true;
+
+            var newDesc = EditorGUILayout.TextArea(m_description, textAreaStyle, GUILayout.MaxHeight(100f));
             if(newDesc != m_description) {
     			using(new RecordUndoScope("Change Description", node, true)) {
                     m_description = newDesc;
@@ -81,20 +82,10 @@ namespace UnityEngine.AssetGraph {
             GUILayout.Space (4);
 
             EditorGUILayout.LabelField ("How to fix this error");
-            var newHowtoFix = EditorGUILayout.TextArea(m_howtoFix, GUILayout.MaxHeight(100f));
+            var newHowtoFix = EditorGUILayout.TextArea(m_howtoFix, textAreaStyle, GUILayout.MaxHeight(100f));
             if(newHowtoFix != m_howtoFix) {
                 using(new RecordUndoScope("Change HowtoFix", node, true)) {
                     m_howtoFix = newHowtoFix;
-                    onValueChanged();
-                }
-            }
-
-            EditorGUILayout.HelpBox ("'{0}' will be replaced with Asset name", MessageType.Info);
-
-            var newBool = EditorGUILayout.ToggleLeft ("Raise Error/Asset", m_raiseErrorPerAsset);
-            if(newBool != m_raiseErrorPerAsset) {
-                using(new RecordUndoScope("Change Raise Error/Asset", node, true)) {
-                    m_raiseErrorPerAsset = newBool;
                     onValueChanged();
                 }
             }
@@ -111,26 +102,21 @@ namespace UnityEngine.AssetGraph {
     		PerformGraph.Output Output) 
     	{
             if(string.IsNullOrEmpty(m_description)) {
-    			throw new NodeException(node.Name + ":Error message is empty.", node);
-    		}
+                throw new NodeException(node.Name + ":Description is empty.", node);
+            }
 
-            bool isError = false;
+            if(string.IsNullOrEmpty(m_howtoFix)) {
+                throw new NodeException(node.Name + ":HowToFix is empty.", node);
+            }
 
             if(incoming != null) {
                 foreach(var ag in incoming) {
                     foreach (var assets in ag.assetGroups.Values) {
-                        foreach(var a in assets) {
-                            if (m_raiseErrorPerAsset) {
-                                throw new NodeException(m_description, m_howtoFix, node, a);
-                            }
-                            isError = true;
+                        if (assets.Count > 0) {
+                            throw new NodeException(m_description, m_howtoFix, node, assets[0]);
                         }
                     }
                 }
-            }
-
-            if (isError) {
-                throw new NodeException(m_description, node);
             }
     	}
     }

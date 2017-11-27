@@ -116,7 +116,7 @@ namespace UnityEngine.AssetGraph {
         }
 
 		public void OnGUI () {
-            EditorGUILayout.LabelField ("Graph Execution Order");
+            EditorGUILayout.LabelField ("AssetPostprocessor Graph Execution Order");
             m_execOrderList.DoLayoutList();
 		}
 
