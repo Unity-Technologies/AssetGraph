@@ -66,6 +66,11 @@ namespace UnityEngine.AssetGraph {
             return item.displayName.Length > 0;
         }
 
+        protected override bool CanMultiSelect(TreeViewItem item)
+        {
+            return false;
+        }
+
         protected override void RowGUI(RowGUIArgs args)
         {
 //            var item = (args.item as GraphCollectionTreeItem);

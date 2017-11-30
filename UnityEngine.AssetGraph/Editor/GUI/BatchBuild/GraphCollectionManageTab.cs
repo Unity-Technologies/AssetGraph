@@ -33,7 +33,6 @@ namespace UnityEngine.AssetGraph {
         float m_HorizontalSplitterPercent;
 
         const float k_SplitterWidth = 3f;
-        private static float m_UpdateDelay = 0f;
 
         EditorWindow m_Parent = null;
 

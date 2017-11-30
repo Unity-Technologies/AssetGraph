@@ -45,6 +45,10 @@ namespace UnityEngine.AssetGraph {
             m_detailViewResize = new ResizeContext ();
         }
 
+        public void OnEnabled() {
+            m_assetLogListTree.Reload ();
+        }
+
         public bool OnLogViewGUI() {
 
             Rect detailRect = GUILayoutUtility.GetRect (m_detailRect.width, m_detailRect.height, GUILayout.ExpandWidth (true));
@@ -78,7 +82,7 @@ namespace UnityEngine.AssetGraph {
                 var obj = AssetDatabase.LoadMainAssetAtPath(assetPath);
                 var preview = AssetPreview.GetAssetPreview (obj);
 
-                var previewRect = new Rect (detailRect.x + 8, detailRect.y + 8, preview.width, preview.height);
+                var previewRect = new Rect (detailRect.x + 8, detailRect.y + 8, (preview != null)? preview.width: 128f, (preview != null)? preview.height : 128f);
                 var assetNameRect = new Rect (detailRect.x + 2, previewRect.yMax, previewRect.width + 12, 28);
 
                 GUI.Label (previewRect, new GUIContent(preview, "Asset Preview"));

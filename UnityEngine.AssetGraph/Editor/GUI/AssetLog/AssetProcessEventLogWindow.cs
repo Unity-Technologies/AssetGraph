@@ -41,6 +41,7 @@ namespace UnityEngine.AssetGraph {
 
 		public void OnEnable () {
 			Init();
+            m_logViewController.OnEnabled ();
 		}
 
 		public void OnFocus() {

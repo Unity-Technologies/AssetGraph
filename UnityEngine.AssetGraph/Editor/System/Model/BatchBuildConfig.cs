@@ -16,7 +16,8 @@ namespace UnityEngine.AssetGraph {
 		[Serializable]
 		public class GraphCollection {
 			[SerializeField] private string m_name;
-			[SerializeField] private List<string> m_graphGuids;
+            [SerializeField] private List<string> m_graphGuids;
+            [SerializeField] private string m_guid;
 
             static public GraphCollection CreateNewGraphCollection(string suggestedName) {
 
@@ -39,13 +40,23 @@ namespace UnityEngine.AssetGraph {
 			private GraphCollection(string name) {
 				m_name = name;
 				m_graphGuids = new List<string>();
-			}
+                m_guid = GUID.Generate().ToString();
+            }
 
 			public string Name {
 				get {
 					return m_name;
 				}
 			}
+
+            public string Guid {
+                get {
+                    if (string.IsNullOrEmpty (m_guid)) {
+                        m_guid = GUID.Generate().ToString();
+                    }
+                    return m_guid;
+                }
+            }
 
 			public List<string> GraphGUIDs {
 				get {
@@ -101,7 +112,8 @@ namespace UnityEngine.AssetGraph {
             }
 		}
 
-		[SerializeField] private List<GraphCollection> m_collections;
+        [SerializeField] private List<GraphCollection> m_collections;
+        [SerializeField] private List<BuildTarget> m_buildTargets;
 		[SerializeField] private int m_version;
 
 		private static BatchBuildConfig s_config;
@@ -115,6 +127,7 @@ namespace UnityEngine.AssetGraph {
 					// Create vanilla db
 					s_config = ScriptableObject.CreateInstance<BatchBuildConfig>();
 					s_config.m_collections = new List<GraphCollection>();
+                    s_config.m_buildTargets = new List<BuildTarget> ();
 					s_config.m_version = VERSION;
 
                     CreateBatchBuildConfigAsset (s_config);
@@ -183,6 +196,15 @@ namespace UnityEngine.AssetGraph {
 				return m_collections;
 			}
 		}
+
+        public List<BuildTarget> BuildTargets {
+            get {
+                if (m_buildTargets == null) {
+                    m_buildTargets = new List<BuildTarget> ();
+                }
+                return m_buildTargets;
+            }
+        }
 
 		public GraphCollection Find(string name) {
 			return m_collections.Find(c => c.Name == name);

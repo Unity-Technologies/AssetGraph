@@ -17,8 +17,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
         public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Batch Build Window";
         public const string GUI_TEXT_MENU_ASSETLOGWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Asset Log Window";
         public const string GUI_TEXT_MENU_PROJECTWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Project Window";
-        public const string GUI_TEXT_MENU_BUILD = GUI_TEXT_MENU_BASE + "/Build Bundles for Current Platform";
-        public const string GUI_TEXT_MENU_BATCHBUILD = GUI_TEXT_MENU_BASE + "/Build Current Graph Selections";
+        public const string GUI_TEXT_MENU_BUILD = GUI_TEXT_MENU_BASE + "/Build Graph for Current Platform";
         public const string GUI_TEXT_MENU_GENERATE = GUI_TEXT_MENU_BASE + "/Create Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
         public const string GUI_TEXT_MENU_GENERATE_PREFABBUILDER = GUI_TEXT_MENU_GENERATE + "/PrefabBuilder Script";

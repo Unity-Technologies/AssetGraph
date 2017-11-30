@@ -16,8 +16,8 @@ namespace UnityEngine.AssetGraph {
 
         private enum Mode : int
         {
-            Manage,
-            Execute
+            Edit,
+            Build
         }
 
         private GraphCollectionManageTab m_manageTab;
@@ -31,27 +31,13 @@ namespace UnityEngine.AssetGraph {
 			GetWindow<BatchBuildWindow>();
 		}
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, false, 2+101)]
-		public static void BuildFromMenu() {
-			var w = GetWindow<BatchBuildWindow>() as BatchBuildWindow;
-			w.Build();
-		}
-
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHBUILD, true, 2+101)]
-		public static bool BuildFromMenuValidator() {
-			var windows = Resources.FindObjectsOfTypeAll<BatchBuildWindow>();
-
-			return windows.Length > 0;
-		}
-
-
 		private void Init() {
 			this.titleContent = new GUIContent("Batch Build");
 			this.minSize = new Vector2(350f, 300f);
 
             m_manageTab = new GraphCollectionManageTab ();
             m_executeTab = new GraphCollectionExecuteTab ();
-            m_mode = Mode.Manage;
+            m_mode = Mode.Edit;
 		}
 
 		public void OnEnable () {
@@ -61,8 +47,14 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		public void OnFocus() {
-            m_manageTab.Refresh ();
-            m_executeTab.Refresh ();
+            switch (m_mode) {
+            case Mode.Edit:
+                m_manageTab.Refresh ();
+                break;
+            case Mode.Build:
+                m_executeTab.Refresh ();
+                break;
+            }
 		}
 
 		public void OnDisable() {
@@ -70,7 +62,7 @@ namespace UnityEngine.AssetGraph {
 
         public void OnGUI () {
 
-            DrawToolBar ();
+            var needRefresh = DrawToolBar ();
 
             var tabRect = GUILayoutUtility.GetRect (100f, 100f, GUILayout.ExpandHeight (true), GUILayout.ExpandWidth (true));
             var bound = new Rect (0f, 0f, tabRect.width, tabRect.height);
@@ -78,10 +70,16 @@ namespace UnityEngine.AssetGraph {
             GUI.BeginGroup (tabRect);
 
             switch (m_mode) {
-            case Mode.Manage:
+            case Mode.Edit:
+                if(needRefresh) {
+                    m_manageTab.Refresh();
+                }
                 m_manageTab.OnGUI (bound);
                 break;
-            case Mode.Execute:
+            case Mode.Build:
+                if(needRefresh) {
+                    m_executeTab.Refresh ();
+                }
                 m_executeTab.OnGUI (bound);
                 break;
             }
@@ -89,20 +87,20 @@ namespace UnityEngine.AssetGraph {
             GUI.EndGroup ();
         }
 
-        private void DrawToolBar() {
+        private bool DrawToolBar() {
+
+            var oldMode = m_mode;
 
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             float toolbarWidth = position.width - (20f*2f);
-            string[] labels = new string[] { "Manage", "Execute" };
+            string[] labels = new string[] { "Edit", "Build" };
             m_mode = (Mode)GUILayout.Toolbar((int)m_mode, labels, "LargeButton", GUILayout.Width(toolbarWidth) );
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             GUILayout.Space(8f);
-        }
 
-        private void Build() {
-            m_executeTab.Build ();
+            return oldMode != m_mode;
         }
 	}
 }
