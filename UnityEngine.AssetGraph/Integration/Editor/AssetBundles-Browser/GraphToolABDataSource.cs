@@ -10,6 +10,7 @@
 using UnityEditor;
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 using System;
+using System.IO;
 using System.Collections.Generic;
 
 namespace UnityEngine.AssetBundles.AssetBundleDataSource
@@ -29,9 +30,12 @@ namespace UnityEngine.AssetGraph {
             return retList;
         }
 
+        private string m_graphGuid;
+        private string m_graphName;
+
         public string Name {
 			get {
-				return "AssetBundles";
+                return m_graphName;
 			}
 		}
 
@@ -40,6 +44,20 @@ namespace UnityEngine.AssetGraph {
 				return "AssetGraph";
 			}
 		}
+
+        GraphToolABDataSource() {
+            UpdateGraphInfo ();
+        }
+
+        private void UpdateGraphInfo() {
+            var guid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
+            if (guid != m_graphGuid) {
+                m_graphGuid = guid;
+                if (!string.IsNullOrEmpty (m_graphGuid)) {
+                    m_graphName = Path.GetFileNameWithoutExtension( AssetDatabase.GUIDToAssetPath (m_graphGuid));
+                }
+            }
+        }
 
 		public string[] GetAssetPathsFromAssetBundle (string assetBundleName) {
 			return AssetBundleBuildMap.GetBuildMap ().GetAssetPathsFromAssetBundle (assetBundleName);
@@ -82,8 +100,9 @@ namespace UnityEngine.AssetGraph {
 		}
 
         private void UpdateBuildMap() {
-            var graphGuid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
-            string path = AssetDatabase.GUIDToAssetPath(graphGuid);
+            UpdateGraphInfo ();
+
+            string path = AssetDatabase.GUIDToAssetPath(m_graphGuid);
 
             if(string.IsNullOrEmpty(path)) {
                 return;
@@ -97,13 +116,13 @@ namespace UnityEngine.AssetGraph {
 			
             AssetBundleBuildMap.GetBuildMap ().Clear ();
 
-            var graphGuid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
+            UpdateGraphInfo ();
 
-            if (string.IsNullOrEmpty (graphGuid)) {
+            if (string.IsNullOrEmpty (m_graphGuid)) {
                 return false;
             }
 
-            string path = AssetDatabase.GUIDToAssetPath(graphGuid);
+            string path = AssetDatabase.GUIDToAssetPath(m_graphGuid);
             if(string.IsNullOrEmpty(path)) {
                 return false;
             }
