@@ -86,6 +86,11 @@ namespace UnityEngine.AssetGraph {
 			bool forceVisitAll,
 			Action<Model.NodeData, string, float> updateHandler) 
 		{
+            if (m_targetGraph == null) {
+                LogUtility.Logger.LogError (LogUtility.kTag, "Attempted to execute invalid graph (null)");
+                return false;
+            }
+
             if (!AssetGraphPostprocessor.Postprocessor.PushController (this)) {
                 LogUtility.Logger.LogFormat(LogType.Log, "[Perform - Skip] Re-entering graph on stack: {0}", m_targetGraph.GetGraphName());
                 return false;
