@@ -67,10 +67,8 @@ namespace UnityEngine.AssetGraph {
 
                 var assetGuid = e.AssetGuid;
                 var assetPath = AssetDatabase.GUIDToAssetPath (assetGuid);
-                var hasAsset = !string.IsNullOrEmpty (assetGuid);
                 var graphGuid = e.GraphGuid;
                 var graphPath = AssetDatabase.GUIDToAssetPath (graphGuid);
-                var hasGraph = !string.IsNullOrEmpty (graphGuid);
 
                 var boldWrapStyle = new GUIStyle (EditorStyles.boldLabel);
                 boldWrapStyle.wordWrap = true;

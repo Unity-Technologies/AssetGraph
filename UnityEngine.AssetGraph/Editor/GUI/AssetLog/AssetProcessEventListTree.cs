@@ -146,7 +146,6 @@ namespace UnityEngine.AssetGraph {
             CenterRectUsingSingleLineHeight(ref cellRect);
             var assetGuid = item.Event.AssetGuid;
             var assetPath = AssetDatabase.GUIDToAssetPath (assetGuid);
-            var hasAsset = !string.IsNullOrEmpty (assetPath);
 
             var graphGuid = item.Event.GraphGuid;
             var graphPath = AssetDatabase.GUIDToAssetPath (graphGuid);

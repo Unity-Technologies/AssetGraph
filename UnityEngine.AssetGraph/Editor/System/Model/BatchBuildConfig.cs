@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.IO;
+using System.Linq;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -17,7 +18,25 @@ namespace UnityEngine.AssetGraph {
 			[SerializeField] private string m_name;
 			[SerializeField] private List<string> m_graphGuids;
 
-			public GraphCollection(string name) {
+            static public GraphCollection CreateNewGraphCollection(string suggestedName) {
+
+                string nameCandidate = suggestedName;
+
+                var collection = BatchBuildConfig.GetConfig ().GraphCollections;
+                int i = 0;
+
+                while (true) {
+                    if (collection.Find (c => c.Name.ToLower () == nameCandidate.ToLower ()) == null) {
+                        var newCollection = new GraphCollection (nameCandidate);
+                        collection.Add (newCollection);
+                        BatchBuildConfig.SetConfigDirty ();
+                        return newCollection;
+                    }
+                    nameCandidate = string.Format ("{0} {1}", suggestedName, ++i);
+                }
+            }
+
+			private GraphCollection(string name) {
 				m_name = name;
 				m_graphGuids = new List<string>();
 			}
@@ -26,9 +45,6 @@ namespace UnityEngine.AssetGraph {
 				get {
 					return m_name;
 				}
-				set {
-					m_name = value;
-				}
 			}
 
 			public List<string> GraphGUIDs {
@@ -36,6 +52,53 @@ namespace UnityEngine.AssetGraph {
 					return m_graphGuids;
 				}
 			}
+
+            public void AddGraph(string guid) {
+                if (!m_graphGuids.Contains (guid)) {
+                    m_graphGuids.Add (guid);
+                }
+            }
+
+            public void AddGraphRange(IList<string> guids) {
+                foreach (var g in guids) {
+                    AddGraph (g);
+                }
+            }
+
+            public void RemoveGraph(string guid) {
+                m_graphGuids.Remove (guid);
+            }
+
+            public void RemoveGraphRange(IList<string> guids) {
+                foreach (var g in guids) {
+                    m_graphGuids.Remove (g);
+                }
+            }
+
+            public void InsertGraph(int index, string guid) {
+                if (!m_graphGuids.Contains (guid) && index >= 0 && index < m_graphGuids.Count) {
+                    m_graphGuids.Insert (index, guid);
+                }
+            }
+
+            public void InsertGraphRange(int index, IList<string> guids) {
+                if (index < 0 || index >= m_graphGuids.Count) {
+                    return;
+                }
+
+                var notIncludedList = guids.Where(g => !m_graphGuids.Contains(g)).AsEnumerable();
+
+                m_graphGuids.InsertRange (index, notIncludedList);
+            }
+
+            public bool TryRename(string newName) {
+                var collection = BatchBuildConfig.GetConfig ().GraphCollections;
+                if (collection.Find (c => c.Name.ToLower () == newName.ToLower ()) != null) {
+                    return false;
+                }
+                m_name = newName;
+                return true;
+            }
 		}
 
 		[SerializeField] private List<GraphCollection> m_collections;
@@ -110,6 +173,10 @@ namespace UnityEngine.AssetGraph {
 		public static void SetConfigDirty() {
 			EditorUtility.SetDirty(s_config);
 		}
+
+        public static GraphCollection CreateNewGraphCollection(string suggestedName) {
+            return GraphCollection.CreateNewGraphCollection (suggestedName);
+        }
 
 		public List<GraphCollection> GraphCollections {
 			get {
