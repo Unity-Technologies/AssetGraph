@@ -65,7 +65,70 @@ namespace UnityEngine.AssetGraph {
         private GraphCollectionExecuteTab m_controller;
         private long m_lastTimestamp;
 
-        public ExecuteResultTree(TreeViewState state, GraphCollectionExecuteTab ctrl) : base(state)
+        private static MultiColumnHeaderState CreateMCHeader()
+        {
+            return new MultiColumnHeaderState(GetColumns());
+        }
+        private static MultiColumnHeaderState.Column[] GetColumns()
+        {
+            var retVal = new MultiColumnHeaderState.Column[] {
+                new MultiColumnHeaderState.Column(),
+                new MultiColumnHeaderState.Column(),
+                new MultiColumnHeaderState.Column(),
+                new MultiColumnHeaderState.Column(),
+                new MultiColumnHeaderState.Column()
+            };
+            int i = 0;
+
+            retVal[i].headerContent = new GUIContent("", "");
+            retVal[i].minWidth = 16;
+            retVal[i].width = 16;
+            retVal[i].maxWidth = 16;
+            retVal[i].headerTextAlignment = TextAlignment.Left;
+            retVal[i].canSort = false;
+            retVal[i].autoResize = true;
+            ++i;
+
+            retVal[i].headerContent = new GUIContent("Status", "Is build successful?");
+            retVal[i].minWidth = 32;
+            retVal[i].width = 60;
+            retVal[i].maxWidth = 150;
+            retVal[i].headerTextAlignment = TextAlignment.Left;
+            retVal[i].canSort = false;
+            retVal[i].autoResize = true;
+            ++i;
+
+            retVal[i].headerContent = new GUIContent("Graph", "Graph Name");
+            retVal[i].minWidth = 50;
+            retVal[i].width = 100;
+            retVal[i].maxWidth = 500;
+            retVal[i].headerTextAlignment = TextAlignment.Left;
+            retVal[i].canSort = false;
+            retVal[i].autoResize = true;
+            ++i;
+
+            retVal[i].headerContent = new GUIContent("Platform", "Platform Name");
+            retVal[i].minWidth = 30;
+            retVal[i].width = 120;
+            retVal[i].maxWidth = 500;
+            retVal[i].headerTextAlignment = TextAlignment.Left;
+            retVal[i].canSort = false;
+            retVal[i].autoResize = true;
+            ++i;
+
+            retVal[i].headerContent = new GUIContent("Description", "Additonal Info");
+            retVal[i].minWidth = 30;
+            retVal[i].width = 250;
+            retVal[i].maxWidth = 1000;
+            retVal[i].headerTextAlignment = TextAlignment.Left;
+            retVal[i].canSort = false;
+            retVal[i].autoResize = true;
+            ++i;
+
+            return retVal;
+        }
+
+        public ExecuteResultTree(TreeViewState state, GraphCollectionExecuteTab ctrl) : base(state, new MultiColumnHeader(CreateMCHeader()))
         {
             m_controller = ctrl;
             showBorder = true;
@@ -83,7 +146,58 @@ namespace UnityEngine.AssetGraph {
 
         protected override void RowGUI(RowGUIArgs args)
         {
-            base.RowGUI(args);
+            for (int i = 0; i < args.GetNumVisibleColumns (); ++i) {
+                CellGUI (args.GetCellRect (i), args.item, args.GetColumn (i), ref args);
+            }
+        }
+
+        private void CellGUI(Rect cellRect, TreeViewItem item, int column, ref RowGUIArgs args)
+        {
+            ExecuteResultTreeItem resultItem    = item as ExecuteResultTreeItem;
+            NodeExceptionItem exceptionItem     = item as NodeExceptionItem;
+
+            ExecuteGraphResult r = null;
+            NodeException e = null;
+            if (resultItem != null) {
+                r = resultItem.Result;
+            } else {
+                r = exceptionItem.Result;
+                e = exceptionItem.Exception;
+            }
+
+            switch (column)
+            {
+            case 0://Collapse/Expand
+                {
+                    DefaultGUI.Label (cellRect, string.Empty, args.selected, args.focused);
+                }
+                break;
+            case 1://Status
+                {
+                    var rect = cellRect;
+                    if(e != null) {
+                        rect.x += 8f;
+                    }
+                    DefaultGUI.Label (rect, (r.IsAnyIssueFound) ? "Fail" : "Success", args.selected, args.focused);
+                }
+                break;
+            case 2://Graph
+                {
+                    var graphName = Path.GetFileNameWithoutExtension (r.GraphAssetPath);
+                    DefaultGUI.Label (cellRect, graphName, args.selected, args.focused);
+                }
+                break;
+            case 3://Platform
+                DefaultGUI.Label (cellRect, BuildTargetUtility.TargetToHumaneString(r.Target), args.selected, args.focused);
+                break;
+            case 4://Description
+                if (e != null) {
+                    DefaultGUI.Label (cellRect, e.Reason, args.selected, args.focused);
+                } else {
+                    DefaultGUI.Label (cellRect, string.Empty, args.selected, args.focused);
+                }
+                break;
+            }
         }
 
         protected override TreeViewItem BuildRoot()
@@ -128,16 +242,22 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-//        protected override void SelectionChanged(IList<int> selectedIds)
-//        {
-//            if (selectedIds != null)
-//            {
-//                foreach (var id in selectedIds)
-//                {
-//                    //TODO
-//                }
-//            }
-//        }
+        protected override void SelectionChanged(IList<int> selectedIds)
+        {
+            if (selectedIds != null && selectedIds.Count > 0)
+            {
+                var item = FindItem(selectedIds[0], rootItem);
+                var resultItem = item as ExecuteResultTreeItem;
+                if (resultItem != null) {
+                    m_controller.SetSelectedExecuteResult (resultItem.Result, null);
+                } else {
+                    var exceptionItem = item as NodeExceptionItem;
+                    if (exceptionItem != null) {
+                        m_controller.SetSelectedExecuteResult (exceptionItem.Result, exceptionItem.Exception);
+                    }
+                }
+            }
+        }
 
         public override void OnGUI(Rect rect)
         {

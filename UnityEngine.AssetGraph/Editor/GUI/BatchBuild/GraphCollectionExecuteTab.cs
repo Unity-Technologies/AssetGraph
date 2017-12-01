@@ -15,7 +15,7 @@ namespace UnityEngine.AssetGraph {
     [System.Serializable]
     internal class GraphCollectionExecuteTab 
     {
-        private const float k_SplitterHeight = 3f;
+        private const float k_SplitterHeight = 4f;
 
         [SerializeField]
         private TreeViewState m_buildTargetTreeState;
@@ -25,6 +25,9 @@ namespace UnityEngine.AssetGraph {
 
         [SerializeField]
         private float m_verticalSplitterPercent;
+
+        [SerializeField]
+        private float m_msgVerticalSplitterPercent;
 
         [SerializeField]
         private string m_selectedCollectionGuid;
@@ -39,13 +42,27 @@ namespace UnityEngine.AssetGraph {
 
         private bool m_resizingVerticalSplitter = false;
         private Rect m_verticalSplitterRect;
+
+        private bool m_msgResizingVerticalSplitter = false;
+        private Rect m_msgVerticalSplitterRect;
+
         private EditorWindow m_parent = null;
         private long m_lastBuildTimestamp;
+
+        private ExecuteGraphResult m_selectedResult;
+        private NodeException m_selectedException;
+        private Vector2 m_msgScrollPos;
+
+        private Vector2 kSritRange = new Vector2 (0.2f, 0.8f);
+        private Vector2 kMsgSpritRange = new Vector2 (0.2f, 0.6f);
 
         public GraphCollectionExecuteTab()
         {
             m_verticalSplitterPercent = 0.2f;
+            m_msgVerticalSplitterPercent = 0.5f;
             m_verticalSplitterRect = new Rect(0,0,0, k_SplitterHeight);
+            m_msgVerticalSplitterRect = new Rect(0,0,0, k_SplitterHeight);
+            m_msgScrollPos = new Vector2 (0f, 0f);
         }
 
         public List<ExecuteGraphResult> CurrentResult {
@@ -84,6 +101,8 @@ namespace UnityEngine.AssetGraph {
             m_selectedCollectionIndex = collection.FindIndex (c => c.Guid == m_selectedCollectionGuid);
             if (m_selectedCollectionIndex >= 0) {
                 m_currentCollection = collection [m_selectedCollectionIndex];
+            } else {
+                m_currentCollection = null;
             }
         }
 
@@ -92,100 +111,165 @@ namespace UnityEngine.AssetGraph {
             Rect popupRgn  = new Rect (region.x+20f, region.y, region.width - 120f, region.height);
             Rect buttonRgn = new Rect (popupRgn.xMax+8f, popupRgn.y, 80f, popupRgn.height);
 
-            EditorGUI.BeginDisabledGroup ( BatchBuildConfig.GetConfig ().GraphCollections.Count == 0 );
+            using (new EditorGUI.DisabledGroupScope (BatchBuildConfig.GetConfig ().GraphCollections.Count == 0)) {
 
-            var newIndex = EditorGUI.Popup(popupRgn, "Graph Collection", m_selectedCollectionIndex, m_collectionNames);
-            if (newIndex != m_selectedCollectionIndex) {
-                m_selectedCollectionIndex = newIndex;
-                m_currentCollection = BatchBuildConfig.GetConfig ().GraphCollections [m_selectedCollectionIndex];
-                m_selectedCollectionGuid = m_currentCollection.Guid;
+                var newIndex = EditorGUI.Popup (popupRgn, "Graph Collection", m_selectedCollectionIndex, m_collectionNames);
+                if (newIndex != m_selectedCollectionIndex) {
+                    m_selectedCollectionIndex = newIndex;
+                    m_currentCollection = BatchBuildConfig.GetConfig ().GraphCollections [m_selectedCollectionIndex];
+                    m_selectedCollectionGuid = m_currentCollection.Guid;
+                }
+
+                using (new EditorGUI.DisabledGroupScope (m_currentCollection == null || BatchBuildConfig.GetConfig ().BuildTargets.Count == 0)) {
+                    if (GUI.Button (buttonRgn, "Build")) {
+                        Build ();
+                    }
+                }
+            }
+        }
+
+        private void DrawSelectedExecuteResultMessage(Rect region) {
+
+            string msg = null;
+
+            // no item selected
+            if (m_selectedResult == null) {
+                msg = string.Empty;
+            } 
+            // build result
+            else if (m_selectedException == null) {
+                var graphName = Path.GetFileNameWithoutExtension (m_selectedResult.GraphAssetPath);
+                msg = string.Format ("Build {2}.\n\nGraph:{0}\nPlatform:{1}", 
+                    graphName, 
+                    BuildTargetUtility.TargetToHumaneString(m_selectedResult.Target),
+                    m_selectedResult.IsAnyIssueFound ? "Failed" : "Successful"
+                );
+            }
+            // build result with exception
+            else {
+                var graphName = Path.GetFileNameWithoutExtension (m_selectedResult.GraphAssetPath);
+                msg = string.Format ("{0}\n\nHow to fix:\n{1}\n\nWhere:'{2}' in {3}\nPlatform:{4}",
+                    m_selectedException.Reason, m_selectedException.HowToFix, m_selectedException.Node.Name, 
+                    graphName,
+                    BuildTargetUtility.TargetToHumaneString(m_selectedResult.Target));
             }
 
-            EditorGUI.BeginDisabledGroup ( m_currentCollection == null || BatchBuildConfig.GetConfig ().BuildTargets.Count == 0 );
-            if( GUI.Button(buttonRgn, "Build") ) {
-                Build ();
-            }
-            EditorGUI.EndDisabledGroup ();
-            EditorGUI.EndDisabledGroup ();
+            var msgStyle = GUI.skin.label;
+            msgStyle.alignment = TextAnchor.UpperLeft;
+            msgStyle.wordWrap = true;
+
+            var content = new GUIContent(msg);
+            var height = msgStyle.CalcHeight(content, region.width - 16f);
+
+            var msgRect = new Rect (0f, 0f, region.width - 16f, height);
+
+            m_msgScrollPos = GUI.BeginScrollView(region, m_msgScrollPos, msgRect);
+
+            GUI.Label (msgRect, content);
+
+            GUI.EndScrollView();
+        }
+
+        public void SetSelectedExecuteResult(ExecuteGraphResult r, NodeException e) {
+            m_selectedResult = r;
+            m_selectedException = e;
+            m_msgScrollPos = new Vector2 (0f, 0f);
         }
 
         public void OnGUI(Rect pos)
         {
             var dropdownUIBound = new Rect (0f, 0f, pos.width, 16f);
-            var labelUIBound = new Rect (8f, dropdownUIBound.yMax, 80f, 24f);
-            var listviewUIBound = new Rect (0f, labelUIBound.yMax - 4f, dropdownUIBound.width, pos.height - dropdownUIBound.height);
+            var labelUIBound = new Rect (4f, dropdownUIBound.yMax, 80f, 24f);
+            var listviewUIBound = new Rect (4f, labelUIBound.yMax, dropdownUIBound.width -8f, pos.height - dropdownUIBound.yMax);
 
             DrawBuildDropdown (dropdownUIBound);
-
-            EditorGUI.BeginDisabledGroup ( m_currentCollection == null );
 
             var labelStyle = new GUIStyle(EditorStyles.label);
             labelStyle.alignment = TextAnchor.LowerLeft;
             GUI.Label (labelUIBound, "Build Targets", labelStyle);
 
-            GUI.BeginGroup (listviewUIBound);
-            var groupUIBound = new Rect (0f, 0f, listviewUIBound.width, listviewUIBound.height);
+            using (new GUI.GroupScope (listviewUIBound)) {
 
-            HandleVerticalResize(groupUIBound);
+                var groupUIBound = new Rect (0f, 0f, listviewUIBound.width, listviewUIBound.height);
 
-            var boundTop = new Rect(
-                8f,
-                8f,
-                groupUIBound.width - 16f,
-                m_verticalSplitterRect.y - k_SplitterHeight - 4f);
-            
-            var bottomLabelUIBound = new Rect (8f, m_verticalSplitterRect.yMax, 80f, 24f);
-            var boundBottom = new Rect(
-                boundTop.x,
-                bottomLabelUIBound.yMax,
-                boundTop.width,
-                groupUIBound.height - m_verticalSplitterRect.yMax - k_SplitterHeight - 8f);
+                HandleVerticalResize (groupUIBound, ref m_verticalSplitterRect, ref m_verticalSplitterPercent, ref m_resizingVerticalSplitter, ref kSritRange);
 
-            GUI.Label (bottomLabelUIBound, "Build Results", labelStyle);
-            m_buildTargetTree.OnGUI (boundTop);
+                var boundTop = new Rect (
+                               4f,
+                               0f,
+                               groupUIBound.width -8f,
+                               m_verticalSplitterRect.y);
+        
+                var bottomLabelUIBound = new Rect (4f, m_verticalSplitterRect.yMax, 80f, 24f);
+                var boundBottom = new Rect (
+                                  boundTop.x,
+                                  bottomLabelUIBound.yMax,
+                                  boundTop.width,
+                                  groupUIBound.height - m_verticalSplitterRect.yMax);
+                var bottomUIBound = new Rect (0f, 0f, boundBottom.width, boundBottom.height);
 
-            if (BatchBuildConfig.GetConfig ().BuildTargets.Count == 0) {
-                var style = GUI.skin.label;
-                style.alignment = TextAnchor.MiddleCenter;
-                style.wordWrap = true;
+                GUI.Label (bottomLabelUIBound, "Build Results", labelStyle);
+                m_buildTargetTree.OnGUI (boundTop);
 
-                GUI.Label(new Rect(boundTop.x+12f, boundTop.y, boundTop.width - 24f, boundTop.height), 
-                    new GUIContent("Right click here and add targets to build."), style);
+                if (BatchBuildConfig.GetConfig ().BuildTargets.Count == 0) {
+                    var style = GUI.skin.label;
+                    style.alignment = TextAnchor.MiddleCenter;
+                    style.wordWrap = true;
+
+                    GUI.Label (new Rect (boundTop.x + 12f, boundTop.y, boundTop.width - 24f, boundTop.height), 
+                        new GUIContent ("Right click here and add targets to build."), style);
+                }
+
+                using (new GUI.GroupScope (boundBottom, EditorStyles.helpBox)) {
+                    HandleVerticalResize (bottomUIBound, ref m_msgVerticalSplitterRect, ref m_msgVerticalSplitterPercent, ref m_msgResizingVerticalSplitter, ref kMsgSpritRange);
+
+                    var execResultBound = new Rect (
+                        0f,
+                        0f,
+                        bottomUIBound.width,
+                        m_msgVerticalSplitterRect.y);
+                    
+                    var msgBound = new Rect (
+                        execResultBound.x,
+                        m_msgVerticalSplitterRect.yMax,
+                        execResultBound.width,
+                        bottomUIBound.height - m_msgVerticalSplitterRect.yMax - 52f);
+
+                    m_executeResultTree.OnGUI (execResultBound);
+
+                    DrawSelectedExecuteResultMessage (msgBound);
+                }
+
+                if (m_resizingVerticalSplitter || m_msgResizingVerticalSplitter) {
+                    m_parent.Repaint ();
+                }
             }
-
-            m_executeResultTree.OnGUI (boundBottom);
-
-            if (m_resizingVerticalSplitter) {
-                m_parent.Repaint ();
-            }
-
-            EditorGUI.EndDisabledGroup ();
-            GUI.EndGroup ();
         }
 
-        private void HandleVerticalResize(Rect bound)
+        private static void HandleVerticalResize(Rect bound, ref Rect splitterRect, ref float percent, ref bool splitting, ref Vector2 range)
         {
-            m_verticalSplitterRect.x = bound.x;
-            m_verticalSplitterRect.y = (int)(bound.height * m_verticalSplitterPercent);
-            m_verticalSplitterRect.width = bound.width;
+            var height = bound.height - splitterRect.height;
+            splitterRect.x = bound.x;
+            splitterRect.y = (int)(height * percent);
+            splitterRect.width = bound.width;
 
-            EditorGUIUtility.AddCursorRect(m_verticalSplitterRect, MouseCursor.ResizeVertical);
+            EditorGUIUtility.AddCursorRect(splitterRect, MouseCursor.ResizeVertical);
 
             var mousePt = Event.current.mousePosition;
 
-            if (Event.current.type == EventType.mouseDown && m_verticalSplitterRect.Contains (mousePt)) {
-                m_resizingVerticalSplitter = true;
+            if (Event.current.type == EventType.mouseDown && splitterRect.Contains (mousePt)) {
+                splitting = true;
             }
 
-            if (m_resizingVerticalSplitter)
+            if (splitting)
             {
-                m_verticalSplitterPercent = Mathf.Clamp(mousePt.y / bound.height, 0.1f, 0.9f);
-                m_verticalSplitterRect.y = bound.y + (int)(bound.height * m_verticalSplitterPercent);
+                percent = Mathf.Clamp(mousePt.y / bound.height, range.x, range.y);
+                splitterRect.y = bound.y + (int)(height * percent);
             }
 
             if (Event.current.type == EventType.MouseUp)
             {
-                m_resizingVerticalSplitter = false;
+                splitting = false;
             }
         }
 
