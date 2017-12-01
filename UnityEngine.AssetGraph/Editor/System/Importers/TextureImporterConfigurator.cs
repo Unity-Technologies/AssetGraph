@@ -319,10 +319,13 @@ namespace UnityEngine.AssetGraph
                 dstSettings.spritePivot = srcSettings.spritePivot;
                 dstSettings.spritePixelsPerUnit = srcSettings.spritePixelsPerUnit;
                 dstSettings.spriteTessellationDetail = srcSettings.spriteTessellationDetail;
-                target.spritesheet = reference.spritesheet;
             }
 
             target.SetTextureSettings (dstSettings);
+
+            if (m_overwriteSpriteSheet) {
+                target.spritesheet = reference.spritesheet;
+            }
 
             // some unity version do not properly copy properties via TextureSettings,
             // so also perform manual copy
