@@ -120,7 +120,11 @@ public class XYZImporter : ScriptedImporter
             xyzobj.Add (l);
         }
 
+        #if UNITY_2017_3_OR_NEWER
+        ctx.SetMainObject (xyzobj);
+        #else
         ctx.SetMainAsset ("data", xyzobj);
+        #endif
     }
 }
 
