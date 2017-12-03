@@ -10,7 +10,7 @@ using Model=UnityEngine.AssetGraph.DataModel.Version2;
 namespace UnityEngine.AssetGraph.Modifiers {
 	
 	[Serializable] 
-	[CustomModifier("Default Modifier(Animation)", typeof(Animation))]
+    [CustomModifier("Default Modifier(AnimationClip)", typeof(AnimationClip))]
 	public class AnimationModifier : IModifier {
 		
 		public AnimationModifier () {}
@@ -25,7 +25,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 		}
 
         public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
-//			var anim = assets[0] as Animation;
+            //			var anim = assets[0] as AnimationClip;
 
 			// Do your work here
 		}
