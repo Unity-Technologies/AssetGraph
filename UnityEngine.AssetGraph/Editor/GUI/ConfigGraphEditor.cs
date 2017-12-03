@@ -45,8 +45,11 @@ namespace UnityEngine.AssetGraph {
                 }
 
 				using(new EditorGUILayout.HorizontalScope()) {
+                    GUIStyle wrapText = new GUIStyle (EditorStyles.textArea);
+                    wrapText.wordWrap = true;
+
 					GUILayout.Label("Description", GUILayout.Width(100f));
-					string newdesc = EditorGUILayout.TextArea(graph.Descrption, GUILayout.MaxHeight(100f));
+                    string newdesc = EditorGUILayout.TextArea(graph.Descrption, wrapText);
 					if(newdesc != graph.Descrption) {
 						graph.Descrption = newdesc;
 					}
