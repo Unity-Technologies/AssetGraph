@@ -47,6 +47,9 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		public void OnFocus() {
+
+            BatchBuildConfig.GetConfig ().Validate ();
+
             switch (m_mode) {
             case Mode.Edit:
                 m_manageTab.Refresh ();

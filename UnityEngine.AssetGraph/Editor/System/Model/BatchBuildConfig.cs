@@ -64,6 +64,26 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 
+            public bool Validate() {
+                bool changed = false;
+                List<string> removingItems = null;
+                foreach (var guid in m_graphGuids) {
+                    var path = AssetDatabase.GUIDToAssetPath (guid);
+                    if (string.IsNullOrEmpty (path) || !File.Exists (path) || AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph)) {
+                        if (removingItems == null) {
+                            removingItems = new List<string> ();
+                        }
+                        removingItems.Add (guid);
+                    }
+                }
+
+                if (removingItems != null) {
+                    RemoveGraphRange (removingItems);
+                    changed = true;
+                }
+                return changed;
+            }
+
             public void AddGraph(string guid) {
                 if (!m_graphGuids.Contains (guid)) {
                     m_graphGuids.Add (guid);
@@ -158,6 +178,7 @@ namespace UnityEngine.AssetGraph {
 				{
 					BatchBuildConfig db = AssetDatabase.LoadAssetAtPath<BatchBuildConfig>(configPath);
 					if(db.m_version == VERSION) {
+                        db.Validate();
 						s_config = db;
 						loaded = true;
 					}
@@ -170,6 +191,7 @@ namespace UnityEngine.AssetGraph {
                     {
                         BatchBuildConfig db = AssetDatabase.LoadAssetAtPath<BatchBuildConfig>(oldConfigPath);
                         if(db.m_version == VERSION) {
+                            db.Validate();
                             s_config = db;
                             loaded = true;
                             AssetDatabase.MoveAsset(oldConfigPath, configPath);
@@ -209,6 +231,17 @@ namespace UnityEngine.AssetGraph {
 		public GraphCollection Find(string name) {
 			return m_collections.Find(c => c.Name == name);
 		}
+
+        public bool Validate() {
+            var changed = false;
+            foreach (var c in m_collections) {
+                changed |= c.Validate ();
+            }
+            if (changed) {
+                EditorUtility.SetDirty(this);
+            }
+            return changed;
+        }
 	}
 }
 
