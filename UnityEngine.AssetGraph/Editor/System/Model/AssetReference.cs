@@ -206,7 +206,7 @@ namespace UnityEngine.AssetGraph {
         /// <value>The absolute path.</value>
 		public string absolutePath {
 			get {
-                return m_importFrom.Replace("Assets", Application.dataPath);
+                return Application.dataPath + m_importFrom.Substring (6); // 6 = "Assets"
 			}
 		}
 
