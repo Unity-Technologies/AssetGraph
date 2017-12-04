@@ -21,8 +21,8 @@ namespace UnityEngine.AssetGraph {
         [SerializeField] private int m_version;
         [SerializeField] private int m_processStartIndex;
 
-        public delegate void AssetProcessEventCallback(AssetProcessEvent e);
-        public event AssetProcessEventCallback onAssetProcessEvent;
+        public delegate void AssetProcessEventHandler(AssetProcessEvent e);
+        public static event AssetProcessEventHandler onAssetProcessEvent;
 
         private static AssetProcessEventRecord s_record;
 

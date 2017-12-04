@@ -86,8 +86,6 @@ namespace UnityEngine.AssetGraph {
 
             m_errorIcon = EditorGUIUtility.Load ("icons/console.erroricon.png") as Texture2D;
             m_infoIcon = EditorGUIUtility.Load ("icons/console.infoicon.png") as Texture2D;
-
-            AssetProcessEventRecord.GetRecord ().onAssetProcessEvent += OnNewAssetProcessEvent;
         }
 
         protected override float GetCustomRowHeight(int row, TreeViewItem item) {
@@ -103,11 +101,8 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-        private void OnNewAssetProcessEvent(AssetProcessEvent e) {
-            if (base.rootItem != null) {
-                base.rootItem.AddChild (new AssetProcessEventListTreeItem (e));
-                Repaint ();
-            }
+        public void OnNewAssetProcessEvent(AssetProcessEvent e) {
+            Reload();
         }
 
         protected override IList<TreeViewItem> BuildRows(TreeViewItem root)
@@ -122,15 +117,13 @@ namespace UnityEngine.AssetGraph {
 
             var r = AssetProcessEventRecord.GetRecord ();
 
-            foreach (var e in r.Events) {
-                root.AddChild (new AssetProcessEventListTreeItem (e));
+            if (r != null && r.Events != null) {
+                foreach (var e in r.Events) {
+                    root.AddChild (new AssetProcessEventListTreeItem (e));
+                }
             }
 
             return root;
-        }
-
-        public void Reselect() {
-            SelectionChanged (GetSelection());
         }
 
         protected override void RowGUI(RowGUIArgs args)
