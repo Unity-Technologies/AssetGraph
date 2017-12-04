@@ -63,9 +63,6 @@ namespace UnityEngine.AssetGraph {
 		}
 
         private void DrawToolBar() {
-
-            bool clicked = false;
-
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             float toolbarWidth = position.width - (20f*2f);
