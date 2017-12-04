@@ -1,5 +1,4 @@
-﻿// Upgrade NOTE: upgraded instancing buffer 'Props' to new syntax.
-
+﻿// Upgrade NOTE: upgraded instancing buffer 'Props' to new syntax.(2017.3)
 Shader "Custom/setting" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
@@ -31,9 +30,15 @@ Shader "Custom/setting" {
 		// Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
 		// See https://docs.unity3d.com/Manual/GPUInstancing.html for more information about instancing.
 		// #pragma instancing_options assumeuniformscaling
+		
+#if UNITY_VERSION >= 201730
 		UNITY_INSTANCING_BUFFER_START(Props)
-			// put more per-instance properties here
+ 		// put more per-instance properties here
 		UNITY_INSTANCING_BUFFER_END(Props)
+#else
+		UNITY_INSTANCING_CBUFFER_START(Props)
+		UNITY_INSTANCING_CBUFFER_END
+#endif
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
 			// Albedo comes from a texture tinted by color
