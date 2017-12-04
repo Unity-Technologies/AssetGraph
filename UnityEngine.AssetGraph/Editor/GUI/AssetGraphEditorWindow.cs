@@ -136,9 +136,9 @@ namespace UnityEngine.AssetGraph {
 
 		private bool showErrors;
 		private bool showVerboseLog;
+        private bool showDescription;
 		private NodeEvent currentEventSource;
 		private Texture2D _selectionTex;
-		private GUIContent _reloadButtonTexture;
 		private ModifyMode modifyMode;
 		private Vector2 spacerRectRightBottom;
 		private Vector2 scrollPos = new Vector2(1500,0);
@@ -148,6 +148,10 @@ namespace UnityEngine.AssetGraph {
 		private GraphBackground background = new GraphBackground();
 		private string graphAssetPath;
 		private string graphAssetName;
+        private GUIStyle descriptionStyle;
+        private Texture2D miniInfoIcon;
+        private Texture2D miniErrorIcon;
+        private Texture2D refreshIcon;
 
 		private AssetGraphController controller;
 		private BuildTarget target;
@@ -158,15 +162,6 @@ namespace UnityEngine.AssetGraph {
 
 		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetGraph.LastEditedGraph";
         static readonly int kDragNodesControlID = "AssetGraph.HandleDragNodes".GetHashCode();
-
-		private GUIContent ReloadButtonTexture {
-			get {
-				if( _reloadButtonTexture == null ) {
-					_reloadButtonTexture = EditorGUIUtility.IconContent("RotateTool");
-				}
-				return _reloadButtonTexture;
-			}
-		}
 
 		private bool IsAnyIssueFound {
 			get {
@@ -415,6 +410,11 @@ namespace UnityEngine.AssetGraph {
             this.titleContent = new GUIContent("AssetGraph", windowIcon);
 			this.minSize = new Vector2(600f, 300f);
 			this.wantsMouseMove = true;
+
+            showDescription = true;
+            miniInfoIcon = EditorGUIUtility.Load ("icons/console.infoicon.sml.png") as Texture2D;
+            miniErrorIcon = EditorGUIUtility.Load ("icons/console.erroricon.sml.png") as Texture2D;
+            refreshIcon = EditorGUIUtility.Load ((EditorGUIUtility.isProSkin)?"icons/d_Refresh.png":"icons/Refresh.png") as Texture2D;
 
 			target = EditorUserBuildSettings.activeBuildTarget;
 
@@ -833,17 +833,19 @@ namespace UnityEngine.AssetGraph {
 
 				GUILayout.Space(4);
 
-				if (GUILayout.Button(new GUIContent("Refresh", ReloadButtonTexture.image, "Refresh and reload"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
+                if (GUILayout.Button(new GUIContent("Refresh", refreshIcon, "Refresh graph status"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					Setup();
 				}
-				showErrors = GUILayout.Toggle(showErrors, "Show Error", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                GUILayout.Space(4);
 
-				GUILayout.Space(4);
-
-				showVerboseLog = GUILayout.Toggle(showVerboseLog, "Show Verbose Log", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                showErrors = GUILayout.Toggle(showErrors, new GUIContent(miniErrorIcon, "Show errors"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                showDescription = GUILayout.Toggle(showDescription, new GUIContent(miniInfoIcon, "Show graph description"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                showVerboseLog = GUILayout.Toggle(showVerboseLog, new GUIContent("Verbose Log","Increse console log messages"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
                 LogUtility.ShowVerboseLog (showVerboseLog);
 
-				controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle(controller.TargetGraph.UseAsAssetPostprocessor, "Use As Postprocessor", EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                GUILayout.Space(4);
+
+                controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle(controller.TargetGraph.UseAsAssetPostprocessor, new GUIContent("Use As Postprocessor", "Graph will be used as asset postprocessor if enabled"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				GUILayout.FlexibleSpace();
 
@@ -933,6 +935,16 @@ namespace UnityEngine.AssetGraph {
 
 			using(var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos) ) {
 				scrollPos = scrollScope.scrollPosition;
+
+                if (showDescription) {
+                    if (descriptionStyle == null) {
+                        descriptionStyle = new GUIStyle (EditorStyles.miniBoldLabel);
+                        descriptionStyle.wordWrap = true;
+                    }
+                    var content = new GUIContent (controller.TargetGraph.Descrption);
+                    var height = descriptionStyle.CalcHeight (content, position.width - 12f);
+                    GUI.Label (new Rect (12f, 12f, position.width - 12f, height), content, descriptionStyle);
+                }
 
 				// draw connections.
 				foreach (var con in connections) {

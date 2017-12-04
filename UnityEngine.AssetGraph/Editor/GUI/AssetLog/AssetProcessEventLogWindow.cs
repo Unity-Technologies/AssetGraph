@@ -41,14 +41,13 @@ namespace UnityEngine.AssetGraph {
 
 		public void OnEnable () {
 			Init();
+            AssetProcessEventRecord.onAssetProcessEvent += this.OnNewAssetProcessEvent;
+
             m_logViewController.OnEnabled ();
 		}
 
-		public void OnFocus() {
-            RefreshView();
-		}
-
 		public void OnDisable() {
+            AssetProcessEventRecord.onAssetProcessEvent -= this.OnNewAssetProcessEvent;
 		}
 
         public void DrawToolBar() {
@@ -71,7 +70,7 @@ namespace UnityEngine.AssetGraph {
                     m_showInfo = showInfo;
                     m_showError = showError;
                     r.SetFilterCondition(m_showInfo, m_showError);
-                    m_logViewController.ReloadAndSelect ();
+                    m_logViewController.Reload ();
                 }
             }
         }
@@ -86,19 +85,13 @@ namespace UnityEngine.AssetGraph {
 		}
 
         private void RefreshView() {
-            m_logViewController.ReloadAndSelect ();
+            m_logViewController.Reload ();
         }
 
-        private void OnAssetsReimported(AssetPostprocessorContext ctx) {
-            RefreshView ();
-		}
-
-        public static void NotifyAssetsReimportedToAllWindows(AssetPostprocessorContext ctx) {
-            var windows = Resources.FindObjectsOfTypeAll<AssetProcessEventLogWindow>();
-			foreach(var w in windows) {
-				w.OnAssetsReimported(ctx);
-			}
-		}
+        public void OnNewAssetProcessEvent(AssetProcessEvent e) {
+            m_logViewController.OnNewAssetProcessEvent (e);
+            Repaint ();
+        }
 	}
 }
 #endif

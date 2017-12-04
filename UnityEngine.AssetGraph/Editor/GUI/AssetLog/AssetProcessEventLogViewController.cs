@@ -47,6 +47,7 @@ namespace UnityEngine.AssetGraph {
 
         public void OnEnabled() {
             m_assetLogListTree.Reload ();
+            m_assetLogListTree.Repaint ();
         }
 
         public bool OnLogViewGUI() {
@@ -128,9 +129,12 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-        public void ReloadAndSelect() {
+        public void OnNewAssetProcessEvent(AssetProcessEvent e) {
+            m_assetLogListTree.OnNewAssetProcessEvent (e);
+        }
+
+        public void Reload() {
             m_assetLogListTree.Reload ();
-            m_assetLogListTree.Reselect ();
         }
 
         public void EventSelectionChanged(AssetProcessEvent e) {

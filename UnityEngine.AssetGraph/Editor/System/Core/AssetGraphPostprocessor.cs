@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
+
+using System;
 using System.Linq;
+using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -140,7 +142,6 @@ namespace UnityEngine.AssetGraph {
             m_contexts.Push (ctx);
             NotifyAssetPostprocessorGraphs (ctx);
             AssetGraphEditorWindow.NotifyAssetsReimportedToAllWindows(ctx);
-            AssetProcessEventLogWindow.NotifyAssetsReimportedToAllWindows(ctx);
             m_contexts.Pop ();
         }
 
@@ -166,9 +167,49 @@ namespace UnityEngine.AssetGraph {
 
             if (executingGraphs.Count > 1) {
                 executingGraphs.Sort ((l, r) => l.ExecuteOrderPriority - r.ExecuteOrderPriority);
-            }
-            foreach (var g in executingGraphs) {
-                AssetGraphUtility.ExecuteGraph (g, false);
+
+                float currentCount = 0f;
+                float totalCount = (float)executingGraphs.Sum (g => g.Nodes.Count);
+                Model.NodeData lastNode = null;
+                float graphStartTime = Time.realtimeSinceStartup;
+                bool progressbarDisplayed = false;
+                float progressBarShowDelaySec = 0.8f;
+
+                Action<Model.NodeData, string, float> updateHandler = (node, message, progress) => {
+
+                    if(lastNode != node) {
+                        // do not add count on first node visit to 
+                        // calcurate percantage correctly
+                        if(lastNode != null) {
+                            ++currentCount;
+                        }
+                        lastNode = node;
+
+                        if(!progressbarDisplayed) {
+                            if(Time.realtimeSinceStartup - graphStartTime > progressBarShowDelaySec) {
+                                progressbarDisplayed = true;
+                            }
+                        }
+                    }
+
+                    if(progressbarDisplayed) {
+                        float currentNodeProgress = progress * (1.0f / totalCount);
+                        float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
+
+                        string title = string.Format("Processing Asset Graph[{0}/{1}]", currentCount, totalCount);
+                        string info  = string.Format("{0}:{1}", node.Name, message);
+
+                        EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
+                    }
+                };
+
+                foreach (var g in executingGraphs) {
+                    AssetGraphUtility.ExecuteGraph (g, false, updateHandler);
+                }
+
+                if (progressbarDisplayed) {
+                    EditorUtility.ClearProgressBar ();
+                }
             }
 		}
 	}
