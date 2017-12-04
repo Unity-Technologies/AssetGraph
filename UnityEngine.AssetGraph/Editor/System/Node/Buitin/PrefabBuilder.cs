@@ -25,7 +25,6 @@ namespace UnityEngine.AssetGraph {
 		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
         [SerializeField] private SerializableMultiTargetString m_outputDir;
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
-        [SerializeField] private bool m_preserveUserAddedComponentsAndObjects;
 
         public static readonly string kCacheDirName = "Prefabs";
 
@@ -63,7 +62,6 @@ namespace UnityEngine.AssetGraph {
 			m_instance = new SerializableMultiTargetInstance();
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
-            m_preserveUserAddedComponentsAndObjects = false;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -74,7 +72,6 @@ namespace UnityEngine.AssetGraph {
 			m_replacePrefabOptions = v1.ReplacePrefabOptions;
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
-            m_preserveUserAddedComponentsAndObjects = false;
 		}
 
 		public override Node Clone(Model.NodeData newData) {
@@ -83,7 +80,6 @@ namespace UnityEngine.AssetGraph {
 			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
             newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
             newNode.m_outputOption = new SerializableMultiTargetInt(m_outputOption);
-            newNode.m_preserveUserAddedComponentsAndObjects = m_preserveUserAddedComponentsAndObjects;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -137,15 +133,6 @@ namespace UnityEngine.AssetGraph {
 						}
                         opt = m_replacePrefabOptions;
 					}
-
-                    bool preserve = EditorGUILayout.ToggleLeft ("Preserve User Added Components", m_preserveUserAddedComponentsAndObjects);
-                    if(m_preserveUserAddedComponentsAndObjects != preserve) {
-                        using(new RecordUndoScope("Change Preserve User Modifications", node, true)) {
-                            m_preserveUserAddedComponentsAndObjects = preserve;
-                            onValueChanged();
-                        }
-                    }
-
 				} else {
 					if(!string.IsNullOrEmpty(m_instance.ClassName)) {
 						EditorGUILayout.HelpBox(
@@ -435,10 +422,6 @@ namespace UnityEngine.AssetGraph {
 						PrefabBuilderUtility.GetPrefabBuilderVersion(m_instance.ClassName));
 
 					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", prefabFileName), 0.5f);
-
-                    if (m_preserveUserAddedComponentsAndObjects) {
-                        //PreserveUserAddedComponentsAndObjects (node, prefabSavePath, obj);
-                    }
 
                     PrefabUtility.CreatePrefab(prefabSavePath, obj, m_replacePrefabOptions);
                     PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets);
