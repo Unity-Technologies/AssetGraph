@@ -257,7 +257,7 @@ namespace UnityEngine.AssetGraph {
 
             var mousePt = Event.current.mousePosition;
 
-            if (Event.current.type == EventType.mouseDown && splitterRect.Contains (mousePt)) {
+            if (Event.current.type == EventType.MouseDown && splitterRect.Contains (mousePt)) {
                 splitting = true;
             }
 

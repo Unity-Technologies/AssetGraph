@@ -145,7 +145,7 @@ namespace UnityEngine.AssetGraph {
             m_HorizontalSplitterRect.height = m_Position.height - Model.Settings.GUI.TOOLBAR_HEIGHT;
 
             EditorGUIUtility.AddCursorRect(m_HorizontalSplitterRect, MouseCursor.ResizeHorizontal);
-            if (Event.current.type == EventType.mouseDown && m_HorizontalSplitterRect.Contains(Event.current.mousePosition))
+            if (Event.current.type == EventType.MouseDown && m_HorizontalSplitterRect.Contains(Event.current.mousePosition))
                 m_ResizingHorizontalSplitter = true;
 
             if (m_ResizingHorizontalSplitter)
