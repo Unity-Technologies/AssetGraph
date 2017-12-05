@@ -226,7 +226,7 @@ namespace UnityEngine.AssetGraph {
                 detailDraggedNodes = DragAndDrop.GetGenericData("GraphCollectionDetailTree.DraggedItems") as List<GraphCollectionDetailTreeItem>;
 
                 foreach(var path in DragAndDrop.paths) {
-                    if(AssetDatabase.GetMainAssetTypeAtPath(path) == typeof(Model.ConfigGraph)) {
+                    if(TypeUtility.GetMainAssetTypeAtPath(path) == typeof(Model.ConfigGraph)) {
                         if(graphGuids == null) {
                             graphGuids = new List<string>();
                         }

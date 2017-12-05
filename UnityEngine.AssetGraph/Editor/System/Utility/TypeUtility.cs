@@ -64,6 +64,7 @@ namespace UnityEngine.AssetGraph {
 		 */
 		public static Type GetMainAssetTypeAtPath (string assetPath) {
 			Type t = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+            // 5.6.x may return MonoBehaviour as type when main asset is ScriptableObject
             if(t == typeof(MonoBehaviour)) {
                 UnityEngine.Object asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
                 t = asset.GetType();

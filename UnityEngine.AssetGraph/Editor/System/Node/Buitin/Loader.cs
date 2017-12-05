@@ -312,7 +312,7 @@ namespace UnityEngine.AssetGraph {
                 }
 
                 // Skip folders
-                var type = AssetDatabase.GetMainAssetTypeAtPath (targetFilePath);
+                var type = TypeUtility.GetMainAssetTypeAtPath (targetFilePath);
                 if (type == typeof(UnityEditor.DefaultAsset) && AssetDatabase.IsValidFolder(targetFilePath) ) {
                     continue;
                 }

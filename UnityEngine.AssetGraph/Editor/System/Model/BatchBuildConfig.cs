@@ -69,7 +69,7 @@ namespace UnityEngine.AssetGraph {
                 List<string> removingItems = null;
                 foreach (var guid in m_graphGuids) {
                     var path = AssetDatabase.GUIDToAssetPath (guid);
-                    if (string.IsNullOrEmpty (path) || !File.Exists (path) || AssetDatabase.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph)) {
+                    if (string.IsNullOrEmpty (path) || !File.Exists (path) || TypeUtility.GetMainAssetTypeAtPath (path) != typeof(Model.ConfigGraph)) {
                         if (removingItems == null) {
                             removingItems = new List<string> ();
                         }

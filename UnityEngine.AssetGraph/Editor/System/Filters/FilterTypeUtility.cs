@@ -57,7 +57,9 @@ namespace UnityEngine.AssetGraph {
             {"Shader", typeof(Shader)},
             {"Material", typeof(Material)},
             {"Render Texture", typeof(RenderTexture)},
+            #if UNITY_2017_1_OR_NEWER
             {"Custom Render Texture", typeof(CustomRenderTexture)},
+            #endif
             {"Lightmap Parameter", typeof(LightmapParameters)},
             {"Lens Flare", typeof(Flare)},
 //            {"Audio Mixer", typeof(AudioMixer)}, //AudioMixerController
