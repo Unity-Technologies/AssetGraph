@@ -273,17 +273,47 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
+        private int GetTotalNodeCount(BatchBuildConfig.GraphCollection collection) {
+            int c = 0;
+
+            foreach(var guid in collection.GraphGUIDs) {
+                var path = AssetDatabase.GUIDToAssetPath (guid);
+                var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph> (path);
+                if (graph != null) {
+                    c += graph.Nodes.Count;
+                }
+            }
+
+            return c;
+        }
+
         public void Build() {
             m_result.Clear ();
+
+            float currentCount = 0f;
+            float totalCount = (float)GetTotalNodeCount (m_currentCollection) * BatchBuildConfig.GetConfig ().BuildTargets.Count;
+            Model.NodeData lastNode = null;
 
             foreach (var t in BatchBuildConfig.GetConfig ().BuildTargets) {
 
                 Action<Model.NodeData, string, float> updateHandler = (node, message, progress) => {
 
-                    string title = string.Format("{0} - Processing Graphs", BuildTargetUtility.TargetToHumaneString(t));
+                    if(lastNode != node) {
+                        // do not add count on first node visit to 
+                        // calcurate percantage correctly
+                        if(lastNode != null) {
+                            ++currentCount;
+                        }
+                        lastNode = node;
+                    }
+
+                    float currentNodeProgress = progress * (1.0f / totalCount);
+                    float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
+
+                    string title = string.Format("{2} - Processing Asset Graphs[{0}/{1}]", currentCount, totalCount, BuildTargetUtility.TargetToHumaneString(t));
                     string info  = string.Format("{0}:{1}", node.Name, message);
 
-                    EditorUtility.DisplayProgressBar(title, info, 1.0f);
+                    EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
                 };
 
                 var result = AssetGraphUtility.ExecuteGraphCollection(t, m_currentCollection, updateHandler);
