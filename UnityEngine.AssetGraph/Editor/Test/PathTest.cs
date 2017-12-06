@@ -20,29 +20,20 @@ public class PathTest {
 
         Assert.IsTrue(AssetGraphBasePath.BasePath.Contains(Settings.Path.ToolDirName));
 
-        string basePath = AssetGraphBasePath.BasePath;
+		string basePath = AssetGraphBasePath.BasePath;
+		string cachePath = AssetGraphBasePath.CachePath;
         this.TestPath(Path.Combine(basePath, "Editor/ScriptTemplate"), Settings.Path.ScriptTemplatePath);
-//        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);
 
         this.TestPath(Path.Combine(basePath, "Generated/Editor"), Settings.Path.UserSpacePath);
         this.TestPath(Path.Combine(basePath, "Generated/CUI"), Settings.Path.CUISpacePath);
         this.TestPath(Path.Combine(basePath, "SavedSettings"), Settings.Path.SavedSettingsPath);
-//        this.TestPath(Path.Combine(basePath, "Cache"), AssetGraphBasePath.CachePath);
-        this.TestPath(Path.Combine(basePath, "SettingFiles"), AssetGraphBasePath.TemporalSettingFilePath);
-        this.TestPath(Path.Combine(basePath, "SettingFiles/AssetReferenceDB.asset"), Settings.Path.DatabasePath);
-//        this.TestPath(Path.Combine(basePath, "SettingFiles/AssetBundleBuildMap.asset"), Settings.Path.BuildMapPath);
-        this.TestPath(Path.Combine(basePath, "SavedSettings/BatchBuildConfig/BatchBuildConfig.asset"), Settings.Path.BatchBuildConfigPath);
+		this.TestPath(Path.Combine(cachePath, "TemporalSettingFiles"), AssetGraphBasePath.TemporalSettingFilePath);
 
-//        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate"), Settings.Path.SettingTemplatePath);
-//        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.fbx"), Settings.Path.SettingTemplateModel);
-//        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.wav"), Settings.Path.SettingTemplateAudio);
-//        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.png"), Settings.Path.SettingTemplateTexture);
-//        this.TestPath(Path.Combine(basePath, "Editor/SettingTemplate/setting.m4v"), Settings.Path.SettingTemplateVideo);
         this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources"), Settings.Path.GUIResourceBasePath);
-        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/ConnectionPoint.png"), Settings.GUI.ConnectionPoint);
-        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/InputBG.png"), Settings.GUI.InputBG);
-        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/NodeStyle.guiskin"), Settings.GUI.Skin);
-        this.TestPath(Path.Combine(basePath, "Editor/GUI/GraphicResources/OutputBG.png"), Settings.GUI.OutputBG);
+		this.TestPath(Path.Combine(Path.Combine(basePath, "Editor/GUI/GraphicResources"), "ConnectionPoint.png"), Settings.GUI.ConnectionPoint);
+		this.TestPath(Path.Combine(Path.Combine(basePath, "Editor/GUI/GraphicResources"), "InputBG.png"), Settings.GUI.InputBG);
+		this.TestPath(Path.Combine(Path.Combine(basePath, "Editor/GUI/GraphicResources"), "NodeStyle.guiskin"), Settings.GUI.Skin);
+		this.TestPath(Path.Combine(Path.Combine(basePath, "Editor/GUI/GraphicResources"), "OutputBG.png"), Settings.GUI.OutputBG);
     }
 
 	// A UnityTest behaves like a coroutine in PlayMode
