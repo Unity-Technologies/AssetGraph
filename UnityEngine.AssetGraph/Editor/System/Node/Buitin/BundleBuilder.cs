@@ -43,7 +43,9 @@ namespace UnityEngine.AssetGraph {
         [SerializeField] private SerializableMultiTargetInt m_enabledBundleOptions;
         [SerializeField] private SerializableMultiTargetString m_outputDir;
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
-		[SerializeField] private bool m_overwriteImporterSetting;
+        [SerializeField] private SerializableMultiTargetString m_manifestName;
+        [SerializeField] private SerializableMultiTargetInt m_createPlatformDirectory;
+        [SerializeField] private bool m_overwriteImporterSetting;
 
 		public override string ActiveStyle {
 			get {
@@ -79,6 +81,8 @@ namespace UnityEngine.AssetGraph {
             m_enabledBundleOptions = new SerializableMultiTargetInt();
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.BuildInCacheDirectory);
+            m_manifestName = new SerializableMultiTargetString();
+            m_createPlatformDirectory = new SerializableMultiTargetInt();
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -88,6 +92,8 @@ namespace UnityEngine.AssetGraph {
 			m_enabledBundleOptions = new SerializableMultiTargetInt(v1.BundleBuilderBundleOptions);
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.BuildInCacheDirectory);
+            m_manifestName = new SerializableMultiTargetString();
+            m_createPlatformDirectory = new SerializableMultiTargetInt();
 		}
 			
 		public override Node Clone(Model.NodeData newData) {
@@ -95,6 +101,8 @@ namespace UnityEngine.AssetGraph {
 			newNode.m_enabledBundleOptions = new SerializableMultiTargetInt(m_enabledBundleOptions);
             newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
             newNode.m_outputOption = new SerializableMultiTargetInt(m_outputOption);
+            newNode.m_manifestName = new SerializableMultiTargetString (m_manifestName);
+            newNode.m_createPlatformDirectory = new SerializableMultiTargetInt (m_createPlatformDirectory);
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -130,10 +138,14 @@ namespace UnityEngine.AssetGraph {
                             m_enabledBundleOptions[editor.CurrentEditingGroup] = m_enabledBundleOptions.DefaultValue;
                             m_outputDir[editor.CurrentEditingGroup] = m_outputDir.DefaultValue;
                             m_outputOption[editor.CurrentEditingGroup] = m_outputOption.DefaultValue;
+                            m_manifestName[editor.CurrentEditingGroup] = m_manifestName.DefaultValue;
+                            m_createPlatformDirectory[editor.CurrentEditingGroup] = m_createPlatformDirectory.DefaultValue;
 						}  else {
                             m_enabledBundleOptions.Remove(editor.CurrentEditingGroup);
                             m_outputDir.Remove(editor.CurrentEditingGroup);
                             m_outputOption.Remove(editor.CurrentEditingGroup);
+                            m_manifestName.Remove(editor.CurrentEditingGroup);
+                            m_createPlatformDirectory.Remove(editor.CurrentEditingGroup);
 						}
 						onValueChanged();
 					}
@@ -201,6 +213,9 @@ namespace UnityEngine.AssetGraph {
                         }
 
                         var outputDir = PrepareOutputDirectory (BuildTargetUtility.GroupToTarget(editor.CurrentEditingGroup), node.Data, false, false);
+                        if (m_createPlatformDirectory [editor.CurrentEditingGroup] != 0) {
+                            outputDir = Directory.GetParent (outputDir).ToString ();
+                        }
 
                         using (new EditorGUI.DisabledScope (!Directory.Exists (outputDir))) 
                         {
@@ -216,7 +231,29 @@ namespace UnityEngine.AssetGraph {
                                 }
                             }
                         }
+
+                        bool bupf = m_createPlatformDirectory[editor.CurrentEditingGroup] != 0;
+                        bool newBupf = EditorGUILayout.Toggle("Platform Subfolder", bupf);
+                        if(newBupf != bupf) {
+                            using(new RecordUndoScope("Change Output Option", node, true)){
+                                m_createPlatformDirectory[editor.CurrentEditingGroup] = newBupf?1:0;
+                                onValueChanged();
+                            }
+                        }
                     }
+
+                    GUILayout.Space (8f);
+
+                    var manifestName = m_manifestName[editor.CurrentEditingGroup];
+                    var newManifestName = EditorGUILayout.TextField("Manifest Name", manifestName);
+                    if(newManifestName != manifestName) {
+                        using(new RecordUndoScope("Change Manifest Name", node, true)){
+                            m_manifestName[editor.CurrentEditingGroup] = newManifestName;
+                            onValueChanged();
+                        }
+                    }
+
+                    GUILayout.Space (8f);
 
 					int bundleOptions = m_enabledBundleOptions[editor.CurrentEditingGroup];
 
@@ -290,7 +327,7 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			// add manifest file
-            var manifestName = GetManifestName(target);
+            var manifestName = GetManifestName(target, node, true);
 			bundleNames.Add( manifestName );
 			bundleVariants[manifestName] = new List<string>() {""};
 
@@ -420,8 +457,29 @@ namespace UnityEngine.AssetGraph {
 			var output = new Dictionary<string, List<AssetReference>>();
 			output[key] = new List<AssetReference>();
 
-			var generatedFiles = FileUtility.GetAllFilePathsInFolder(bundleOutputDir);
-            var manifestName = GetManifestName (target);
+            var manifestName = GetManifestName (target, node, false);
+
+            if (!string.IsNullOrEmpty (m_manifestName [target])) {
+                var projectPath = Directory.GetParent (Application.dataPath).ToString ();
+                var finalManifestName = GetManifestName (target, node, true);
+                var from = FileUtility.PathCombine (projectPath, bundleOutputDir, manifestName);
+                var to = FileUtility.PathCombine (projectPath, bundleOutputDir, finalManifestName);
+
+                var fromPaths = new string[] { from, from + ".manifest" };
+                var toPaths = new string[] { to, to + ".manifest" };
+
+                for (var i = 0; i < fromPaths.Length; ++i) {
+                    if (File.Exists (toPaths[i])) {
+                        File.Delete (toPaths[i]);
+                    }
+                    File.Move (fromPaths[i], toPaths[i]);
+                }
+
+                manifestName = finalManifestName;
+            }
+
+            var generatedFiles = FileUtility.GetAllFilePathsInFolder(bundleOutputDir);
+
 			// add manifest file
             bundleVariants.Add( manifestName.ToLower(), new List<string> { null } );
 			foreach (var path in generatedFiles) {
@@ -448,22 +506,23 @@ namespace UnityEngine.AssetGraph {
             AssetBundleBuildReport.AddBuildReport(new AssetBundleBuildReport(node, m, manifestName, bundleBuild, output[key], aggregatedGroups, bundleVariants));
 		}
 
-        private string GetManifestName(BuildTarget target) {
-            if (string.IsNullOrEmpty (m_outputDir [target])) {
-                return BuildTargetUtility.TargetToAssetBundlePlatformName (target);
+        private string GetManifestName(BuildTarget target, Model.NodeData node, bool finalName) {
+            if (finalName && !string.IsNullOrEmpty (m_manifestName [target])) {
+                return m_manifestName [target];
             } else {
-                return Path.GetFileName (m_outputDir [target]);
+                return Path.GetFileName(PrepareOutputDirectory (target, node, false, false)); 
             }
         }
 
         private string PrepareOutputDirectory(BuildTarget target, Model.NodeData node, bool autoCreate, bool throwException) {
 
             var outputOption = (OutputOption)m_outputOption [target];
-            var outputDir = m_outputDir [target];
 
             if(outputOption == OutputOption.BuildInCacheDirectory) {
                 return FileUtility.EnsureAssetBundleCacheDirExists (target, node);
             }
+
+            var outputDir = m_outputDir [target];
 
             if (throwException) {
                 if(string.IsNullOrEmpty(outputDir)) {
@@ -475,6 +534,10 @@ namespace UnityEngine.AssetGraph {
                         throw new NodeException (node.Name + ":Output directory not found.", node);
                     }
                 }
+            }
+
+            if (m_createPlatformDirectory [target] != 0) {
+                outputDir = FileUtility.PathCombine(outputDir, BuildTargetUtility.TargetToAssetBundlePlatformName(target));
             }
 
             if (autoCreate) {
