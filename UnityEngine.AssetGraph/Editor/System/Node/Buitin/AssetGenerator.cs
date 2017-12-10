@@ -91,7 +91,7 @@ namespace UnityEngine.AssetGraph {
 
             newNode.m_entries = new List<GeneratorEntry>();
             foreach(var s in m_entries) {
-                newNode.AddEntry (newData, s);
+                newNode.AddEntryForClone (newData, s);
             }
 
 			return newNode;
@@ -111,9 +111,7 @@ namespace UnityEngine.AssetGraph {
                 if (newName != entry.m_name) {
                     using(new RecordUndoScope("Change Name", node, true)) {
                         entry.m_name = newName;
-                        UpdateGeneratorEntry (node.Data, entry);
-                        // event must raise to propagate change to connection associated with point
-                        NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, entry)));
+                        UpdateGeneratorEntry (node, entry);
                         onValueChanged();
                     }
                 }
@@ -323,7 +321,7 @@ namespace UnityEngine.AssetGraph {
 
             if (m_removingEntry != null) {
                 using (new RecordUndoScope ("Remove Generator", node)) {
-                    RemoveGeneratorEntry (node.Data, m_removingEntry);
+                    RemoveGeneratorEntry (node, m_removingEntry);
                     m_removingEntry = null;
                     onValueChanged ();
                 }
@@ -333,7 +331,7 @@ namespace UnityEngine.AssetGraph {
 
             if (GUILayout.Button ("Add Generator")) {
                 using (new RecordUndoScope ("Add Generator", node)) {
-                    AddEntry (node.Data);
+                    AddEntry (node);
                     onValueChanged ();
                 }
             }
@@ -486,23 +484,27 @@ namespace UnityEngine.AssetGraph {
             }
 		}
 
-        public void AddEntry(Model.NodeData n) {
-            var point = n.AddOutputPoint("");
+        public void AddEntry(NodeGUI node) {
+            var point = node.Data.AddOutputPoint("");
             var newEntry = new GeneratorEntry("", point);
             m_entries.Add(newEntry);
-            UpdateGeneratorEntry(n, newEntry);
+            UpdateGeneratorEntry(node, newEntry);
         }
 
-        public void AddEntry(Model.NodeData n, GeneratorEntry src) {
-            var point = n.AddOutputPoint(src.m_name);
+        // For Clone
+        public void AddEntryForClone(Model.NodeData data, GeneratorEntry src) {
+            var point = data.AddOutputPoint(src.m_name);
             var newEntry = new GeneratorEntry(src.m_name, src.m_instance, point);
             m_entries.Add(newEntry);
-            UpdateGeneratorEntry(n, newEntry);
+            UpdateGeneratorEntry(null, data, newEntry);
         }
 
-        public void RemoveGeneratorEntry(Model.NodeData n, GeneratorEntry e) {
+        public void RemoveGeneratorEntry(NodeGUI node, GeneratorEntry e) {
             m_entries.Remove(e);
-            n.OutputPoints.Remove(GetConnectionPoint(n, e));
+            var point = GetConnectionPoint (node.Data, e);
+            node.Data.OutputPoints.Remove(point);
+            // event must raise to remove connection associated with point
+            NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED, node, Vector2.zero, point));
         }
 
         public Model.ConnectionPointData GetConnectionPoint(Model.NodeData n, GeneratorEntry e) {
@@ -511,12 +513,19 @@ namespace UnityEngine.AssetGraph {
             return p;
         }
 
-        public void UpdateGeneratorEntry(Model.NodeData n, GeneratorEntry e) {
+        public void UpdateGeneratorEntry(NodeGUI node, GeneratorEntry e) {
+            UpdateGeneratorEntry (node, node.Data, e);
+        }
 
-            Model.ConnectionPointData p = n.OutputPoints.Find(v => v.Id == e.m_id);
+        public void UpdateGeneratorEntry(NodeGUI node, Model.NodeData data, GeneratorEntry e) {
+            Model.ConnectionPointData p = node.Data.OutputPoints.Find(v => v.Id == e.m_id);
             UnityEngine.Assertions.Assert.IsNotNull(p);
-
             p.Label = e.m_name;
+
+            if (node != null) {
+                // event must raise to propagate change to connection associated with point
+                NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED, node, Vector2.zero, GetConnectionPoint(node.Data, e)));
+            }
         }
 
         private string GetGeneratorIdForSubPath(BuildTarget target, GeneratorEntry e) {
