@@ -35,11 +35,12 @@ namespace UnityEngine.AssetGraph {
         }
 
         private void OnEditorUpdate() {
-            if (m_controllers.Count != 0) {
+            if (m_controllers.Count != 0 || m_contexts.Count != 0) {
                 return;
             }
 
-            if (m_ppQueue.Count > 0) {
+            // double check
+            if (m_ppQueue.Count > 0 && m_contexts.Count == 0) {
                 var ctx = m_ppQueue.Dequeue ();
                 DoPostprocessWithContext (ctx);
             }
@@ -165,7 +166,7 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 
-            if (executingGraphs.Count > 1) {
+            if (executingGraphs.Count >= 1) {
                 executingGraphs.Sort ((l, r) => l.ExecuteOrderPriority - r.ExecuteOrderPriority);
 
                 float currentCount = 0f;
@@ -210,6 +211,8 @@ namespace UnityEngine.AssetGraph {
                 if (progressbarDisplayed) {
                     EditorUtility.ClearProgressBar ();
                 }
+
+                AssetDatabase.Refresh();
             }
 		}
 	}
