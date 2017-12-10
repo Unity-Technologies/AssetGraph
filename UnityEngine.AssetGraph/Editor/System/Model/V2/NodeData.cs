@@ -221,6 +221,10 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 			return m_nodeInstance.Object != null;
 		}
 
+        public void ResetInstance() {
+            m_nodeInstance.Invalidate ();
+        }
+
 		public bool CompareIgnoreGUIChanges (NodeData rhs) {
 
 			if( m_nodeInstance == null && rhs.m_nodeInstance != null || 

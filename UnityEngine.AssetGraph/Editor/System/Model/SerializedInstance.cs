@@ -49,6 +49,10 @@ namespace UnityEngine.AssetGraph {
 			m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(obj));
 		}
 
+        public void Invalidate() {
+            m_object = null;
+        }
+
 		private T Deserialize() {
 			Type instanceType = null;
 			if(!string.IsNullOrEmpty(m_className)) {

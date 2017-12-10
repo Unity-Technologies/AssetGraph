@@ -1,8 +1,6 @@
 ﻿using UnityEditor;
 using UnityEditorInternal;
-#if UNITY_5_6_OR_NEWER
 using UnityEditor.IMGUI.Controls;
-#endif
 
 using System;
 using System.IO;
@@ -18,7 +16,6 @@ namespace UnityEngine.AssetGraph {
 
     [Serializable]
     public class GroupViewContext {
-        #if UNITY_5_6_OR_NEWER
         public TreeViewState groupListTreeState;
         public TreeViewState assetListTreeState;
         public MultiColumnHeaderState assetListHeaderState;
@@ -36,17 +33,6 @@ namespace UnityEngine.AssetGraph {
             groupListTreeRect = new Rect(0f,0f,300f, 100f);
             assetListTreeRect = new Rect(0f,0f,300f, 120f);
         }
-
-        #else
-        public List<bool> foldouts;
-        public bool showFileNameOnly;
-        public string filterCondition;
-
-        public GroupViewContext() {
-            foldouts = new List<bool> ();
-            filterCondition = string.Empty;
-        }
-        #endif
     }
 
 	public class GroupViewController {
@@ -87,7 +73,6 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-        #if UNITY_5_6_OR_NEWER
         private GroupListTree m_groupListTree;
         private GroupAssetListTree m_assetListTree;
         private AssetReference m_selectedAsset;
@@ -194,87 +179,5 @@ namespace UnityEngine.AssetGraph {
                 rc.isResizeNow = false;
             }
         }
-    #else
-        public GroupViewController(GroupViewContext ctx) {
-            m_ctx = ctx;
-        }
-
-        public void ReloadAndSelect() {
-            if (m_ctx.foldouts.Count < m_filteredGroups.Keys.Count) {
-                for (int i = m_ctx.foldouts.Count; i < m_filteredGroups.Keys.Count; ++i) {
-                    m_ctx.foldouts.Add (false);
-                }
-            }
-        }
-
-        public void OnGroupViewGUI() {
-
-            GUILayout.Label("Display", "BoldLabel");
-            var newFilterString = EditorGUILayout.TextField ("Filter", m_ctx.filterCondition);
-            if (newFilterString != m_ctx.filterCondition) {
-                m_ctx.filterCondition = newFilterString;
-                m_filteredGroups = ApplyFilter ();
-                ReloadAndSelect ();
-            }
-            m_ctx.showFileNameOnly = EditorGUILayout.ToggleLeft("Show only file names", m_ctx.showFileNameOnly);
-
-
-            GUILayout.Space(8f);
-            using (new EditorGUILayout.HorizontalScope ()) {
-                GUILayout.Label("Groups", "BoldLabel");
-                GUILayout.FlexibleSpace ();
-                if (GUILayout.Button ("Collapse All")) {
-                    for (int i = 0; i < m_ctx.foldouts.Count; ++i) {
-                        m_ctx.foldouts [i] = false;
-                    }
-                }
-                if (GUILayout.Button ("Expand All")) {
-                    for (int i = 0; i < m_ctx.foldouts.Count; ++i) {
-                        m_ctx.foldouts [i] = true;
-                    }
-                }
-            }
-            GUILayout.Space(4f);
-
-            var redColor = new GUIStyle(EditorStyles.label);
-            redColor.normal.textColor = Color.gray;
-
-            var index = 0;
-            foreach (var groupKey in m_filteredGroups.Keys) {
-                var assets = m_filteredGroups[groupKey];
-
-                var foldout = m_ctx.foldouts[index];
-
-                foldout = EditorGUILayout.Foldout(foldout, string.Format("Group name: {0} ({1} items)", groupKey, assets.Count));
-                if (foldout) {
-                    EditorGUI.indentLevel = 1;
-                    for (var i = 0; i < assets.Count; i++) {
-
-                        var sourceStr = (m_ctx.showFileNameOnly) ? assets[i].fileNameAndExtension : assets[i].path;
-                        var variantName = assets[i].variantName;
-
-                        using (new EditorGUILayout.HorizontalScope ()) {
-                            if (!string.IsNullOrEmpty (variantName)) {
-                                EditorGUILayout.LabelField (string.Format ("{0}[{1}]", sourceStr, variantName));
-                            } else {
-                                EditorGUILayout.LabelField(sourceStr);
-                            }
-                            if (GUILayout.Button ("Select", GUILayout.Width (50f))) {
-                                var obj = AssetDatabase.LoadMainAssetAtPath(assets[i].path);
-                                if (obj != null) {
-                                    EditorGUIUtility.PingObject(obj);
-                                    Selection.activeObject = obj;
-                                }
-                            }
-                        }
-                    }
-                    EditorGUI.indentLevel = 0;
-                }
-                m_ctx.foldouts[index] = foldout;
-
-                index++;
-            }
-        }
-        #endif
     }
 }

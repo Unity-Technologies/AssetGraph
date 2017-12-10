@@ -9,7 +9,7 @@ using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
 	[Serializable] 
-	public class NodeGUI {
+    public class NodeGUI : ScriptableObject {
 
 		[SerializeField] private int m_nodeWindowId;
 		[SerializeField] private Rect m_baseRect;
@@ -19,7 +19,8 @@ namespace UnityEngine.AssetGraph {
 
 		[SerializeField] private string m_nodeSyle;
 
-		[SerializeField] private NodeGUIInspectorHelper m_nodeInsp;
+        [SerializeField] private AssetGraphController m_controller;
+        [SerializeField] private List<string> m_errors = new List<string>();
 
 		/*
 			show error on node functions.
@@ -41,7 +42,7 @@ namespace UnityEngine.AssetGraph {
 			}
 			set {
 				m_data.Name = value;
-                Inspector.name = value;
+                this.name = value;
 			}
 		}
 
@@ -69,26 +70,26 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
-		private NodeGUIInspectorHelper Inspector {
-			get {
-				if(m_nodeInsp == null) {
-					m_nodeInsp = ScriptableObject.CreateInstance<NodeGUIInspectorHelper>();
-					m_nodeInsp.hideFlags = HideFlags.DontSave;
-					m_nodeInsp.node = this;
-                    m_nodeInsp.name = this.Name;
-				}
-				return m_nodeInsp;
-			}
-		}
+        public AssetGraphController Controller {
+            get {
+                return m_controller;
+            }
+        }
+
+        public List<string> Errors {
+            get {
+                return m_errors;
+            }
+        }
 
 		public void ResetErrorStatus () {
 			m_hasErrors = false;
-			Inspector.UpdateErrors(new List<string>());
+			UpdateErrors(new List<string>());
 		}
 
 		public void AppendErrorSources (List<string> errors) {
 			this.m_hasErrors = true;
-			Inspector.UpdateErrors(errors);
+			UpdateErrors(errors);
 		}
 
 		public int WindowId {
@@ -101,33 +102,49 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
-		public NodeGUI (AssetGraphController controller, Model.NodeData data) {
+        public void OnUndoObject(AssetGraphController c) {
+            m_data.ResetInstance ();
+            m_controller = c;
+        }
+
+        public static NodeGUI CreateNodeGUI(AssetGraphController c, Model.NodeData data) {
+
+            var newNode = ScriptableObject.CreateInstance<NodeGUI> ();
+            newNode.Init (c, data);
+            return newNode;
+        }
+
+        private void Init (AssetGraphController c, Model.NodeData data) {
 			m_nodeWindowId = 0;
-			m_graph = controller.TargetGraph;
+            m_controller = c;
+            m_graph = m_controller.TargetGraph;
 			m_data = data;
+            name = m_data.Name;
 
 			m_baseRect = new Rect(m_data.X, m_data.Y, Model.Settings.GUI.NODE_BASE_WIDTH, Model.Settings.GUI.NODE_BASE_HEIGHT);
 
 			m_nodeSyle = data.Operation.Object.InactiveStyle;
-			Inspector.controller = controller;
-            Inspector.name = data.Name;
 		}
 
 		public NodeGUI Duplicate (AssetGraphController controller, float newX, float newY) {
 			var data = m_data.Duplicate();
 			data.X = newX;
 			data.Y = newY;
-			return new NodeGUI(controller, data);
+            return CreateNodeGUI (controller, data);
 		}
 
 		public void SetActive (bool active) {
 			if(active) {
-				Selection.activeObject = Inspector;
+				Selection.activeObject = this;
 				m_nodeSyle = m_data.Operation.Object.ActiveStyle;
 			} else {
 				m_nodeSyle = m_data.Operation.Object.InactiveStyle;
 			}
 		}
+
+        public void UpdateErrors (List<string> errorsSource) {
+            m_errors = errorsSource;
+        }
 
 		private void RefreshConnectionPos (float yOffset) {
 			for (int i = 0; i < m_data.InputPoints.Count; i++) {

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
-	[CustomEditor(typeof(ConnectionGUIInspectorHelper))]
+	[CustomEditor(typeof(ConnectionGUI))]
 	public class ConnectionGUIEditor : Editor {
 		
         private GroupViewController m_groupViewController;
@@ -23,19 +23,18 @@ namespace UnityEngine.AssetGraph {
 
 		public override void OnInspectorGUI () {
 
-			ConnectionGUIInspectorHelper helper = target as ConnectionGUIInspectorHelper;
+            ConnectionGUI con = target as ConnectionGUI;
 
             if(m_groupViewController == null ) {
-                m_groupViewController = new GroupViewController(helper.groupViewContext);
+                m_groupViewController = new GroupViewController(con.AssetGroupViewContext);
             }
 
-			var con = helper.connectionGUI;
 			if (con == null) {
 				return;
 			}
 
             var count = 0;
-            var assetGroups = helper.assetGroups;
+            var assetGroups = con.AssetGroups;
             if (assetGroups == null)  {
                 return;
             }
