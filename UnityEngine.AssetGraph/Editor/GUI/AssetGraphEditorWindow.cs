@@ -130,6 +130,8 @@ namespace UnityEngine.AssetGraph {
 			
         [SerializeField] private List<NodeGUI> m_nodes = new List<NodeGUI>();
         [SerializeField] private List<ConnectionGUI> m_connections = new List<ConnectionGUI>();
+        [SerializeField] private string m_graphAssetPath;
+        [SerializeField] private string m_graphAssetName;
 
 		[SerializeField] private SavedSelection m_activeSelection = null;
         [SerializeField] private SavedSelection m_copiedSelection = null;
@@ -137,17 +139,17 @@ namespace UnityEngine.AssetGraph {
 		private bool m_showErrors;
         private bool m_showVerboseLog;
         private bool m_showDescription;
+
         private NodeEvent m_currentEventSource;
-        private Texture2D m_selectionTex;
         private ModifyMode m_modifyMode;
         private Vector2 m_spacerRectRightBottom;
         private Vector2 m_scrollPos = new Vector2(1500,0);
         private Vector2 m_errorScrollPos = new Vector2(0,0);
         private Rect m_graphRegion = new Rect();
         private SelectPoint m_selectStartMousePosition;
+        private Texture2D m_selectionTex;
+
         private GraphBackground m_background = new GraphBackground();
-        private string m_graphAssetPath;
-        private string m_graphAssetName;
         private GUIStyle m_descriptionStyle;
         private Texture2D m_miniInfoIcon;
         private Texture2D m_miniErrorIcon;
@@ -158,7 +160,7 @@ namespace UnityEngine.AssetGraph {
 
 		private Vector2 m_LastMousePosition;
 		private Vector2 m_DragNodeDistance;
-		private readonly Dictionary<NodeGUI, Vector2> m_InitialDragNodePositions = new Dictionary<NodeGUI, Vector2> ();
+        private Dictionary<NodeGUI, Vector2> m_initialDragNodePositions = new Dictionary<NodeGUI, Vector2> ();
 
 		private static readonly string kPREFKEY_LASTEDITEDGRAPH = "AssetGraph.LastEditedGraph";
         static readonly int kDragNodesControlID = "AssetGraph.HandleDragNodes".GetHashCode();
@@ -1688,7 +1690,7 @@ namespace UnityEngine.AssetGraph {
 								m_DragNodeDistance = Vector2.zero;
 
 								foreach(var n in m_activeSelection.nodes) {
-									m_InitialDragNodePositions[n] = n.GetPos();
+									m_initialDragNodePositions[n] = n.GetPos();
 								}
 
 								GUIUtility.hotControl = id;
@@ -1701,7 +1703,7 @@ namespace UnityEngine.AssetGraph {
 			case EventType.MouseUp:
 				if (GUIUtility.hotControl == id)
 				{
-					m_InitialDragNodePositions.Clear ();
+					m_initialDragNodePositions.Clear ();
 					GUIUtility.hotControl = 0;
 					m_modifyMode = ModifyMode.NONE;
 					evt.Use ();
@@ -1715,7 +1717,7 @@ namespace UnityEngine.AssetGraph {
 
 					foreach(var n in m_activeSelection.nodes) {
 						Vector2 newPosition = n.GetPos();
-						Vector2 initialPosition = m_InitialDragNodePositions[n];
+						Vector2 initialPosition = m_initialDragNodePositions[n];
 						newPosition.x = initialPosition.x + m_DragNodeDistance.x;
 						newPosition.y = initialPosition.y + m_DragNodeDistance.y;
 						n.SetPos(SnapPositionToGrid (newPosition));
