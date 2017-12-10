@@ -423,10 +423,7 @@ namespace UnityEngine.AssetGraph {
             this.m_showVerboseLog = UserPreference.DefaultVerboseLog;
             LogUtility.ShowVerboseLog (m_showVerboseLog);
 
-			Undo.undoRedoPerformed += () => {
-				Setup();
-				Repaint();
-			};
+            Undo.undoRedoPerformed += OnUndoRedoPerformed;
 
 			m_modifyMode = ModifyMode.NONE;
 			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
@@ -441,6 +438,22 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 		}
+
+        private void OnUndoRedoPerformed() {
+
+            // if Undo/Redo changes target graph, m_controller needs recreating
+            if (m_controller != null) {
+                var graphPath = AssetDatabase.GetAssetPath (m_controller.TargetGraph);
+                if (graphPath != m_graphAssetPath) {
+                    OpenGraph (m_graphAssetPath);
+                }
+            }
+
+            m_initialDragNodePositions.Clear ();
+
+            Setup();
+            Repaint();
+        }
 
 		private void ShowErrorOnNodes () {
 			foreach (var node in m_nodes) {
@@ -488,6 +501,8 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		public void OpenGraph (Model.ConfigGraph graph) {
+
+            Undo.RecordObject (this, "Open Asset Graph");
 
 			CloseGraph();
 
@@ -999,7 +1014,6 @@ namespace UnityEngine.AssetGraph {
 
 				// set rect for scroll.
 				if (m_nodes.Any()) {
-					UpdateSpacerRect();
                     if (Event.current.type == EventType.Layout) {
                         GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(m_spacerRectRightBottom.x), GUILayout.Height(m_spacerRectRightBottom.y));
                     }
@@ -1703,6 +1717,7 @@ namespace UnityEngine.AssetGraph {
 			case EventType.MouseUp:
 				if (GUIUtility.hotControl == id)
 				{
+                    UpdateSpacerRect();
 					m_initialDragNodePositions.Clear ();
 					GUIUtility.hotControl = 0;
 					m_modifyMode = ModifyMode.NONE;
@@ -1712,6 +1727,8 @@ namespace UnityEngine.AssetGraph {
 			case EventType.MouseDrag:
 				if (GUIUtility.hotControl == id)
 				{
+                    Undo.RecordObject(this, "Move Objects");
+
 					m_DragNodeDistance += evt.mousePosition - m_LastMousePosition;
 					m_LastMousePosition = evt.mousePosition;
 
