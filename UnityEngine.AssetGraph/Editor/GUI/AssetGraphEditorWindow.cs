@@ -128,33 +128,33 @@ namespace UnityEngine.AssetGraph {
             SCRIPT_IMPORTSETTINGSCONFIGURATOR
 		}
 			
-		[SerializeField] private List<NodeGUI> nodes = new List<NodeGUI>();
-		[SerializeField] private List<ConnectionGUI> connections = new List<ConnectionGUI>();
+        [SerializeField] private List<NodeGUI> m_nodes = new List<NodeGUI>();
+        [SerializeField] private List<ConnectionGUI> m_connections = new List<ConnectionGUI>();
 
-		[SerializeField] private SavedSelection activeSelection = null;
-		[SerializeField] private SavedSelection copiedSelection = null;
+		[SerializeField] private SavedSelection m_activeSelection = null;
+        [SerializeField] private SavedSelection m_copiedSelection = null;
 
-		private bool showErrors;
-		private bool showVerboseLog;
-        private bool showDescription;
-		private NodeEvent currentEventSource;
-		private Texture2D _selectionTex;
-		private ModifyMode modifyMode;
-		private Vector2 spacerRectRightBottom;
-		private Vector2 scrollPos = new Vector2(1500,0);
-		private Vector2 errorScrollPos = new Vector2(0,0);
-		private Rect graphRegion = new Rect();
-		private SelectPoint selectStartMousePosition;
-		private GraphBackground background = new GraphBackground();
-		private string graphAssetPath;
-		private string graphAssetName;
-        private GUIStyle descriptionStyle;
-        private Texture2D miniInfoIcon;
-        private Texture2D miniErrorIcon;
-        private Texture2D refreshIcon;
+		private bool m_showErrors;
+        private bool m_showVerboseLog;
+        private bool m_showDescription;
+        private NodeEvent m_currentEventSource;
+        private Texture2D m_selectionTex;
+        private ModifyMode m_modifyMode;
+        private Vector2 m_spacerRectRightBottom;
+        private Vector2 m_scrollPos = new Vector2(1500,0);
+        private Vector2 m_errorScrollPos = new Vector2(0,0);
+        private Rect m_graphRegion = new Rect();
+        private SelectPoint m_selectStartMousePosition;
+        private GraphBackground m_background = new GraphBackground();
+        private string m_graphAssetPath;
+        private string m_graphAssetName;
+        private GUIStyle m_descriptionStyle;
+        private Texture2D m_miniInfoIcon;
+        private Texture2D m_miniErrorIcon;
+        private Texture2D m_refreshIcon;
 
-		private AssetGraphController controller;
-		private BuildTarget target;
+        private AssetGraphController m_controller;
+        private BuildTarget m_target;
 
 		private Vector2 m_LastMousePosition;
 		private Vector2 m_DragNodeDistance;
@@ -165,10 +165,10 @@ namespace UnityEngine.AssetGraph {
 
 		private bool IsAnyIssueFound {
 			get {
-				if(controller == null) {
+				if(m_controller == null) {
 					return true;
 				}
-				return controller.IsAnyIssueFound;
+				return m_controller.IsAnyIssueFound;
 			}
 		}
 
@@ -355,7 +355,7 @@ namespace UnityEngine.AssetGraph {
 
 		public void OnFocus () {
 			// update handlers. these static handlers are erase when window is full-screened and badk to normal window.
-			modifyMode = ModifyMode.NONE;
+			m_modifyMode = ModifyMode.NONE;
 			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
 			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
 
@@ -363,7 +363,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		public void OnLostFocus() {
-			modifyMode = ModifyMode.NONE;
+			m_modifyMode = ModifyMode.NONE;
 		}
 
 		public void OnProjectChange() {
@@ -391,15 +391,15 @@ namespace UnityEngine.AssetGraph {
 				selectedGraph = Selection.activeObject as Model.ConfigGraph;
 			}
 
-			if (selectedGraph != null && (controller == null || selectedGraph != controller.TargetGraph))
+			if (selectedGraph != null && (m_controller == null || selectedGraph != m_controller.TargetGraph))
 			{
 				OpenGraph(selectedGraph);
 			}
 		}
 
 		public void SelectNode(string nodeId) {
-			var selectObject = nodes.Find(node => node.Id == nodeId);
-			foreach (var node in nodes) {
+			var selectObject = m_nodes.Find(node => node.Id == nodeId);
+			foreach (var node in m_nodes) {
 				node.SetActive( node == selectObject );
 			}
 		}
@@ -411,22 +411,22 @@ namespace UnityEngine.AssetGraph {
 			this.minSize = new Vector2(600f, 300f);
 			this.wantsMouseMove = true;
 
-            showDescription = true;
-            miniInfoIcon = EditorGUIUtility.Load ("icons/console.infoicon.sml.png") as Texture2D;
-            miniErrorIcon = EditorGUIUtility.Load ("icons/console.erroricon.sml.png") as Texture2D;
-            refreshIcon = EditorGUIUtility.Load ((EditorGUIUtility.isProSkin)?"icons/d_Refresh.png":"icons/Refresh.png") as Texture2D;
+            m_showDescription = true;
+            m_miniInfoIcon = EditorGUIUtility.Load ("icons/console.infoicon.sml.png") as Texture2D;
+            m_miniErrorIcon = EditorGUIUtility.Load ("icons/console.erroricon.sml.png") as Texture2D;
+            m_refreshIcon = EditorGUIUtility.Load ((EditorGUIUtility.isProSkin)?"icons/d_Refresh.png":"icons/Refresh.png") as Texture2D;
 
-			target = EditorUserBuildSettings.activeBuildTarget;
+			m_target = EditorUserBuildSettings.activeBuildTarget;
 
-            this.showVerboseLog = UserPreference.DefaultVerboseLog;
-            LogUtility.ShowVerboseLog (showVerboseLog);
+            this.m_showVerboseLog = UserPreference.DefaultVerboseLog;
+            LogUtility.ShowVerboseLog (m_showVerboseLog);
 
 			Undo.undoRedoPerformed += () => {
 				Setup();
 				Repaint();
 			};
 
-			modifyMode = ModifyMode.NONE;
+			m_modifyMode = ModifyMode.NONE;
 			NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
 			ConnectionGUIUtility.ConnectionEventHandler = HandleConnectionEvent;
 
@@ -441,9 +441,9 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		private void ShowErrorOnNodes () {
-			foreach (var node in nodes) {
+			foreach (var node in m_nodes) {
 				node.ResetErrorStatus();
-				var errorsForeachNode = controller.Issues.Where(e => e.NodeId == node.Id).Select(e => e.Reason).ToList();
+				var errorsForeachNode = m_controller.Issues.Where(e => e.NodeId == node.Id).Select(e => e.Reason).ToList();
 				if (errorsForeachNode.Any()) {
 					node.AppendErrorSources(errorsForeachNode);
 				}
@@ -452,16 +452,16 @@ namespace UnityEngine.AssetGraph {
 			
 		private void SetGraphAssetPath(string newPath) {
 			if(newPath == null) {
-				graphAssetPath = null;
-				graphAssetName = null;
+				m_graphAssetPath = null;
+				m_graphAssetName = null;
 			} else {
-				graphAssetPath = newPath;
-				graphAssetName = Path.GetFileNameWithoutExtension(graphAssetPath);
-				if(graphAssetName.Length > Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH) {
-					graphAssetName = graphAssetName.Substring(0, Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH) + "...";
+				m_graphAssetPath = newPath;
+				m_graphAssetName = Path.GetFileNameWithoutExtension(m_graphAssetPath);
+				if(m_graphAssetName.Length > Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH) {
+					m_graphAssetName = m_graphAssetName.Substring(0, Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_CHAR_LENGTH) + "...";
 				}
 
-				EditorPrefs.SetString(kPREFKEY_LASTEDITEDGRAPH, graphAssetPath);
+				EditorPrefs.SetString(kPREFKEY_LASTEDITEDGRAPH, m_graphAssetPath);
 			}
 		}
 
@@ -491,20 +491,20 @@ namespace UnityEngine.AssetGraph {
 
 			SetGraphAssetPath(AssetDatabase.GetAssetPath(graph));
 
-			modifyMode = ModifyMode.NONE;
+			m_modifyMode = ModifyMode.NONE;
 
-			scrollPos = new Vector2(0,0);
-			errorScrollPos = new Vector2(0,0);
+			m_scrollPos = new Vector2(0,0);
+			m_errorScrollPos = new Vector2(0,0);
 
-			selectStartMousePosition = null;
-			activeSelection = null;
-			currentEventSource = null;
+			m_selectStartMousePosition = null;
+			m_activeSelection = null;
+			m_currentEventSource = null;
 
-			controller = new AssetGraphController(graph);
+			m_controller = new AssetGraphController(graph);
 			ConstructGraphGUI();
 			Setup();
 
-			if (nodes.Any()) {
+			if (m_nodes.Any()) {
 				UpdateSpacerRect();
 			}
 
@@ -513,15 +513,15 @@ namespace UnityEngine.AssetGraph {
 
 		private void CloseGraph() {
 
-			modifyMode = ModifyMode.NONE;
+			m_modifyMode = ModifyMode.NONE;
 			SetGraphAssetPath(null);
-			controller = null;
-			nodes = null;
-			connections = null;
+			m_controller = null;
+			m_nodes = null;
+			m_connections = null;
 
-			selectStartMousePosition = null;
-			activeSelection = null;
-			currentEventSource = null;
+			m_selectStartMousePosition = null;
+			m_activeSelection = null;
+			m_currentEventSource = null;
 		}
 
 		private void CreateNewGraphFromDialog() {
@@ -571,13 +571,13 @@ namespace UnityEngine.AssetGraph {
 		 */ 
 		private void ConstructGraphGUI () {
 
-			var activeGraph = controller.TargetGraph;
+			var activeGraph = m_controller.TargetGraph;
 
 			var currentNodes = new List<NodeGUI>();
 			var currentConnections = new List<ConnectionGUI>();
 
 			foreach (var node in activeGraph.Nodes) {
-				var newNodeGUI = new NodeGUI(controller, node);
+				var newNodeGUI = new NodeGUI(m_controller, node);
 				newNodeGUI.WindowId = GetSafeWindowId(currentNodes);
 				currentNodes.Add(newNodeGUI);
 			}
@@ -599,13 +599,13 @@ namespace UnityEngine.AssetGraph {
 				currentConnections.Add(ConnectionGUI.LoadConnection(c, startPoint, endPoint));
 			}
 
-			nodes = currentNodes;
-			connections = currentConnections;
+			m_nodes = currentNodes;
+			m_connections = currentConnections;
 		}
 
 		private void SaveGraph () {
-			Assertions.Assert.IsNotNull(controller);
-			controller.TargetGraph.ApplyGraph(nodes, connections);
+			Assertions.Assert.IsNotNull(m_controller);
+			m_controller.TargetGraph.ApplyGraph(m_nodes, m_connections);
 		}
 
 		/**
@@ -614,23 +614,23 @@ namespace UnityEngine.AssetGraph {
 		private void Setup (bool forceVisitAll = false) {
 
 			EditorUtility.ClearProgressBar();
-			if(controller == null) {
+			if(m_controller == null) {
 				return;
 			}
 
 			try {
-				foreach (var node in nodes) {
+				foreach (var node in m_nodes) {
 					node.HideProgress();
 				}
 
 				SaveGraph();
 
 				// update static all node names.
-				NodeGUIUtility.allNodeNames = new List<string>(nodes.Select(node => node.Name).ToList());
+				NodeGUIUtility.allNodeNames = new List<string>(m_nodes.Select(node => node.Name).ToList());
 
-				controller.Perform(target, false, false, forceVisitAll, null);
+				m_controller.Perform(m_target, false, false, forceVisitAll, null);
 
-				RefreshInspector(controller.StreamManager);
+				RefreshInspector(m_controller.StreamManager);
 				ShowErrorOnNodes();
 			} catch(Exception e) {
 				LogUtility.Logger.LogError(LogUtility.kTag, e);
@@ -642,7 +642,7 @@ namespace UnityEngine.AssetGraph {
 		private void Validate (NodeGUI node) {
 
 			EditorUtility.ClearProgressBar();
-			if(controller == null) {
+			if(m_controller == null) {
 				return;
 			}
 
@@ -652,9 +652,9 @@ namespace UnityEngine.AssetGraph {
 
 				SaveGraph ();
 
-				controller.Validate(node, target);
+				m_controller.Validate(node, m_target);
 
-				RefreshInspector(controller.StreamManager);
+				RefreshInspector(m_controller.StreamManager);
 				ShowErrorOnNodes();
 			} catch(Exception e) {
 				LogUtility.Logger.LogError(LogUtility.kTag, e);
@@ -669,7 +669,7 @@ namespace UnityEngine.AssetGraph {
 		 */
 		private void Run () {
 
-			if(controller == null) {
+			if(m_controller == null) {
 				return;
 			}
 
@@ -678,7 +678,7 @@ namespace UnityEngine.AssetGraph {
                 AssetBundleBuildMap.GetBuildMap ().Clear ();
 
 				float currentCount = 0f;
-				float totalCount = (float)controller.TargetGraph.Nodes.Count;
+				float totalCount = (float)m_controller.TargetGraph.Nodes.Count;
 				Model.NodeData lastNode = null;
 
 				Action<Model.NodeData, string, float> updateHandler = (node, message, progress) => {
@@ -702,13 +702,13 @@ namespace UnityEngine.AssetGraph {
 				};
 
 				// perform setup. Fails if any exception raises.
-				controller.Perform(target, false, true, true,  null);				 
+				m_controller.Perform(m_target, false, true, true,  null);				 
 
 				// if there is not error reported, then run
-				if(!controller.IsAnyIssueFound) {
-					controller.Perform(target, true, true, true, updateHandler);
+				if(!m_controller.IsAnyIssueFound) {
+					m_controller.Perform(m_target, true, true, true, updateHandler);
 				}
-				RefreshInspector(controller.StreamManager);
+				RefreshInspector(m_controller.StreamManager);
 				AssetDatabase.Refresh();
 
 				ShowErrorOnNodes();
@@ -738,17 +738,17 @@ namespace UnityEngine.AssetGraph {
 		}
 
         private void OnAssetsReimported(AssetPostprocessorContext ctx) {
-			if(controller != null) {
-				controller.OnAssetsReimported(ctx);
+			if(m_controller != null) {
+				m_controller.OnAssetsReimported(ctx);
 			}
 
-			if(!string.IsNullOrEmpty(graphAssetPath)) {
-                if(ctx.DeletedAssetPaths.Contains(graphAssetPath)) {
+			if(!string.IsNullOrEmpty(m_graphAssetPath)) {
+                if(ctx.DeletedAssetPaths.Contains(m_graphAssetPath)) {
 					CloseGraph();
 					return;
 				}
 
-                int moveIndex = Array.FindIndex(ctx.MovedFromAssetPaths, p => p == graphAssetPath);
+                int moveIndex = Array.FindIndex(ctx.MovedFromAssetPaths, p => p == m_graphAssetPath);
 				if(moveIndex >= 0) {
                     SetGraphAssetPath(ctx.MovedAssetPaths[moveIndex]);
 				}
@@ -765,7 +765,7 @@ namespace UnityEngine.AssetGraph {
 		private void DrawGUIToolBar() {
 			using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
 
-				if (GUILayout.Button(new GUIContent(graphAssetName, "Select graph"), EditorStyles.toolbarPopup, GUILayout.Width(Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_WIDTH), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
+				if (GUILayout.Button(new GUIContent(m_graphAssetName, "Select graph"), EditorStyles.toolbarPopup, GUILayout.Width(Model.Settings.GUI.TOOLBAR_GRAPHNAMEMENU_WIDTH), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					GenericMenu menu = new GenericMenu();
 
 					var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
@@ -784,7 +784,7 @@ namespace UnityEngine.AssetGraph {
                         }
 
                         menu.AddItem(new GUIContent(menuName), false, () => {
-							if(path != graphAssetPath) {
+							if(path != m_graphAssetPath) {
 								var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
 								OpenGraph(graph);
 							}
@@ -799,7 +799,7 @@ namespace UnityEngine.AssetGraph {
 
                     menu.AddSeparator("");
                     menu.AddItem(new GUIContent("Import/Import JSON Graph to current graph..."), false, () => {
-                        var graph = JSONGraphUtility.ImportJSONToGraphFromDialog(controller.TargetGraph);
+                        var graph = JSONGraphUtility.ImportJSONToGraphFromDialog(m_controller.TargetGraph);
                         if(graph != null) {
                             OpenGraph(graph);
                         }
@@ -815,7 +815,7 @@ namespace UnityEngine.AssetGraph {
                         JSONGraphUtility.ImportAllJSONInDirectoryToGraphFromDialog();
                     });
                     menu.AddItem (new GUIContent ("Export/Export current graph to JSON..."), false, () => {
-                        JSONGraphUtility.ExportGraphToJSONFromDialog(controller.TargetGraph);
+                        JSONGraphUtility.ExportGraphToJSONFromDialog(m_controller.TargetGraph);
                     });
                     menu.AddItem(new GUIContent("Export/Export all graphs to JSON..."), false, () => {
                         JSONGraphUtility.ExportAllGraphsToJSONFromDialog();
@@ -833,19 +833,19 @@ namespace UnityEngine.AssetGraph {
 
 				GUILayout.Space(4);
 
-                if (GUILayout.Button(new GUIContent("Refresh", refreshIcon, "Refresh graph status"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
+                if (GUILayout.Button(new GUIContent("Refresh", m_refreshIcon, "Refresh graph status"), EditorStyles.toolbarButton, GUILayout.Width(80), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT))) {
 					Setup();
 				}
                 GUILayout.Space(4);
 
-                showErrors = GUILayout.Toggle(showErrors, new GUIContent(miniErrorIcon, "Show errors"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
-                showDescription = GUILayout.Toggle(showDescription, new GUIContent(miniInfoIcon, "Show graph description"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
-                showVerboseLog = GUILayout.Toggle(showVerboseLog, new GUIContent("Verbose Log","Increse console log messages"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
-                LogUtility.ShowVerboseLog (showVerboseLog);
+                m_showErrors = GUILayout.Toggle(m_showErrors, new GUIContent(m_miniErrorIcon, "Show errors"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                m_showDescription = GUILayout.Toggle(m_showDescription, new GUIContent(m_miniInfoIcon, "Show graph description"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                m_showVerboseLog = GUILayout.Toggle(m_showVerboseLog, new GUIContent("Verbose Log","Increse console log messages"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                LogUtility.ShowVerboseLog (m_showVerboseLog);
 
                 GUILayout.Space(4);
 
-                controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle(controller.TargetGraph.UseAsAssetPostprocessor, new GUIContent("Use As Postprocessor", "Graph will be used as asset postprocessor if enabled"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                m_controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle(m_controller.TargetGraph.UseAsAssetPostprocessor, new GUIContent("Use As Postprocessor", "Graph will be used as asset postprocessor if enabled"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				GUILayout.FlexibleSpace();
 
@@ -859,17 +859,17 @@ namespace UnityEngine.AssetGraph {
 				GUILayout.Label("Platform:", tbLabel, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				var supportedTargets = NodeGUIUtility.SupportedBuildTargets;
-				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == target));
+				int currentIndex = Mathf.Max(0, supportedTargets.FindIndex(t => t == m_target));
 
 				int newIndex = EditorGUILayout.Popup(currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
 					EditorStyles.toolbarPopup, GUILayout.Width(150), GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
 				if(newIndex != currentIndex) {
-					target = supportedTargets[newIndex];
+					m_target = supportedTargets[newIndex];
 					Setup(true);
 				}
 
-				using(new EditorGUI.DisabledScope(controller.IsAnyIssueFound)) {
+				using(new EditorGUI.DisabledScope(m_controller.IsAnyIssueFound)) {
                     if (GUILayout.Button ("Build", EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT))) {
                         EditorApplication.delayCall += BuildFromMenu;
                     }
@@ -915,10 +915,10 @@ namespace UnityEngine.AssetGraph {
 
 		private void DrawGUINodeErrors() {
 
-			errorScrollPos = EditorGUILayout.BeginScrollView(errorScrollPos, GUI.skin.box, GUILayout.Width(200));
+			m_errorScrollPos = EditorGUILayout.BeginScrollView(m_errorScrollPos, GUI.skin.box, GUILayout.Width(200));
 			{
 				using (new EditorGUILayout.VerticalScope()) {
-					foreach(NodeException e in controller.Issues) {
+					foreach(NodeException e in m_controller.Issues) {
 						EditorGUILayout.HelpBox(e.Reason, MessageType.Error);
 						if( GUILayout.Button("Go to Node") ) {
 							SelectNode(e.NodeId);
@@ -931,31 +931,31 @@ namespace UnityEngine.AssetGraph {
 
 		private void DrawGUINodeGraph() {
 
-			background.Draw(graphRegion, scrollPos);
+			m_background.Draw(m_graphRegion, m_scrollPos);
 
-			using(var scrollScope = new EditorGUILayout.ScrollViewScope(scrollPos) ) {
-				scrollPos = scrollScope.scrollPosition;
+			using(var scrollScope = new EditorGUILayout.ScrollViewScope(m_scrollPos) ) {
+				m_scrollPos = scrollScope.scrollPosition;
 
-                if (showDescription) {
-                    if (descriptionStyle == null) {
-                        descriptionStyle = new GUIStyle (EditorStyles.miniBoldLabel);
-                        descriptionStyle.wordWrap = true;
+                if (m_showDescription) {
+                    if (m_descriptionStyle == null) {
+                        m_descriptionStyle = new GUIStyle (EditorStyles.miniBoldLabel);
+                        m_descriptionStyle.wordWrap = true;
                     }
-                    var content = new GUIContent (controller.TargetGraph.Descrption);
-                    var height = descriptionStyle.CalcHeight (content, position.width - 12f);
-                    GUI.Label (new Rect (12f, 12f, position.width - 12f, height), content, descriptionStyle);
+                    var content = new GUIContent (m_controller.TargetGraph.Descrption);
+                    var height = m_descriptionStyle.CalcHeight (content, position.width - 12f);
+                    GUI.Label (new Rect (12f, 12f, position.width - 12f, height), content, m_descriptionStyle);
                 }
 
 				// draw connections.
-				foreach (var con in connections) {
-					con.DrawConnection(nodes, controller.StreamManager.FindAssetGroup(con.Id));
+				foreach (var con in m_connections) {
+					con.DrawConnection(m_nodes, m_controller.StreamManager.FindAssetGroup(con.Id));
 				}
 
 				// draw node window x N.
 				{
 					BeginWindows();
 
-					nodes.ForEach(node => node.DrawNode());
+					m_nodes.ForEach(node => node.DrawNode());
 
 					HandleDragNodes();
 
@@ -963,27 +963,27 @@ namespace UnityEngine.AssetGraph {
 				}
 					
 				// draw connection input point marks.
-				foreach (var node in nodes) {
-					node.DrawConnectionInputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING);
+				foreach (var node in m_nodes) {
+					node.DrawConnectionInputPointMark(m_currentEventSource, m_modifyMode == ModifyMode.CONNECTING);
 				}
 
 				// draw connection output point marks.
-				foreach (var node in nodes) {
-					node.DrawConnectionOutputPointMark(currentEventSource, modifyMode == ModifyMode.CONNECTING, Event.current);
+				foreach (var node in m_nodes) {
+					node.DrawConnectionOutputPointMark(m_currentEventSource, m_modifyMode == ModifyMode.CONNECTING, Event.current);
 				}
 
 				// draw connecting line if modifing connection.
-				switch (modifyMode) {
+				switch (m_modifyMode) {
 				case ModifyMode.CONNECTING: {
 						// from start node to mouse.
-						DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition, currentEventSource);
+						DrawStraightLineFromCurrentEventSourcePointTo(Event.current.mousePosition, m_currentEventSource);
 						break;
 					}
 				case ModifyMode.SELECTING: {
-						float lx = Mathf.Max(selectStartMousePosition.x, Event.current.mousePosition.x);
-						float ly = Mathf.Max(selectStartMousePosition.y, Event.current.mousePosition.y);
-						float sx = Mathf.Min(selectStartMousePosition.x, Event.current.mousePosition.x);
-						float sy = Mathf.Min(selectStartMousePosition.y, Event.current.mousePosition.y);
+						float lx = Mathf.Max(m_selectStartMousePosition.x, Event.current.mousePosition.x);
+						float ly = Mathf.Max(m_selectStartMousePosition.y, Event.current.mousePosition.y);
+						float sx = Mathf.Min(m_selectStartMousePosition.x, Event.current.mousePosition.x);
+						float sy = Mathf.Min(m_selectStartMousePosition.y, Event.current.mousePosition.y);
 
 						Rect sel = new Rect(sx, sy, lx - sx, ly - sy);
 						GUI.Label(sel, string.Empty, "SelectionRect");
@@ -993,20 +993,20 @@ namespace UnityEngine.AssetGraph {
 
 				// handle Graph GUI events
 				HandleGraphGUIEvents();
-                HandleDragAndDropGUI (graphRegion);
+                HandleDragAndDropGUI (m_graphRegion);
 
 				// set rect for scroll.
-				if (nodes.Any()) {
+				if (m_nodes.Any()) {
 					UpdateSpacerRect();
                     if (Event.current.type == EventType.Layout) {
-                        GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(spacerRectRightBottom.x), GUILayout.Height(spacerRectRightBottom.y));
+                        GUILayoutUtility.GetRect(new GUIContent(string.Empty), GUIStyle.none, GUILayout.Width(m_spacerRectRightBottom.x), GUILayout.Height(m_spacerRectRightBottom.y));
                     }
 				}
 			}
 			if(Event.current.type == EventType.Repaint) {
 				var newRgn = GUILayoutUtility.GetLastRect();
-				if(newRgn != graphRegion) {
-					graphRegion = newRgn;
+				if(newRgn != m_graphRegion) {
+					m_graphRegion = newRgn;
 					Repaint();
 				}
 			}
@@ -1018,13 +1018,13 @@ namespace UnityEngine.AssetGraph {
 			switch (Event.current.type) {
 			// draw line while dragging.
 			case EventType.MouseDrag: {
-					switch (modifyMode) {
+					switch (m_modifyMode) {
 					case ModifyMode.NONE: {
 							switch (Event.current.button) {
 							case 0:{// left click
-									if(graphRegion.Contains(Event.current.mousePosition - scrollPos)) {
-										selectStartMousePosition = new SelectPoint(Event.current.mousePosition);
-										modifyMode = ModifyMode.SELECTING;
+									if(m_graphRegion.Contains(Event.current.mousePosition - m_scrollPos)) {
+										m_selectStartMousePosition = new SelectPoint(Event.current.mousePosition);
+										m_modifyMode = ModifyMode.SELECTING;
 									}
 									break;
 								}
@@ -1047,13 +1047,13 @@ namespace UnityEngine.AssetGraph {
 			// use rawType for detect for detectiong mouse-up which raises outside of window.
 			switch (Event.current.rawType) {
 			case EventType.MouseUp: {
-					switch (modifyMode) {
+					switch (m_modifyMode) {
 					/*
 						select contained nodes & connections.
 					*/
 					case ModifyMode.SELECTING: {
 
-							if(selectStartMousePosition == null) {
+							if(m_selectStartMousePosition == null) {
 								break;
 							}
 
@@ -1062,54 +1062,54 @@ namespace UnityEngine.AssetGraph {
 							var width = 0f;
 							var height = 0f;
 
-							if (Event.current.mousePosition.x < selectStartMousePosition.x) {
+							if (Event.current.mousePosition.x < m_selectStartMousePosition.x) {
 								x = Event.current.mousePosition.x;
-								width = selectStartMousePosition.x - Event.current.mousePosition.x;
+								width = m_selectStartMousePosition.x - Event.current.mousePosition.x;
 							}
-							if (selectStartMousePosition.x < Event.current.mousePosition.x) {
-								x = selectStartMousePosition.x;
-								width = Event.current.mousePosition.x - selectStartMousePosition.x;
+							if (m_selectStartMousePosition.x < Event.current.mousePosition.x) {
+								x = m_selectStartMousePosition.x;
+								width = Event.current.mousePosition.x - m_selectStartMousePosition.x;
 							}
 
-							if (Event.current.mousePosition.y < selectStartMousePosition.y) {
+							if (Event.current.mousePosition.y < m_selectStartMousePosition.y) {
 								y = Event.current.mousePosition.y;
-								height = selectStartMousePosition.y - Event.current.mousePosition.y;
+								height = m_selectStartMousePosition.y - Event.current.mousePosition.y;
 							}
-							if (selectStartMousePosition.y < Event.current.mousePosition.y) {
-								y = selectStartMousePosition.y;
-								height = Event.current.mousePosition.y - selectStartMousePosition.y;
+							if (m_selectStartMousePosition.y < Event.current.mousePosition.y) {
+								y = m_selectStartMousePosition.y;
+								height = Event.current.mousePosition.y - m_selectStartMousePosition.y;
 							}
 
 							Undo.RecordObject(this, "Select Objects");
 
-							if(activeSelection == null) {
-								activeSelection = new SavedSelection();
+							if(m_activeSelection == null) {
+								m_activeSelection = new SavedSelection();
 							}
 
 							// if shift key is not pressed, clear current selection
 							if(!Event.current.shift) {
-								activeSelection.Clear();
+								m_activeSelection.Clear();
 							}
 
 							var selectedRect = new Rect(x, y, width, height);
 
-							foreach (var node in nodes) {
+							foreach (var node in m_nodes) {
 								if (node.GetRect().Overlaps(selectedRect)) {
-									activeSelection.Add(node);
+									m_activeSelection.Add(node);
 								}
 							}
 
-							foreach (var connection in connections) {
+							foreach (var connection in m_connections) {
 								// get contained connection badge.
 								if (connection.GetRect().Overlaps(selectedRect)) {
-									activeSelection.Add(connection);
+									m_activeSelection.Add(connection);
 								}
 							}
 
-							UpdateActiveObjects(activeSelection);
+							UpdateActiveObjects(m_activeSelection);
 
-							selectStartMousePosition = null;
-							modifyMode = ModifyMode.NONE;
+							m_selectStartMousePosition = null;
+							m_modifyMode = ModifyMode.NONE;
 
 							HandleUtility.Repaint();
 							Event.current.Use();
@@ -1172,34 +1172,34 @@ namespace UnityEngine.AssetGraph {
 
 		public void OnDisable() {
 			LogUtility.Logger.Log("OnDisable");
-			if(controller != null) {
-				controller.TargetGraph.Save();
+			if(m_controller != null) {
+				m_controller.TargetGraph.Save();
 			}
 		}
 
 		public void OnGUI () {
 
-			if(controller == null) {
+			if(m_controller == null) {
 				DrawNoGraphGUI();
 			} else {
 				DrawGUIToolBar();
 
 				using (new EditorGUILayout.HorizontalScope()) {
 					DrawGUINodeGraph();
-					if(showErrors) {
+					if(m_showErrors) {
 						DrawGUINodeErrors();
 					}
 				}
 
-				if(!string.IsNullOrEmpty(graphAssetPath)) {
+				if(!string.IsNullOrEmpty(m_graphAssetPath)) {
 					using(new EditorGUILayout.HorizontalScope()) {
 						GUILayout.FlexibleSpace();
-						GUILayout.Label(graphAssetPath, "MiniLabel");
+						GUILayout.Label(m_graphAssetPath, "MiniLabel");
 					}
 				}
 
-				if(controller.IsAnyIssueFound) {
-					Rect msgRgn = new Rect((graphRegion.width - 250f)/2f, graphRegion.y + 8f, 250f, 36f);
+				if(m_controller.IsAnyIssueFound) {
+					Rect msgRgn = new Rect((m_graphRegion.width - 250f)/2f, m_graphRegion.y + 8f, 250f, 36f);
 					EditorGUI.HelpBox(msgRgn, "All errors needs to be fixed before building.", MessageType.Error);
 				}
 
@@ -1208,8 +1208,8 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		private void HandleGUIEvent() {
-			var isValidSelection = activeSelection != null && activeSelection.IsSelected;
-			var isValidCopy      = copiedSelection != null && copiedSelection.IsSelected;
+			var isValidSelection = m_activeSelection != null && m_activeSelection.IsSelected;
+			var isValidCopy      = m_copiedSelection != null && m_copiedSelection.IsSelected;
 
 			/*
 				Event Handling:
@@ -1229,14 +1229,14 @@ namespace UnityEngine.AssetGraph {
 					Handling mouseUp at empty space. 
 				*/
 			case EventType.MouseUp: {
-					modifyMode = ModifyMode.NONE;
+					m_modifyMode = ModifyMode.NONE;
 					HandleUtility.Repaint();
 
-					if (activeSelection != null && activeSelection.IsSelected) {
+					if (m_activeSelection != null && m_activeSelection.IsSelected) {
 						Undo.RecordObject(this, "Unselect");
 
-						activeSelection.Clear();
-						UpdateActiveObjects(activeSelection);
+						m_activeSelection.Clear();
+						UpdateActiveObjects(m_activeSelection);
 					}
 
 					// clear inspector
@@ -1304,9 +1304,7 @@ namespace UnityEngine.AssetGraph {
 								break;
 							}
 
-							Undo.RecordObject(this, "Copy Selected");
-
-							copiedSelection = new SavedSelection(activeSelection);
+							m_copiedSelection = new SavedSelection(m_activeSelection);
 
 							Event.current.Use();
 							break;
@@ -1319,17 +1317,17 @@ namespace UnityEngine.AssetGraph {
 
 							Undo.RecordObject(this, "Cut Selected");
 
-							copiedSelection = new SavedSelection(activeSelection);
+							m_copiedSelection = new SavedSelection(m_activeSelection);
 
-							foreach (var n in activeSelection.nodes) {
+							foreach (var n in m_activeSelection.nodes) {
 								DeleteNode(n.Id);
 							}
 
-							foreach (var c in activeSelection.connections) {
+							foreach (var c in m_activeSelection.connections) {
 								DeleteConnection(c.Id);
 							}
-							activeSelection.Clear();
-							UpdateActiveObjects(activeSelection);
+							m_activeSelection.Clear();
+							UpdateActiveObjects(m_activeSelection);
 
 							Setup();
 							//InitializeGraph();
@@ -1347,17 +1345,17 @@ namespace UnityEngine.AssetGraph {
 
                             Dictionary<NodeGUI, NodeGUI> nodeLookup = new Dictionary<NodeGUI, NodeGUI> ();
 
-							foreach (var copiedNode in copiedSelection.nodes) {
-                                var newNode = DuplicateNode(copiedNode, copiedSelection.PasteOffset);
+							foreach (var copiedNode in m_copiedSelection.nodes) {
+                                var newNode = DuplicateNode(copiedNode, m_copiedSelection.PasteOffset);
                                 nodeLookup.Add (copiedNode, newNode);
 							}
 
-                            foreach (var copiedConnection in copiedSelection.connections) {
+                            foreach (var copiedConnection in m_copiedSelection.connections) {
                                 DuplicateConnection (copiedConnection, nodeLookup);
                             }
 
 
-							copiedSelection.IncrementPasteOffset();
+							m_copiedSelection.IncrementPasteOffset();
 
 							Setup();
 							//InitializeGraph();
@@ -1369,15 +1367,15 @@ namespace UnityEngine.AssetGraph {
 					case "SelectAll": {
 							Undo.RecordObject(this, "Select All Objects");
 
-							if(activeSelection == null) {
-								activeSelection = new SavedSelection();
+                            if(m_activeSelection == null) {
+								m_activeSelection = new SavedSelection();
 							}
 
-							activeSelection.Clear();
-							nodes.ForEach(n => activeSelection.Add(n));
-							connections.ForEach(c => activeSelection.Add(c));
+							m_activeSelection.Clear();
+							m_nodes.ForEach(n => m_activeSelection.Add(n));
+							m_connections.ForEach(c => m_activeSelection.Add(c));
 
-							UpdateActiveObjects(activeSelection);
+							UpdateActiveObjects(m_activeSelection);
 
 							Event.current.Use();
 							break;
@@ -1395,16 +1393,16 @@ namespace UnityEngine.AssetGraph {
 		private void DeleteSelected() {
 			Undo.RecordObject(this, "Delete Selected");
 
-			foreach (var n in activeSelection.nodes) {
+			foreach (var n in m_activeSelection.nodes) {
 				DeleteNode(n.Id);
 			}
 
-			foreach (var c in activeSelection.connections) {
+			foreach (var c in m_activeSelection.connections) {
 				DeleteConnection(c.Id);
 			}
 
-			activeSelection.Clear();
-			UpdateActiveObjects(activeSelection);
+			m_activeSelection.Clear();
+			UpdateActiveObjects(m_activeSelection);
 
 			Setup();
 		}
@@ -1420,7 +1418,7 @@ namespace UnityEngine.AssetGraph {
 					new GUIContent(name),
 					false, 
 					() => {
-                        AddNodeFromGUI(customNodes[index].CreateInstance(), GetNodeNameFromMenu(name), pos.x + scrollPos.x, pos.y + scrollPos.y);
+                        AddNodeFromGUI(customNodes[index].CreateInstance(), GetNodeNameFromMenu(name), pos.x + m_scrollPos.x, pos.y + m_scrollPos.y);
 						Setup();
 						Repaint();
 					}
@@ -1438,7 +1436,7 @@ namespace UnityEngine.AssetGraph {
 		private void AddNodeFromGUI (Node n, string guiName, float x, float y) {
 
 			string nodeName = guiName;
-			NodeGUI newNode = new NodeGUI(controller, new Model.NodeData(nodeName, n, x, y));
+			NodeGUI newNode = new NodeGUI(m_controller, new Model.NodeData(nodeName, n, x, y));
 
 			Undo.RecordObject(this, "Add " + guiName + " Node");
 
@@ -1458,7 +1456,7 @@ namespace UnityEngine.AssetGraph {
 		*/
 		private void HandleNodeEvent (NodeEvent e) {
 
-			switch (modifyMode) {
+			switch (m_modifyMode) {
 			/*
 			 * During Mouse-drag opration to connect to other node
 			 */
@@ -1469,14 +1467,14 @@ namespace UnityEngine.AssetGraph {
 					*/
 					case NodeEvent.EventType.EVENT_CONNECTION_ESTABLISHED: {
 						// finish connecting mode.
-						modifyMode = ModifyMode.NONE;
+						m_modifyMode = ModifyMode.NONE;
 						
-						if (currentEventSource == null) {
+						if (m_currentEventSource == null) {
 							break;
 						}
 
-						var sourceNode = currentEventSource.eventSourceNode;
-						var sourceConnectionPoint = currentEventSource.point;
+						var sourceNode = m_currentEventSource.eventSourceNode;
+						var sourceConnectionPoint = m_currentEventSource.point;
 						
 						var targetNode = e.eventSourceNode;
 						var targetConnectionPoint = e.point;
@@ -1521,7 +1519,7 @@ namespace UnityEngine.AssetGraph {
 					*/
 					case NodeEvent.EventType.EVENT_CONNECTING_END: {
 						// finish connecting mode.
-						modifyMode = ModifyMode.NONE;
+						m_modifyMode = ModifyMode.NONE;
 						
 						/*
 							connect when dropped target is connectable from start connectionPoint.
@@ -1541,18 +1539,18 @@ namespace UnityEngine.AssetGraph {
 							break;
 						}
 
-						var sourcePoint = currentEventSource.point;
+						var sourcePoint = m_currentEventSource.point;
 						
 						// limit by connectable or not.
 						if(!IsConnectablePointFromTo(sourcePoint, pointAtPosition)) {
 							break;
 						}
 
-						var isInput = currentEventSource.point.IsInput;
+						var isInput = m_currentEventSource.point.IsInput;
 						var startNode = (isInput)? node : e.eventSourceNode;
 						var endNode   = (isInput)? e.eventSourceNode: node;
-						var startConnectionPoint = (isInput)? pointAtPosition : currentEventSource.point;
-						var endConnectionPoint   = (isInput)? currentEventSource.point: pointAtPosition;
+						var startConnectionPoint = (isInput)? pointAtPosition : m_currentEventSource.point;
+						var endConnectionPoint   = (isInput)? m_currentEventSource.point: pointAtPosition;
 						var outputPoint = startConnectionPoint;
 						var inputPoint = endConnectionPoint;							
 						var label = startConnectionPoint.Label;
@@ -1568,7 +1566,7 @@ namespace UnityEngine.AssetGraph {
 					}
 
 					default: {
-						modifyMode = ModifyMode.NONE;
+						m_modifyMode = ModifyMode.NONE;
 						break;
 					}
 				}
@@ -1582,8 +1580,8 @@ namespace UnityEngine.AssetGraph {
 					start connection handling.
 				*/
 				case NodeEvent.EventType.EVENT_CONNECTING_BEGIN: 
-					modifyMode = ModifyMode.CONNECTING;
-					currentEventSource = e;
+					m_modifyMode = ModifyMode.CONNECTING;
+					m_currentEventSource = e;
 					break;
 
 				case NodeEvent.EventType.EVENT_NODE_DELETE: 
@@ -1596,26 +1594,26 @@ namespace UnityEngine.AssetGraph {
 				case NodeEvent.EventType.EVENT_NODE_CLICKED: {
 					var clickedNode = e.eventSourceNode;
 
-					if(activeSelection != null && activeSelection.nodes.Contains(clickedNode)) {
+					if(m_activeSelection != null && m_activeSelection.nodes.Contains(clickedNode)) {
 						break;
 					}
 
 					if (Event.current.shift) {
 						Undo.RecordObject(this, "Toggle " + clickedNode.Name + " Selection");
-						if(activeSelection == null) {
-							activeSelection = new SavedSelection();
+						if(m_activeSelection == null) {
+							m_activeSelection = new SavedSelection();
 						}
-						activeSelection.Toggle(clickedNode);
+						m_activeSelection.Toggle(clickedNode);
 					} else {
 						Undo.RecordObject(this, "Select " + clickedNode.Name);
-						if(activeSelection == null) {
-							activeSelection = new SavedSelection();
+						if(m_activeSelection == null) {
+							m_activeSelection = new SavedSelection();
 						}
-						activeSelection.Clear();
-						activeSelection.Add(clickedNode);
+						m_activeSelection.Clear();
+						m_activeSelection.Add(clickedNode);
 					}
 					
-					UpdateActiveObjects(activeSelection);
+					UpdateActiveObjects(m_activeSelection);
 					break;
 				}
 				case NodeEvent.EventType.EVENT_NODE_UPDATED: {
@@ -1631,19 +1629,19 @@ namespace UnityEngine.AssetGraph {
 			switch (e.eventType) {
 			case NodeEvent.EventType.EVENT_DELETE_ALL_CONNECTIONS_TO_POINT: {
 				// deleting all connections to this point
-				connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+				m_connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
 				Repaint();
 				break;
 			}
 			case NodeEvent.EventType.EVENT_CONNECTIONPOINT_DELETED: {
 				// deleting point is handled by caller, so we are deleting connections associated with it.
-				connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
+				m_connections.RemoveAll( c => (c.InputPoint == e.point || c.OutputPoint == e.point) );
 				Repaint();
 				break;
 			}
 			case NodeEvent.EventType.EVENT_CONNECTIONPOINT_LABELCHANGED: {
 				// point label change is handled by caller, so we are changing label of connection associated with it.
-				var affectingConnections = connections.FindAll( c=> c.OutputPoint.Id == e.point.Id );
+				var affectingConnections = m_connections.FindAll( c=> c.OutputPoint.Id == e.point.Id );
 				affectingConnections.ForEach(c => c.Label = e.point.Label);
 				Repaint();
 				break;
@@ -1672,12 +1670,12 @@ namespace UnityEngine.AssetGraph {
 			switch (evt.GetTypeForControl (id))
 			{
 			case EventType.MouseDown:
-				if(modifyMode == ModifyMode.NONE) {
+				if(m_modifyMode == ModifyMode.NONE) {
 					if (evt.button == 0)
 					{
-						if(activeSelection != null && activeSelection.nodes.Count > 0) {
+						if(m_activeSelection != null && m_activeSelection.nodes.Count > 0) {
 							bool mouseInSelectedNode = false;
-							foreach(var n in activeSelection.nodes) {
+							foreach(var n in m_activeSelection.nodes) {
 								if(n.GetRect().Contains(evt.mousePosition)) {
 									mouseInSelectedNode = true;
 									break;
@@ -1685,11 +1683,11 @@ namespace UnityEngine.AssetGraph {
 							}
 
 							if(mouseInSelectedNode) {
-								modifyMode = ModifyMode.DRAGGING;
+								m_modifyMode = ModifyMode.DRAGGING;
 								m_LastMousePosition = evt.mousePosition;
 								m_DragNodeDistance = Vector2.zero;
 
-								foreach(var n in activeSelection.nodes) {
+								foreach(var n in m_activeSelection.nodes) {
 									m_InitialDragNodePositions[n] = n.GetPos();
 								}
 
@@ -1705,7 +1703,7 @@ namespace UnityEngine.AssetGraph {
 				{
 					m_InitialDragNodePositions.Clear ();
 					GUIUtility.hotControl = 0;
-					modifyMode = ModifyMode.NONE;
+					m_modifyMode = ModifyMode.NONE;
 					evt.Use ();
 				}
 				break;
@@ -1715,7 +1713,7 @@ namespace UnityEngine.AssetGraph {
 					m_DragNodeDistance += evt.mousePosition - m_LastMousePosition;
 					m_LastMousePosition = evt.mousePosition;
 
-					foreach(var n in activeSelection.nodes) {
+					foreach(var n in m_activeSelection.nodes) {
 						Vector2 newPosition = n.GetPos();
 						Vector2 initialPosition = m_InitialDragNodePositions[n];
 						newPosition.x = initialPosition.x + m_DragNodeDistance.x;
@@ -1742,15 +1740,15 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		private void UpdateSpacerRect () {
-			var rightPoint = nodes.OrderByDescending(node => node.GetRightPos()).First().GetRightPos() + Model.Settings.WINDOW_SPAN;
-			var bottomPoint = nodes.OrderByDescending(node => node.GetBottomPos()).First().GetBottomPos() + Model.Settings.WINDOW_SPAN;
+			var rightPoint = m_nodes.OrderByDescending(node => node.GetRightPos()).First().GetRightPos() + Model.Settings.WINDOW_SPAN;
+			var bottomPoint = m_nodes.OrderByDescending(node => node.GetBottomPos()).First().GetBottomPos() + Model.Settings.WINDOW_SPAN;
 
-			spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
+			m_spacerRectRightBottom = new Vector2(rightPoint, bottomPoint);
 		}
 		
 		public NodeGUI DuplicateNode (NodeGUI node, float offset) {
 			var newNode = node.Duplicate(
-				controller,
+				m_controller,
 				node.GetX() + offset,
 				node.GetY() + offset
 			);
@@ -1788,7 +1786,7 @@ namespace UnityEngine.AssetGraph {
 
 			int id = -1;
 
-			foreach(var node in nodes) {
+			foreach(var node in m_nodes) {
 				if(node.WindowId > id) {
 					id = node.WindowId;
 				}
@@ -1796,22 +1794,22 @@ namespace UnityEngine.AssetGraph {
 
 			newNode.WindowId = id + 1;
 				
-			nodes.Add(newNode);
+			m_nodes.Add(newNode);
 		}
 
 		public void DeleteNode (string deletingNodeId) {
-			var deletedNodeIndex = nodes.FindIndex(node => node.Id == deletingNodeId);
+			var deletedNodeIndex = m_nodes.FindIndex(node => node.Id == deletingNodeId);
 			if (0 <= deletedNodeIndex) {
-				var n = nodes[deletedNodeIndex];
+				var n = m_nodes[deletedNodeIndex];
                 n.Data.Operation.Object.OnNodeDelete (n.Data);
 				n.SetActive(false);
-				nodes.RemoveAt(deletedNodeIndex);
+				m_nodes.RemoveAt(deletedNodeIndex);
 			}
 
 		}
 
 		public void HandleConnectionEvent (ConnectionEvent e) {
-			switch (modifyMode) {
+			switch (m_modifyMode) {
 				case ModifyMode.NONE: {
 					switch (e.eventType) {
 						
@@ -1819,20 +1817,20 @@ namespace UnityEngine.AssetGraph {
 
 							if(Event.current.shift) {
 								Undo.RecordObject(this, "Toggle Select Connection");
-								if(activeSelection == null) {
-									activeSelection = new SavedSelection();
+								if(m_activeSelection == null) {
+									m_activeSelection = new SavedSelection();
 								}
-								activeSelection.Toggle(e.eventSourceCon);
-								UpdateActiveObjects(activeSelection);
+								m_activeSelection.Toggle(e.eventSourceCon);
+								UpdateActiveObjects(m_activeSelection);
 								break;
 							} else {
 								Undo.RecordObject(this, "Select Connection");
-								if(activeSelection == null) {
-									activeSelection = new SavedSelection();
+								if(m_activeSelection == null) {
+									m_activeSelection = new SavedSelection();
 								}
-								activeSelection.Clear();
-								activeSelection.Add(e.eventSourceCon);
-								UpdateActiveObjects(activeSelection);
+								m_activeSelection.Clear();
+								m_activeSelection.Add(e.eventSourceCon);
+								UpdateActiveObjects(m_activeSelection);
 								break;
 							}
 						}
@@ -1842,8 +1840,8 @@ namespace UnityEngine.AssetGraph {
 							var deletedConnectionId = e.eventSourceCon.Id;
 
 							DeleteConnection(deletedConnectionId);
-							activeSelection.Clear();
-							UpdateActiveObjects(activeSelection);
+							m_activeSelection.Clear();
+							UpdateActiveObjects(m_activeSelection);
 
 							Setup();
 							Repaint();
@@ -1860,11 +1858,11 @@ namespace UnityEngine.AssetGraph {
 
 		private void UpdateActiveObjects (SavedSelection selection) {
 
-			foreach(var n in nodes) {
+			foreach(var n in m_nodes) {
 				n.SetActive( selection.nodes.Contains(n) );
 			}
 
-			foreach(var c in connections) {
+			foreach(var c in m_connections) {
 				c.SetActive( selection.connections.Contains(c) );
 			}
 		}
@@ -1875,25 +1873,25 @@ namespace UnityEngine.AssetGraph {
 		private void AddConnection (string label, NodeGUI startNode, Model.ConnectionPointData startPoint, NodeGUI endNode, Model.ConnectionPointData endPoint) {
 			Undo.RecordObject(this, "Add Connection");
 
-			var connectionsFromThisNode = connections
+			var connectionsFromThisNode = m_connections
 				.Where(con => con.OutputNodeId == startNode.Id)
 				.Where(con => con.OutputPoint == startPoint)
 				.ToList();
 			if (connectionsFromThisNode.Any()) {
 				var alreadyExistConnection = connectionsFromThisNode[0];
 				DeleteConnection(alreadyExistConnection.Id);
-				if(activeSelection != null) {
-					activeSelection.Remove(alreadyExistConnection);
+				if(m_activeSelection != null) {
+					m_activeSelection.Remove(alreadyExistConnection);
 				}
 			}
 
-			if (!connections.ContainsConnection(startPoint, endPoint)) {
-				connections.Add(ConnectionGUI.CreateConnection(label, startPoint, endPoint));
+			if (!m_connections.ContainsConnection(startPoint, endPoint)) {
+				m_connections.Add(ConnectionGUI.CreateConnection(label, startPoint, endPoint));
 			}
 		}
 
 		private NodeGUI FindNodeByPosition (Vector2 globalPos) {
-			return nodes.Find(n => n.Conitains(globalPos));
+			return m_nodes.Find(n => n.Conitains(globalPos));
 		}
 
 		private bool IsConnectablePointFromTo (Model.ConnectionPointData sourcePoint, Model.ConnectionPointData destPoint) {
@@ -1905,17 +1903,17 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		private void DeleteConnection (string id) {
-			var deletedConnectionIndex = connections.FindIndex(con => con.Id == id);
+			var deletedConnectionIndex = m_connections.FindIndex(con => con.Id == id);
 			if (0 <= deletedConnectionIndex) {
-				var c = connections[deletedConnectionIndex];
+				var c = m_connections[deletedConnectionIndex];
 				c.SetActive(false);
-				connections.RemoveAt(deletedConnectionIndex);
+				m_connections.RemoveAt(deletedConnectionIndex);
 			}
 		}
 
 		public int GetUnusedWindowId() {
 			int highest = 0;
-			nodes.ForEach((NodeGUI n) => { if(n.WindowId > highest) highest = n.WindowId; });
+			m_nodes.ForEach((NodeGUI n) => { if(n.WindowId > highest) highest = n.WindowId; });
 			return highest + 1;
 		}
 	}
