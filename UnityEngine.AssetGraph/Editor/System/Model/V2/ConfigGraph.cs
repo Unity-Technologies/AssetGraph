@@ -14,7 +14,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 	/*
 	 * Save data which holds all AssetBundleGraph settings and configurations.
 	 */ 
-	[CreateAssetMenu( fileName = "AssetBundleGraph", menuName = "AssetBundle Graph", order = 650 )]
+	[CreateAssetMenu( fileName = "New AssetGraph", menuName = "Asset Graph", order = 650 )]
 	public class ConfigGraph : ScriptableObject {
 
 		/*
