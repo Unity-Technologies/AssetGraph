@@ -162,7 +162,9 @@ namespace UnityEngine.AssetGraph
                 {
                     UpdateUndoCacheObject (w, n, c);
                 }
-                Undo.RecordObjects (m_cachedUndoObjects, msg);
+                if (m_cachedUndoObjects != null) {
+                    Undo.RecordObjects (m_cachedUndoObjects, msg);
+                }
             }
 
             private void UpdateUndoCacheObject(AssetGraphEditorWindow w, List<NodeGUI> nodes, List<ConnectionGUI> conns) {
