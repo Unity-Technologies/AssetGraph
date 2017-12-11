@@ -129,7 +129,7 @@ namespace UnityEngine.AssetGraph
 
                     var newGroupNameFormat = EditorGUILayout.TextField ("Group Name Format", m_groupNameFormat [editor.CurrentEditingGroup]);
                     EditorGUILayout.HelpBox (
-                        "You can customize group name. You can use variable $0 for old group name and $1 for current matching name.", 
+                        "You can customize group name. You can use variable {OldGroup} for old group name and {NewGroup} for current matching name.", 
                         MessageType.Info);
 
                     if (newGroupNameFormat != m_groupNameFormat [editor.CurrentEditingGroup]) {
@@ -206,8 +206,8 @@ namespace UnityEngine.AssetGraph
         private string GetGroupName(BuildTarget target, string oldGroupName, int groupCount) {
             if (!string.IsNullOrEmpty (m_groupNameFormat [target])) {
                 return m_groupNameFormat [target]
-                    .Replace ("$1", groupCount.ToString ())
-                    .Replace ("$0", oldGroupName);
+                    .Replace ("{NewGroup}", groupCount.ToString ())
+                    .Replace ("{OldGroup}", oldGroupName);
             } else {
                 return groupCount.ToString ();
             }
