@@ -134,28 +134,8 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-        public void LogGraphBegin() {
-            AssetGraphController gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
-
-            if (gc == null) {
-                throw new AssetGraphException ("GraphBegin event attempt to log but no graph is in stack.");
-            }
-
-            var newEvent = AssetProcessEvent.CreateGraphBeginEvent (gc.TargetGraph.GetGraphGuid ());
-
-            AddEvent (newEvent);
-        }
-
-        public void LogGraphEnd() {
-            AssetGraphController gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
-
-            if (gc == null) {
-                throw new AssetGraphException ("GraphEnd event attempt to log but no graph is in stack.");
-            }
-
-            var newEvent = AssetProcessEvent.CreateGraphEndEvent (gc.TargetGraph.GetGraphGuid ());
-
-            AddEvent (newEvent);
+        public void LogModify(AssetReference a) {
+            LogModify (a.assetDatabaseId);
         }
 
         public void LogModify(string assetGuid) {

@@ -93,6 +93,8 @@ namespace UnityEngine.AssetGraph {
             if (!ctx.ImportedAssets.Contains (a)) {
                 ctx.ImportedAssets.Add (a);
             }
+
+            AssetProcessEventRecord.GetRecord ().LogModify (a.assetDatabaseId);
         }
 
         static void OnPostprocessAllAssets (string[] importedAssets, 
@@ -166,15 +168,17 @@ namespace UnityEngine.AssetGraph {
 				}
 			}
 
-            if (executingGraphs.Count >= 1) {
-                executingGraphs.Sort ((l, r) => l.ExecuteOrderPriority - r.ExecuteOrderPriority);
+            if (executingGraphs.Count > 0) {
+                if (executingGraphs.Count > 1) {
+                    executingGraphs.Sort ((l, r) => l.ExecuteOrderPriority - r.ExecuteOrderPriority);
+                }
 
                 float currentCount = 0f;
                 float totalCount = (float)executingGraphs.Sum (g => g.Nodes.Count);
                 Model.NodeData lastNode = null;
                 float graphStartTime = Time.realtimeSinceStartup;
                 bool progressbarDisplayed = false;
-                float progressBarShowDelaySec = 0.8f;
+                float progressBarShowDelaySec = 0.3f;
 
                 Action<Model.NodeData, string, float> updateHandler = (node, message, progress) => {
 
@@ -194,13 +198,15 @@ namespace UnityEngine.AssetGraph {
                     }
 
                     if(progressbarDisplayed) {
+                        var graphName = GetCurrentGraphController().TargetGraph.GetGraphName();
+
                         float currentNodeProgress = progress * (1.0f / totalCount);
                         float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
 
-                        string title = string.Format("Processing Asset Graph[{0}/{1}]", currentCount, totalCount);
-                        string info  = string.Format("{0}:{1}", node.Name, message);
+                        string title = string.Format("Building {2}[{0}/{1}]", currentCount, totalCount, graphName);
+                        string info  = string.Format("Processing {0}:{1}", node.Name, message);
 
-                        EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
+                        EditorUtility.DisplayProgressBar(title, info, currentTotalProgress);
                     }
                 };
 

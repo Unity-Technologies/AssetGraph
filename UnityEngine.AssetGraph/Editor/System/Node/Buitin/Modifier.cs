@@ -271,7 +271,8 @@ namespace UnityEngine.AssetGraph {
                         if(modifier.IsModified(asset.allData, assets)) {
                             modifier.Modify(asset.allData, assets);
                             asset.SetDirty();
-                            AssetGraphPostprocessor.Postprocessor.AddModifiedAsset (asset);
+                            AssetProcessEventRecord.GetRecord ().LogModify (asset);
+
                             isAnyAssetModified = true;
 
                             // apply asset setting changes to AssetDatabase.

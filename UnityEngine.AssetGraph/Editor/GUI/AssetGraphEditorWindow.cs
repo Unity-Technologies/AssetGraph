@@ -853,6 +853,10 @@ namespace UnityEngine.AssetGraph
                 AssetDatabase.SaveAssets ();
                 AssetBundleBuildMap.GetBuildMap ().Clear ();
 
+                if(UserPreference.ClearAssetLogOnBuild) {
+                    AssetProcessEventRecord.GetRecord ().Clear (false);
+                }
+
                 float currentCount = 0f;
                 float totalCount = (float)m_controller.TargetGraph.Nodes.Count;
                 Model.NodeData lastNode = null;

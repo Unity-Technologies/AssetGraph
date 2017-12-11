@@ -13,8 +13,6 @@ namespace UnityEngine.AssetGraph {
 
         public enum EventKind
         {
-            GraphBegin,
-            GraphEnd,
             Modify,
             Error
         }
@@ -87,18 +85,6 @@ namespace UnityEngine.AssetGraph {
             m_timestampUtc = DateTime.Now.ToFileTimeUtc();
             m_description = desc;
             m_howToFix = howto;
-        }
-
-        public static AssetProcessEvent CreateGraphBeginEvent(string graphGuid) {
-            var ev = new AssetProcessEvent();
-            ev.Init (EventKind.GraphBegin, string.Empty, graphGuid, string.Empty, string.Empty, string.Empty, string.Empty);
-            return ev;
-        }
-
-        public static AssetProcessEvent CreateGraphEndEvent(string graphGuid) {
-            var ev = new AssetProcessEvent();
-            ev.Init (EventKind.GraphEnd, string.Empty, graphGuid, string.Empty, string.Empty, string.Empty, string.Empty);
-            return ev;
         }
 
         public static AssetProcessEvent CreateModifyEvent(string assetGuid, string graphGuid, Model.NodeData n) {

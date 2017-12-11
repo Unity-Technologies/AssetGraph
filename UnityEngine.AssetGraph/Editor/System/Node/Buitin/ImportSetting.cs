@@ -439,7 +439,7 @@ namespace UnityEngine.AssetGraph {
 
                         if(configurator.IsModified(referenceImporter, importer, target, groupKey)) {
                             configurator.Configure(referenceImporter, importer, target, groupKey);
-                            AssetProcessEventRecord.GetRecord().LogModify(asset.assetDatabaseId);
+                            AssetProcessEventRecord.GetRecord ().LogModify (asset);
 							importerModified = true;
 						}
 

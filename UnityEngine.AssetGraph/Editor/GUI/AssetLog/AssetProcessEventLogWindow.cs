@@ -18,6 +18,7 @@ namespace UnityEngine.AssetGraph {
 
         private bool m_showError;
         private bool m_showInfo;
+        private bool m_clearOnBuild;
         private Texture2D m_errorIcon;
         private Texture2D m_infoIcon;
 
@@ -35,6 +36,8 @@ namespace UnityEngine.AssetGraph {
 
             m_showError = true;
             m_showInfo = true;
+
+            m_clearOnBuild = UserPreference.ClearAssetLogOnBuild;
 
             m_logViewController = new AssetProcessEventLogViewController ();
 		}
@@ -61,6 +64,14 @@ namespace UnityEngine.AssetGraph {
                     RefreshView ();
                 }
 
+                GUILayout.Space (4);
+
+                var clearOnBuild = m_clearOnBuild;
+                clearOnBuild = GUILayout.Toggle (m_clearOnBuild, new GUIContent ("Clear on Build"), EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT));
+                if (clearOnBuild != m_clearOnBuild) {
+                    UserPreference.ClearAssetLogOnBuild = m_clearOnBuild = clearOnBuild;
+                }
+
                 GUILayout.FlexibleSpace();
 
                 var showInfo = GUILayout.Toggle(m_showInfo, new GUIContent(r.InfoEventCount.ToString(), m_infoIcon, "Toggle Show Info"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
@@ -79,7 +90,7 @@ namespace UnityEngine.AssetGraph {
 
             DrawToolBar ();
 
-            if (m_logViewController.OnLogViewGUI ()) {
+            if (m_logViewController.OnLogViewGUI (this)) {
                 Repaint ();
             }
 		}

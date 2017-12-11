@@ -103,7 +103,7 @@ public class MyNode : Node {
 					Output(destination, ag.assetGroups);
 				}
 			} else {
-				// Overwrite output with empty Dictionary when no there is incoming asset
+				// Overwrite output with empty Dictionary when there is no incoming asset
 				Output(destination, new Dictionary<string, List<AssetReference>>());
 			}
 		}

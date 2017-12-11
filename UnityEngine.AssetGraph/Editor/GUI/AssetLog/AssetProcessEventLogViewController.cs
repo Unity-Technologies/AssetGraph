@@ -50,11 +50,11 @@ namespace UnityEngine.AssetGraph {
             m_assetLogListTree.Repaint ();
         }
 
-        public bool OnLogViewGUI() {
+        public bool OnLogViewGUI(AssetProcessEventLogWindow w) {
 
             Rect detailRect = GUILayoutUtility.GetRect (m_detailRect.width, m_detailRect.height, GUILayout.ExpandWidth (true));
 
-            DrawLogDetail (detailRect);
+            DrawLogDetail (w, detailRect);
 
             Rect resizeRect = GUILayoutUtility.GetRect (100f, 4f, GUILayout.ExpandWidth (true));
 
@@ -64,7 +64,7 @@ namespace UnityEngine.AssetGraph {
             return HandleHorizontalResize (resizeRect, ref m_detailRect, ref m_detailViewResize);
 		}
 
-        public void DrawLogDetail(Rect detailRect) {
+        public void DrawLogDetail(AssetProcessEventLogWindow w, Rect detailRect) {
 
             if (m_selectedEvent != null) {
                 var e = m_selectedEvent;
@@ -83,23 +83,51 @@ namespace UnityEngine.AssetGraph {
                 var obj = AssetDatabase.LoadMainAssetAtPath(assetPath);
                 var preview = AssetPreview.GetAssetPreview (obj);
 
-                var previewRect = new Rect (detailRect.x + 8, detailRect.y + 8, (preview != null)? preview.width: 128f, (preview != null)? preview.height : 128f);
-                var assetNameRect = new Rect (detailRect.x + 2, previewRect.yMax, previewRect.width + 12, 28);
+                if (preview == null)
+                {
+                    if (obj != null) {
+                        bool isLoadingAssetPreview = AssetPreview.IsLoadingAssetPreview (obj.GetInstanceID ());
+                        if (isLoadingAssetPreview) {
+                            w.Repaint ();
+                        }
+                        preview = AssetPreview.GetMiniThumbnail (obj);
+                    }
+                }
 
-                GUI.Label (previewRect, new GUIContent(preview, "Asset Preview"));
+                var msg = (preview != null) ? string.Empty : "No Preview";
+                var previewSizeMax = 128f;
+
+                var previewBaseRect = new Rect (detailRect.x + 8, detailRect.y + 8, previewSizeMax, previewSizeMax);
+                var assetNameRect = new Rect (detailRect.x + 2, previewBaseRect.yMax, previewBaseRect.width + 12, 28);
+
+                var previewBaseStyle = new GUIStyle ();
+                previewBaseStyle.alignment = TextAnchor.MiddleCenter;
+                GUI.Label (previewBaseRect, new GUIContent(msg), previewBaseStyle);
+
+                if (preview != null) {
+                    var previewWidth = (preview != null) ? preview.width : previewSizeMax;
+                    var previewHeight = (preview != null) ? preview.height : previewSizeMax;
+
+                    var pwMargin = (previewSizeMax - previewWidth) / 2f;
+                    var phMargin = (previewSizeMax - previewHeight) / 2f;
+
+                    var previewRect = new Rect (detailRect.x + pwMargin + 8, detailRect.y + phMargin + 8, previewWidth, previewHeight);
+
+                    GUI.Label (previewRect, new GUIContent(preview, "Asset Preview"), previewBaseStyle);
+                }
                 GUI.Label (assetNameRect, Path.GetFileName(assetPath), boldWrapStyle);
 
                 if (isError) {
-                    GUI.Label(new Rect(previewRect.xMin, previewRect.yMin, 36f, 36f), EditorGUIUtility.IconContent ("console.erroricon"));
+                    GUI.Label(new Rect(previewBaseRect.xMin, previewBaseRect.yMin, 36f, 36f), EditorGUIUtility.IconContent ("console.erroricon"));
                 }
-                var timestampRect = new Rect (detailRect.x + 2, assetNameRect.yMax, previewRect.width + 12, 20);
+                var timestampRect = new Rect (detailRect.x + 2, assetNameRect.yMax, previewBaseRect.width + 12, 20);
                 GUI.Label (timestampRect, e.Timestamp.ToString(), boldWrapStyle);
 
                 var graphNameStyle = new GUIStyle (EditorStyles.boldLabel);
                 graphNameStyle.wordWrap = true;
 
                 var graphButtonRect = new Rect (detailRect.xMax - 44, detailRect.y + 8, 40f, 20f);
-                var graphNameRect = new Rect (previewRect.xMax + 20, detailRect.y + 8, detailRect.width - previewRect.width - graphButtonRect.width - 4, 40f);
+                var graphNameRect = new Rect (previewBaseRect.xMax + 20, detailRect.y + 8, detailRect.width - previewBaseRect.width - graphButtonRect.width - 4, 40f);
 
                 GUI.Label (graphNameRect, string.Format("{2}: {0}.{1}", Path.GetFileNameWithoutExtension(graphPath), e.NodeName, e.Kind), graphNameStyle);
 
@@ -111,7 +139,7 @@ namespace UnityEngine.AssetGraph {
 
                 if (isError) {
 
-                    var label1Rect  = new Rect (graphNameRect.xMin, graphNameRect.yMax + 8, detailRect.width - previewRect.width - 32f, 16f);
+                    var label1Rect  = new Rect (graphNameRect.xMin, graphNameRect.yMax + 8, detailRect.width - previewBaseRect.width - 32f, 16f);
 
                     var msg1Height = EditorStyles.helpBox.CalcHeight (new GUIContent (e.Description), label1Rect.width);
                     var msg2Height = EditorStyles.helpBox.CalcHeight (new GUIContent (e.HowToFix), label1Rect.width);
