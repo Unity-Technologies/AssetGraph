@@ -83,7 +83,7 @@ namespace UnityEngine.AssetGraph {
 				return null;
 			}
 
-			string[] guids = AssetDatabase.FindAssets ("t:MonoScript " + className);
+            string[] guids = AssetDatabase.FindAssets ("t:MonoScript " + t.Name);
 
 			MonoScript s = null;
 
