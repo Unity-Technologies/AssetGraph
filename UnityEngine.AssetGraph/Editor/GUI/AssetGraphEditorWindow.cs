@@ -158,7 +158,8 @@ namespace UnityEngine.AssetGraph
             }
 
             public void RecordUndo(AssetGraphEditorWindow w, List<NodeGUI> n, List<ConnectionGUI> c, string msg) {
-                if (m_cachedUndoObjects == null || m_nNodes != n.Count || m_nConnections != c.Count) {
+                if (m_cachedUndoObjects == null || m_nNodes != (n==null? 0 : n.Count) || m_nConnections != (c==null? 0 : c.Count)) 
+                {
                     UpdateUndoCacheObject (w, n, c);
                 }
                 Undo.RecordObjects (m_cachedUndoObjects, msg);
@@ -169,14 +170,18 @@ namespace UnityEngine.AssetGraph
                 if (w != null) {
                     m_objects.Add (w);
                 }
-                foreach (var v in nodes) {
-                    if (v != null) {
-                        m_objects.Add (v);
+                if (nodes != null) {
+                    foreach (var v in nodes) {
+                        if (v != null) {
+                            m_objects.Add (v);
+                        }
                     }
                 }
-                foreach (var v in conns) {
-                    if (v != null) {
-                        m_objects.Add (v);
+                if (conns != null) {
+                    foreach (var v in conns) {
+                        if (v != null) {
+                            m_objects.Add (v);
+                        }
                     }
                 }
                 m_cachedUndoObjects = m_objects.ToArray ();
