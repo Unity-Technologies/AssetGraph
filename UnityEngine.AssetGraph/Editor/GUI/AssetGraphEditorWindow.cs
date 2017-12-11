@@ -158,7 +158,10 @@ namespace UnityEngine.AssetGraph
             }
 
             public void RecordUndo(AssetGraphEditorWindow w, List<NodeGUI> n, List<ConnectionGUI> c, string msg) {
-                if (m_cachedUndoObjects == null || m_nNodes != (n==null? 0 : n.Count) || m_nConnections != (c==null? 0 : c.Count)) 
+                if (m_cachedUndoObjects == null || 
+                    m_nNodes != (n==null? 0 : n.Count) || 
+                    m_nConnections != (c==null? 0 : c.Count) || 
+                    ArrayUtility.Contains(m_cachedUndoObjects, null)) 
                 {
                     UpdateUndoCacheObject (w, n, c);
                 }
@@ -187,8 +190,8 @@ namespace UnityEngine.AssetGraph
                     }
                 }
                 m_cachedUndoObjects = m_objects.ToArray ();
-                m_nNodes = nodes.Count;
-                m_nConnections = conns.Count;
+                m_nNodes = (nodes==null? 0 : nodes.Count);
+                m_nConnections = (conns==null? 0 : conns.Count);
              }
         }
 
@@ -553,6 +556,7 @@ namespace UnityEngine.AssetGraph
             LogUtility.ShowVerboseLog (m_showVerboseLog);
 
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
+            EditorApplication.playmodeStateChanged += OnPlaymodeChanged;
 
             m_modifyMode = ModifyMode.NONE;
             NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
@@ -600,6 +604,17 @@ namespace UnityEngine.AssetGraph
 
             Setup ();
             Repaint ();
+        }
+
+        private void OnPlaymodeChanged() {
+            if (m_controller != null && m_controller.TargetGraph != null) {
+                SaveGraph();
+            }
+            if (!EditorApplication.isPlayingOrWillChangePlaymode) {
+                CloseGraph ();
+                Init ();
+                Repaint ();
+            }
         }
 
         private void ShowErrorOnNodes ()
