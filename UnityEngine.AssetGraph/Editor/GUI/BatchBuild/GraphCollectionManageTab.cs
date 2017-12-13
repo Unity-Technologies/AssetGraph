@@ -164,7 +164,9 @@ namespace UnityEngine.AssetGraph {
         }
 
         public void Refresh() {
-            m_collectionTree.ReloadAndSelect ();
+            if(m_collectionTree != null) {
+                m_collectionTree.ReloadAndSelect ();
+            }
         }
     }
 }
