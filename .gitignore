@@ -2,3 +2,7 @@ UnityEngine.AssetGraph/Cache*
 UnityEngine.AssetGraph/SavedSettings*
 UnityEngine.AssetGraph/TemporalSettingFiles*
 UnityEngine.AssetGraph/Generated*
+Doxyfile.meta
+docs/*.meta
+docs/html/*.meta
+docs/html/*/*.meta
