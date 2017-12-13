@@ -1146,8 +1146,9 @@ namespace UnityEngine.AssetGraph
 
                 if (m_showDescription) {
                     if (m_descriptionStyle == null) {
-                        m_descriptionStyle = new GUIStyle (EditorStyles.miniBoldLabel);
+                        m_descriptionStyle = new GUIStyle (EditorStyles.whiteMiniLabel);
                         m_descriptionStyle.wordWrap = true;
+                        m_descriptionStyle.richText = true;
                     }
                     var content = new GUIContent (m_controller.TargetGraph.Descrption);
                     var height = m_descriptionStyle.CalcHeight (content, position.width - 12f);
