@@ -74,7 +74,7 @@ namespace UnityEngine.AssetGraph
                 using (disabledScope) {
                     var newGroupNameFormat = EditorGUILayout.TextField ("Group Name Format", m_groupNameFormat [editor.CurrentEditingGroup]);
                     EditorGUILayout.HelpBox (
-                        "You can customize group name. You can use variable {OldGroup} for old group name and {NewGroup} for current matching name.", 
+                        "You can customize group name. You can use variable {OldGroup} for old group name and {NewGroup} for current matching name.You can also use {FileName} and {FileExtension}.", 
                         MessageType.Info);
 
                     if (newGroupNameFormat != m_groupNameFormat [editor.CurrentEditingGroup]) {
@@ -109,6 +109,8 @@ namespace UnityEngine.AssetGraph
 
                             if (!string.IsNullOrEmpty (m_groupNameFormat [target])) {
                                 key = m_groupNameFormat [target]
+                                    .Replace ("{FileName}", a.fileName)
+                                    .Replace ("{FileExtension}", a.extension)
                                     .Replace ("{NewGroup}", key)
                                     .Replace ("{OldGroup}", g);
 
