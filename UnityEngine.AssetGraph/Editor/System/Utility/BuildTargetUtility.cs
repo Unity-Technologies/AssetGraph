@@ -7,19 +7,22 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
-	public class BuildTargetUtility {
+namespace UnityEngine.AssetGraph
+{
+	public class BuildTargetUtility
+	{
 
 		public const BuildTargetGroup DefaultTarget = BuildTargetGroup.Unknown;
 
 		/**
 		 *  from build target to human friendly string for display purpose.
 		 */
-		public static string TargetToHumaneString(UnityEditor.BuildTarget t) {
+		public static string TargetToHumaneString (UnityEditor.BuildTarget t)
+		{
 
-			switch(t) {
+			switch (t) {
 			case BuildTarget.Android:
 				return "Android";
 			case BuildTarget.iOS:
@@ -30,24 +33,26 @@ namespace UnityEngine.AssetGraph {
 				return "PlayStation Mobile";
 			case BuildTarget.PSP2:
 				return "PlayStation Vita";
+#if !UNITY_2017_3_OR_NEWER
 			case BuildTarget.SamsungTV:
 				return "Samsung TV";
+#endif
 			case BuildTarget.StandaloneLinux:
 				return "Linux Standalone";
 			case BuildTarget.StandaloneLinux64:
 				return "Linux Standalone(64-bit)";
 			case BuildTarget.StandaloneLinuxUniversal:
 				return "Linux Standalone(Universal)";
+#if UNITY_2017_3_OR_NEWER
+			case BuildTarget.StandaloneOSX:
+#else
 			case BuildTarget.StandaloneOSXIntel:
 				return "OSX Standalone";
 			case BuildTarget.StandaloneOSXIntel64:
 				return "OSX Standalone(64-bit)";
-#if UNITY_2017_3_OR_NEWER
-            case BuildTarget.StandaloneOSX:
-#else
             case BuildTarget.StandaloneOSXUniversal:
 #endif
-                return "OSX Standalone(Universal)";
+				return "OSX Standalone(Universal)";
 			case BuildTarget.StandaloneWindows:
 				return "Windows Standalone";
 			case BuildTarget.StandaloneWindows64:
@@ -73,7 +78,7 @@ namespace UnityEngine.AssetGraph {
 				return "Xbox 360";
 #endif
 #if UNITY_5_5_OR_NEWER
-				case BuildTarget.N3DS:
+			case BuildTarget.N3DS:
 				return "Nintendo 3DS";
 #endif
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
@@ -83,90 +88,94 @@ namespace UnityEngine.AssetGraph {
 
 
 			default:
-				return t.ToString() + "(deprecated)";
+				return t.ToString () + "(deprecated)";
 			}
 		}
 
-        public enum PlatformNameType {
-            Default,
-            TextureImporter,
-            AudioImporter,
-            VideoClipImporter
-        }
+		public enum PlatformNameType
+		{
+			Default,
+			TextureImporter,
+			AudioImporter,
+			VideoClipImporter
+		}
 
-        public static string TargetToAssetBundlePlatformName(BuildTargetGroup g, PlatformNameType pnt = PlatformNameType.Default) {
-            return TargetToAssetBundlePlatformName (GroupToTarget (g), pnt);
-        }
+		public static string TargetToAssetBundlePlatformName (BuildTargetGroup g, PlatformNameType pnt = PlatformNameType.Default)
+		{
+			return TargetToAssetBundlePlatformName (GroupToTarget (g), pnt);
+		}
 
 		//returns the same value defined in AssetBundleManager
-        public static string TargetToAssetBundlePlatformName(BuildTarget t, PlatformNameType pnt = PlatformNameType.Default)
+		public static string TargetToAssetBundlePlatformName (BuildTarget t, PlatformNameType pnt = PlatformNameType.Default)
 		{
-			switch(t) {
+			switch (t) {
 			case BuildTarget.Android:
-			return "Android";
+				return "Android";
 			case BuildTarget.iOS:
-                switch (pnt) {
-                case PlatformNameType.TextureImporter:
-                    return "iPhone";
-                }
-                return "iOS";
+				switch (pnt) {
+				case PlatformNameType.TextureImporter:
+					return "iPhone";
+				}
+				return "iOS";
 			case BuildTarget.PS4:
-			return "PS4";
+				return "PS4";
 			case BuildTarget.PSM:
-			return "PSM";
+				return "PSM";
 			case BuildTarget.PSP2:
-                switch (pnt) {
-                case PlatformNameType.AudioImporter:
-                    return "PSP2";
-                case PlatformNameType.TextureImporter:
-                    return "PSP2";
-                case PlatformNameType.VideoClipImporter:
-                    return "PSP2";
-                }
-			return "PSVita";
+				switch (pnt) {
+				case PlatformNameType.AudioImporter:
+					return "PSP2";
+				case PlatformNameType.TextureImporter:
+					return "PSP2";
+				case PlatformNameType.VideoClipImporter:
+					return "PSP2";
+				}
+				return "PSVita";
+#if !UNITY_2017_3_OR_NEWER
 			case BuildTarget.SamsungTV:
 			return "Samsung TV";
+#endif
 			case BuildTarget.StandaloneLinux:
 			case BuildTarget.StandaloneLinux64:
 			case BuildTarget.StandaloneLinuxUniversal:
-			return "Linux";
+				return "Linux";
+#if UNITY_2017_3_OR_NEWER
+			case BuildTarget.StandaloneOSX:
+#else
 			case BuildTarget.StandaloneOSXIntel:
 			case BuildTarget.StandaloneOSXIntel64:
-#if UNITY_2017_3_OR_NEWER
-            case BuildTarget.StandaloneOSX:
-#else
             case BuildTarget.StandaloneOSXUniversal:
 #endif
-			return "OSX";
-            case BuildTarget.StandaloneWindows:
-            case BuildTarget.StandaloneWindows64:
-                switch (pnt) {
-                case PlatformNameType.AudioImporter:
-                    return "Standalone";
-                case PlatformNameType.TextureImporter:
-                    return "Standalone";
-                case PlatformNameType.VideoClipImporter:
-                    return "Standalone";
-                }
-			return "Windows";
+				return "OSX";
+			case BuildTarget.StandaloneWindows:
+			case BuildTarget.StandaloneWindows64:
+				switch (pnt) {
+				case PlatformNameType.AudioImporter:
+					return "Standalone";
+				case PlatformNameType.TextureImporter:
+					return "Standalone";
+				case PlatformNameType.VideoClipImporter:
+					return "Standalone";
+				}
+				return "Windows";
 			case BuildTarget.Tizen:
-			return "Tizen";
+				return "Tizen";
 			case BuildTarget.tvOS:
-			return "tvOS";
+				return "tvOS";
 			case BuildTarget.WebGL:
-			return "WebGL";
+				return "WebGL";
 			case BuildTarget.WiiU:
-			return "WiiU";
+				return "WiiU";
 			case BuildTarget.WSAPlayer:
-                switch (pnt) {
-                case PlatformNameType.AudioImporter:
-                    return "WSA";
-                case PlatformNameType.VideoClipImporter:
-                    return "WSA";
-                }
-			return "WindowsStoreApps";
+				switch (pnt) {
+				case PlatformNameType.AudioImporter:
+					return "WSA";
+				case PlatformNameType.VideoClipImporter:
+					return "WSA";
+				}
+				return "WindowsStoreApps";
 			case BuildTarget.XboxOne:
-			return "XboxOne";
+				return "XboxOne";
 #if !UNITY_5_5_OR_NEWER
 			case BuildTarget.Nintendo3DS:
 			return "N3DS";
@@ -177,24 +186,25 @@ namespace UnityEngine.AssetGraph {
 #endif
 #if UNITY_5_5_OR_NEWER
 			case BuildTarget.N3DS:
-			return "N3DS";
+				return "N3DS";
 #endif
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			case BuildTarget.Switch:
-			return "Switch";
+				return "Switch";
 #endif
 
 			default:
-			return t.ToString() + "(deprecated)";
+				return t.ToString () + "(deprecated)";
 			}
 		}
 
 		/**
 		 *  from build target group to human friendly string for display purpose.
 		 */
-		public static string GroupToHumaneString(UnityEditor.BuildTargetGroup g) {
+		public static string GroupToHumaneString (UnityEditor.BuildTargetGroup g)
+		{
 
-			switch(g) {
+			switch (g) {
 			case BuildTargetGroup.Android:
 				return "Android";
 			case BuildTargetGroup.iOS:
@@ -205,8 +215,10 @@ namespace UnityEngine.AssetGraph {
 				return "PlayStation Mobile";
 			case BuildTargetGroup.PSP2:
 				return "PlayStation Vita";
+#if !UNITY_2017_3_OR_NEWER
 			case BuildTargetGroup.SamsungTV:
 				return "Samsung TV";
+#endif
 			case BuildTargetGroup.Standalone:
 				return "PC/Mac/Linux Standalone";
 			case BuildTargetGroup.Tizen:
@@ -242,18 +254,19 @@ namespace UnityEngine.AssetGraph {
 				return "Nintendo Switch";
 #endif
 			default:
-				return g.ToString() + "(deprecated)";
+				return g.ToString () + "(deprecated)";
 			}
 		}
 
 
-		public static BuildTargetGroup TargetToGroup(UnityEditor.BuildTarget t) {
+		public static BuildTargetGroup TargetToGroup (UnityEditor.BuildTarget t)
+		{
 
-			if((int)t == int.MaxValue) {
+			if ((int)t == int.MaxValue) {
 				return BuildTargetGroup.Unknown;
 			}
 
-			switch(t) {
+			switch (t) {
 			case BuildTarget.Android:
 				return BuildTargetGroup.Android;
 			case BuildTarget.iOS:
@@ -264,16 +277,18 @@ namespace UnityEngine.AssetGraph {
 				return BuildTargetGroup.PSM;
 			case BuildTarget.PSP2:
 				return BuildTargetGroup.PSP2;
+#if !UNITY_2017_3_OR_NEWER
 			case BuildTarget.SamsungTV:
 				return BuildTargetGroup.SamsungTV;
+#endif
 			case BuildTarget.StandaloneLinux:
 			case BuildTarget.StandaloneLinux64:
 			case BuildTarget.StandaloneLinuxUniversal:
+#if UNITY_2017_3_OR_NEWER
+			case BuildTarget.StandaloneOSX:
+#else
 			case BuildTarget.StandaloneOSXIntel:
 			case BuildTarget.StandaloneOSXIntel64:
-#if UNITY_2017_3_OR_NEWER
-            case BuildTarget.StandaloneOSX:
-#else
             case BuildTarget.StandaloneOSXUniversal:
 #endif
 			case BuildTarget.StandaloneWindows:
@@ -312,9 +327,10 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
-		public static BuildTarget GroupToTarget(UnityEditor.BuildTargetGroup g) {
+		public static BuildTarget GroupToTarget (UnityEditor.BuildTargetGroup g)
+		{
 
-			switch(g) {
+			switch (g) {
 			case BuildTargetGroup.Android:
 				return BuildTarget.Android;
 			case BuildTargetGroup.iOS:
@@ -325,8 +341,10 @@ namespace UnityEngine.AssetGraph {
 				return BuildTarget.PSM;
 			case BuildTargetGroup.PSP2:
 				return BuildTarget.PSP2;
+#if !UNITY_2017_3_OR_NEWER
 			case BuildTargetGroup.SamsungTV:
 				return BuildTarget.SamsungTV;
+#endif
 			case BuildTargetGroup.Standalone:
 				return BuildTarget.StandaloneWindows;
 			case BuildTargetGroup.Tizen:
@@ -374,16 +392,16 @@ namespace UnityEngine.AssetGraph {
 			var objType = typeof(UnityEditor.BuildPipeline);
 			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
-			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
+#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 			BuildTargetGroup g = BuildTargetUtility.TargetToGroup(t);
 			//internal static extern bool IsBuildTargetSupported (BuildTargetGroup buildTargetGroup, BuildTarget target);
 			var retval = method.Invoke(null, new object[]{
 				System.Enum.ToObject(typeof(BuildTargetGroup), g), 
 				System.Enum.ToObject(typeof(BuildTarget), t)});
-			#else 
+#else
 			//internal static extern bool IsBuildTargetSupported (BuildTarget target);
 			var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), t)});
-			#endif
+#endif
 			return Convert.ToBoolean(retval);
 		}
 	}
