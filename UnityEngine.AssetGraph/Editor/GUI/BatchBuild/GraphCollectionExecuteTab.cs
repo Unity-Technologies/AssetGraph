@@ -94,15 +94,17 @@ namespace UnityEngine.AssetGraph {
         }
 
         public void Refresh() {
-            m_buildTargetTree.Reload ();
-            m_executeResultTree.ReloadIfNeeded ();
-            var collection = BatchBuildConfig.GetConfig ().GraphCollections;
-            m_collectionNames = collection.Select (c => c.Name).ToArray ();
-            m_selectedCollectionIndex = collection.FindIndex (c => c.Guid == m_selectedCollectionGuid);
-            if (m_selectedCollectionIndex >= 0) {
-                m_currentCollection = collection [m_selectedCollectionIndex];
-            } else {
-                m_currentCollection = null;
+            if (m_buildTargetTree != null) {
+                m_buildTargetTree.Reload ();
+                m_executeResultTree.ReloadIfNeeded ();
+                var collection = BatchBuildConfig.GetConfig ().GraphCollections;
+                m_collectionNames = collection.Select (c => c.Name).ToArray ();
+                m_selectedCollectionIndex = collection.FindIndex (c => c.Guid == m_selectedCollectionGuid);
+                if (m_selectedCollectionIndex >= 0) {
+                    m_currentCollection = collection [m_selectedCollectionIndex];
+                } else {
+                    m_currentCollection = null;
+                }
             }
         }
 

@@ -138,31 +138,34 @@ namespace UnityEngine.AssetGraph
             }
         }
 
-        private class UndoUtility {
+        private class UndoUtility
+        {
             private UnityEngine.Object[] m_cachedUndoObjects;
             private List<Object> m_objects;
             private int m_nNodes;
             private int m_nConnections;
 
-            public UndoUtility() {
-                m_objects = new List<Object>();
+            public UndoUtility ()
+            {
+                m_objects = new List<Object> ();
                 m_nNodes = 0;
                 m_nConnections = 0;
             }
 
-            public void Clear() {
-                m_objects.Clear();
+            public void Clear ()
+            {
+                m_objects.Clear ();
                 m_nNodes = 0;
                 m_nConnections = 0;
                 m_cachedUndoObjects = null;
             }
 
-            public void RecordUndo(AssetGraphEditorWindow w, List<NodeGUI> n, List<ConnectionGUI> c, string msg) {
-                if (m_cachedUndoObjects == null || 
-                    m_nNodes != (n==null? 0 : n.Count) || 
-                    m_nConnections != (c==null? 0 : c.Count) || 
-                    ArrayUtility.Contains(m_cachedUndoObjects, null)) 
-                {
+            public void RecordUndo (AssetGraphEditorWindow w, List<NodeGUI> n, List<ConnectionGUI> c, string msg)
+            {
+                if (m_cachedUndoObjects == null ||
+                m_nNodes != (n == null ? 0 : n.Count) ||
+                m_nConnections != (c == null ? 0 : c.Count) ||
+                ArrayUtility.Contains (m_cachedUndoObjects, null)) {
                     UpdateUndoCacheObject (w, n, c);
                 }
                 if (m_cachedUndoObjects != null) {
@@ -170,8 +173,9 @@ namespace UnityEngine.AssetGraph
                 }
             }
 
-            private void UpdateUndoCacheObject(AssetGraphEditorWindow w, List<NodeGUI> nodes, List<ConnectionGUI> conns) {
-                m_objects.Clear();
+            private void UpdateUndoCacheObject (AssetGraphEditorWindow w, List<NodeGUI> nodes, List<ConnectionGUI> conns)
+            {
+                m_objects.Clear ();
                 if (w != null) {
                     m_objects.Add (w);
                 }
@@ -190,9 +194,9 @@ namespace UnityEngine.AssetGraph
                     }
                 }
                 m_cachedUndoObjects = m_objects.ToArray ();
-                m_nNodes = (nodes==null? 0 : nodes.Count);
-                m_nConnections = (conns==null? 0 : conns.Count);
-             }
+                m_nNodes = (nodes == null ? 0 : nodes.Count);
+                m_nConnections = (conns == null ? 0 : conns.Count);
+            }
         }
 
 
@@ -286,7 +290,7 @@ namespace UnityEngine.AssetGraph
             var destinationFileName = string.Empty;
 
             switch (scriptType) {
-            case ScriptType.SCRIPT_MODIFIER: 
+            case ScriptType.SCRIPT_MODIFIER:
                 {
                     sourceFileName = FileUtility.PathCombine (Model.Settings.Path.ScriptTemplatePath, "MyModifier.cs.template");
                     destinationFileName = "MyModifier{0}{1}";
@@ -406,7 +410,7 @@ namespace UnityEngine.AssetGraph
             GetWindow<AssetGraphEditorWindow> ();
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)] 
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)]
         public static void DeleteCache ()
         {
             FileUtility.RemakeDirectory (AssetGraph.AssetGraphBasePath.CachePath);
@@ -414,7 +418,7 @@ namespace UnityEngine.AssetGraph
             AssetDatabase.Refresh ();
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS)] 
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS)]
         public static void CleanupSavedSettings ()
         {
 
@@ -501,10 +505,10 @@ namespace UnityEngine.AssetGraph
         {
             Model.ConfigGraph selectedGraph = null;
 
-//			if (Selection.activeObject == null)
-//			{
-//				controller = null;
-//			}
+            //			if (Selection.activeObject == null)
+            //			{
+            //				controller = null;
+            //			}
 
             if (Selection.activeObject is Model.ConfigGraph && EditorUtility.IsPersistent (Selection.activeObject)) {
                 selectedGraph = Selection.activeObject as Model.ConfigGraph;
@@ -556,7 +560,13 @@ namespace UnityEngine.AssetGraph
             LogUtility.ShowVerboseLog (m_showVerboseLog);
 
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
-            EditorApplication.playmodeStateChanged += OnPlaymodeChanged;
+#if UNITY_2017_2_OR_NEWER
+            EditorApplication.playModeStateChanged += (PlayModeStateChange s) => {
+                OnPlaymodeChanged (s);
+            };
+#else
+			EditorApplication.playmodeStateChanged += OnPlaymodeChanged;
+#endif
 
             m_modifyMode = ModifyMode.NONE;
             NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
@@ -572,6 +582,31 @@ namespace UnityEngine.AssetGraph
             }
         }
 
+        #if UNITY_2017_2_OR_NEWER
+        private void OnPlaymodeChanged (PlayModeStateChange s)
+        {
+            if (m_controller != null && m_controller.TargetGraph != null) {
+                SaveGraph ();
+            }
+            if (s == PlayModeStateChange.EnteredEditMode || s == PlayModeStateChange.EnteredPlayMode) {
+                CloseGraph ();
+                Init ();
+                Repaint ();
+            }
+        }
+        #else
+		private void OnPlaymodeChanged() {
+            if (m_controller != null && m_controller.TargetGraph != null) {
+                SaveGraph();
+            }
+            if (!EditorApplication.isPlayingOrWillChangePlaymode) {
+                CloseGraph ();
+                Init ();
+                Repaint ();
+            }
+        }
+#endif
+
         private void OnUndoRedoPerformed ()
         {
 
@@ -584,10 +619,10 @@ namespace UnityEngine.AssetGraph
                     // if Undo/Redo changes target graph, m_controller needs recreating
                     if (graphPath != m_graphAssetPath) {
                         OpenGraph (m_graphAssetPath);
-                    } 
+                    }
 
-                    // otherwise, each node need OnUndoObject event
-                    else {
+					// otherwise, each node need OnUndoObject event
+					else {
                         foreach (var n in m_nodes) {
                             n.OnUndoObject (m_controller);
                         }
@@ -604,17 +639,6 @@ namespace UnityEngine.AssetGraph
 
             Setup ();
             Repaint ();
-        }
-
-        private void OnPlaymodeChanged() {
-            if (m_controller != null && m_controller.TargetGraph != null) {
-                SaveGraph();
-            }
-            if (!EditorApplication.isPlayingOrWillChangePlaymode) {
-                CloseGraph ();
-                Init ();
-                Repaint ();
-            }
         }
 
         private void ShowErrorOnNodes ()
@@ -672,7 +696,7 @@ namespace UnityEngine.AssetGraph
                 return;
             }
 
-            var graphName = Path.GetFileNameWithoutExtension (AssetDatabase.GetAssetPath(graph));
+            var graphName = Path.GetFileNameWithoutExtension (AssetDatabase.GetAssetPath (graph));
 
             RecordUndo ("Open " + graphName);
 
@@ -875,7 +899,7 @@ namespace UnityEngine.AssetGraph
                 AssetDatabase.SaveAssets ();
                 AssetBundleBuildMap.GetBuildMap ().Clear ();
 
-                if(UserPreference.ClearAssetLogOnBuild) {
+                if (UserPreference.ClearAssetLogOnBuild) {
                     AssetProcessEventRecord.GetRecord ().Clear (false);
                 }
 
@@ -1067,7 +1091,7 @@ namespace UnityEngine.AssetGraph
                 int currentIndex = Mathf.Max (0, supportedTargets.FindIndex (t => t == m_target));
 
                 int newIndex = EditorGUILayout.Popup (currentIndex, NodeGUIUtility.supportedBuildTargetNames, 
-                       EditorStyles.toolbarPopup, GUILayout.Width (150), GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT));
+                                   EditorStyles.toolbarPopup, GUILayout.Width (150), GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT));
 
                 if (newIndex != currentIndex) {
                     m_target = supportedTargets [newIndex];
@@ -1343,11 +1367,12 @@ namespace UnityEngine.AssetGraph
             }
         }
 
-        private void RecordUndo(string msg) {
+        private void RecordUndo (string msg)
+        {
             if (m_undo == null) {
                 m_undo = new UndoUtility ();
             }
-            m_undo.RecordUndo(this, m_nodes, m_connections, msg);
+            m_undo.RecordUndo (this, m_nodes, m_connections, msg);
         }
 
         private void HandleDragAndDropGUI (Rect dragdropArea)
@@ -2012,10 +2037,10 @@ namespace UnityEngine.AssetGraph
         public NodeGUI DuplicateNode (NodeGUI node, float offset)
         {
             var newNode = node.Duplicate (
-                     m_controller,
-                     node.GetX () + offset,
-                     node.GetY () + offset
-                 );
+                              m_controller,
+                              node.GetX () + offset,
+                              node.GetY () + offset
+                          );
             AddNodeGUI (newNode);
             return newNode;
         }
