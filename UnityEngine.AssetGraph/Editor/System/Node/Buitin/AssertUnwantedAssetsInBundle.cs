@@ -176,7 +176,7 @@ namespace UnityEngine.AssetGraph {
     		PerformGraph.Output Output) 
     	{
     		if(string.IsNullOrEmpty(m_path[target])) {
-    			throw new NodeException(node.Name + ":Assertion Path is empty.", node);
+    			throw new NodeException("Assertion Path is empty.", "Set a valid assertion path from inspector.",node);
     		}
 
     		// Pass incoming assets straight to Output
@@ -194,15 +194,20 @@ namespace UnityEngine.AssetGraph {
     						foreach(var a in assets) {
 
     							if(allow != a.importFrom.Contains(checkPath)) {
-    								throw new NodeException(node.Name + ":Unwanted asset '" + a.importFrom + "' found.", node);
+    								throw new NodeException("Unwanted asset '" + a.importFrom + "' found.", 
+                                        allow ? "Move this asset under " + checkPath : 
+                                        "Move this asset out from " + checkPath, node);
     							}
 
     							var dependencies = AssetDatabase.GetDependencies(new string[] { a.importFrom } );
 
     							foreach(var d in dependencies) {
     								if(allow != d.Contains(checkPath)) {
-    									throw new NodeException(node.Name + ":Unwanted asset found in dependency:'" + d 
-    										+ "' from following asset:" + a.importFrom, node);
+    									throw new NodeException("Unwanted asset found in dependency:'" + d 
+    										+ "' from following asset:" + a.importFrom,
+                                            allow ? "Move this asset under " + checkPath : 
+                                            "Move this asset out from " + checkPath,
+                                            node);
     								}
     							}
     						}

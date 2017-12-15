@@ -174,10 +174,11 @@ namespace UnityEngine.AssetGraph
 				m_groupingKeyword[target],
 				(GroupingPatternType)m_patternType[target],
 				() => {
-					throw new NodeException("Grouping Keyword can not be empty.", node);
+					throw new NodeException("Grouping Keyword can not be empty.", "Set valid grouping keyword.",node);
 				},
 				() => {
-                    throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", Model.Settings.KEYWORD_WILDCARD, m_groupingKeyword[target]), node);
+                    throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", Model.Settings.KEYWORD_WILDCARD, m_groupingKeyword[target]),
+                        string.Format("Add {0} to the grouping keyword.", Model.Settings.KEYWORD_WILDCARD), node);
 				}
 			);
 
@@ -224,7 +225,8 @@ namespace UnityEngine.AssetGraph
 
 								if(!m_allowSlash && newGroupingKey.Contains("/")) {
 									throw new NodeException(String.Format("Grouping Keyword with directory separator('/') found: \"{0}\" from asset: {1}", 
-										newGroupingKey, targetPath), node);
+										newGroupingKey, targetPath), 
+                                        "Remove directory separator from grouping keyword, or enable 'Allow directory separator ('/') in group name' option.", node);
 								}
 
 								if (!outputDict.ContainsKey(newGroupingKey)) {

@@ -19,6 +19,7 @@ namespace UnityEngine.AssetGraph {
 
         [SerializeField] private EventKind m_kind;
         [SerializeField] private long m_timestampUtc;
+        [SerializeField] private string m_assetName;
         [SerializeField] private string m_assetGuid;
         [SerializeField] private string m_graphGuid;
         [SerializeField] private string m_nodeId;
@@ -41,6 +42,12 @@ namespace UnityEngine.AssetGraph {
         public string AssetGuid {
             get {
                 return m_assetGuid;
+            }
+        }
+
+        public string AssetName {
+            get {
+                return m_assetName;
             }
         }
 
@@ -76,8 +83,9 @@ namespace UnityEngine.AssetGraph {
 
         private AssetProcessEvent() {}
 
-        private void Init(EventKind k, string assetGuid, string graphGuid, string nodeId, string nodeName, string desc, string howto) {
+        private void Init(EventKind k, string assetName, string assetGuid, string graphGuid, string nodeId, string nodeName, string desc, string howto) {
             m_kind = k;
+            m_assetName = assetName;
             m_assetGuid = assetGuid;
             m_graphGuid = graphGuid;
             m_nodeId = nodeId;
@@ -89,14 +97,17 @@ namespace UnityEngine.AssetGraph {
 
         public static AssetProcessEvent CreateModifyEvent(string assetGuid, string graphGuid, Model.NodeData n) {
             var ev = new AssetProcessEvent();
-            ev.Init (EventKind.Modify, assetGuid, graphGuid, n.Id, n.Name, string.Empty, string.Empty);
+            var path = AssetDatabase.GUIDToAssetPath (assetGuid);
+            var assetName = Path.GetFileName (path);
+            assetName = (assetName == null) ? string.Empty : assetName;
+            ev.Init (EventKind.Modify, assetName, assetGuid, graphGuid, n.Id, n.Name, string.Empty, string.Empty);
             return ev;
         }
 
         public static AssetProcessEvent CreateErrorEvent(NodeException e, string graphGuid) {
             var ev = new AssetProcessEvent();
             var assetId = (e.Asset == null) ? null : e.Asset.assetDatabaseId;
-            ev.Init (EventKind.Error, assetId, graphGuid, e.Node.Id, e.Node.Name, e.Reason, e.HowToFix);
+            ev.Init (EventKind.Error, e.Asset.fileName, assetId, graphGuid, e.Node.Id, e.Node.Name, e.Reason, e.HowToFix);
             return ev;
         }
     }

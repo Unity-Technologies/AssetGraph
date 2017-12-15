@@ -102,11 +102,11 @@ namespace UnityEngine.AssetGraph {
     		PerformGraph.Output Output) 
     	{
             if(string.IsNullOrEmpty(m_description)) {
-                throw new NodeException(node.Name + ":Description is empty.", node);
+                throw new NodeException(node.Name + ":Description is empty.", "Write description for this error.", node);
             }
 
             if(string.IsNullOrEmpty(m_howtoFix)) {
-                throw new NodeException(node.Name + ":HowToFix is empty.", node);
+                throw new NodeException(node.Name + ":HowToFix is empty.", "Write How To Fix this error.", node);
             }
 
             if(incoming != null) {

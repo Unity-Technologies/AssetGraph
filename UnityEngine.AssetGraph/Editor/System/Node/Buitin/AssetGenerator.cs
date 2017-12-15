@@ -361,16 +361,18 @@ namespace UnityEngine.AssetGraph {
 
             ValidateAssetGenerator(node, target, incoming,
                 () => {
-                    throw new NodeException(node.Name + " :AssetGenerator is not specified. Please select generator from Inspector.", node);
+                    throw new NodeException("AssetGenerator is not specified.", "Select generator from inspector.", node);
                 },
                 () => {
-                    throw new NodeException(node.Name + " :Failed to create AssetGenerator from settings. Please fix settings from Inspector.", node);
+                    throw new NodeException("Failed to create AssetGenerator from settings.", "Fix AssetGenerator settings from inspector", node);
                 },
                 (AssetReference badAsset, string msg) => {
-                    throw new NodeException(string.Format("{0} :{1} : Source: {2}", node.Name, msg, badAsset.importFrom), node);
+                    throw new NodeException(string.Format("{0} : Source: {1}", msg, badAsset.importFrom), 
+                        "Remove source asset from node input.", node);
                 },
                 (AssetReference badAsset) => {
-                    throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node);
+                    throw new NodeException(string.Format("Can not import incoming asset {0}.", badAsset.fileNameAndExtension), 
+                        "Remove source asset from node input.", node);
                 }
             );
 

@@ -15,12 +15,6 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-        public NodeException (string reason, Model.NodeData node) {
-            this.Reason = reason;
-            this.Node = node;
-            this.Asset = null;
-        }
-
         public NodeException (string reason, string howToFix, Model.NodeData node) {
             this.Reason = reason;
             this.HowToFix = howToFix;

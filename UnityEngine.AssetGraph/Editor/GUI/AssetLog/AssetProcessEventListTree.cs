@@ -139,6 +139,7 @@ namespace UnityEngine.AssetGraph {
             CenterRectUsingSingleLineHeight(ref cellRect);
             var assetGuid = item.Event.AssetGuid;
             var assetPath = AssetDatabase.GUIDToAssetPath (assetGuid);
+            var isAssetAvailable = string.IsNullOrEmpty (assetPath);
 
             var graphGuid = item.Event.GraphGuid;
             var graphPath = AssetDatabase.GUIDToAssetPath (graphGuid);
@@ -157,19 +158,18 @@ namespace UnityEngine.AssetGraph {
             case 1://Asset
                 {
                     Texture2D icon = null;
-                    if (!string.IsNullOrEmpty (assetPath)) {
-                        icon = AssetDatabase.GetCachedIcon ( assetPath ) as Texture2D;
+                    if (!isAssetAvailable) {
+                        icon = AssetDatabase.GetCachedIcon (assetPath) as Texture2D;
                     }
                     var iconRect = new Rect(cellRect.x + 1, cellRect.y + 1, cellRect.height - 2, cellRect.height - 2);
                     if (icon != null) {
                         GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
-                        DefaultGUI.Label(
-                            new Rect(cellRect.x + iconRect.width + 4, cellRect.y, cellRect.width - iconRect.width, cellRect.height), 
-                            Path.GetFileName(assetPath), 
-                            args.selected, 
-                            args.focused);
-                        
                     }
+                    DefaultGUI.Label(
+                        new Rect(cellRect.x + iconRect.width + 4, cellRect.y, cellRect.width - iconRect.width, cellRect.height), 
+                        (isAssetAvailable)? Path.GetFileName(assetPath) : string.Format("{0} (Removed)",item.Event.AssetName), 
+                        args.selected, 
+                        args.focused);
                 }
                 break;
             case 2://Graph

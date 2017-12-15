@@ -621,7 +621,7 @@ namespace UnityEngine.AssetGraph
         {
             foreach (var node in m_nodes) {
                 node.ResetErrorStatus ();
-                var errorsForeachNode = m_controller.Issues.Where (e => e.NodeId == node.Id).Select (e => e.Reason).ToList ();
+                var errorsForeachNode = m_controller.Issues.Where (e => e.NodeId == node.Id).Select (e => string.Format("{0}\n{1}", e.Reason, e.HowToFix)).ToList ();
                 if (errorsForeachNode.Any ()) {
                     node.AppendErrorSources (errorsForeachNode);
                 }
@@ -1126,7 +1126,7 @@ namespace UnityEngine.AssetGraph
             {
                 using (new EditorGUILayout.VerticalScope ()) {
                     foreach (NodeException e in m_controller.Issues) {
-                        EditorGUILayout.HelpBox (e.Reason, MessageType.Error);
+                        EditorGUILayout.HelpBox (string.Format("{0}\n{1}", e.Reason, e.HowToFix), MessageType.Error);
                         if (GUILayout.Button ("Go to Node")) {
                             SelectNode (e.NodeId);
                         }
@@ -1149,9 +1149,14 @@ namespace UnityEngine.AssetGraph
                         m_descriptionStyle = new GUIStyle (EditorStyles.whiteMiniLabel);
                         m_descriptionStyle.wordWrap = true;
                         m_descriptionStyle.richText = true;
+                        var styleState = new GUIStyleState ();
+                        styleState.textColor = Color.white;
+                        m_descriptionStyle.normal = styleState;
                     }
                     var content = new GUIContent (m_controller.TargetGraph.Descrption);
                     var height = m_descriptionStyle.CalcHeight (content, position.width - 12f);
+                    var oldContentColor = GUI.contentColor;
+
                     GUI.Label (new Rect (12f, 12f, position.width - 12f, height), content, m_descriptionStyle);
                 }
 

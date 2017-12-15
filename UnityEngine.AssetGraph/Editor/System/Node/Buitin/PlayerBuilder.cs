@@ -139,7 +139,9 @@ namespace UnityEngine.AssetGraph
                         );
                         if (newBuildLocation.StartsWith(Application.dataPath))
                         {
-                            throw new NodeException("You can not build player inside Assets directory.", node.Data);
+                            throw new NodeException("You can not build player inside Assets directory.", 
+                                "Select build location outside Assets directory.",
+                                node.Data);
                         }
 
                         if (newBuildLocation != m_buildLocations[editor.CurrentEditingGroup])
@@ -250,12 +252,12 @@ namespace UnityEngine.AssetGraph
 
             if (string.IsNullOrEmpty(m_buildLocations[target]))
             {
-                throw new NodeException("You must set build location.", node);
+                throw new NodeException("Build location is empty.", "Set valid build location from inspector.", node);
             }
 
             if (string.IsNullOrEmpty(m_playerName[target]))
             {
-                throw new NodeException("You must set player name.", node);
+                throw new NodeException("Player name is empty.", "Set valid player name from inspector.", node);
             }
         }
 
@@ -312,7 +314,7 @@ namespace UnityEngine.AssetGraph
 #endif
             if (!string.IsNullOrEmpty(errorMsg))
             {
-                throw new NodeException(node.Name + ":Player build failed:" + errorMsg, node);
+                throw new NodeException("Player build failed:" + errorMsg, "See description for detail.", node);
             }
         }
     }

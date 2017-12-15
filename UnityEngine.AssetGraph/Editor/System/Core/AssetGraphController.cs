@@ -221,7 +221,7 @@ namespace UnityEngine.AssetGraph {
 			} 
 			// Minimize impact of errors happened during node operation
 			catch (Exception e) {
-                m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1} (See Console for detail)", e.GetType().ToString(), e.Message), currentNodeData));
+                m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1}", e.GetType().ToString(), e.Message), "See Console for detail.", currentNodeData));
 				LogUtility.Logger.LogException(e);
 			}
             m_currentNode = null;

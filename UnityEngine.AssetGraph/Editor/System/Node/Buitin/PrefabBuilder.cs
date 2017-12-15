@@ -282,19 +282,19 @@ namespace UnityEngine.AssetGraph {
 		{
 			ValidatePrefabBuilder(node, target, incoming,
                 () => {
-                    throw new NodeException (node.Name + ":Output directory not found.", node);
+                    throw new NodeException ("Output directory not found.", "Create output directory or set a valid directory path.", node);
                 },
 				() => {
-					throw new NodeException(node.Name + " :PrefabBuilder is not configured. Please configure from Inspector.", node);
+                    throw new NodeException("PrefabBuilder is not configured.", "Configure PrefabBuilder from inspector.", node);
 				},
 				() => {
-					throw new NodeException(node.Name + " :Failed to create PrefabBuilder from settings. Please fix settings from Inspector.", node);
+                    throw new NodeException("Failed to create PrefabBuilder from settings.", "Fix settings from inspector.", node);
 				},
 				(string groupKey) => {
-					throw new NodeException(string.Format("{0} :Can not create prefab with incoming assets for group {1}.", node.Name, groupKey), node);
+					throw new NodeException(string.Format("Can not create prefab with incoming assets for group {0}.", groupKey), "Fix group input assets for selected PrefabBuilder.",node);
 				},
 				(AssetReference badAsset) => {
-					throw new NodeException(string.Format("{0} :Can not import incoming asset {1}.", node.Name, badAsset.fileNameAndExtension), node);
+					throw new NodeException(string.Format("Can not import incoming asset {0}.", badAsset.fileNameAndExtension), "", node);
 				}
 			);
 
@@ -325,11 +325,12 @@ namespace UnityEngine.AssetGraph {
 			foreach(var key in aggregatedGroups.Keys) {
 
 				var assets = aggregatedGroups[key];
-				var thresold = PrefabBuilderUtility.GetPrefabBuilderAssetThreshold(m_instance.ClassName);
-				if( thresold < assets.Count ) {
+                var threshold = PrefabBuilderUtility.GetPrefabBuilderAssetThreshold(m_instance.ClassName);
+				if( threshold < assets.Count ) {
 					var guiName = PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName);
-					throw new NodeException(string.Format("{0} :Too many assets passed to {1} for group:{2}. {3}'s threshold is set to {4}", 
-						node.Name, guiName, key, guiName,thresold), node);
+					throw new NodeException(
+                        string.Format("Too many assets passed to {0} for group:{1}. {2}'s threshold is set to {4}", guiName, key, guiName,threshold),
+                        string.Format("Limit number of assets in a group to {4}", threshold), node);
 				}
 
                 GameObject previousPrefab = null; //TODO

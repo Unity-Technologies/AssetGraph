@@ -513,14 +513,16 @@ namespace UnityEngine.AssetGraph {
 
             if (throwException) {
                 if(string.IsNullOrEmpty(outputDir)) {
-                    throw new NodeException (node.Name + ":Output directory is empty.", node);
+                    throw new NodeException ("Output directory is empty.", 
+                        "Select valid output directory from inspector.", node);
                 }
 
                 if(target != BuildTargetUtility.GroupToTarget(BuildTargetGroup.Unknown) && 
                     outputOption == OutputOption.ErrorIfNoOutputDirectoryFound) 
                 {
                     if (!Directory.Exists (outputDir)) {
-                        throw new NodeException (node.Name + ":Output directory not found.", node);
+                        throw new NodeException ("Output directory not found.", 
+                            "Create output directory or select other valid directory from inspector.", node);
                     }
                 }
             }

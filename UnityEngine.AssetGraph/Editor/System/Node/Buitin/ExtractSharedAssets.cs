@@ -158,11 +158,11 @@ namespace UnityEngine.AssetGraph {
     		PerformGraph.Output Output) 
     	{
     		if(string.IsNullOrEmpty(m_bundleNameTemplate)) {
-    			throw new NodeException(node.Name + ":Bundle Name Template is empty.", node);
+    			throw new NodeException("Bundle Name Template is empty.", "Set valid bundle name template.",node);
     		}
             if (m_groupExtractedAssets [target] != 0) {
                 if(m_groupSizeByte[target] < 0) {
-                    throw new NodeException("Invalid size. Size property must be a positive number.", node);
+                    throw new NodeException("Invalid size. Size property must be a positive number.", "Set valid size.", node);
                 }
             }
 

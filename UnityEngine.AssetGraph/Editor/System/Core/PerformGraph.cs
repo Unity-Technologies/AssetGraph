@@ -420,7 +420,8 @@ namespace UnityEngine.AssetGraph {
 			var connectionsToParents = saveData.Connections.FindAll(con => con.ToNodeId == current.Id);
 			foreach(var c in connectionsToParents) {
 				if(visitedConnections.Contains(c)) {
-					throw new NodeException("Looped connection detected. Please fix connections to avoid loop.", current);
+                    throw new NodeException("Looped connection detected.", 
+                        "Fix connections to avoid loop.", current);
 				}
 
 				visitedConnections.Add(c);
