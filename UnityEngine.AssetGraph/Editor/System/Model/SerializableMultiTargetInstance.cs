@@ -14,11 +14,21 @@ namespace UnityEngine.AssetGraph {
 		public class Entry {
 			[SerializeField] public BuildTargetGroup targetGroup;
 			[SerializeField] public string value;
+            [NonSerialized]  public object instance;
 
-			public Entry(BuildTargetGroup g, string v) {
+            public Entry(BuildTargetGroup g, string v, object i) {
 				targetGroup = g;
 				value = v;
+                instance = i;
 			}
+
+            public T Get<T> () {
+                if (instance == null) {
+                    instance = JsonUtility.FromJson (CustomScriptUtility.DecodeString (value), typeof(T));
+                }
+
+                return (T) instance;
+            }
 		}
 		[SerializeField] private string m_className;
 		[SerializeField] private List<Entry> m_values;
@@ -27,7 +37,7 @@ namespace UnityEngine.AssetGraph {
 			m_className = rhs.m_className;
 			m_values = new List<Entry>(rhs.m_values.Count);
 			foreach(var v in rhs.m_values) {
-				m_values.Add(new Entry(v.targetGroup, v.value));
+                m_values.Add(new Entry(v.targetGroup, v.value, null));
 			}
 		}
 
@@ -41,7 +51,7 @@ namespace UnityEngine.AssetGraph {
             m_className = assemblyQualifiedName;
 			m_values = new List<Entry>(instanceData.Values.Count);
 			foreach(var v in instanceData.Values) {
-				m_values.Add(new Entry(v.targetGroup, CustomScriptUtility.EncodeString(v.value)));
+				m_values.Add(new Entry(v.targetGroup, CustomScriptUtility.EncodeString(v.value), null));
 			}
 		}
 
@@ -86,7 +96,7 @@ namespace UnityEngine.AssetGraph {
 					return m_values[i].value;
 				} else {
 					string defaultValue = string.Empty;
-					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue));
+					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, defaultValue, null));
 					return defaultValue;
 				}
 			}
@@ -111,7 +121,12 @@ namespace UnityEngine.AssetGraph {
 					return default(T);
 				}
 				Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
-				return (T) JsonUtility.FromJson(CustomScriptUtility.DecodeString(m_values[i].value), t);
+
+                if (m_values [i].instance == null) {
+                    m_values [i].instance = JsonUtility.FromJson (CustomScriptUtility.DecodeString (m_values [i].value), t);
+                }
+
+                return (T) m_values [i].instance;
 			} else {
 				return GetDefaultValue<T>();
 			}
@@ -135,11 +150,12 @@ namespace UnityEngine.AssetGraph {
 			int i = m_values.FindIndex(v => v.targetGroup == g);
 			var json = CustomScriptUtility.EncodeString(JsonUtility.ToJson(value));
 			if(i >= 0) {
-				m_values[i].value = json;
+				m_values [i].value = json;
+                m_values [i].instance = value;
 			} else {
-				m_values.Add(new Entry(g, json));
+				m_values.Add(new Entry(g, json, value));
 				if(defaultNeedsUpdate && g != BuildTargetUtility.DefaultTarget) {
-					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, json));
+					m_values.Add(new Entry(BuildTargetUtility.DefaultTarget, json, value));
 				}
 			}
 		}
@@ -159,7 +175,7 @@ namespace UnityEngine.AssetGraph {
 					m_values[iTarget].value = m_values[i].value;
 				}
 				if(iTarget < 0) {
-					m_values.Add(new Entry(g, m_values[i].value));
+					m_values.Add(new Entry(g, m_values[i].value, null));
 				}
 			}
 		}

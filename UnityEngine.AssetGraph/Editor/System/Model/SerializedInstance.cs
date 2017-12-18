@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System;
 using System.Collections;
 
@@ -46,7 +47,7 @@ namespace UnityEngine.AssetGraph {
 			UnityEngine.Assertions.Assert.IsNotNull(obj);
 
             m_className = obj.GetType().AssemblyQualifiedName;
-			m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(obj));
+            m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(obj));
 		}
 
         public void Invalidate() {
@@ -70,7 +71,7 @@ namespace UnityEngine.AssetGraph {
 		public void Save() {
 			if(m_object != null) {
                 m_className = m_object.GetType().AssemblyQualifiedName;
-				m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(m_object));
+                m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(m_object));
 			}
 		}
 
