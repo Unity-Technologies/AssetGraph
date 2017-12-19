@@ -82,7 +82,7 @@ namespace UnityEngine.AssetGraph {
 
         public override int GetHashCode()
         {
-            return (m_object == null)? this.GetHashCode() : m_object.GetHashCode();
+            return (m_object == null)? base.GetHashCode() : m_object.GetHashCode();
         }
 
         public static bool operator == (ObjectReferenceBase<T> lhs, ObjectReferenceBase<T> rhs) {

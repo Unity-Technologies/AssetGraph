@@ -233,7 +233,7 @@ namespace UnityEngine.AssetGraph {
 
 		public override int GetHashCode()
 		{
-			return (m_instanceData == null)? this.GetHashCode() : m_instanceData.GetHashCode();
+			return (m_instanceData == null)? base.GetHashCode() : m_instanceData.GetHashCode();
 		}
 
         public static bool operator == (SerializedComponent lhs, SerializedComponent rhs) {
