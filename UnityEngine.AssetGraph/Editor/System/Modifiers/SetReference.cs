@@ -220,6 +220,8 @@ public class SetReference : IModifier
     // Test if asset is different from intended configuration
     public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group)
     {
+        Restore ();
+
         return assets.Where (a => a is GameObject).Any ();
     }
 
@@ -314,15 +316,24 @@ public class SetReference : IModifier
             CollectRecursive (go, r, foundObjects);
         }
 
+        Array a = null;
+
+        if (m_fieldValueType.IsArray) {
+            a = Array.CreateInstance (m_fieldValueElementType, foundObjects.Count);
+            for (int i = 0; i < foundObjects.Count; ++i) {
+                a.SetValue (foundObjects [i], i);
+            }
+        }
+
         if (m_fieldKind == Kind.Field) {
             if (m_fieldValueType.IsArray) {
-                m_fieldInfo.SetValue (cmp, foundObjects.ToArray ());
+                m_fieldInfo.SetValue (cmp, a);
             } else {
                 m_fieldInfo.SetValue (cmp, (foundObjects.Count == 0) ? null : foundObjects [0]);
             }
         } else {
             if (m_fieldValueType.IsArray) {
-                m_propertyInfo.SetValue (cmp, foundObjects.ToArray (), null);
+                m_propertyInfo.SetValue (cmp, a, null);
             } else {
                 m_propertyInfo.SetValue (cmp, (foundObjects.Count == 0) ? null : foundObjects [0], null);
             }
@@ -546,7 +557,11 @@ public class SetReference : IModifier
 
         Restore ();
 
+        #if UNITY_2017_3_OR_NEWER
+        var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumFlagsField ("Edit Policy", m_attachPolicy);
+        #else
         var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumMaskField ("Edit Policy", m_attachPolicy);
+        #endif
         if (newAttachPolicy != m_attachPolicy) {
             m_attachPolicy = newAttachPolicy;
             onValueChanged ();

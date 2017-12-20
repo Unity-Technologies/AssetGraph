@@ -44,7 +44,7 @@ public class SetProperty : IModifier
         [SerializeField] private Vector2 m_v2value;
         [SerializeField] private Vector3 m_v3value;
         [SerializeField] private Vector4 m_v4value;
-        [SerializeField] private AnimationCurve m_curveValue;
+        [SerializeField] private SerializableAnimationCurve m_curveValue;
         [SerializeField] private Color m_colorValue;
 
         private Type m_valueType;
@@ -125,6 +125,11 @@ public class SetProperty : IModifier
                     m_objectValue = AssetDatabase.LoadMainAssetAtPath (AssetDatabase.GUIDToAssetPath (m_stringValue));
                 }
             }
+
+            if (m_curveValue == null) {
+                m_curveValue = new SerializableAnimationCurve ();
+            }
+
             return true;
         }
 
@@ -164,7 +169,7 @@ public class SetProperty : IModifier
                     } else if (m_valueType == typeof(Vector4)) {
                         m_v4value = EditorGUILayout.Vector4Field (m_nicifiedName, m_v4value);
                     } else if (m_valueType == typeof(AnimationCurve)) {
-                        m_curveValue = EditorGUILayout.CurveField (m_nicifiedName, m_curveValue);
+                        m_curveValue.Curve = EditorGUILayout.CurveField (m_nicifiedName, m_curveValue.Curve);
                     } else if (m_valueType == typeof(Color)) {
                         m_colorValue = EditorGUILayout.ColorField (m_nicifiedName, m_colorValue);
                     } else if (m_valueType.IsEnum) {
@@ -228,9 +233,9 @@ public class SetProperty : IModifier
                     m_propertyInfo.SetValue (o, m_v4value, null);
             } else if (m_valueType == typeof(AnimationCurve)) {
                 if (m_kind == Kind.Field)
-                    m_fieldInfo.SetValue (o, m_curveValue);
+                    m_fieldInfo.SetValue (o, m_curveValue.Curve);
                 else
-                    m_propertyInfo.SetValue (o, m_curveValue, null);
+                    m_propertyInfo.SetValue (o, m_curveValue.Curve, null);
             } else if (m_valueType == typeof(Color)) {
                 if (m_kind == Kind.Field)
                     m_fieldInfo.SetValue (o, m_colorValue);
@@ -387,6 +392,8 @@ public class SetProperty : IModifier
     // Test if asset is different from intended configuration
     public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group)
     {
+        Restore ();
+
         return assets.Where (a => a is GameObject).Any ();
     }
 
@@ -478,7 +485,11 @@ public class SetProperty : IModifier
 
         Restore ();
 
+        #if UNITY_2017_3_OR_NEWER
+        var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumFlagsField ("Edit Policy", m_attachPolicy);
+        #else
         var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumMaskField ("Edit Policy", m_attachPolicy);
+        #endif
         if (newAttachPolicy != m_attachPolicy) {
             m_attachPolicy = newAttachPolicy;
             onValueChanged ();
