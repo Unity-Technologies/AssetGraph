@@ -8,7 +8,7 @@ using System.Linq;
 using UnityEngine.AssetGraph;
 
 [System.Serializable]
-[CustomAssetGenerator("[Example]Create Material From Texture", "v1.0")]
+[CustomAssetGenerator("Create Material From Texture", "v1.0")]
 public class CreateMaterialFromTexture : IAssetGenerator {
 
     [System.Serializable]
