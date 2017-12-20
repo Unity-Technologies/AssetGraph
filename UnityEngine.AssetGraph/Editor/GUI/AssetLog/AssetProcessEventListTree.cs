@@ -167,7 +167,7 @@ namespace UnityEngine.AssetGraph {
                     }
                     DefaultGUI.Label(
                         new Rect(cellRect.x + iconRect.width + 4, cellRect.y, cellRect.width - iconRect.width, cellRect.height), 
-                        (isAssetAvailable)? Path.GetFileName(assetPath) : string.Format("{0} (Removed)",item.Event.AssetName), 
+                        (!isAssetAvailable)? Path.GetFileName(assetPath) : string.Format("{0} (Removed)",item.Event.AssetName), 
                         args.selected, 
                         args.focused);
                 }
