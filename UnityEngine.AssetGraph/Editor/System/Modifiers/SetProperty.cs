@@ -471,7 +471,7 @@ public class SetProperty : IModifier
 
         Restore ();
 
-        var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumMaskField ("Attach Policy", m_attachPolicy);
+        var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumMaskField ("Edit Policy", m_attachPolicy);
         if (newAttachPolicy != m_attachPolicy) {
             m_attachPolicy = newAttachPolicy;
             onValueChanged ();
