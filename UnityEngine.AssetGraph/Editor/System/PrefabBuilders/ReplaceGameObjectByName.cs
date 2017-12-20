@@ -13,7 +13,7 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
     [Serializable]
     private class ReplaceEntry {
         [SerializeField] public string      name;
-        [SerializeField] public GameObject  dstObject;
+        [SerializeField] public GameObjectReference  dstObject;
     }
 
     [SerializeField] List<ReplaceEntry> m_replaceEntries;
