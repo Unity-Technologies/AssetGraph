@@ -107,7 +107,8 @@ namespace UnityEngine.AssetGraph {
         public static AssetProcessEvent CreateErrorEvent(NodeException e, string graphGuid) {
             var ev = new AssetProcessEvent();
             var assetId = (e.Asset == null) ? null : e.Asset.assetDatabaseId;
-            ev.Init (EventKind.Error, e.Asset.fileName, assetId, graphGuid, e.Node.Id, e.Node.Name, e.Reason, e.HowToFix);
+            var filename = (e.Asset == null) ? string.Empty : e.Asset.fileName;
+            ev.Init (EventKind.Error, filename, assetId, graphGuid, e.Node.Id, e.Node.Name, e.Reason, e.HowToFix);
             return ev;
         }
     }
