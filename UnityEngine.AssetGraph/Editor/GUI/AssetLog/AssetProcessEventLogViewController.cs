@@ -45,7 +45,7 @@ namespace UnityEngine.AssetGraph {
             m_detailViewResize = new ResizeContext ();
         }
 
-        public void OnEnabled() {
+        public void OnEnable() {
             m_assetLogListTree.Reload ();
             m_assetLogListTree.Repaint ();
         }

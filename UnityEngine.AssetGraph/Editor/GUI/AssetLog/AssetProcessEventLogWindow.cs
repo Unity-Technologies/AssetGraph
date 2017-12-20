@@ -46,7 +46,7 @@ namespace UnityEngine.AssetGraph {
 			Init();
             AssetProcessEventRecord.onAssetProcessEvent += this.OnNewAssetProcessEvent;
 
-            m_logViewController.OnEnabled ();
+            m_logViewController.OnEnable ();
 		}
 
 		public void OnDisable() {
