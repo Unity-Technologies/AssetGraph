@@ -119,7 +119,8 @@ public class SetProperty : IModifier
             }
 
             if (m_objectValue == null &&
-                m_valueType.IsAssignableFrom (typeof(UnityEngine.Object))) {
+                typeof(UnityEngine.Object).IsAssignableFrom(m_valueType)) 
+            {
                 if (!string.IsNullOrEmpty (m_stringValue)) {
                     m_objectValue = AssetDatabase.LoadMainAssetAtPath (AssetDatabase.GUIDToAssetPath (m_stringValue));
                 }
@@ -169,13 +170,13 @@ public class SetProperty : IModifier
                     } else if (m_valueType.IsEnum) {
                         var v = EditorGUILayout.EnumPopup (m_nicifiedName, (Enum)Enum.ToObject (m_valueType, m_intValue));
                         m_intValue = Convert.ToInt32 (v);
-                    } else if (m_valueType.IsAssignableFrom (typeof(UnityEngine.Object))) {
+                    } else if (typeof(UnityEngine.Object).IsAssignableFrom(m_valueType)) {
                         m_objectValue = EditorGUILayout.ObjectField (m_nicifiedName, m_objectValue, m_valueType, false);
                     }
                 }
 
                 if (EditorGUI.EndChangeCheck ()) {
-                    if (m_valueType.IsAssignableFrom (typeof(UnityEngine.Object))) {
+                    if (typeof(UnityEngine.Object).IsAssignableFrom(m_valueType)) {
                         m_stringValue = AssetDatabase.AssetPathToGUID (AssetDatabase.GetAssetPath (m_objectValue));
                     }
                     onValueChanged ();
@@ -240,7 +241,7 @@ public class SetProperty : IModifier
                     m_fieldInfo.SetValue (o, Enum.ToObject (m_valueType, m_intValue));
                 else
                     m_propertyInfo.SetValue (o, Enum.ToObject (m_valueType, m_intValue), null);
-            } else if (m_valueType.IsAssignableFrom (typeof(UnityEngine.Object))) {
+            } else if (typeof(UnityEngine.Object).IsAssignableFrom(m_valueType)) {
                 if (m_kind == Kind.Field)
                     m_fieldInfo.SetValue (o, m_objectValue);
                 else
@@ -365,7 +366,7 @@ public class SetProperty : IModifier
         t == typeof(Vector4) ||
         t == typeof(AnimationCurve) ||
         t == typeof(Color) ||
-        t.IsAssignableFrom (typeof(UnityEngine.Object));
+        typeof(UnityEngine.Object).IsAssignableFrom (t);
     }
 
 
