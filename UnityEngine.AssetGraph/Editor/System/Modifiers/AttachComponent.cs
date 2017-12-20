@@ -18,7 +18,7 @@ public class AttachComponent : IModifier {
     }
 
     [SerializeField] private SerializedComponent m_component;
-    [SerializeField] private AttachPolicy m_attachPolicy;
+    [SerializeField] private AttachPolicy m_attachPolicy = AttachPolicy.RootObject | AttachPolicy.MiddleObject | AttachPolicy.LeafObject;
     [SerializeField] private string m_nameFormat;
 
     private int m_selectedIndex = -1;
@@ -30,13 +30,15 @@ public class AttachComponent : IModifier {
             return false;
         }
 
+        if (m_component.IsInvalidated) {
+            m_component.Restore ();
+        }
+
         return assets.Where (a => a is GameObject).Any ();
 	}
 
 	// Actually change asset configurations. 
 	public void Modify (UnityEngine.Object[] assets, List<AssetReference> group) {
-
-        m_component.Restore ();
 
         Regex r = new Regex(m_nameFormat);
         bool isRootObjTargeting = (m_attachPolicy & AttachPolicy.RootObject) > 0;
