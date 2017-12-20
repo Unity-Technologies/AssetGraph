@@ -939,7 +939,9 @@ namespace UnityEngine.AssetGraph
 
                 ShowErrorOnNodes ();
             } catch (Exception e) {
-                LogUtility.Logger.LogError (LogUtility.kTag, e);
+                if (LogUtility.Logger != null) {
+                    LogUtility.Logger.LogError (LogUtility.kTag, e.ToString());
+                }
             } finally {
                 EditorUtility.ClearProgressBar ();
             }
