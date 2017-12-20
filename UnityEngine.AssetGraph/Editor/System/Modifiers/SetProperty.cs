@@ -102,7 +102,7 @@ public class SetProperty : IModifier
         {
             if (m_kind == Kind.Field) {
                 if (m_fieldInfo == null) {
-                    m_fieldInfo = baseType.GetField (m_name);
+                    m_fieldInfo = baseType.GetField (m_name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                     if (m_fieldInfo == null) {
                         return false;
                     }
@@ -264,7 +264,14 @@ public class SetProperty : IModifier
     {
         if (m_type == null && !string.IsNullOrEmpty (m_componentType)) {
             m_type = Type.GetType (m_componentType);
-            UpdateFieldInfo ();
+            if (m_type != null) {
+                UpdateFieldInfo ();
+            } else {
+                m_type = null;
+                m_componentType = string.Empty;
+                m_fields.Clear ();
+                m_properties.Clear ();
+            }
         }
 
         if (m_fields == null) {
@@ -369,24 +376,23 @@ public class SetProperty : IModifier
         typeof(UnityEngine.Object).IsAssignableFrom (t);
     }
 
+    // Validate this Modifier.
+    public void OnValidate () {
+        Restore ();
+        if (m_type == null) {
+            throw new NodeException ("Component type is not set.", "Select Component type from inspector.");
+        }
+    }
 
     // Test if asset is different from intended configuration
     public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group)
     {
-
-        Restore ();
-
-        if (m_type == null || m_fields == null || m_fields.Count == 0) {
-            return false;
-        }
-
         return assets.Where (a => a is GameObject).Any ();
     }
 
     // Actually change asset configurations.
     public void Modify (UnityEngine.Object[] assets, List<AssetReference> group)
     {
-
         Regex r = new Regex (m_nameFormat);
         bool isRootObjTargeting = (m_attachPolicy & AttachPolicy.RootObject) > 0;
         bool isLeafObjTargeting = (m_attachPolicy & AttachPolicy.LeafObject) > 0;

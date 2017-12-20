@@ -37,6 +37,9 @@ namespace UnityEngine.AssetGraph {
         [SerializeField] private Texture2D.EXRFlags m_exrFlags = Texture2D.EXRFlags.CompressZIP;
         #endif
 
+        public void OnValidate () {
+        }
+
         public string GetAssetExtension (AssetReference asset) {
             switch (m_outputType) {
             case TextureOutputType.PNG:
@@ -55,17 +58,15 @@ namespace UnityEngine.AssetGraph {
             return typeof(TextureImporter);
         }
 
-        public bool CanGenerateAsset (AssetReference asset, out string message) {
+        public bool CanGenerateAsset (AssetReference asset) {
+
             if (asset.importerType != typeof(TextureImporter)) {
-                message = string.Format ("Texture Scaler needs texture source asset. Source: {0} ", asset.importFrom);
-                return false;
+                throw new NodeException ("Texture Scaler needs texture for source asset.", string.Format("Remove {0} from input.", asset.fileNameAndExtension));
             }
 
             var importer = AssetImporter.GetAtPath (asset.importFrom) as TextureImporter;
-            Assertions.Assert.IsNotNull (importer);
 
-            message = "";
-            return true;
+            return importer != null;
         }
 
         public bool GenerateAsset (AssetReference asset, string generateAssetPath) {

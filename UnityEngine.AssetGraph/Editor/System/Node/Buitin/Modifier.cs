@@ -319,6 +319,7 @@ namespace UnityEngine.AssetGraph {
             if(modifier == null) {
                 throw new NodeException("Failed to create Modifier.", "Select modifier from inspector.", node);
 			}
+            modifier.OnValidate ();
 
             Type expected = Type.GetType (m_modifierType);
             Type modifierFor = ModifierUtility.GetModifierTargetType (m_instance.ClassName);

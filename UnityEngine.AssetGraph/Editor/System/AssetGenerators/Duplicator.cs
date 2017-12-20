@@ -13,6 +13,9 @@ namespace UnityEngine.AssetGraph {
     [CustomAssetGenerator("Duplicate Asset", "v1.0", 1)]
     public class Duplicator : IAssetGenerator {
 
+        public void OnValidate () {
+        }
+
         public string GetAssetExtension (AssetReference asset) {
             return asset.extension;
         }
@@ -21,8 +24,7 @@ namespace UnityEngine.AssetGraph {
             return asset.filterType;
         }
 
-        public bool CanGenerateAsset (AssetReference asset, out string message) {
-            message = "";
+        public bool CanGenerateAsset (AssetReference asset) {
             return true;
         }
 

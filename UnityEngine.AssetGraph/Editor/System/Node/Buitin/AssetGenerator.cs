@@ -366,8 +366,8 @@ namespace UnityEngine.AssetGraph {
                 () => {
                     throw new NodeException("Failed to create AssetGenerator from settings.", "Fix AssetGenerator settings from inspector", node);
                 },
-                (AssetReference badAsset, string msg) => {
-                    throw new NodeException(string.Format("{0} : Source: {1}", msg, badAsset.importFrom), 
+                (AssetReference badAsset) => {
+                    throw new NodeException(string.Format("Generator not create asset from source : Source: {0}", badAsset.importFrom), 
                         "Remove source asset from node input.", node);
                 },
                 (AssetReference badAsset) => {
@@ -561,7 +561,7 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<PerformGraph.AssetGroups> incoming, 
             Action noGeneratorData,
 			Action failedToCreateGenerator,
-            Action<AssetReference, string> canNotGenerateAsset,
+            Action<AssetReference> canNotGenerateAsset,
 			Action<AssetReference> canNotImportAsset
 		) {
             foreach (var entry in m_entries) {
@@ -572,6 +572,8 @@ namespace UnityEngine.AssetGraph {
                     failedToCreateGenerator();
                 }
 
+                generator.OnValidate ();
+
                 if(null != generator && null != incoming) {
                     foreach(var ag in incoming) {
                         foreach(var assets in ag.assetGroups.Values) {
@@ -580,9 +582,8 @@ namespace UnityEngine.AssetGraph {
                                     canNotImportAsset(a);
                                     continue;
                                 }
-                                string msg = null;
-                                if(!generator.CanGenerateAsset(a, out msg)) {
-                                    canNotGenerateAsset(a, msg);
+                                if(!generator.CanGenerateAsset(a)) {
+                                    canNotGenerateAsset(a);
                                 }
                             }
                         }

@@ -270,41 +270,5 @@ namespace UnityEngine.AssetGraph {
 			return !(lhs == rhs);
 		}
 	}
-
-    public class ComponentMenuUtility {
-        private static List<Type> s_componentTypes;
-        private static string[] s_componentNames;
-
-        public static List<Type> GetComponentTypes() {
-
-            if(s_componentTypes == null) {
-                s_componentTypes = new List<Type>();
-
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                    var components = assembly.GetTypes ()
-                        .Where (t => 
-                            t.IsPublic && 
-                            !t.IsAbstract &&
-                                     t != typeof(UnityEngine.Component) &&
-                                     t != typeof(UnityEngine.Transform) &&
-                                     t != typeof(UnityEngine.MonoBehaviour) &&
-                                     typeof(UnityEngine.Component).IsAssignableFrom (t)
-                                     );
-                    s_componentTypes.AddRange (components);
-                }
-
-                s_componentNames = s_componentTypes.Select (t => t.Name).ToArray ();
-            }
-            return s_componentTypes;
-        }
-
-        public static string[] GetComponentNames() {
-            if (s_componentNames == null) {
-                var types = GetComponentTypes ();
-                s_componentNames = types.Select (t => t.Name).ToArray ();
-            }
-            return s_componentNames;
-        }
-    }
 }
 

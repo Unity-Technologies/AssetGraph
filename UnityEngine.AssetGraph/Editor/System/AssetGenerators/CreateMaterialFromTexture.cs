@@ -6,6 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 [System.Serializable]
 [CustomAssetGenerator("Create Material From Texture", "v1.0")]
@@ -25,6 +26,15 @@ public class CreateMaterialFromTexture : IAssetGenerator {
     [SerializeField] public string m_propertyName;
     [SerializeField] public List<PropertyField> m_properties;
 
+    public void OnValidate () {
+        if (m_referenceMat == null || m_referenceMat.Empty) {
+            throw new NodeException ("Reference Material is empty", "Set Reference Material from inspector.");
+        }
+
+        if (string.IsNullOrEmpty(m_propertyName)) {
+            throw new NodeException ("Property name is empty", "Set property name for incoming texture from inspector.");
+        }
+    }
 
     public string GetAssetExtension (AssetReference asset) {
         return ".mat";
@@ -34,23 +44,12 @@ public class CreateMaterialFromTexture : IAssetGenerator {
         return typeof(Material);
     }
 
-	public bool CanGenerateAsset (AssetReference asset, out string message) {
-        if (m_referenceMat == null || m_referenceMat.Empty) {
-            message = string.Format ("You must set Reference Material.");
-            return false;
-        }
+	public bool CanGenerateAsset (AssetReference asset) {
 
-        if (string.IsNullOrEmpty(m_propertyName)) {
-            message = string.Format ("You must set property name for incoming texture.");
-            return false;
-        }
-
-        if (asset.filterType != typeof(TextureImporter)) {
-			message = string.Format ("My Generator needs texture source asset. Source: {0} ", asset.importFrom);
-			return false;
+        if (asset.importerType != typeof(TextureImporter)) {
+            throw new NodeException ("CreateMaterialFromTexture needs texture for source asset.", string.Format("Remove {0} from input.", asset.fileNameAndExtension));
 		}
 
-		message = "";
 		return true;
 	}
 

@@ -472,6 +472,8 @@ namespace UnityEngine.AssetGraph {
 				failedToCreateBuilder();
 			}
 
+            builder.OnValidate ();
+
 			if(null != builder && null != incoming) {
 				foreach(var ag in incoming) {
 					foreach(var key in ag.assetGroups.Keys) {

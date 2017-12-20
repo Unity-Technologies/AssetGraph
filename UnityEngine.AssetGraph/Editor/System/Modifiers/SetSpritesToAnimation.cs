@@ -19,15 +19,15 @@ public class SetSpritesToAnimation : IModifier {
     [SerializeField] bool m_loopTime;
     [SerializeField] AnimationType m_animType;
 
+    public void OnValidate () {
+    }
+
 	// Test if asset is different from intended configuration 
 	public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 
         var anim = assets.Where (a => a is AnimationClip).FirstOrDefault() as AnimationClip;
-        if (anim == null) {
-            return false;
-        }
 
-		return true;
+        return anim != null;
 	}
 
 	// Actually change asset configurations. 

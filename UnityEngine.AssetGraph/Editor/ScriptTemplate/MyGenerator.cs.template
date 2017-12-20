@@ -13,6 +13,9 @@ public class MyGenerator : IAssetGenerator {
 
 	[SerializeField] private float m_scale = 1.0f;
 
+    public void OnValidate () {
+    }
+
     public string GetAssetExtension (AssetReference asset) {
         return ".jpg";
     }

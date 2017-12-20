@@ -17,6 +17,13 @@ namespace UnityEngine.AssetGraph {
     /// Subclass of IModifier must have <c>CustomModifier</c> attribute.
     /// </summary>
 	public interface IModifier {
+
+        /// <summary>
+        /// Called when validating this prefabBuilder.
+        /// NodeException should be thrown if this modifier is not ready to be used for building.
+        /// </summary>
+        void OnValidate ();
+
         /// <summary>
         /// Test if incoming assset is different from this IModifier's setting.
         /// </summary>

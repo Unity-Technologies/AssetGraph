@@ -16,6 +16,13 @@ namespace UnityEngine.AssetGraph {
     /// Subclass of IPrefabBuilder must have CUstomPrefabBuilder attribute.
     /// </summary>
 	public interface IPrefabBuilder {
+
+        /// <summary>
+        /// Called when validating this prefabBuilder.
+        /// NodeException should be thrown if this modifier is not ready to be used for building.
+        /// </summary>
+        void OnValidate ();
+
 		/**
 		 * 
 		 * @result Name of prefab file if prefab can be created. null if not.

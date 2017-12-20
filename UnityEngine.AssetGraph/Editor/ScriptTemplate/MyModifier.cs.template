@@ -11,6 +11,9 @@ public class MyModifier : IModifier {
 
 	[SerializeField] private bool doSomething;
 
+    public void OnValidate () {
+    }
+    
 	// Test if asset is different from intended configuration 
 	public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {
 		return false;

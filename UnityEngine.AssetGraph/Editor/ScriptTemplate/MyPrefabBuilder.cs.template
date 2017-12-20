@@ -12,6 +12,9 @@ public class MyPrefabBuilder : IPrefabBuilder {
 
 	[SerializeField] private Color color;
 
+    public void OnValidate () {
+    }
+
 	/**
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.

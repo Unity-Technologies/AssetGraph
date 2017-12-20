@@ -6,12 +6,19 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 [System.Serializable]
-[CustomAssetGenerator("[Example]Duplicate Reference Asset", "v1.0", 1)]
+[CustomAssetGenerator("Duplicate Reference Asset", "v1.0", 1)]
 public class DuplicateReferenceAsset : IAssetGenerator {
 
     [SerializeField] private ObjectReference m_asset;
+
+    public void OnValidate () {
+        if(m_asset == null ||  m_asset.Object == null) {
+            throw new NodeException ("Reference Asset not set", "Configure reference asset from inspector");
+        }
+    }
 
     public string GetAssetExtension (AssetReference asset) {
 
@@ -31,14 +38,7 @@ public class DuplicateReferenceAsset : IAssetGenerator {
         return FilterTypeUtility.FindAssetFilterType (AssetDatabase.GetAssetPath (m_asset.Object));
     }
 
-    public bool CanGenerateAsset (AssetReference asset, out string message) {
-
-        if(m_asset == null ||  m_asset.Object == null) {
-            message = "Reference Asset not set. Configure reference asset from inspector.";
-            return false;
-        }
-
-        message = "";
+    public bool CanGenerateAsset (AssetReference asset) {
         return true;
     }
 

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 [CustomModifier("Attach Component", typeof(GameObject))]
 public class AttachComponent : IModifier {
@@ -22,6 +23,9 @@ public class AttachComponent : IModifier {
     [SerializeField] private string m_nameFormat;
 
     private int m_selectedIndex = -1;
+
+    public void OnValidate () {
+    }
 
 	// Test if asset is different from intended configuration 
 	public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group) {

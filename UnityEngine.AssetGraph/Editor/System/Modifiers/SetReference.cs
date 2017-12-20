@@ -124,7 +124,7 @@ public class SetReference : IModifier
 
         if (m_fieldValueType == null && !string.IsNullOrEmpty (m_fieldName)) {
             if (m_fieldKind == Kind.Field) {
-                m_fieldInfo = m_targetComponentType.GetField (m_fieldName);
+                m_fieldInfo = m_targetComponentType.GetField (m_fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                 if (m_fieldInfo == null) {
                     Invalidate (false);
                     return;
@@ -206,26 +206,26 @@ public class SetReference : IModifier
         }
     }
 
+    public void OnValidate () {
+        Restore ();
+
+        if (m_targetComponentType == null) {
+            throw new NodeException ("Component type is not set.", "Select Component type from inspector.");
+        }
+        if (m_fieldValueType == null) {
+            throw new NodeException ("Field variable is not set.", "Select editing variable from inspector.");
+        }
+    }
+
     // Test if asset is different from intended configuration
     public bool IsModified (UnityEngine.Object[] assets, List<AssetReference> group)
     {
-
-        Restore ();
-
-        if (m_targetComponentType == null || m_fieldValueType == null) {
-            return false;
-        }
-
         return assets.Where (a => a is GameObject).Any ();
     }
 
     // Actually change asset configurations.
     public void Modify (UnityEngine.Object[] assets, List<AssetReference> group)
     {
-        if (m_fieldValueType == null) {
-            return;
-        }
-
         Regex r = new Regex (m_targetNamePattern);
         bool isRootObjTargeting = (m_attachPolicy & AttachPolicy.RootObject) > 0;
         bool isLeafObjTargeting = (m_attachPolicy & AttachPolicy.LeafObject) > 0;
@@ -402,13 +402,15 @@ public class SetReference : IModifier
                             m_nicifiedFieldName = info.niceName;
 
                             if (m_fieldKind == Kind.Field) {
-                                m_fieldInfo = m_targetComponentType.GetField (m_fieldName);
+                                m_fieldInfo = m_targetComponentType.GetField (m_fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
                                 m_fieldValueType = m_fieldInfo.FieldType;
                             } else {
                                 m_propertyInfo = m_targetComponentType.GetProperty (m_fieldName);
                                 m_fieldValueType = m_propertyInfo.PropertyType;
                             }
                             m_fieldValueElementType = (m_fieldValueType.IsArray) ? m_fieldValueType.GetElementType () : m_fieldValueType;
+
+                            SetupPropertySelector ();
 
                             onValueChanged ();
                         }
@@ -520,12 +522,12 @@ public class SetReference : IModifier
             }
         } else {
             using (new EditorGUILayout.HorizontalScope ()) {
-                m_componentSelectedIndex = EditorGUILayout.Popup ("Component", m_componentSelectedIndex, ComponentMenuUtility.GetComponentNames ());
+                m_componentSelectedIndex = EditorGUILayout.Popup ("Component", m_componentSelectedIndex, ComponentMenuUtility.GetScriptComponentNamesWithObjectReferenceProperty ());
 
                 using (new EditorGUI.DisabledScope (m_componentSelectedIndex < 0)) {
                     if (GUILayout.Button ("Select", GUILayout.Width (60))) 
                     {
-                        m_targetComponentType = ComponentMenuUtility.GetComponentTypes () [m_componentSelectedIndex];
+                        m_targetComponentType = ComponentMenuUtility.GetScriptComponentTypesWithObjectReferenceProperty () [m_componentSelectedIndex];
                         m_targetComponentTypeName = m_targetComponentType.AssemblyQualifiedName;
                         Invalidate (false);
 

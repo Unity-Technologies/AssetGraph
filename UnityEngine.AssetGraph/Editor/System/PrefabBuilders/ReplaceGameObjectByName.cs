@@ -22,6 +22,18 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
         return string.Format("{0}_{1}",srcGameObjectName, groupKeyName);
     }
 
+    public void OnValidate () {
+
+        if (m_replaceEntries != null) {
+            foreach (var e in m_replaceEntries) {
+                if (e.dstObject == null || e.dstObject.Empty) {
+                    throw new NodeException ("Replacing GameObject is not set.", "Configure Replacing Object from inspector.");
+                }
+            }
+        }
+
+    }
+
 	/**
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.
@@ -62,7 +74,7 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
             var childTransform = parent.transform.GetChild (i);
             foreach(var r in m_replaceEntries) {
                 if (childTransform.gameObject.name == r.name) {
-                    var newObj = GameObject.Instantiate (r.dstObject, 
+                    var newObj = GameObject.Instantiate (r.dstObject.Object, 
                         childTransform.position, 
                         childTransform.rotation, 
                         parent.transform) as GameObject;
@@ -106,11 +118,11 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
                         onValueChanged ();
                     }
 
-                    var newObj  = (UnityEngine.GameObject)EditorGUILayout.ObjectField(m_replaceEntries[i].dstObject, 
+                    var newObj  = (UnityEngine.GameObject)EditorGUILayout.ObjectField(m_replaceEntries[i].dstObject.Object, 
                         typeof(UnityEngine.GameObject), false);
                     
-                    if (newObj != m_replaceEntries [i].dstObject) {
-                        m_replaceEntries [i].dstObject = newObj;
+                    if (newObj != m_replaceEntries [i].dstObject.Object) {
+                        m_replaceEntries [i].dstObject.Object = newObj;
                         onValueChanged ();
                     }
                 }

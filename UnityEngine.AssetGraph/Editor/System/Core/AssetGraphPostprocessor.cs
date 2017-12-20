@@ -46,15 +46,8 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
-        public bool PushController(AssetGraphController c) {
-
-            if (m_controllers.Where (x => x.TargetGraph.GetGraphGuid () == c.TargetGraph.GetGraphGuid ()).Any ()) {
-                return false;
-            }
-
+        public void PushController(AssetGraphController c) {
             m_controllers.Push (c);
-
-            return true;
         }
 
         public void PushContext(AssetPostprocessorContext c) {

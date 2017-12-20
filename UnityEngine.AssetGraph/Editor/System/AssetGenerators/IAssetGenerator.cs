@@ -18,6 +18,12 @@ namespace UnityEngine.AssetGraph {
 	public interface IAssetGenerator {
 
         /// <summary>
+        /// Called when validating this prefabBuilder.
+        /// NodeException should be thrown if this modifier is not ready to be used for building.
+        /// </summary>
+        void OnValidate ();
+
+        /// <summary>
         /// Gets the asset extension of generating asset.
         /// </summary>
         /// <returns>The extension in string format (e.g. ".png").</returns>
@@ -34,12 +40,12 @@ namespace UnityEngine.AssetGraph {
         Type GetAssetType(AssetReference asset);
 
         /// <summary>
-        /// Test if asset can be generated from given asset.
+        /// Test if generator can generate new asset with given asset.
+        /// NodeException should be thrown if there is any error that user should know about.
         /// </summary>
-        /// <returns><c>true</c> if this instance can generate asset the specified asset message; otherwise, <c>false</c>.</returns>
+        /// <returns><c>true</c> if this instance can generate asset; otherwise, <c>false</c>.</returns>
         /// <param name="asset">Asset to examine if derivertive asset can be generated.</param>
-        /// <param name="message">Additional message when generator can not generate asset.</param>
-        bool CanGenerateAsset (AssetReference asset, out string message);
+        bool CanGenerateAsset (AssetReference asset);
 
         /// <summary>
         /// Generates the asset.

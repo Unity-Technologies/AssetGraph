@@ -74,7 +74,7 @@ namespace UnityEngine.AssetGraph {
 			};
 			gIndex = 0;
             m_currentNode = null;
-		}
+        }
 
 		/**
 		 * Execute Run operations using current graph
@@ -91,10 +91,7 @@ namespace UnityEngine.AssetGraph {
                 return false;
             }
 
-            if (!AssetGraphPostprocessor.Postprocessor.PushController (this)) {
-                LogUtility.Logger.LogFormat(LogType.Log, "[Perform - Skip] Re-entering graph on stack: {0}", m_targetGraph.GetGraphName());
-                return false;
-            }
+            AssetGraphPostprocessor.Postprocessor.PushController (this);
 
 			LogUtility.Logger.Log(LogType.Log, (isBuild) ? "---Build BEGIN---" : "---Setup BEGIN---");
 			m_isBuilding = true;
@@ -165,9 +162,12 @@ namespace UnityEngine.AssetGraph {
 			try {
 				LogUtility.Logger.LogFormat(LogType.Log, "[validate] {0} validate", node.Name);
 				m_isBuilding = true;
+
+                AssetGraphPostprocessor.Postprocessor.PushController (this);
 				DoNodeOperation(target, node.Data, null, null, 
 					(Model.ConnectionData dst, Dictionary<string, List<AssetReference>> outputGroupAsset) => {}, 
 					false, null);
+                AssetGraphPostprocessor.Postprocessor.PopController();
 
                 if(!IsAnyIssueFound) {
                     LogUtility.Logger.LogFormat(LogType.Log, "[Perform] {0} ", node.Name);
