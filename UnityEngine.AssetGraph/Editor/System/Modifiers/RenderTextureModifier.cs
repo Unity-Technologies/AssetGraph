@@ -16,7 +16,7 @@ namespace UnityEngine.AssetGraph.Modifiers {
 	 */ 
 
 	[Serializable] 
-	[CustomModifier("Default Modifier(RenderTexture)", typeof(RenderTexture))]
+	[CustomModifier("Set Properties", typeof(RenderTexture))]
 	public class RenderTextureModifier : IModifier {
 
 		public enum DepthBuffer : int {
