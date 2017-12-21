@@ -12,7 +12,7 @@ using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
 	
-	[CustomNode("Modify Assets/Overwrite Import Setting", 60)]
+	[CustomNode("Modify Assets/Overwrite Import Settings", 60)]
 	public class ImportSetting : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetString m_spritePackingTagNameTemplate;          // legacy

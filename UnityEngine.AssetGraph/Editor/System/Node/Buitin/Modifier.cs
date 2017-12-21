@@ -12,7 +12,7 @@ using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
 
-	[CustomNode("Modify Assets/Modify Assets Directly", 61)]
+	[CustomNode("Modify Assets/Modify Assets", 61)]
 	public class Modifier : Node, Model.NodeDataImporter {
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
