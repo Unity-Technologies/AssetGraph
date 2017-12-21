@@ -73,12 +73,12 @@ namespace UnityEngine.AssetGraph {
 			return t;
 		}
             
-		public static MonoScript LoadMonoScript(string className) {
-			if(className == null) {
+		public static MonoScript LoadMonoScript(string assemblyQualifiedTypeName) {
+            if(assemblyQualifiedTypeName == null) {
 				return null;
 			}
 
-			var t = Type.GetType(className);
+            var t = Type.GetType(assemblyQualifiedTypeName);
 			if(t == null) {
 				return null;
 			}
