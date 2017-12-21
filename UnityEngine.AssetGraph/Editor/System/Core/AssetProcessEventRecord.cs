@@ -29,6 +29,11 @@ namespace UnityEngine.AssetGraph {
         private List<AssetProcessEvent> m_filteredEvents;
         private bool m_includeError;
         private bool m_includeInfo;
+        private string m_filterKeyword;
+        private string[] m_filterKeywordTokens;
+
+        private int m_filteredErrorEventCount;
+        private int m_filteredInfoEventCount;
 
         public List<AssetProcessEvent> Events {
             get {
@@ -45,6 +50,18 @@ namespace UnityEngine.AssetGraph {
         public int ErrorEventCount {
             get {
                 return m_errorEventCount;
+            }
+        }
+
+        public int FilteredInfoEventCount {
+            get {
+                return m_filteredInfoEventCount;
+            }
+        }
+
+        public int FilteredErrorEventCount {
+            get {
+                return m_filteredErrorEventCount;
             }
         }
 
@@ -104,10 +121,12 @@ namespace UnityEngine.AssetGraph {
             m_filteredEvents = new List<AssetProcessEvent>();
             m_errorEventCount = 0;
             m_infoEventCount = 0;
+            m_filteredInfoEventCount = 0;
+            m_filteredErrorEventCount = 0;
+            m_filterKeyword = string.Empty;
             m_includeError = true;
             m_includeInfo = true;
             m_version = VERSION;
-
         }
 
         public void SetFilterCondition(bool includeInfo, bool includeError) {
@@ -120,18 +139,55 @@ namespace UnityEngine.AssetGraph {
             }
         }
 
+        public void SetFilterKeyword(string keyword ) {
+
+            if (m_filterKeyword != keyword) {
+                m_filterKeyword = keyword;
+                m_filterKeywordTokens = m_filterKeyword.Split (' ');
+
+                RebuildFilteredEvents ();
+            }
+        }
+
         private void RebuildFilteredEvents() {
             m_filteredEvents.Clear ();
             m_filteredEvents.Capacity = m_events.Count;
+            m_filteredErrorEventCount = 0;
+            m_filteredInfoEventCount = 0;
 
             foreach (var e in m_events) {
-                if (m_includeError && e.Kind == AssetProcessEvent.EventKind.Error) {
-                    m_filteredEvents.Add (e);
-                }
-                if (m_includeInfo && e.Kind != AssetProcessEvent.EventKind.Error) {
+                if (MeetFilterCondition(e)) {
+                    switch (e.Kind) {
+                    case AssetProcessEvent.EventKind.Error: 
+                        ++m_filteredErrorEventCount;
+                        break;
+                    default:
+                        ++m_filteredInfoEventCount;
+                        break;
+                    }
                     m_filteredEvents.Add (e);
                 }
             }
+        }
+
+        private bool MeetFilterCondition(AssetProcessEvent e) {
+            bool meetKindFilter = 
+                (m_includeError && e.Kind == AssetProcessEvent.EventKind.Error) ||
+                (m_includeInfo && e.Kind != AssetProcessEvent.EventKind.Error) ;
+
+            if (string.IsNullOrEmpty (m_filterKeyword)) {
+                return meetKindFilter;
+            }
+
+            bool keymatch = true;
+
+            foreach (var token in m_filterKeywordTokens) {
+                if (string.IsNullOrEmpty (token)) {
+                    continue;
+                }
+                keymatch &= e.AssetName.IndexOf (token) >= 0;
+            }
+            return meetKindFilter && keymatch;
         }
 
         public void LogModify(AssetReference a) {
@@ -168,15 +224,17 @@ namespace UnityEngine.AssetGraph {
             if (e.Kind == AssetProcessEvent.EventKind.Error) {
                 ++m_errorEventCount;
 
-                if(m_includeError) {
+                if (MeetFilterCondition (e)) {
                     m_filteredEvents.Add (e);
+                    ++m_filteredErrorEventCount;
                 }
             }
             if (e.Kind != AssetProcessEvent.EventKind.Error) {
                 ++m_infoEventCount;
 
-                if(m_includeInfo) {
+                if (MeetFilterCondition (e)) {
                     m_filteredEvents.Add (e);
+                    ++m_filteredInfoEventCount;
                 }
             }
 
@@ -198,6 +256,8 @@ namespace UnityEngine.AssetGraph {
             m_filteredEvents.Clear ();
             m_errorEventCount = 0;
             m_infoEventCount = 0;
+            m_filteredInfoEventCount = 0;
+            m_filteredErrorEventCount = 0;
 
             if (executeGraphsWithError) {
                 AssetGraphUtility.ExecuteAllGraphs (graphGuids, true);
