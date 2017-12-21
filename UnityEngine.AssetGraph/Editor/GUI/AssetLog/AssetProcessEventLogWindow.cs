@@ -2,6 +2,8 @@
 using UnityEngine;
 using UnityEditor;
 
+using UnityEditor.IMGUI.Controls;
+
 using System;
 using System.IO;
 using System.Linq;
@@ -21,6 +23,8 @@ namespace UnityEngine.AssetGraph {
         private bool m_clearOnBuild;
         private Texture2D m_errorIcon;
         private Texture2D m_infoIcon;
+        private SearchField m_search;
+        private string m_searchKeywords;
 
         [MenuItem(Model.Settings.GUI_TEXT_MENU_ASSETLOGWINDOW_OPEN, false, 2)]
 		public static void Open () {
@@ -40,6 +44,10 @@ namespace UnityEngine.AssetGraph {
             m_clearOnBuild = UserPreference.ClearAssetLogOnBuild;
 
             m_logViewController = new AssetProcessEventLogViewController ();
+            m_search = new SearchField ();
+
+            AssetProcessEventRecord.GetRecord ().SetFilterCondition (m_showInfo, m_showError);
+            AssetProcessEventRecord.GetRecord ().SetFilterKeyword (string.Empty);
 		}
 
 		public void OnEnable () {
@@ -72,10 +80,24 @@ namespace UnityEngine.AssetGraph {
                     UserPreference.ClearAssetLogOnBuild = m_clearOnBuild = clearOnBuild;
                 }
 
+                GUILayout.Space (4);
+
+                EditorGUI.BeginChangeCheck ();
+
+                m_searchKeywords = m_search.OnToolbarGUI (m_searchKeywords);
+
+                if (EditorGUI.EndChangeCheck ()) {
+                    r.SetFilterKeyword (m_searchKeywords);
+                    m_logViewController.Reload ();
+                }
+
                 GUILayout.FlexibleSpace();
 
-                var showInfo = GUILayout.Toggle(m_showInfo, new GUIContent(r.InfoEventCount.ToString(), m_infoIcon, "Toggle Show Info"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
-                var showError = GUILayout.Toggle(m_showError, new GUIContent(r.ErrorEventCount.ToString(), m_errorIcon, "Toggle Show Errors"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                var infoEventCountStr = (string.IsNullOrEmpty (m_searchKeywords)) ? r.InfoEventCount.ToString () : string.Format ("{0}({1})", r.FilteredInfoEventCount, r.InfoEventCount);
+                var errorEventCountStr = (string.IsNullOrEmpty (m_searchKeywords)) ? r.ErrorEventCount.ToString () : string.Format ("{0}({1})", r.FilteredErrorEventCount, r.ErrorEventCount);
+
+                var showInfo = GUILayout.Toggle(m_showInfo, new GUIContent(infoEventCountStr, m_infoIcon, "Toggle Show Info"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
+                var showError = GUILayout.Toggle(m_showError, new GUIContent(errorEventCountStr, m_errorIcon, "Toggle Show Errors"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
 
                 if(showInfo != m_showInfo || showError != m_showError) {
                     m_showInfo = showInfo;
