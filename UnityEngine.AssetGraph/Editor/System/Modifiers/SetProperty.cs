@@ -44,7 +44,7 @@ public class SetProperty : IModifier
         [SerializeField] private Vector2 m_v2value;
         [SerializeField] private Vector3 m_v3value;
         [SerializeField] private Vector4 m_v4value;
-        [SerializeField] private SerializableAnimationCurve m_curveValue;
+        [SerializeField] private AnimationCurve m_curveValue;
         [SerializeField] private Color m_colorValue;
 
         private Type m_valueType;
@@ -65,6 +65,7 @@ public class SetProperty : IModifier
             m_nicifiedName = ObjectNames.NicifyVariableName (m_name);
             m_fieldInfo = info;
             m_valueType = info.FieldType;
+            m_curveValue = new AnimationCurve ();
         }
 
         public FieldEditInfo (System.Reflection.PropertyInfo info)
@@ -74,6 +75,7 @@ public class SetProperty : IModifier
             m_nicifiedName = ObjectNames.NicifyVariableName (m_name);
             m_propertyInfo = info;
             m_valueType = info.PropertyType;
+            m_curveValue = new AnimationCurve ();
         }
 
         public FieldEditInfo (FieldEditInfo info)
@@ -127,7 +129,7 @@ public class SetProperty : IModifier
             }
 
             if (m_curveValue == null) {
-                m_curveValue = new SerializableAnimationCurve ();
+                m_curveValue = new AnimationCurve ();
             }
 
             return true;
@@ -169,7 +171,7 @@ public class SetProperty : IModifier
                     } else if (m_valueType == typeof(Vector4)) {
                         m_v4value = EditorGUILayout.Vector4Field (m_nicifiedName, m_v4value);
                     } else if (m_valueType == typeof(AnimationCurve)) {
-                        m_curveValue.Curve = EditorGUILayout.CurveField (m_nicifiedName, m_curveValue.Curve);
+                        m_curveValue = EditorGUILayout.CurveField (m_nicifiedName, m_curveValue);
                     } else if (m_valueType == typeof(Color)) {
                         m_colorValue = EditorGUILayout.ColorField (m_nicifiedName, m_colorValue);
                     } else if (m_valueType.IsEnum) {
@@ -191,7 +193,6 @@ public class SetProperty : IModifier
 
         public void Apply (UnityEngine.Object o)
         {
-
             if (!m_enabled) {
                 return;
             }
@@ -233,9 +234,9 @@ public class SetProperty : IModifier
                     m_propertyInfo.SetValue (o, m_v4value, null);
             } else if (m_valueType == typeof(AnimationCurve)) {
                 if (m_kind == Kind.Field)
-                    m_fieldInfo.SetValue (o, m_curveValue.Curve);
+                    m_fieldInfo.SetValue (o, m_curveValue);
                 else
-                    m_propertyInfo.SetValue (o, m_curveValue.Curve, null);
+                    m_propertyInfo.SetValue (o, m_curveValue, null);
             } else if (m_valueType == typeof(Color)) {
                 if (m_kind == Kind.Field)
                     m_fieldInfo.SetValue (o, m_colorValue);
