@@ -624,7 +624,9 @@ namespace UnityEngine.AssetGraph
 					// otherwise, each node need OnUndoObject event
 					else {
                         foreach (var n in m_nodes) {
-                            n.OnUndoObject (m_controller);
+                            if (n != null) {
+                                n.OnUndoObject (m_controller);
+                            }
                         }
                     }
                 }
