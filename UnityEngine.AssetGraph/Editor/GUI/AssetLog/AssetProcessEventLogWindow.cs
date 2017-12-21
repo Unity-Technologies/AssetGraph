@@ -80,7 +80,7 @@ namespace UnityEngine.AssetGraph {
                     UserPreference.ClearAssetLogOnBuild = m_clearOnBuild = clearOnBuild;
                 }
 
-                GUILayout.Space (4);
+                GUILayout.FlexibleSpace();
 
                 EditorGUI.BeginChangeCheck ();
 
@@ -91,10 +91,8 @@ namespace UnityEngine.AssetGraph {
                     m_logViewController.Reload ();
                 }
 
-                GUILayout.FlexibleSpace();
-
-                var infoEventCountStr = (string.IsNullOrEmpty (m_searchKeywords)) ? r.InfoEventCount.ToString () : string.Format ("{0}({1})", r.FilteredInfoEventCount, r.InfoEventCount);
-                var errorEventCountStr = (string.IsNullOrEmpty (m_searchKeywords)) ? r.ErrorEventCount.ToString () : string.Format ("{0}({1})", r.FilteredErrorEventCount, r.ErrorEventCount);
+                var infoEventCountStr = (string.IsNullOrEmpty (m_searchKeywords)) ? r.InfoEventCount.ToString () : r.FilteredInfoEventCount.ToString();
+                var errorEventCountStr = (string.IsNullOrEmpty (m_searchKeywords)) ? r.ErrorEventCount.ToString () : r.FilteredErrorEventCount.ToString();
 
                 var showInfo = GUILayout.Toggle(m_showInfo, new GUIContent(infoEventCountStr, m_infoIcon, "Toggle Show Info"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
                 var showError = GUILayout.Toggle(m_showError, new GUIContent(errorEventCountStr, m_errorIcon, "Toggle Show Errors"), EditorStyles.toolbarButton, GUILayout.Height(Model.Settings.GUI.TOOLBAR_HEIGHT));
