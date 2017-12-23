@@ -173,7 +173,7 @@ namespace UnityEngine.AssetGraph {
 			if (Event.current.type == EventType.ContextClick && cellRect.Contains(Event.current.mousePosition))
 			{
 				var menu = new GenericMenu();
-				menu.AddItem(new GUIContent("Copy AssetBundle Name"), false, () =>
+				menu.AddItem(new GUIContent("Copy Group Name"), false, () =>
 				{
 					EditorGUIUtility.systemCopyBuffer = groupItem.name;
 				});

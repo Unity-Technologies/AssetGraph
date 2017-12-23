@@ -15,11 +15,82 @@ namespace UnityEngine.AssetGraph {
 	[CustomNode("Load Assets/Load From Directory", 10)]
 	public class Loader : Node, Model.NodeDataImporter {
 
+        [Serializable]
+        private class IgnorePattern
+        {
+            public enum FileTypeMask : int {
+                File = 1,
+                Directory = 2
+            }
+            [SerializeField] FileTypeMask m_fileTypeMask;
+            [SerializeField] string m_ignorePattern;
+
+            private Regex m_match;
+
+            public IgnorePattern(FileTypeMask typeMask, string pattern) {
+                m_fileTypeMask = typeMask;
+                m_ignorePattern = pattern;
+            }
+
+            public IgnorePattern(IgnorePattern p) {
+                m_fileTypeMask = p.m_fileTypeMask;
+                m_ignorePattern = p.m_ignorePattern;
+            }
+
+            public FileTypeMask MatchingFileTypes {
+                get {
+                    return m_fileTypeMask;
+                }
+                set{
+                    m_fileTypeMask = value;
+                }
+            }
+
+            public string Pattern {
+                get {
+                    return m_ignorePattern;
+                }
+                set{
+                    m_ignorePattern = value;
+                    m_match = null;
+                }
+            }
+
+            public bool IsMatch(string path) {
+                if (string.IsNullOrEmpty (m_ignorePattern)) {
+                    return false;
+                }
+
+                if (m_match == null) {
+                    m_match = new Regex(m_ignorePattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                }
+
+                if (((int)m_fileTypeMask & (int)FileTypeMask.File) > 0) {
+                    var fileName = Path.GetFileName(path);
+                    return m_match.IsMatch (fileName);
+                }
+
+                if (((int)m_fileTypeMask & (int)FileTypeMask.Directory) > 0) {
+                    var dirName = Path.GetDirectoryName(path);
+                    return m_match.IsMatch (dirName);
+                }
+
+                return false;
+            }
+
+            public void OnGUI(NodeGUI node) {
+                m_fileTypeMask = (FileTypeMask)EditorGUILayout.EnumMaskField (m_fileTypeMask, GUILayout.Width(80f));
+                var newPattern = GUILayout.TextField(m_ignorePattern);
+                if (newPattern != m_ignorePattern) {
+                    m_ignorePattern = newPattern;
+                    m_match = null;
+                }
+            }
+        }
+
         [SerializeField] private SerializableMultiTargetString m_loadPath;
         [SerializeField] private SerializableMultiTargetString m_loadPathGuid;
-        [SerializeField] private List<string> m_ignoredFilePatterns;
-        [SerializeField] private List<string> m_ignoredFolderPatterns;
-        private Dictionary<string, Regex> m_cachedRegex = new Dictionary<string, Regex>(StringComparer.Ordinal);
+        [SerializeField] private List<IgnorePattern> m_ignorePatterns;
 
         [SerializeField] private bool m_respondToAssetChange;
 
@@ -87,6 +158,11 @@ namespace UnityEngine.AssetGraph {
             newNode.m_loadPathGuid = new SerializableMultiTargetString(m_loadPathGuid);
             newNode.m_respondToAssetChange = m_respondToAssetChange;
 
+            newNode.m_ignorePatterns = new List<IgnorePattern> ();
+            foreach (var p in m_ignorePatterns) {
+                newNode.m_ignorePatterns.Add (new IgnorePattern (p));
+            }
+
 			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
@@ -133,25 +209,33 @@ namespace UnityEngine.AssetGraph {
 
             foreach(var asset in ctx.ImportedAssets) {
                 if (asset.importFrom.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(asset.importFrom)) {
+                        return true;
+                    }
                 }
             }
 
             foreach(var asset in ctx.MovedAssets) {
                 if (asset.importFrom.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(asset.importFrom)) {
+                        return true;
+                    }
                 }
             }
 
             foreach (var path in ctx.MovedFromAssetPaths) {
                 if (path.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(path)) {
+                        return true;
+                    }
                 }
             }
 
             foreach (var path in ctx.DeletedAssetPaths) {
                 if (path.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(path)) {
+                        return true;
+                    }
                 }
             }
 
@@ -186,8 +270,6 @@ namespace UnityEngine.AssetGraph {
 
 			EditorGUILayout.HelpBox("Load From Directory: Load assets from given directory path.", MessageType.Info);
 			editor.UpdateNodeName(node);
-
-			DrawIgnoredPatterns(node, onValueChanged);
 
 			GUILayout.Space(10f);
 
@@ -270,49 +352,36 @@ namespace UnityEngine.AssetGraph {
 					}
 				}
 			}
+
+            GUILayout.Space(8f);
+            DrawIgnoredPatterns(node, onValueChanged);
 		}
 
 		private void DrawIgnoredPatterns(NodeGUI node, Action onValueChanged)
 		{
 			var changed = false;
 			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				GUILayout.Label("Ignored File Pattern");
-				for (int i = 0; i < m_ignoredFilePatterns.Count; i++) {
-					GUILayout.BeginHorizontal();
-					if (GUILayout.Button("-", GUILayout.Width(30))) {
-						m_ignoredFilePatterns.RemoveAt(i);
-						changed = true;
-					}
-					EditorGUI.BeginChangeCheck();
-					m_ignoredFilePatterns[i] = GUILayout.TextField(m_ignoredFilePatterns[i]).Trim();
-					if (EditorGUI.EndChangeCheck())
-						changed = true;
-					GUILayout.EndHorizontal();
-				}
+				GUILayout.Label("Files & Directory Ignore Settings");
+                IgnorePattern removingItem = null;
+                foreach (var p in m_ignorePatterns) {
+                    using(new GUILayout.HorizontalScope() ) {
+                        if (GUILayout.Button ("-", GUILayout.Width (30))) {
+                            removingItem = p;
+                        }
+                        EditorGUI.BeginChangeCheck();
+                        p.OnGUI(node);
+                        if (EditorGUI.EndChangeCheck()) {
+                            changed = true;
+                        }
+                    }
+                }
+                if (removingItem != null) {
+                    m_ignorePatterns.Remove (removingItem);
+                    changed = true;
+                }
 				if (GUILayout.Button("+")) {
-					m_ignoredFilePatterns.Add(string.Empty);
-					changed = true;
-				}
-			}
-			GUILayout.Space(6);
-			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-				GUILayout.Label("Ignored Folder Pattern");
-
-				for (int i = 0; i < m_ignoredFolderPatterns.Count; i++) {
-					GUILayout.BeginHorizontal();
-					if (GUILayout.Button("-", GUILayout.Width(30))) {
-						m_ignoredFolderPatterns.RemoveAt(i);
-						changed = true;
-					}
-					EditorGUI.BeginChangeCheck();
-					m_ignoredFolderPatterns[i] = GUILayout.TextField(m_ignoredFolderPatterns[i]).Trim();
-					if (EditorGUI.EndChangeCheck())
-						changed = true;
-					GUILayout.EndHorizontal();
-				}
-				if (GUILayout.Button("+")) {
-					m_ignoredFolderPatterns.Add(string.Empty);
-					changed = true;
+                    m_ignorePatterns.Add(new IgnorePattern(IgnorePattern.FileTypeMask.File, string.Empty));
+                    changed = true;
 				}
 			}
 			if (changed && onValueChanged != null) {
@@ -420,34 +489,14 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		private bool IsIgnored(string filePath) {
-			var fileName = Path.GetFileName(filePath);
-			var dirName = Path.GetDirectoryName(filePath);
-			if (m_ignoredFilePatterns != null) {
-				foreach (var p in m_ignoredFilePatterns) {
-					if (string.IsNullOrEmpty(p))
-						continue;
-					var r = GetRegex(p);
-					if (r.IsMatch(fileName))
-						return true;
-				}
-			}
-			if (m_ignoredFolderPatterns != null) {
-				foreach (var p in m_ignoredFolderPatterns) {
-					if (string.IsNullOrEmpty(p))
-						continue;
-					var r = GetRegex(p);
-					if (r.IsMatch(dirName))
-						return true;
-				}
-			}
-			return false;
-		}
-
-		private Regex GetRegex(string pattern) {
-			Regex r;
-			if (m_cachedRegex.TryGetValue(pattern, out r))
-				return r;
-			return m_cachedRegex[pattern] = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            if (m_ignorePatterns != null) {
+                foreach (var p in m_ignorePatterns) {
+                    if (p.IsMatch (filePath)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
 		}
 	}
 }
