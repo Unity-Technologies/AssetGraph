@@ -313,9 +313,7 @@ namespace UnityEngine.AssetGraph
                 t = GroupingType.ByFileSize;
             }
 
-            if (t == GroupingType.ByRuntimeMemorySize) {
-                size = a.GetRuntimeMemorySize ();
-            } else if (t == GroupingType.ByFileSize) {
+            if (t == GroupingType.ByFileSize) {
                 size = a.GetFileSize ();
             }
 
