@@ -180,6 +180,21 @@ namespace UnityEngine.AssetGraph {
                 break;
             }
             GUI.color = oldColor;
+			if (Event.current.type == EventType.ContextClick && cellRect.Contains(Event.current.mousePosition))
+			{
+				var menu = new GenericMenu();
+				menu.AddItem(new GUIContent("Copy Asset Path"), false, () =>
+				{
+					EditorGUIUtility.systemCopyBuffer = item.asset.path;
+				});
+                if (File.Exists (item.asset.importFrom)) {
+                    menu.AddItem (new GUIContent ("Open"), false, () => {
+                        AssetDatabase.OpenAsset (item.asset.allData);
+                    });
+                }
+				menu.ShowAsContext();
+				Event.current.Use();
+			}
         }
 
         protected override void DoubleClickedItem(int id)

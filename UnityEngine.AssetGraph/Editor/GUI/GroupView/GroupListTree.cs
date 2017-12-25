@@ -166,6 +166,16 @@ namespace UnityEngine.AssetGraph {
                 DefaultGUI.Label (cellRect, EditorUtility.FormatBytes(groupItem.fileSize), args.selected, args.focused);
                 break;
             }
+			if (Event.current.type == EventType.ContextClick && cellRect.Contains(Event.current.mousePosition))
+			{
+				var menu = new GenericMenu();
+				menu.AddItem(new GUIContent("Copy Group Name"), false, () =>
+				{
+					EditorGUIUtility.systemCopyBuffer = groupItem.name;
+				});
+				menu.ShowAsContext();
+				Event.current.Use();
+			}
         }
 
         protected override TreeViewItem BuildRoot()

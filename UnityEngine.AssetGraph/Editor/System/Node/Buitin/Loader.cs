@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 
 using V1=AssetBundleGraph;
@@ -14,8 +15,83 @@ namespace UnityEngine.AssetGraph {
 	[CustomNode("Load Assets/Load From Directory", 10)]
 	public class Loader : Node, Model.NodeDataImporter {
 
+        [Serializable]
+        private class IgnorePattern
+        {
+            public enum FileTypeMask : int {
+                File = 1,
+                Directory = 2
+            }
+            [SerializeField] FileTypeMask m_fileTypeMask;
+            [SerializeField] string m_ignorePattern;
+
+            private Regex m_match;
+
+            public IgnorePattern(FileTypeMask typeMask, string pattern) {
+                m_fileTypeMask = typeMask;
+                m_ignorePattern = pattern;
+            }
+
+            public IgnorePattern(IgnorePattern p) {
+                m_fileTypeMask = p.m_fileTypeMask;
+                m_ignorePattern = p.m_ignorePattern;
+            }
+
+            public FileTypeMask MatchingFileTypes {
+                get {
+                    return m_fileTypeMask;
+                }
+                set{
+                    m_fileTypeMask = value;
+                }
+            }
+
+            public string Pattern {
+                get {
+                    return m_ignorePattern;
+                }
+                set{
+                    m_ignorePattern = value;
+                    m_match = null;
+                }
+            }
+
+            public bool IsMatch(string path) {
+                if (string.IsNullOrEmpty (m_ignorePattern)) {
+                    return false;
+                }
+
+                if (m_match == null) {
+                    m_match = new Regex(m_ignorePattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                }
+
+                if (((int)m_fileTypeMask & (int)FileTypeMask.File) > 0) {
+                    var fileName = Path.GetFileName(path);
+                    return m_match.IsMatch (fileName);
+                }
+
+                if (((int)m_fileTypeMask & (int)FileTypeMask.Directory) > 0) {
+                    var dirName = Path.GetDirectoryName(path);
+                    return m_match.IsMatch (dirName);
+                }
+
+                return false;
+            }
+
+            public void OnGUI(NodeGUI node) {
+                m_fileTypeMask = (FileTypeMask)EditorGUILayout.EnumMaskField (m_fileTypeMask, GUILayout.Width(80f));
+                var newPattern = GUILayout.TextField(m_ignorePattern);
+                if (newPattern != m_ignorePattern) {
+                    m_ignorePattern = newPattern;
+                    m_match = null;
+                }
+            }
+        }
+
         [SerializeField] private SerializableMultiTargetString m_loadPath;
         [SerializeField] private SerializableMultiTargetString m_loadPathGuid;
+        [SerializeField] private List<IgnorePattern> m_ignorePatterns;
+
         [SerializeField] private bool m_respondToAssetChange;
 
 		public override string ActiveStyle {
@@ -82,6 +158,11 @@ namespace UnityEngine.AssetGraph {
             newNode.m_loadPathGuid = new SerializableMultiTargetString(m_loadPathGuid);
             newNode.m_respondToAssetChange = m_respondToAssetChange;
 
+            newNode.m_ignorePatterns = new List<IgnorePattern> ();
+            foreach (var p in m_ignorePatterns) {
+                newNode.m_ignorePatterns.Add (new IgnorePattern (p));
+            }
+
 			newData.AddDefaultOutputPoint();
 			return newNode;
 		}
@@ -128,25 +209,33 @@ namespace UnityEngine.AssetGraph {
 
             foreach(var asset in ctx.ImportedAssets) {
                 if (asset.importFrom.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(asset.importFrom)) {
+                        return true;
+                    }
                 }
             }
 
             foreach(var asset in ctx.MovedAssets) {
                 if (asset.importFrom.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(asset.importFrom)) {
+                        return true;
+                    }
                 }
             }
 
             foreach (var path in ctx.MovedFromAssetPaths) {
                 if (path.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(path)) {
+                        return true;
+                    }
                 }
             }
 
             foreach (var path in ctx.DeletedAssetPaths) {
                 if (path.StartsWith (loadPath)) {
-                    return true;
+                    if (!IsIgnored(path)) {
+                        return true;
+                    }
                 }
             }
 
@@ -263,8 +352,44 @@ namespace UnityEngine.AssetGraph {
 					}
 				}
 			}
+
+            GUILayout.Space(8f);
+            DrawIgnoredPatterns(node, onValueChanged);
 		}
 
+		private void DrawIgnoredPatterns(NodeGUI node, Action onValueChanged)
+		{
+			var changed = false;
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				GUILayout.Label("Files & Directory Ignore Settings");
+                IgnorePattern removingItem = null;
+                foreach (var p in m_ignorePatterns) {
+                    using(new GUILayout.HorizontalScope() ) {
+                        if (GUILayout.Button ("-", GUILayout.Width (30))) {
+                            removingItem = p;
+                        }
+                        EditorGUI.BeginChangeCheck();
+                        p.OnGUI(node);
+                        if (EditorGUI.EndChangeCheck()) {
+                            changed = true;
+                        }
+                    }
+                }
+                if (removingItem != null) {
+                    m_ignorePatterns.Remove (removingItem);
+                    changed = true;
+                }
+				if (GUILayout.Button("+")) {
+                    m_ignorePatterns.Add(new IgnorePattern(IgnorePattern.FileTypeMask.File, string.Empty));
+                    changed = true;
+				}
+			}
+			if (changed && onValueChanged != null) {
+				using (new RecordUndoScope("Ignored Patterns Changed", node, true)) {
+					onValueChanged();
+				}
+			}
+		}
 
 		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
@@ -329,9 +454,11 @@ namespace UnityEngine.AssetGraph {
                     continue;
                 }
 
-                if(r != null) {
-                    outputSource.Add(r);
+                if (IsIgnored(targetFilePath)) {
+                    continue;
                 }
+
+                outputSource.Add(r);
 			}
 
 			var output = new Dictionary<string, List<AssetReference>> {
@@ -359,6 +486,17 @@ namespace UnityEngine.AssetGraph {
 
 		private string GetLoaderFullLoadPath(BuildTarget g) {
 			return FileUtility.PathCombine(Application.dataPath, m_loadPath[g]);
+		}
+
+		private bool IsIgnored(string filePath) {
+            if (m_ignorePatterns != null) {
+                foreach (var p in m_ignorePatterns) {
+                    if (p.IsMatch (filePath)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
 		}
 	}
 }
