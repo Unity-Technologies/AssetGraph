@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
 
 using V1=AssetBundleGraph;
@@ -16,6 +17,10 @@ namespace UnityEngine.AssetGraph {
 
         [SerializeField] private SerializableMultiTargetString m_loadPath;
         [SerializeField] private SerializableMultiTargetString m_loadPathGuid;
+        [SerializeField] private List<string> m_ignoredFilePatterns;
+        [SerializeField] private List<string> m_ignoredFolderPatterns;
+        private Dictionary<string, Regex> m_cachedRegex = new Dictionary<string, Regex>(StringComparer.Ordinal);
+
         [SerializeField] private bool m_respondToAssetChange;
 
 		public override string ActiveStyle {
@@ -182,6 +187,8 @@ namespace UnityEngine.AssetGraph {
 			EditorGUILayout.HelpBox("Load From Directory: Load assets from given directory path.", MessageType.Info);
 			editor.UpdateNodeName(node);
 
+			DrawIgnoredPatterns(node, onValueChanged);
+
 			GUILayout.Space(10f);
 
             bool bRespondAP = EditorGUILayout.ToggleLeft ("Respond To Asset Change", m_respondToAssetChange);
@@ -265,6 +272,55 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
+		private void DrawIgnoredPatterns(NodeGUI node, Action onValueChanged)
+		{
+			var changed = false;
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				GUILayout.Label("Ignored File Pattern");
+				for (int i = 0; i < m_ignoredFilePatterns.Count; i++) {
+					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("-", GUILayout.Width(30))) {
+						m_ignoredFilePatterns.RemoveAt(i);
+						changed = true;
+					}
+					EditorGUI.BeginChangeCheck();
+					m_ignoredFilePatterns[i] = GUILayout.TextField(m_ignoredFilePatterns[i]).Trim();
+					if (EditorGUI.EndChangeCheck())
+						changed = true;
+					GUILayout.EndHorizontal();
+				}
+				if (GUILayout.Button("+")) {
+					m_ignoredFilePatterns.Add(string.Empty);
+					changed = true;
+				}
+			}
+			GUILayout.Space(6);
+			using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
+				GUILayout.Label("Ignored Folder Pattern");
+
+				for (int i = 0; i < m_ignoredFolderPatterns.Count; i++) {
+					GUILayout.BeginHorizontal();
+					if (GUILayout.Button("-", GUILayout.Width(30))) {
+						m_ignoredFolderPatterns.RemoveAt(i);
+						changed = true;
+					}
+					EditorGUI.BeginChangeCheck();
+					m_ignoredFolderPatterns[i] = GUILayout.TextField(m_ignoredFolderPatterns[i]).Trim();
+					if (EditorGUI.EndChangeCheck())
+						changed = true;
+					GUILayout.EndHorizontal();
+				}
+				if (GUILayout.Button("+")) {
+					m_ignoredFolderPatterns.Add(string.Empty);
+					changed = true;
+				}
+			}
+			if (changed && onValueChanged != null) {
+				using (new RecordUndoScope("Ignored Patterns Changed", node, true)) {
+					onValueChanged();
+				}
+			}
+		}
 
 		public override void Prepare (BuildTarget target, 
 			Model.NodeData node, 
@@ -329,9 +385,11 @@ namespace UnityEngine.AssetGraph {
                     continue;
                 }
 
-                if(r != null) {
-                    outputSource.Add(r);
+                if (IsIgnored(targetFilePath)) {
+                    continue;
                 }
+
+                outputSource.Add(r);
 			}
 
 			var output = new Dictionary<string, List<AssetReference>> {
@@ -359,6 +417,37 @@ namespace UnityEngine.AssetGraph {
 
 		private string GetLoaderFullLoadPath(BuildTarget g) {
 			return FileUtility.PathCombine(Application.dataPath, m_loadPath[g]);
+		}
+
+		private bool IsIgnored(string filePath) {
+			var fileName = Path.GetFileName(filePath);
+			var dirName = Path.GetDirectoryName(filePath);
+			if (m_ignoredFilePatterns != null) {
+				foreach (var p in m_ignoredFilePatterns) {
+					if (string.IsNullOrEmpty(p))
+						continue;
+					var r = GetRegex(p);
+					if (r.IsMatch(fileName))
+						return true;
+				}
+			}
+			if (m_ignoredFolderPatterns != null) {
+				foreach (var p in m_ignoredFolderPatterns) {
+					if (string.IsNullOrEmpty(p))
+						continue;
+					var r = GetRegex(p);
+					if (r.IsMatch(dirName))
+						return true;
+				}
+			}
+			return false;
+		}
+
+		private Regex GetRegex(string pattern) {
+			Regex r;
+			if (m_cachedRegex.TryGetValue(pattern, out r))
+				return r;
+			return m_cachedRegex[pattern] = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
 		}
 	}
 }
