@@ -19,7 +19,6 @@ namespace UnityEngine.AssetGraph {
         private string m_name;
         private List<AssetReference> m_assets;
         private long size;
-        private long runtimeSize;
         public string name {
             get {
                 return m_name;
@@ -35,7 +34,6 @@ namespace UnityEngine.AssetGraph {
             m_name = name;
             m_assets = assets;
             size = -1L;
-            runtimeSize = -1L;
         }
 
         public int items {
@@ -68,10 +66,8 @@ namespace UnityEngine.AssetGraph {
         public void Reload() {
             if (m_assets != null) {
                 size = 0;
-                runtimeSize = 0;
                 foreach (var a in m_assets) {
                     size += a.GetFileSize ();
-                    runtimeSize += a.GetRuntimeMemorySize ();
                 }
             }
         }
@@ -173,7 +169,7 @@ namespace UnityEngine.AssetGraph {
 			if (Event.current.type == EventType.ContextClick && cellRect.Contains(Event.current.mousePosition))
 			{
 				var menu = new GenericMenu();
-				menu.AddItem(new GUIContent("Copy AssetBundle Name"), false, () =>
+				menu.AddItem(new GUIContent("Copy Group Name"), false, () =>
 				{
 					EditorGUIUtility.systemCopyBuffer = groupItem.name;
 				});

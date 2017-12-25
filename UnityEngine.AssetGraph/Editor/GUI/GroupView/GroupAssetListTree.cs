@@ -25,20 +25,11 @@ namespace UnityEngine.AssetGraph {
         public AssetReferenceTreeItem(AssetReference a) : base(a.path.GetHashCode(), 0, a.fileName)
         {
             m_asset = a;
-            if (a != null) {
-                icon = AssetDatabase.GetCachedIcon (a.path) as Texture2D;
-            }
         }
 
         public string fileSize {
             get {
                 return EditorUtility.FormatBytes(m_asset.GetFileSize());
-            }
-        }
-
-        public string runtimeMemorySize {
-            get {
-                return EditorUtility.FormatBytes(m_asset.GetRuntimeMemorySize());
             }
         }
     }
@@ -58,7 +49,6 @@ namespace UnityEngine.AssetGraph {
         private static MultiColumnHeaderState.Column[] GetColumns()
         {
             var retVal = new MultiColumnHeaderState.Column[] {
-                new MultiColumnHeaderState.Column(),
                 new MultiColumnHeaderState.Column(),
                 new MultiColumnHeaderState.Column(),
                 new MultiColumnHeaderState.Column()
@@ -87,29 +77,19 @@ namespace UnityEngine.AssetGraph {
             retVal[2].canSort = true;
             retVal[2].autoResize = true;
 
-            retVal[3].headerContent = new GUIContent("Memory", "Size on runtime memory");
-            retVal[3].minWidth = 30;
-            retVal[3].width = 75;
-            retVal[3].maxWidth = 100;
-            retVal[3].headerTextAlignment = TextAlignment.Left;
-            retVal[3].canSort = true;
-            retVal[3].autoResize = true;
-
             return retVal;
         }
         public enum SortOption
         {
             Asset,
             Variant,
-            Size,
-            Memory
+            Size
         }
         SortOption[] m_SortOptions =
         {
             SortOption.Asset,
             SortOption.Variant,
-            SortOption.Size,
-            SortOption.Memory
+            SortOption.Size
         };
 
         public GroupAssetListTree(GroupViewController parent, TreeViewState state, MultiColumnHeaderState mchs ) : base(state, new MultiColumnHeader(mchs))
@@ -174,8 +154,14 @@ namespace UnityEngine.AssetGraph {
             {
             case 0:
                 {
+                    var icon = AssetDatabase.GetCachedIcon (item.asset.importFrom);
+                    if (icon == null) {
+                        icon = AssetPreview.GetMiniTypeThumbnail (item.asset.assetType);
+                    } else {
+                        this.Repaint ();
+                    }
+                    
                     var iconRect = new Rect(cellRect.x + 1, cellRect.y + 1, cellRect.height - 2, cellRect.height - 2);
-                    var icon = item.icon;
                     if (icon != null) {
                         GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit);
                     }
@@ -192,9 +178,6 @@ namespace UnityEngine.AssetGraph {
             case 2:
                 DefaultGUI.Label(cellRect, item.fileSize, args.selected, args.focused);
                 break;
-            case 3:
-                DefaultGUI.Label(cellRect, item.runtimeMemorySize, args.selected, args.focused);
-                break;
             }
             GUI.color = oldColor;
 			if (Event.current.type == EventType.ContextClick && cellRect.Contains(Event.current.mousePosition))
@@ -204,6 +187,11 @@ namespace UnityEngine.AssetGraph {
 				{
 					EditorGUIUtility.systemCopyBuffer = item.asset.path;
 				});
+                if (File.Exists (item.asset.importFrom)) {
+                    menu.AddItem (new GUIContent ("Open"), false, () => {
+                        AssetDatabase.OpenAsset (item.asset.allData);
+                    });
+                }
 				menu.ShowAsContext();
 				Event.current.Use();
 			}
@@ -286,8 +274,6 @@ namespace UnityEngine.AssetGraph {
                 return myTypes.Order(l => l.displayName, ascending);
             case SortOption.Size:
                 return myTypes.Order(l => l.fileSize, ascending);
-            case SortOption.Memory:
-                return myTypes.Order(l => l.runtimeMemorySize, ascending);
             case SortOption.Variant:
             default:
                 return myTypes.Order(l => l.asset.variantName, ascending);

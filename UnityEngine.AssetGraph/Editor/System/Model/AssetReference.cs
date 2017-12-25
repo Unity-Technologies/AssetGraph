@@ -280,24 +280,6 @@ namespace UnityEngine.AssetGraph {
             return 0L;
         }
 
-        public long GetRuntimeMemorySize() {
-//            var releaseAfterLoad = (m_data == null || m_data.Length == 0);
-//            var objects = allData;
-            long size = 0L;
-//            foreach (var o in objects) {
-//                #if UNITY_5_6_OR_NEWER
-//                size += Profiler.GetRuntimeMemorySizeLong (o);
-//                #else
-//                size += Profiler.GetRuntimeMemorySize(o);
-//                #endif
-//            }
-//
-//            if (releaseAfterLoad) {
-//                ReleaseData ();
-//            }
-            return size;
-        }
-
         /// <summary>
         /// Sets the dirty.
         /// </summary>
