@@ -88,72 +88,11 @@ public class AttachComponent : IModifier {
         }
 	}
 
-    private void DrawComponentHeader(SerializedComponent.ComponentInfo info) {
-
-        if (m_popupIcon == null) {
-            m_popupIcon = EditorGUIUtility.Load ("icons/_Popup.png") as Texture2D;
-        }
-
-        if (m_helpIcon == null) {
-            m_helpIcon = EditorGUIUtility.Load ("icons/_Help.png") as Texture2D;
-        }
-
-        GUILayout.Box("", new GUILayoutOption[]{GUILayout.ExpandWidth(true), GUILayout.Height(1)});
-        using (new EditorGUILayout.HorizontalScope ()) {
-            var thumbnail = AssetPreview.GetMiniTypeThumbnail (info.ComponentType);
-            if (thumbnail == null) {
-                if (typeof(MonoBehaviour).IsAssignableFrom (info.ComponentType)) {
-                    thumbnail = AssetPreview.GetMiniTypeThumbnail (typeof(MonoScript));
-                } else {
-                    thumbnail = AssetPreview.GetMiniTypeThumbnail (typeof(UnityEngine.Object));
-                }
-            }
-
-            GUILayout.Label(thumbnail, GUILayout.Width(32f), GUILayout.Height(32f));
-            GUILayout.Label (info.ComponentType.Name, EditorStyles.boldLabel);
-            GUILayout.FlexibleSpace ();
-
-            if (Help.HasHelpForObject (info.Component)) {
-                var tooltip = string.Format ("Open Reference for {0}.", info.ComponentType.Name);
-                if(GUILayout.Button(new GUIContent(m_helpIcon, tooltip), EditorStyles.miniLabel, GUILayout.Width(18f), GUILayout.Height(24f))) {
-                    Help.ShowHelpForObject (info.Component);
-                }
-            }
-
-            if(GUILayout.Button(m_popupIcon, EditorStyles.miniLabel, GUILayout.Width(18f), GUILayout.Height(24f))) {
-                GenericMenu m = new GenericMenu ();
-                m.AddItem (new GUIContent ("Copy Component"), false, () => {
-                    UnityEditorInternal.ComponentUtility.CopyComponent(info.Component);
-                });
-
-                var pasteLabel = new GUIContent ("Paste Component Values");
-                m.AddItem (pasteLabel, false, () => {
-                    UnityEditorInternal.ComponentUtility.PasteComponentValues(info.Component);
-                });
-
-                MonoScript s = TypeUtility.LoadMonoScript(info.ComponentType.AssemblyQualifiedName);
-                if(s != null) {
-                    m.AddSeparator ("");
-                    m.AddItem(
-                        new GUIContent("Edit Script"),
-                        false, 
-                        () => {
-                            AssetDatabase.OpenAsset(s, 0);
-                        }
-                    );
-                }
-
-                m.ShowAsContext ();
-            }
-        }
-        GUILayout.Space (4f);
-    }
-
 	// Draw inspector gui 
 	public void OnInspectorGUI (Action onValueChanged) {
 
         if (m_component == null) {
-            m_component = new SerializedComponent ();
+            m_component = new SerializedComponent ("Attaching Components");
         }
 
         if (m_component.IsInvalidated) {
@@ -176,6 +115,18 @@ public class AttachComponent : IModifier {
             onValueChanged();
         }
 
+        EditorGUI.BeginChangeCheck ();
+
+        m_component.OnInspectorGUI ();
+
+        if (EditorGUI.EndChangeCheck ()) {
+            m_component.Save ();
+            onValueChanged ();
+        }
+
+        GUILayout.Space (10f);
+        GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+
         using (new EditorGUILayout.HorizontalScope ()) {
             m_selectedIndex = EditorGUILayout.Popup ("Component", m_selectedIndex, ComponentMenuUtility.GetComponentNames ());
 
@@ -190,37 +141,6 @@ public class AttachComponent : IModifier {
                     }
                 }
             }
-        }
-
-        EditorGUI.BeginChangeCheck ();
-
-        SerializedComponent.ComponentInfo removingItem = null;
-
-        foreach (var info in m_component.Components) {
-            if (info.Editor != null) {
-                DrawComponentHeader (info);
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(16f);
-                GUILayout.BeginVertical();
-                info.Editor.DrawDefaultInspector ();
-                GUILayout.EndVertical ();
-                GUILayout.EndHorizontal ();
-                using (new EditorGUILayout.HorizontalScope ()) {
-                    GUILayout.FlexibleSpace ();
-                    if (GUILayout.Button ("Remove", GUILayout.Width(60))) {
-                        removingItem = info;
-                    }
-                }
-            }
-        }
-
-        if (removingItem != null) {
-            m_component.RemoveComponent (removingItem);
-        }
-
-        if (EditorGUI.EndChangeCheck ()) {
-            m_component.Save ();
-            onValueChanged ();
         }
 	}
 }

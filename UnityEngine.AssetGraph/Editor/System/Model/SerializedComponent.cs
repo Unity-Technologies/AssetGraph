@@ -18,6 +18,9 @@ namespace UnityEngine.AssetGraph {
             private Component m_component;
             private Editor m_componentEditor;
 
+            static Texture2D s_helpIcon;
+            static Texture2D s_popupIcon;
+
             public Type ComponentType {
                 get {
                     return m_componentType;
@@ -64,6 +67,8 @@ namespace UnityEngine.AssetGraph {
 
             public void Restore(GameObject o) {
 
+                Invalidate (false);
+
                 UnityEngine.Assertions.Assert.IsNotNull (m_typeInfo);
 
                 if (m_componentType == null) {
@@ -79,9 +84,7 @@ namespace UnityEngine.AssetGraph {
                     }
                 }
 
-                if (m_componentEditor == null) {
-                    m_componentEditor = Editor.CreateEditor (m_component);
-                }
+                m_componentEditor = Editor.CreateEditor (m_component);
             }
 
             public void Invalidate(bool destroyComponent) {
@@ -95,12 +98,103 @@ namespace UnityEngine.AssetGraph {
                 m_componentType = null;
                 m_component = null;
             }
+
+            public void DrawDefaultInspector() {
+                if (m_componentEditor != null) {
+                    m_componentEditor.DrawDefaultInspector ();
+                }
+            }
+
+            public void DrawHeader(SerializedComponent parent) {
+
+                if (s_popupIcon == null) {
+                    s_popupIcon = EditorGUIUtility.Load ("icons/_Popup.png") as Texture2D;
+                }
+
+                if (s_helpIcon == null) {
+                    s_helpIcon = EditorGUIUtility.Load ("icons/_Help.png") as Texture2D;
+                }
+
+                GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+                using (new EditorGUILayout.HorizontalScope ()) {
+                    var thumbnail = AssetPreview.GetMiniTypeThumbnail (m_componentType);
+                    if (thumbnail == null) {
+                        if (typeof(MonoBehaviour).IsAssignableFrom (m_componentType)) {
+                            thumbnail = AssetPreview.GetMiniTypeThumbnail (typeof(MonoScript));
+                        } else {
+                            thumbnail = AssetPreview.GetMiniTypeThumbnail (typeof(UnityEngine.Object));
+                        }
+                    }
+
+                    GUILayout.Label(thumbnail, GUILayout.Width(32f), GUILayout.Height(32f));
+                    if (m_component is Behaviour) {
+                        Behaviour b = m_component as Behaviour;
+                        b.enabled = EditorGUILayout.ToggleLeft (m_componentType.Name, b.enabled, EditorStyles.boldLabel);
+                    } else {
+                        GUILayout.Label (m_componentType.Name, EditorStyles.boldLabel);
+                    }
+
+                    GUILayout.FlexibleSpace ();
+
+                    if (Help.HasHelpForObject (m_component)) {
+                        var tooltip = string.Format ("Open Reference for {0}.", m_componentType.Name);
+                        if(GUILayout.Button(new GUIContent(s_helpIcon, tooltip), EditorStyles.miniLabel, GUILayout.Width(20f), GUILayout.Height(20f))) {
+                            Help.ShowHelpForObject (m_component);
+                        }
+                    }
+
+                    if(GUILayout.Button(s_popupIcon, EditorStyles.miniLabel, GUILayout.Width(20f), GUILayout.Height(20f))) {
+                        GenericMenu m = new GenericMenu ();
+                        m.AddItem (new GUIContent ("Copy Component"), false, () => {
+                            UnityEditorInternal.ComponentUtility.CopyComponent(m_component);
+                        });
+
+                        var pasteLabel = new GUIContent ("Paste Component Values");
+                        m.AddItem (pasteLabel, false, () => {
+                            UnityEditorInternal.ComponentUtility.PasteComponentValues(m_component);
+                        });
+
+                        m.AddItem (new GUIContent ("Remove Component"), false, () => {
+                            parent.RemoveComponent(this);
+                        });
+
+                        MonoScript s = TypeUtility.LoadMonoScript(m_componentType.AssemblyQualifiedName);
+                        if(s != null) {
+                            m.AddSeparator ("");
+                            m.AddItem(
+                                new GUIContent("Edit Script"),
+                                false, 
+                                () => {
+                                    AssetDatabase.OpenAsset(s, 0);
+                                }
+                            );
+                        }
+
+                        m.ShowAsContext ();
+                    }
+                }
+                GUILayout.Space (4f);
+            }
+
+            public void OnInspectorGUI(SerializedComponent parent) {
+                DrawHeader (parent);
+
+                // indent inspector
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(16f);
+                GUILayout.BeginVertical();
+                DrawDefaultInspector ();
+                GUILayout.EndVertical ();
+                GUILayout.EndHorizontal ();
+            }
         }
 
         [SerializeField] private List<ComponentInfo> m_attachedComponents;
-		[SerializeField] private string m_instanceData;
+        [SerializeField] private string m_instanceData;
+        private string m_newGameObjectName;
 
         private GameObject m_gameObject;
+        private Editor m_gameObjectEditor;
 
         public bool IsInvalidated {
             get {
@@ -123,15 +217,22 @@ namespace UnityEngine.AssetGraph {
         public GameObject InternalGameObject {
             get {
                 if (m_gameObject == null) {
-                    m_gameObject = Deserialize ();
+                    Deserialize ();
                 }
                 return m_gameObject;
             }
         }
 
-        public SerializedComponent() {
+        public Editor InternalGameObjectEditor {
+            get {
+                return m_gameObjectEditor;
+            }
+        }
+
+        public SerializedComponent(string gameObjectName = null) {
 			m_instanceData = string.Empty;
             m_attachedComponents = new List<ComponentInfo> ();
+            m_newGameObjectName = gameObjectName;
 		}
 
         public SerializedComponent(SerializedComponent c) {
@@ -147,6 +248,10 @@ namespace UnityEngine.AssetGraph {
                 GameObject.DestroyImmediate (m_gameObject);
                 m_gameObject = null;
             }
+            if (m_gameObjectEditor != null) {
+                Editor.DestroyImmediate (m_gameObjectEditor);
+                m_gameObjectEditor = null;
+            }
             foreach (var info in m_attachedComponents) {
                 info.Invalidate (false);
             }
@@ -154,32 +259,40 @@ namespace UnityEngine.AssetGraph {
 
         public void Restore() {
             if (m_gameObject == null) {
-                m_gameObject = Deserialize ();
+                Deserialize ();
             }
         }
 
-        private GameObject Deserialize() {
+        private void Deserialize() {
 
-            var obj = new GameObject ();
-            obj.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
-            obj.name = "Attaching Component";
+            m_gameObject = new GameObject ();
+            m_gameObject.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
+            m_gameObject.name = (string.IsNullOrEmpty(m_newGameObjectName)) ? "New GameObject" : m_newGameObjectName;
 
             if (!string.IsNullOrEmpty (m_instanceData)) {
                 var decoded = CustomScriptUtility.DecodeString (m_instanceData);
-                EditorJsonUtility.FromJsonOverwrite (decoded, obj);
+                EditorJsonUtility.FromJsonOverwrite (decoded, m_gameObject);
             }
+
+            if (m_attachedComponents == null) {
+                m_attachedComponents = new List<ComponentInfo> ();
+            }
+            SortComponents ();
 
             foreach (var info in m_attachedComponents) {
-                info.Restore (obj);
+                info.Restore (m_gameObject);
             }
 
-            return obj;
+            if (m_gameObjectEditor == null) {
+                m_gameObjectEditor = Editor.CreateEditor (m_gameObjectEditor);
+            }
 		}
 
 		public void Save() {
             if(m_gameObject != null) {
                 m_instanceData = CustomScriptUtility.EncodeString(EditorJsonUtility.ToJson(m_gameObject));
 			}
+            SortComponents ();
             foreach (var info in m_attachedComponents) {
                 info.Save ();
             }
@@ -191,11 +304,25 @@ namespace UnityEngine.AssetGraph {
 		}
 
         public T GetComponent<T> () where T: UnityEngine.Component {
-            return InternalGameObject.GetComponent<T> ();
+            var c = InternalGameObject.GetComponent<T> ();
+            if (c != null) {
+                if (!m_attachedComponents.Where (i => i.Component == c).Any ()) {
+                    m_attachedComponents.Add (new ComponentInfo (typeof(T), c));
+                    Save ();
+                }
+            }
+            return c;
         }
 
         public UnityEngine.Component GetComponent (Type t)  {
-            return InternalGameObject.GetComponent (t);
+            var c = InternalGameObject.GetComponent (t);
+            if (c != null) {
+                if (!m_attachedComponents.Where (i => i.Component == c).Any ()) {
+                    m_attachedComponents.Add (new ComponentInfo (t, c));
+                    Save ();
+                }
+            }
+            return c;
         }
 
         public T AddComponent<T> () where T: UnityEngine.Component {
@@ -214,6 +341,57 @@ namespace UnityEngine.AssetGraph {
                 Save ();
             }
             return c;
+        }
+
+        public void SyncAttachedComponents ()  {
+            var added = false;
+            var components = InternalGameObject.GetComponents<Component> ();
+            foreach(var c in components) {
+                if (!m_attachedComponents.Where (i => i.Component == c).Any ()) {
+                    m_attachedComponents.Add (new ComponentInfo (c.GetType(), c));
+                    added = true;
+                }
+            }
+
+            // sometimes component changes by newly added component (i.e. Transform->RectTransform)
+            for (int i = 0; i < m_attachedComponents.Count; ++i) {
+                if (!components.Contains(m_attachedComponents[i].Component)) {
+                    m_attachedComponents.RemoveAt (i);
+                }
+            }
+
+            if (added) {
+                Save ();
+            }
+        }
+
+        private void SortComponents() {
+            m_attachedComponents.Sort ((a, b) => {
+                if(a.ComponentType == b.ComponentType) {
+                    return 0;
+                }
+                if(a.ComponentType == null) {
+                    return 1;
+                }
+                if(b.ComponentType == null) {
+                    return -1;
+                }
+
+                if(a.ComponentType == typeof(Transform) || a.ComponentType.IsSubclassOf(typeof(Transform))) {
+                    return -1;
+                }
+                if(b.ComponentType == typeof(Transform) || b.ComponentType.IsSubclassOf(typeof(Transform))) {
+                    return 1;
+                }
+
+                return a.ComponentType.GetHashCode() - b.ComponentType.GetHashCode();
+            });
+        }
+
+        public void OnInspectorGUI() {
+            foreach (var info in m_attachedComponents) {
+                info.OnInspectorGUI (this);
+            }
         }
 
         public void RemoveComponent(ComponentInfo info) {
