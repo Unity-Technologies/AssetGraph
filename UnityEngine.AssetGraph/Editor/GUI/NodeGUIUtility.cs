@@ -205,7 +205,6 @@ namespace UnityEngine.AssetGraph
 					{BuildTargetGroup.Android,      "BuildSettings.Android.Small"},
 					{BuildTargetGroup.iOS,          "BuildSettings.iPhone.Small"},
 					{BuildTargetGroup.PS4,          "BuildSettings.PS4.Small"},
-					{BuildTargetGroup.PSM,          "BuildSettings.PSM.Small"},
 					{BuildTargetGroup.PSP2,         "BuildSettings.PSP2.Small"},
 #if !UNITY_2017_3_OR_NEWER
 					{BuildTargetGroup.SamsungTV, 	"BuildSettings.Android.Small"},
@@ -215,7 +214,9 @@ namespace UnityEngine.AssetGraph
 					{BuildTargetGroup.tvOS, 		"BuildSettings.tvOS.Small"},
 					{BuildTargetGroup.Unknown, 		"BuildSettings.Standalone.Small"},
 					{BuildTargetGroup.WebGL, 		"BuildSettings.WebGL.Small"},
+#if !UNITY_2018_1_OR_NEWER
 					{BuildTargetGroup.WiiU, 		"BuildSettings.WiiU.Small"},
+#endif
 					{BuildTargetGroup.WSA, 			"BuildSettings.WP8.Small"},
 					{BuildTargetGroup.XboxOne, 		"BuildSettings.XboxOne.Small"}
 #if !UNITY_5_5_OR_NEWER

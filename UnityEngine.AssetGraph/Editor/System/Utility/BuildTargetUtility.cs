@@ -29,8 +29,6 @@ namespace UnityEngine.AssetGraph
 				return "iOS";
 			case BuildTarget.PS4:
 				return "PlayStation 4";
-			case BuildTarget.PSM:
-				return "PlayStation Mobile";
 			case BuildTarget.PSP2:
 				return "PlayStation Vita";
 #if !UNITY_2017_3_OR_NEWER
@@ -63,8 +61,10 @@ namespace UnityEngine.AssetGraph
 				return "tvOS";
 			case BuildTarget.WebGL:
 				return "WebGL";
+#if !UNITY_2018_1_OR_NEWER
 			case BuildTarget.WiiU:
 				return "Wii U";
+#endif
 			case BuildTarget.WSAPlayer:
 				return "Windows Store Apps";
 			case BuildTarget.XboxOne:
@@ -119,8 +119,6 @@ namespace UnityEngine.AssetGraph
 				return "iOS";
 			case BuildTarget.PS4:
 				return "PS4";
-			case BuildTarget.PSM:
-				return "PSM";
 			case BuildTarget.PSP2:
 				switch (pnt) {
 				case PlatformNameType.AudioImporter:
@@ -164,8 +162,10 @@ namespace UnityEngine.AssetGraph
 				return "tvOS";
 			case BuildTarget.WebGL:
 				return "WebGL";
+#if !UNITY_2018_1_OR_NEWER
 			case BuildTarget.WiiU:
 				return "WiiU";
+#endif
 			case BuildTarget.WSAPlayer:
 				switch (pnt) {
 				case PlatformNameType.AudioImporter:
@@ -211,8 +211,6 @@ namespace UnityEngine.AssetGraph
 				return "iOS";
 			case BuildTargetGroup.PS4:
 				return "PlayStation 4";
-			case BuildTargetGroup.PSM:
-				return "PlayStation Mobile";
 			case BuildTargetGroup.PSP2:
 				return "PlayStation Vita";
 #if !UNITY_2017_3_OR_NEWER
@@ -227,8 +225,10 @@ namespace UnityEngine.AssetGraph
 				return "tvOS";
 			case BuildTargetGroup.WebGL:
 				return "WebGL";
+#if !UNITY_2018_1_OR_NEWER
 			case BuildTargetGroup.WiiU:
 				return "Wii U";
+#endif
 			case BuildTargetGroup.WSA:
 				return "Windows Store Apps";
 			case BuildTargetGroup.XboxOne:
@@ -273,8 +273,6 @@ namespace UnityEngine.AssetGraph
 				return BuildTargetGroup.iOS;
 			case BuildTarget.PS4:
 				return BuildTargetGroup.PS4;
-			case BuildTarget.PSM:
-				return BuildTargetGroup.PSM;
 			case BuildTarget.PSP2:
 				return BuildTargetGroup.PSP2;
 #if !UNITY_2017_3_OR_NEWER
@@ -300,8 +298,10 @@ namespace UnityEngine.AssetGraph
 				return BuildTargetGroup.tvOS;
 			case BuildTarget.WebGL:
 				return BuildTargetGroup.WebGL;
+#if !UNITY_2018_1_OR_NEWER
 			case BuildTarget.WiiU:
 				return BuildTargetGroup.WiiU;
+#endif
 			case BuildTarget.WSAPlayer:
 				return BuildTargetGroup.WSA;
 			case BuildTarget.XboxOne:
@@ -337,8 +337,6 @@ namespace UnityEngine.AssetGraph
 				return BuildTarget.iOS;
 			case BuildTargetGroup.PS4:
 				return BuildTarget.PS4;
-			case BuildTargetGroup.PSM:
-				return BuildTarget.PSM;
 			case BuildTargetGroup.PSP2:
 				return BuildTarget.PSP2;
 #if !UNITY_2017_3_OR_NEWER
@@ -353,8 +351,10 @@ namespace UnityEngine.AssetGraph
 				return BuildTarget.tvOS;
 			case BuildTargetGroup.WebGL:
 				return BuildTarget.WebGL;
+#if !UNITY_2018_1_OR_NEWER
 			case BuildTargetGroup.WiiU:
 				return BuildTarget.WiiU;
+#endif
 			case BuildTargetGroup.WSA:
 				return BuildTarget.WSAPlayer;
 			case BuildTargetGroup.XboxOne:
@@ -389,20 +389,21 @@ namespace UnityEngine.AssetGraph
 
 		public static bool IsBuildTargetSupported(BuildTarget t) {
 
-			var objType = typeof(UnityEditor.BuildPipeline);
-			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            BuildTargetGroup g = BuildTargetUtility.TargetToGroup(t);
 
-#if UNITY_5_6 || UNITY_5_6_OR_NEWER
-			BuildTargetGroup g = BuildTargetUtility.TargetToGroup(t);
-			//internal static extern bool IsBuildTargetSupported (BuildTargetGroup buildTargetGroup, BuildTarget target);
-			var retval = method.Invoke(null, new object[]{
-				System.Enum.ToObject(typeof(BuildTargetGroup), g), 
-				System.Enum.ToObject(typeof(BuildTarget), t)});
-#else
-			//internal static extern bool IsBuildTargetSupported (BuildTarget target);
-			var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), t)});
+#if UNITY_2018_1_OR_NEWER
+            return UnityEditor.BuildPipeline.IsBuildTargetSupported(g, t);
+#else 
+            var objType = typeof(UnityEditor.BuildPipeline);
+            var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            //internal static extern bool IsBuildTargetSupported (BuildTargetGroup buildTargetGroup, BuildTarget target);
+            var retval = method.Invoke(null, new object[]{
+            System.Enum.ToObject(typeof(BuildTargetGroup), g), 
+            System.Enum.ToObject(typeof(BuildTarget), t)});
+
+            return Convert.ToBoolean(retval);
 #endif
-			return Convert.ToBoolean(retval);
 		}
 	}
 }

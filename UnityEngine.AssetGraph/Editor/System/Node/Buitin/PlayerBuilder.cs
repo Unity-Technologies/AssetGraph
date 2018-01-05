@@ -1,6 +1,10 @@
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_2018_1_OR_NEWER
+using UnityEditor.Build.Reporting;
+#endif
+
 using System;
 using System.IO;
 using System.Linq;
@@ -280,7 +284,6 @@ namespace UnityEngine.AssetGraph
 
             var sceneGUIDs = m_scenes[target].Split(',');
 
-#if UNITY_5_5_OR_NEWER
             string manifestPath = string.Empty;
 
             foreach (var ag in incoming)
@@ -301,21 +304,31 @@ namespace UnityEngine.AssetGraph
             opt.assetBundleManifestPath = manifestPath;
             opt.scenes = sceneGUIDs.Select(guid => AssetDatabase.GUIDToAssetPath(guid)).Where(path => !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray();
             opt.target = target;
-#if UNITY_5_6_OR_NEWER
             opt.targetGroup = BuildTargetUtility.TargetToGroup(target);
-#endif
-            var errorMsg = BuildPipeline.BuildPlayer(opt);
-#else
-            string[] levels = sceneGUIDs.Select(guid => AssetDatabase.GUIDToAssetPath(guid)).Where(path => !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray();
-            string locationPathName = m_buildLocations[target] + "/" + m_playerName[target];
-            BuildOptions opt = (BuildOptions)m_buildOptions[target];
+#if UNITY_2018_1_OR_NEWER
+            var report = BuildPipeline.BuildPlayer(opt);
+            var summary = report.summary;
 
-            var errorMsg = BuildPipeline.BuildPlayer(levels, locationPathName, target, opt);
-#endif
+            switch(summary.result) {
+            case BuildResult.Failed:
+                throw new NodeException(
+                    string.Format("Player build failed. ({0} errors)", summary.totalErrors), 
+                    summary.ToString(), node);
+            case BuildResult.Cancelled:
+                LogUtility.Logger.Log(LogUtility.kTag, "Player build cancelled.");
+                break;
+            case BuildResult.Unknown:
+                throw new NodeException(
+                    string.Format("Player build ended with Unknown state."), 
+                    summary.ToString(), node);
+            }
+#else
+            var errorMsg = BuildPipeline.BuildPlayer(opt);
             if (!string.IsNullOrEmpty(errorMsg))
             {
-                throw new NodeException("Player build failed:" + errorMsg, "See description for detail.", node);
+            throw new NodeException("Player build failed:" + errorMsg, "See description for detail.", node);
             }
+#endif
         }
     }
 }

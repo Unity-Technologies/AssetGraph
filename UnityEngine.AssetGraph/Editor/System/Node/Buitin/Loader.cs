@@ -79,7 +79,11 @@ namespace UnityEngine.AssetGraph {
             }
 
             public void OnGUI(NodeGUI node) {
+                #if UNITY_2017_3_OR_NEWER
+                m_fileTypeMask = (FileTypeMask)EditorGUILayout.EnumFlagsField (m_fileTypeMask, GUILayout.Width(85f));
+                #else
                 m_fileTypeMask = (FileTypeMask)EditorGUILayout.EnumMaskField (m_fileTypeMask, GUILayout.Width(80f));
+                #endif
                 var newPattern = GUILayout.TextField(m_ignorePattern);
                 if (newPattern != m_ignorePattern) {
                     m_ignorePattern = newPattern;
