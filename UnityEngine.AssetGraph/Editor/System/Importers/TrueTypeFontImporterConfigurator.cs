@@ -43,10 +43,83 @@ namespace UnityEngine.AssetGraph
 
         private void OverwriteImportSettings (TrueTypeFontImporter target, TrueTypeFontImporter reference)
         {
+            target.ascentCalculationMode = reference.ascentCalculationMode;
+            target.characterPadding = reference.characterPadding;
+            target.characterSpacing = reference.characterSpacing;
+            target.customCharacters = reference.customCharacters;
+            target.fontNames = reference.fontNames;
+            target.fontReferences = reference.fontReferences;
+            target.fontRenderingMode = reference.fontRenderingMode;
+            target.fontSize = reference.fontSize;
+            target.fontTextureCase = reference.fontTextureCase;
+//            target.fontTTFName = reference.fontTTFName;
+            target.includeFontData = reference.includeFontData;
+
+            #if UNITY_2018_1_OR_NEWER
+            target.shouldRoundAdvanceValue = reference.shouldRoundAdvanceValue;
+            #endif
         }
 
         private bool IsEqual (TrueTypeFontImporter target, TrueTypeFontImporter reference)
         {
+            if (target.ascentCalculationMode != reference.ascentCalculationMode) {
+                return false;
+            }
+
+            if (target.characterPadding != reference.characterPadding) {
+                return false;
+            }
+
+            if (target.characterSpacing != reference.characterSpacing) {
+                return false;
+            }
+
+            if (target.customCharacters != reference.customCharacters) {
+                return false;
+            }
+
+            if (target.fontNames.Length != reference.fontNames.Length) {
+                return false;
+            }
+
+            for (int i = 0; i < target.fontNames.Length; ++i) {
+                if (target.fontNames [i] != reference.fontNames [i]) {
+                    return false;
+                }
+            }
+
+            if (target.fontReferences.Length != reference.fontReferences.Length) {
+                return false;
+            }
+
+            for (int i = 0; i < target.fontNames.Length; ++i) {
+                if (!target.fontReferences [i].Equals(reference.fontReferences [i])) {
+                    return false;
+                }
+            }
+
+            if (target.fontRenderingMode != reference.fontRenderingMode) {
+                return false;
+            }
+
+            if (target.fontSize != reference.fontSize) {
+                return false;
+            }
+
+            if (target.fontTextureCase != reference.fontTextureCase) {
+                return false;
+            }
+
+//            if (target.fontTTFName != reference.fontTTFName) {
+//                return false;
+//            }
+
+            #if UNITY_2018_1_OR_NEWER
+            if (target.shouldRoundAdvanceValue != reference.shouldRoundAdvanceValue) {
+                return false;
+            }
+            #endif
+
             return true;
         }
     }

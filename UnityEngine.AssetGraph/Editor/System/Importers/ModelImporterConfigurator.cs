@@ -283,6 +283,12 @@ namespace UnityEngine.AssetGraph
             }
             #endif
 
+            #if UNITY_2018_1_OR_NEWER
+            if (target.importConstraints != reference.importConstraints) {
+                return false;
+            }
+            #endif
+
             return true;
         }
 
@@ -344,6 +350,10 @@ namespace UnityEngine.AssetGraph
 
             #if UNITY_2017_2_OR_NEWER
             target.importAnimatedCustomProperties = reference.importAnimatedCustomProperties;
+            #endif
+
+            #if UNITY_2018_1_OR_NEWER
+            target.importConstraints = reference.importConstraints;
             #endif
 
             /* 
