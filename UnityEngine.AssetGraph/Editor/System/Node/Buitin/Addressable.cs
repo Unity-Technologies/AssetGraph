@@ -125,7 +125,10 @@ namespace UnityEngine.AssetGraph
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-			var outputDict = new Dictionary<string, List<AssetReference>>();
+            Dictionary<string, List<AssetReference>> outputDict = null;
+            if (Output != null) {
+                outputDict = new Dictionary<string, List<AssetReference>>();
+            }
 
             var aaSettings = AddressableAssetSettings.GetDefault(false, false);
             AddressableAssetSettings.AssetGroup.AssetEntry entry = null;
@@ -146,25 +149,29 @@ namespace UnityEngine.AssetGraph
                                     entry = aaSettings.CreateOrMoveEntry (guid, aaSettings.DefaultGroup);
                                 }
 
-                                if (match.IsMatch (entry.address)) {
-                                    entry.address = match.Replace (entry.address, m_addressPattern);
+                                if (match.IsMatch (a.importFrom)) {
+                                    entry.address = match.Replace (a.importFrom, m_addressPattern);
                                 }
                             } else {
                                 aaSettings.RemoveAssetEntry (guid);
                             }
 
-                            if (!outputDict.ContainsKey(g)) {
-                                outputDict[g] = new List<AssetReference>();
+                            if (outputDict != null) {
+                                if (!outputDict.ContainsKey(g)) {
+                                    outputDict[g] = new List<AssetReference>();
+                                }
+                                outputDict[g].Add(a);
                             }
-                            outputDict[g].Add(a);
 						}
 					}
 				}
 			}
 
-			var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
-				null : connectionsToOutput.First();
-			Output(dst, outputDict);
+            if (outputDict != null) {
+                var dst = (connectionsToOutput == null || !connectionsToOutput.Any())? 
+                    null : connectionsToOutput.First();
+                Output(dst, outputDict);
+            }
 		}
     }
 }
