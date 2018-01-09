@@ -76,10 +76,12 @@ namespace UnityEngine.AssetGraph
                 onValueChanged ();
             }
 
-            var newAddressPattern = EditorGUILayout.TextField("Address Pattern", m_addressPattern);
-            if (newAddressPattern != m_addressPattern) {
-                m_addressPattern = newAddressPattern;
-                onValueChanged ();
+            using (new EditorGUI.DisabledScope (string.IsNullOrEmpty (newMatchPattern))) {
+                var newAddressPattern = EditorGUILayout.TextField("Address Pattern", m_addressPattern);
+                if (newAddressPattern != m_addressPattern) {
+                    m_addressPattern = newAddressPattern;
+                    onValueChanged ();
+                }
             }
 
             EditorGUILayout.HelpBox(
@@ -93,18 +95,10 @@ namespace UnityEngine.AssetGraph
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-            if (string.IsNullOrEmpty (m_matchPattern)) {
-                throw new NodeException ("Match Pattern is empty", "Set match pattern for incoming assets from inspector.");
-            }
-
-            if (string.IsNullOrEmpty (m_addressPattern)) {
-                throw new NodeException ("Address Pattern is empty", "Set address pattern for incoming assets from inspector.");
-            }
-
             var aaSettings = AddressableAssetSettings.GetDefault(false, false);
 
             if (aaSettings == null) {
-                throw new NodeException ("AddressableAssetSettings not found", "Create AddressableAssetSettings asset first.");
+                throw new NodeException ("Addressable Asset Settings not found.", "Create Addressable Asset Settings object from Addressables window.");
             }
 		}
 
@@ -133,7 +127,11 @@ namespace UnityEngine.AssetGraph
             var aaSettings = AddressableAssetSettings.GetDefault(false, false);
             AddressableAssetSettings.AssetGroup.AssetEntry entry = null;
 
-            Regex match = new Regex (m_matchPattern);
+            Regex match = null;
+
+            if (!string.IsNullOrEmpty (m_matchPattern)) {
+                match = new Regex (m_matchPattern);
+            }
 
 			if(incoming != null) {
 				foreach(var ag in incoming) {
@@ -149,8 +147,12 @@ namespace UnityEngine.AssetGraph
                                     entry = aaSettings.CreateOrMoveEntry (guid, aaSettings.DefaultGroup);
                                 }
 
-                                if (match.IsMatch (a.importFrom)) {
-                                    entry.address = match.Replace (a.importFrom, m_addressPattern);
+                                if (match != null) {
+                                    if (match.IsMatch (a.importFrom)) {
+                                        entry.address = match.Replace (a.importFrom, m_addressPattern);
+                                    }
+                                } else {
+                                    entry.address = entry.assetPath;
                                 }
                             } else {
                                 aaSettings.RemoveAssetEntry (guid);
