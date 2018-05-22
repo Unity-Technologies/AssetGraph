@@ -26,7 +26,7 @@ namespace UnityEngine.AssetGraph {
 
         private static AssetProcessEventRecord s_record;
 
-        private List<AssetProcessEvent> m_filteredEvents;
+	    private List<AssetProcessEvent> m_filteredEvents;
         private bool m_includeError;
         private bool m_includeInfo;
         private string m_filterKeyword;
@@ -98,8 +98,9 @@ namespace UnityEngine.AssetGraph {
 
 					if(record != null && record.m_version == VERSION) {
 						s_record = record;
-						loaded = true;
-                    } else {
+					    s_record.InitAfterDeserialize();
+					    loaded = true;
+					} else {
                         if(record != null) {
                             Resources.UnloadAsset(record);
                         }
@@ -118,16 +119,21 @@ namespace UnityEngine.AssetGraph {
 
         private void Init() {
             m_events = new List<AssetProcessEvent>();
-            m_filteredEvents = new List<AssetProcessEvent>();
             m_errorEventCount = 0;
             m_infoEventCount = 0;
-            m_filteredInfoEventCount = 0;
-            m_filteredErrorEventCount = 0;
-            m_filterKeyword = string.Empty;
-            m_includeError = true;
-            m_includeInfo = true;
             m_version = VERSION;
+            InitAfterDeserialize();
         }
+
+	    private void InitAfterDeserialize()
+	    {
+	        m_filteredEvents = new List<AssetProcessEvent>();
+	        m_filteredInfoEventCount = 0;
+	        m_filteredErrorEventCount = 0;
+	        m_filterKeyword = string.Empty;
+	        m_includeError = true;
+	        m_includeInfo = true;
+	    }
 
         public void SetFilterCondition(bool includeInfo, bool includeError) {
 
