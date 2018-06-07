@@ -25,7 +25,6 @@ namespace UnityEngine.AssetGraph {
 
         private Object m_customSettingAssetObject;
         private Editor m_importerEditor;
-        private Type m_configureImporterFor;
 
 		public override string ActiveStyle {
 			get {
@@ -93,7 +92,6 @@ namespace UnityEngine.AssetGraph {
             m_customSettingAssetGuid = string.Empty;
             m_overwriteSpriteSheet = false;
             m_referenceAssetGuid = string.Empty;
-            m_configureImporterFor = null;
 
             m_configuratorInstance = new SerializableMultiTargetInstance ();
 
@@ -115,7 +113,6 @@ namespace UnityEngine.AssetGraph {
             newNode.m_overwriteSpriteSheet = m_overwriteSpriteSheet;
             newNode.m_configuratorInstance = new SerializableMultiTargetInstance (m_configuratorInstance);
             newNode.m_referenceAssetGuid = string.Empty;
-            newNode.m_configureImporterFor = null;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -190,7 +187,8 @@ namespace UnityEngine.AssetGraph {
                                         false,
                                         () => {
                                             ResetConfig (node.Data);
-                                            m_configureImporterFor = guiMap [guiNames [index]];
+                                            CreateConfigurator (node.Data, guiMap [guiNames [index]]);
+                                            onValueChanged();
                                             // call Validate
                                             NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_UPDATED, node));
                                         }
@@ -246,6 +244,7 @@ namespace UnityEngine.AssetGraph {
                         if (EditorUtility.DisplayDialog ("Clear Saved Import Setting", 
                             string.Format ("Do you want to reset saved import setting for \"{0}\"? This operation is not undoable.", node.Name), "OK", "Cancel")) {
                             ResetConfig (node.Data);
+                            onValueChanged();
                         }
                     }
                 }
@@ -314,18 +313,6 @@ namespace UnityEngine.AssetGraph {
 			IEnumerable<Model.ConnectionData> connectionsToOutput, 
 			PerformGraph.Output Output) 
 		{
-            if (m_configureImporterFor != null) {
-                CreateConfigurator (node, m_configureImporterFor);
-            }
-
-            if (string.IsNullOrEmpty (m_referenceAssetGuid)) {
-                // give a try first in sampling file
-                var a = AssetReferenceUtility.FindFirstIncomingAssetReference(incoming);
-                if (a != null) {
-                    CreateConfigurator(node, a.importerType);
-                }
-            }
-
             ValidateInputSetting(node, target, incoming);
 
 			// ImportSettings does not add, filter or change structure of group, so just pass given group of assets
@@ -384,7 +371,6 @@ namespace UnityEngine.AssetGraph {
 			AssetDatabase.Refresh(ImportAssetOptions.ImportRecursive);
 
             m_referenceAssetGuid = AssetDatabase.AssetPathToGUID (targetFilePath);
-            m_configureImporterFor = null;
 		}
 
 		public void ResetConfig(Model.NodeData node) {
@@ -489,25 +475,24 @@ namespace UnityEngine.AssetGraph {
                 }
 			}
 
-            // check if there is a valid reference asset
-            if(!string.IsNullOrEmpty(m_referenceAssetGuid)) {
-                var referenceImporter = GetReferenceAssetImporter (node, false);
-
-                if (referenceImporter == null) {
-                    throw new NodeException("Reference importer not found.",
-                        "Configure reference importer from inspector", node);
-                }
-            }
-
             // check if there is a valid custom setting asset
             if (m_useCustomSettingAsset && CustomSettingAsset == null) {
                 throw new NodeException("You must select custom setting asset.",
                     "Select custom setting asset.", node);
             }
+            
+            // check if there is a valid reference asset
+            var referenceImporter = GetReferenceAssetImporter (node, false);
+
+            if (referenceImporter == null) {
+                throw new NodeException("Reference importer not found.",
+                    "Configure reference importer from inspector", node);
+            }
 
             // check if reference asset type matches with incoming asset types
-            if(firstAssetImporterType != null) {
-                Type targetType = GetReferenceAssetImporter(node, false).GetType();
+            if(firstAssetImporterType != null)
+            {
+                Type targetType = referenceImporter.GetType();
                 if( targetType != firstAssetImporterType ) {
                     throw new NodeException(
                         string.Format("Incoming asset type is does not match with this ImportSetting (Expected type:{0}, Incoming type:{1}).", targetType.FullName, firstAssetImporterType.FullName), 
