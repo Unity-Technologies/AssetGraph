@@ -224,15 +224,23 @@ namespace UnityEngine.AssetGraph {
                         configurator.OnInspectorGUI (referenceImporter, editor.CurrentEditingGroup, onChangedAction);
                     }
 
-                    if (m_importerEditor == null) {
-                        m_importerEditor = Editor.CreateEditor (referenceImporter);
+                    if (m_importerEditor == null)
+                    {
+                        m_importerEditor = Editor.CreateEditor(referenceImporter);
                     }
                 }
 
                 if (m_importerEditor != null) {
                     GUILayout.Space (10f);
                     GUILayout.Label (string.Format("Import Setting ({0})", importerType.Name));
+                    GUI.changed = false;
                     m_importerEditor.OnInspectorGUI ();
+                    #if UNITY_2018_1_OR_NEWER
+                    if (GUI.changed)
+                    {
+                        referenceImporter.SaveAndReimport();
+                    }
+                    #endif
                 }
 
                 GUILayout.Space (40f);
