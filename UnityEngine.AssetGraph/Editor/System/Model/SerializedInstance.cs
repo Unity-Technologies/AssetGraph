@@ -5,7 +5,7 @@ using System.Collections;
 
 namespace UnityEngine.AssetGraph {
 	[System.Serializable]
-	public class SerializedInstance<T> where T: class {
+	public class SerializedInstance<T> : ISerializationCallbackReceiver where T: class {
 
 		[SerializeField] private string m_className;
 		[SerializeField] private string m_instanceData;
@@ -48,6 +48,16 @@ namespace UnityEngine.AssetGraph {
 
             m_className = obj.GetType().AssemblyQualifiedName;
             m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(obj));
+		}
+		
+		public void OnBeforeSerialize()
+		{
+			Save();
+		}
+
+		public void OnAfterDeserialize()
+		{
+			m_className = VersionCompatibilityUtility.UpdateClassName(m_className);
 		}
 
         public void Invalidate() {

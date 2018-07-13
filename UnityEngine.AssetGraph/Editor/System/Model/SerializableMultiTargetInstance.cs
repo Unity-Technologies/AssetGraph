@@ -8,7 +8,7 @@ using Model=UnityEngine.AssetGraph.DataModel.Version2;
 namespace UnityEngine.AssetGraph {
 
 	[Serializable] 
-	public class SerializableMultiTargetInstance {
+	public class SerializableMultiTargetInstance : ISerializationCallbackReceiver {
 
 		[Serializable]
 		public class Entry {
@@ -53,6 +53,15 @@ namespace UnityEngine.AssetGraph {
 			foreach(var v in instanceData.Values) {
 				m_values.Add(new Entry(v.targetGroup, CustomScriptUtility.EncodeString(v.value), null));
 			}
+		}
+		
+		public void OnBeforeSerialize()
+		{
+		}
+
+		public void OnAfterDeserialize()
+		{
+			m_className = VersionCompatibilityUtility.UpdateClassName(m_className);
 		}
 
 		public SerializableMultiTargetInstance() {
