@@ -47,6 +47,7 @@ namespace UnityEngine.AssetGraph {
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
 
         private GeneratorEntry m_removingEntry;
+	    private Texture2D m_popupIcon;
 
         public static readonly string kCacheDirName = "GeneratedAssets";
 
@@ -107,12 +108,25 @@ namespace UnityEngine.AssetGraph {
             var generator = entry.m_instance.Get<IAssetGenerator>(editor.CurrentEditingGroup);
 
             using (new EditorGUILayout.VerticalScope(GUI.skin.box)) {
-                var newName = EditorGUILayout.TextField ("Name", entry.m_name);
-                if (newName != entry.m_name) {
-                    using(new RecordUndoScope("Change Name", node, true)) {
-                        entry.m_name = newName;
-                        UpdateGeneratorEntry (node, entry);
-                        onValueChanged();
+                using (new GUILayout.HorizontalScope())
+                {
+                    var newName = EditorGUILayout.TextField ("Name", entry.m_name);
+                    if (newName != entry.m_name) {
+                        using(new RecordUndoScope("Change Name", node, true)) {
+                            entry.m_name = newName;
+                            UpdateGeneratorEntry (node, entry);
+                            onValueChanged();
+                        }
+                    }
+
+                    if (GUILayout.Button(m_popupIcon, GUI.skin.label, GUILayout.Width(20f)))
+                    {
+                        var menu = new GenericMenu();
+                        menu.AddItem(new GUIContent("Remove Generator"), false, () =>
+                        {
+                            m_removingEntry = entry;
+                        } );
+                        menu.ShowAsContext();
                     }
                 }
 
@@ -187,15 +201,6 @@ namespace UnityEngine.AssetGraph {
                         }
                     }
                 }
-
-                GUILayout.Space (4);
-
-                using (new EditorGUILayout.HorizontalScope ()) {
-                    GUILayout.FlexibleSpace ();
-                    if (GUILayout.Button ("Remove")) {
-                        m_removingEntry = entry;
-                    }
-                }
             }
         }
 
@@ -205,6 +210,11 @@ namespace UnityEngine.AssetGraph {
 			editor.UpdateNodeName(node);
 
             GUILayout.Space(8f);
+
+		    if (m_popupIcon == null)
+		    {
+		        m_popupIcon = EditorGUIUtility.Load (EditorGUIUtility.isProSkin ? "icons/d__Popup.png" : "icons/_Popup.png") as Texture2D;
+		    }		    
 
             editor.DrawPlatformSelector(node);
             using (new EditorGUILayout.VerticalScope()) {
