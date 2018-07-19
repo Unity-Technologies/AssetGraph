@@ -54,7 +54,9 @@ public class CreateMaterialFromTexture : IAssetGenerator
     [SerializeField] public string m_propertyName;
     [SerializeField] public List<PropertyField> m_properties;
 
+#if !UNITY_2018_1_OR_NEWER
     private ColorPickerHDRConfig m_hdrConfig;
+    #endif
 
     public void OnValidate()
     {
@@ -174,10 +176,12 @@ public class CreateMaterialFromTexture : IAssetGenerator
             onValueChanged();
         }
 
+#if !UNITY_2018_1_OR_NEWER
         if (m_hdrConfig == null)
         {
             m_hdrConfig = new ColorPickerHDRConfig(0f, 10f, 0f, 10f);
         }
+#endif
 
         var refMat =
             (Material) EditorGUILayout.ObjectField("Reference Material", m_referenceMat.Object, typeof(Material),
@@ -339,8 +343,12 @@ public class CreateMaterialFromTexture : IAssetGenerator
                 break;
             case PropertyType.Color:
             {
+#if !UNITY_2018_1_OR_NEWER
                 var v = EditorGUILayout.ColorField(new GUIContent("Color"), field.colorValue, true, true, true,
                     m_hdrConfig);
+#else
+                var v = EditorGUILayout.ColorField(new GUIContent("Color"), field.colorValue, true, true, true);
+#endif
                 if (v != field.colorValue)
                 {
                     field.colorValue = v;
