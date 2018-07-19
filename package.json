@@ -1,0 +1,11 @@
+{
+	"name": "com.unity.assetgraph",
+	"displayName": "Asset Graph",
+	"version": "1.5.0-preview",
+	"unity": "2018.1",
+	"description": "AssetGraph is a visual toolset lets you configure asset workflow visually in Unity. It is intended to create rule-based configuration using graphs to create and manage efficient workflow around assets.",
+	"keywords": ["asset", "bundle", "bundles", "assetbundles", "graph", "import", "automation"],
+	"category": "Asset Pipelines",
+	"dependencies": {
+	}
+}
