@@ -7,25 +7,22 @@
  * https://github.com/Unity-Technologies/AssetBundles-Browser
  */
  
+#if ASSETBUNDLE_BROWSER_GRAPH_INTEGRARION
+
 using UnityEditor;
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 using System;
 using System.IO;
 using System.Collections.Generic;
 
-namespace UnityEngine.AssetBundles.AssetBundleDataSource
-{
-    public partial struct ABBuildInfo { }
-    public partial interface ABDataSource { }
-}
-
 namespace UnityEngine.AssetGraph {
-    public class GraphToolABDataSource : UnityEngine.AssetBundles.AssetBundleDataSource.ABDataSource
+
+    public class GraphToolABDataSource : AssetBundleBrowser.AssetBundleDataSource.ABDataSource
     {
-        public static List<UnityEngine.AssetBundles.AssetBundleDataSource.ABDataSource> CreateDataSources()
+        public static List<AssetBundleBrowser.AssetBundleDataSource.ABDataSource> CreateDataSources()
         {
             var op = new GraphToolABDataSource();
-            var retList = new List<UnityEngine.AssetBundles.AssetBundleDataSource.ABDataSource>();
+            var retList = new List<AssetBundleBrowser.AssetBundleDataSource.ABDataSource>();
             retList.Add(op);
             return retList;
         }
@@ -112,7 +109,7 @@ namespace UnityEngine.AssetGraph {
             AssetGraphUtility.ExecuteGraphSetup (path);
         }
 
-        public bool BuildAssetBundles (UnityEngine.AssetBundles.AssetBundleDataSource.ABBuildInfo info) {
+        public bool BuildAssetBundles (AssetBundleBrowser.AssetBundleDataSource.ABBuildInfo info) {
 			
             AssetBundleBuildMap.GetBuildMap ().Clear ();
 
@@ -145,3 +142,5 @@ namespace UnityEngine.AssetGraph {
 		}
     }
 }
+
+#endif
