@@ -133,6 +133,8 @@ namespace UnityEngine.AssetGraph {
 	        m_filterKeyword = string.Empty;
 	        m_includeError = true;
 	        m_includeInfo = true;
+
+	        RebuildFilteredEvents();
 	    }
 
         public void SetFilterCondition(bool includeInfo, bool includeError) {
