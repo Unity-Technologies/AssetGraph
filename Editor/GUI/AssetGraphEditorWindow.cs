@@ -411,7 +411,7 @@ namespace Unity.AssetGraph
         [MenuItem (Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)]
         public static void DeleteCache ()
         {
-            FileUtility.RemakeDirectory (Settings.Path.CachePath);
+            FileUtility.RemakeDirectory (Model.Settings.Path.CachePath);
 
             AssetDatabase.Refresh ();
         }
@@ -755,16 +755,15 @@ namespace Unity.AssetGraph
 
         private void CreateNewGraphFromImport ()
         {
-            string path =
-                EditorUtility.SaveFilePanelInProject (
-                    "Import Asset Graph", 
-                    "Asset Graph", "asset", 
-                    "Create a new asset graph from previous version data:");
+            var path =
+                EditorUtility.OpenFilePanel (
+                    "Select previous version file", 
+                    "Assets", "");
             if (string.IsNullOrEmpty (path)) {
                 return;
             }
 
-            Model.ConfigGraph graph = Model.ConfigGraph.CreateNewGraphFromImport (path);
+            var graph = Model.ConfigGraph.CreateNewGraphFromImport (path);
             OpenGraph (graph);
         }
 
@@ -1052,12 +1051,8 @@ namespace Unity.AssetGraph
                         JSONGraphUtility.ExportAllGraphsToJSONFromDialog ();
                     });
 
-                    if (Model.ConfigGraph.IsImportableDataAvailableAtDisk ()) {
-                        menu.AddSeparator ("");
-                        menu.AddItem (new GUIContent ("Import previous version..."), false, () => {
-                            CreateNewGraphFromImport ();
-                        });
-                    }
+                    menu.AddSeparator ("");
+                    menu.AddItem (new GUIContent ("Import previous version..."), false, CreateNewGraphFromImport);
 
                     menu.DropDown (new Rect (4f, 8f, 0f, 0f));
                 }
@@ -1108,9 +1103,8 @@ namespace Unity.AssetGraph
             }
         }
 
-        static readonly string kGUIDELINETEXT = "To configure asset workflow, create an asset graph.";
-        static readonly string kCREATEBUTTON = "Create";
-        static readonly string kIMPORTBUTTON = "Import previous version";
+        private const string kGUIDELINETEXT = "To configure asset workflow, create an asset graph.";
+        private const string kCREATEBUTTON = "Create";
 
         private void DrawNoGraphGUI ()
         {
@@ -1124,19 +1118,11 @@ namespace Unity.AssetGraph
 
                     using (new EditorGUILayout.HorizontalScope ()) {
 
-                        bool showImport = Model.ConfigGraph.IsImportableDataAvailableAtDisk ();
-                        float spaceWidth = (showImport) ? (size.x - 300f) / 2f : (size.x - 100f) / 2f;
+                        var spaceWidth = (size.x - 100f) / 2f;
 
                         GUILayout.Space (spaceWidth);
                         if (GUILayout.Button (kCREATEBUTTON, GUILayout.Width (100f), GUILayout.ExpandWidth (false))) {
                             CreateNewGraphFromDialog ();
-                        }
-
-                        if (showImport) {
-                            GUILayout.Space (20f);
-                            if (GUILayout.Button (kIMPORTBUTTON, GUILayout.Width (160f), GUILayout.ExpandWidth (false))) {
-                                CreateNewGraphFromImport ();
-                            }
                         }
                     }
                     GUILayout.FlexibleSpace ();

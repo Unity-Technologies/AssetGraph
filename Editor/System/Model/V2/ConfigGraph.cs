@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Unity.AssetGraph;
-using V1=AssetBundleGraph;
 
 namespace Unity.AssetGraph.DataModel.Version2 {
 
@@ -52,7 +51,7 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 			}
 		}
 
-		private void Import(V1.SaveData v1) {
+		private void Import(AssetBundleGraph.SaveData v1) {
 			m_lastModified = GetFileTimeUtcString();
 			m_version = ABG_FILE_VERSION;
 
@@ -177,23 +176,19 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 			}
 		}
 
-		public static bool IsImportableDataAvailableAtDisk() {
-			return V1.SaveData.IsSaveDataAvailableAtDisk();
-		}
-
 		public static ConfigGraph CreateNewGraph(string pathToSave) {
 			var data = ScriptableObject.CreateInstance<ConfigGraph>();
 			AssetDatabase.CreateAsset(data, pathToSave);
 			return data;
 		}
 
-		public static ConfigGraph CreateNewGraphFromImport(string pathToSave) {
+		public static ConfigGraph CreateNewGraphFromImport(string pathToLoad) {
 
 			// try load from v1.
 			try {
-				V1.SaveData v1 = V1.SaveData.Data;
-				ConfigGraph newGraph = CreateNewGraph(pathToSave);
-				newGraph.Import(v1);
+				var loadedData = AssetBundleGraph.SaveData.LoadSaveData(pathToLoad);
+				var newGraph = CreateNewGraph(Settings.Path.ASSETS_PATH + "importedGraph.asset");
+				newGraph.Import(loadedData);
 
 				return newGraph;
 

@@ -376,7 +376,7 @@ namespace AssetBundleGraph {
 		public void FromJsonDictionary(Dictionary<string, object> jsonData) {
 			m_name = jsonData[NODE_NAME] as string;
 			m_id = jsonData[NODE_ID]as string;
-			m_kind = Settings.NodeKindFromString(jsonData[NODE_KIND] as string);
+			m_kind = SaveDataConstants.NodeKindFromString(jsonData[NODE_KIND] as string);
 			m_scriptClassName = string.Empty;
 			m_nodeNeedsRevisit = false;
 
@@ -515,13 +515,13 @@ namespace AssetBundleGraph {
 			// adding defalut input point.
 			// Loader does not take input
 			if(kind != NodeKind.LOADER_GUI) {
-				m_inputPoints.Add(new ConnectionPointData(Settings.DEFAULT_INPUTPOINT_LABEL, this, true));
+				m_inputPoints.Add(new ConnectionPointData(SaveDataConstants.DEFAULT_INPUTPOINT_LABEL, this, true));
 			}
 
 			// adding default output point.
 			// Filter and Exporter does not have output.
 			if(kind != NodeKind.FILTER_GUI && kind != NodeKind.EXPORTER_GUI) {
-				m_outputPoints.Add(new ConnectionPointData(Settings.DEFAULT_OUTPUTPOINT_LABEL, this, false));
+				m_outputPoints.Add(new ConnectionPointData(SaveDataConstants.DEFAULT_OUTPUTPOINT_LABEL, this, false));
 			}
 
 			switch(m_kind) {
@@ -546,11 +546,11 @@ namespace AssetBundleGraph {
 				break;
 
 			case NodeKind.GROUPING_GUI:
-				m_groupingKeyword = new SerializableMultiTargetString(Settings.GROUPING_KEYWORD_DEFAULT);
+				m_groupingKeyword = new SerializableMultiTargetString(SaveDataConstants.GROUPING_KEYWORD_DEFAULT);
 				break;
 
 			case NodeKind.BUNDLECONFIG_GUI:
-				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(Settings.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
+				m_bundleConfigBundleNameTemplate = new SerializableMultiTargetString(SaveDataConstants.BUNDLECONFIG_BUNDLENAME_TEMPLATE_DEFAULT);
 				m_bundleConfigUseGroupAsVariants = false;
 				m_variants = new List<Variant>();
 				break;
@@ -709,7 +709,7 @@ namespace AssetBundleGraph {
 			ConnectionPointData p = m_outputPoints.Find(v => v.Id == f.ConnectionPointId);
 			UnityEngine.Assertions.Assert.IsNotNull(p);
 
-			if(f.FilterKeytype == Settings.DEFAULT_FILTER_KEYTYPE) {
+			if(f.FilterKeytype == SaveDataConstants.DEFAULT_FILTER_KEYTYPE) {
 				p.Label = f.FilterKeyword;
 			} else {
 				var pointIndex = f.FilterKeytype.LastIndexOf('.');

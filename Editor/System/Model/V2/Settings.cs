@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 
 namespace Unity.AssetGraph.DataModel.Version2 {
-	public class Settings {
+	public static class Settings {
 		/*
 			if true, ignore .meta files inside AssetBundleGraph.
 		*/
