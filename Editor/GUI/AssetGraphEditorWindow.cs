@@ -1051,8 +1051,8 @@ namespace Unity.AssetGraph
                         JSONGraphUtility.ExportAllGraphsToJSONFromDialog ();
                     });
 
-                    menu.AddSeparator ("");
-                    menu.AddItem (new GUIContent ("Import previous version..."), false, CreateNewGraphFromImport);
+                    menu.AddSeparator ("Import/");
+                    menu.AddItem (new GUIContent ("Import/Import previous version(>1.2)..."), false, CreateNewGraphFromImport);
 
                     menu.DropDown (new Rect (4f, 8f, 0f, 0f));
                 }
