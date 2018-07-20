@@ -1,8 +1,8 @@
-UnityEngine.AssetGraph/Cache*
-UnityEngine.AssetGraph/SavedSettings*
-UnityEngine.AssetGraph/TemporalSettingFiles*
-UnityEngine.AssetGraph/Generated*
+Cache*
+SavedSettings*
+TemporalSettingFiles*
+Generated*
 Doxyfile.meta
-docs/*.meta
-docs/html/*.meta
-docs/html/*/*.meta
+Documentation~/*.meta
+Documentation~/html/*.meta
+Documentation~/html/*/*.meta
