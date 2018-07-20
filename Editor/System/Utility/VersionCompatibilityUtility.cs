@@ -20,6 +20,7 @@ namespace Unity.AssetGraph {
                     .Replace("UnityEngine.AssetGraph.", "Unity.AssetGraph."); // v1.4 -> 1.5
             }
 
+            // test remapped type class.
             var typeGetTest = Type.GetType(className);
             if (null == typeGetTest)
             {
