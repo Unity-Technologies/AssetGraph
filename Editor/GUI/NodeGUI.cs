@@ -352,10 +352,10 @@ namespace Unity.AssetGraph {
 				EditorGUI.ProgressBar(new Rect(10f, m_baseRect.height - 20f, m_baseRect.width - 20f, 10f), m_progress, string.Empty);
 			}
 			if (m_hasErrors) {
-				GUIStyle errorStyle = new GUIStyle("CN EntryError");
-				errorStyle.alignment = TextAnchor.MiddleCenter;
 				var labelSize = GUI.skin.label.CalcSize(new GUIContent(Name));
-				EditorGUI.LabelField(new Rect((nodeTitleRect.width - labelSize.x )/2.0f - 28f, (nodeTitleRect.height-labelSize.y)/2.0f - 7f, 20f, 20f), string.Empty, errorStyle);
+				var rect = new Rect((nodeTitleRect.width - labelSize.x) / 2.0f - 26f,
+					(nodeTitleRect.height - labelSize.y) / 2.0f - 2f, 20f, 20f);
+				GUI.Label(rect, NodeGUIUtility.miniErrorIcon);
 			}
 
 			// draw & update connectionPoint button interface.

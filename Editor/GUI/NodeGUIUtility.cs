@@ -68,6 +68,16 @@ namespace Unity.AssetGraph
 				return NodeSingleton.s.windowIconPro;
 			}
 		}
+		
+		public static Texture2D miniErrorIcon {
+			get {
+				if (NodeSingleton.s.miniErrorIcon == null) {
+					NodeSingleton.s.miniErrorIcon = EditorGUIUtility.Load ("icons/console.erroricon.sml.png") as Texture2D;
+				}
+				return NodeSingleton.s.miniErrorIcon;
+			}
+		}
+		
 
 		public static Texture2D configGraphIcon {
 			get {
@@ -167,6 +177,7 @@ namespace Unity.AssetGraph
 			public Action<NodeEvent> emitAction;
 
 			public Texture2D graphIcon;
+			public Texture2D miniErrorIcon;
 
 			public Texture2D windowIcon;
 			public Texture2D windowIconPro;
