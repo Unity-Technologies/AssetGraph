@@ -5,234 +5,264 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
 using Unity.AssetGraph;
 
-namespace Unity.AssetGraph.DataModel.Version2 {
+namespace Unity.AssetGraph.DataModel.Version2
+{
+    /*
+     * Save data which holds all AssetBundleGraph settings and configurations.
+     */
+    [CreateAssetMenu(fileName = "New AssetGraph", menuName = "Asset Graph", order = 650)]
+    public class ConfigGraph : ScriptableObject
+    {
+        /*
+         * Important: 
+         * ABG_FILE_VERSION must be increased by one when any structure change(s) happen
+         */
+        public const int ABG_FILE_VERSION = 2;
 
-	/*
-	 * Save data which holds all AssetBundleGraph settings and configurations.
-	 */ 
-	[CreateAssetMenu( fileName = "New AssetGraph", menuName = "Asset Graph", order = 650 )]
-	public class ConfigGraph : ScriptableObject {
-
-		/*
-		 * Important: 
-		 * ABG_FILE_VERSION must be increased by one when any structure change(s) happen
-		 */ 
-		public const int ABG_FILE_VERSION = 2;
-
-		[SerializeField] private List<NodeData> m_allNodes;
-		[SerializeField] private List<ConnectionData> m_allConnections;
-		[SerializeField] private string m_lastModified;
-		[SerializeField] private int m_version;
-		[SerializeField] private string m_graphDescription;
+        [SerializeField] private List<NodeData> m_allNodes;
+        [SerializeField] private List<ConnectionData> m_allConnections;
+        [SerializeField] private string m_lastModified;
+        [SerializeField] private int m_version;
+        [SerializeField] private string m_graphDescription;
         [SerializeField] private bool m_useAsAssetPostprocessor;
         [SerializeField] private int m_graphExecOrderPriority;
 
-		void OnEnable() {
-			Initialize();
-			Validate();
-		}
+        void OnEnable()
+        {
+            Initialize();
+            Validate();
+        }
 
-		private string GetFileTimeUtcString() {
-			return DateTime.UtcNow.ToFileTimeUtc().ToString();
-		}
+        private string GetFileTimeUtcString()
+        {
+            return DateTime.UtcNow.ToFileTimeUtc().ToString();
+        }
 
-		private void Initialize() {
-			if(string.IsNullOrEmpty(m_lastModified)) {
-				m_lastModified = GetFileTimeUtcString();
-				m_allNodes = new List<NodeData>();
-				m_allConnections = new List<ConnectionData>();
-				m_version = ABG_FILE_VERSION;
-				m_graphDescription = String.Empty;
+        private void Initialize()
+        {
+            if (string.IsNullOrEmpty(m_lastModified))
+            {
+                m_lastModified = GetFileTimeUtcString();
+                m_allNodes = new List<NodeData>();
+                m_allConnections = new List<ConnectionData>();
+                m_version = ABG_FILE_VERSION;
+                m_graphDescription = String.Empty;
                 m_graphExecOrderPriority = Settings.GRAPHEXECPRIORITY_DEFAULT;
-				EditorUtility.SetDirty(this);
-			}
-		}
-
-		private void Import(AssetBundleGraph.SaveData v1) {
-			m_lastModified = GetFileTimeUtcString();
-			m_version = ABG_FILE_VERSION;
-
-			foreach(var n in v1.Nodes) {
-				m_allNodes.Add(new NodeData(n));
-			}
-
-			foreach(var c in v1.Connections) {
-				m_allConnections.Add(new ConnectionData(c));
-			}
-
-			EditorUtility.SetDirty(this);
-		}
-
-		public bool UseAsAssetPostprocessor {
-			get {  
-				return m_useAsAssetPostprocessor;
-			}
-			set {
-				m_useAsAssetPostprocessor = value;
-				SetGraphDirty();
-			}
-		}
-
-		public DateTime LastModified {
-			get {
-				long utcFileTime = long.Parse(m_lastModified);
-				DateTime d = DateTime.FromFileTimeUtc(utcFileTime);
-
-				return d;
-			}
-		}
-
-		public string Descrption {
-			get{
-				return m_graphDescription;
-			}
-			set {
-				m_graphDescription = value;
-				SetGraphDirty();
-			}
-		}
-
-		public int Version {
-			get {
-				return m_version;
-			}
-		}
-
-        public int ExecuteOrderPriority {
-            get {
-                return m_graphExecOrderPriority;
-            }
-            set {
-                m_graphExecOrderPriority = value;
+                EditorUtility.SetDirty(this);
             }
         }
 
-		public List<NodeData> Nodes {
-			get{ 
-				return m_allNodes;
-			}
-		}
+        private void Import(AssetBundleGraph.SaveData v1)
+        {
+            m_lastModified = GetFileTimeUtcString();
+            m_version = ABG_FILE_VERSION;
 
-		public List<ConnectionData> Connections {
-			get{ 
-				return m_allConnections;
-			}
-		}
+            foreach (var n in v1.Nodes)
+            {
+                m_allNodes.Add(new NodeData(n));
+            }
 
-		public List<NodeData> CollectAllLeafNodes() {
+            foreach (var c in v1.Connections)
+            {
+                m_allConnections.Add(new ConnectionData(c));
+            }
 
-			var nodesWithChild = new List<NodeData>();
-			foreach (var c in m_allConnections) {
-				NodeData n = m_allNodes.Find(v => v.Id == c.FromNodeId);
-				if(n != null) {
-					nodesWithChild.Add(n);
-				}
-			}
-			return m_allNodes.Except(nodesWithChild).ToList();
-		}
-
-		public void Save() {
-			m_allNodes.ForEach(n => n.Operation.Save());
-			SetGraphDirty();
-		}
-
-		public void SetGraphDirty() {
-			EditorUtility.SetDirty(this);
-		}
-
-        public string GetGraphName() {
-            var path = AssetDatabase.GetAssetOrScenePath (this);
-            return Path.GetFileNameWithoutExtension (path);
+            EditorUtility.SetDirty(this);
         }
 
-        public string GetGraphGuid() {
-            return AssetDatabase.AssetPathToGUID (AssetDatabase.GetAssetPath(this));
+        public bool UseAsAssetPostprocessor
+        {
+            get { return m_useAsAssetPostprocessor; }
+            set
+            {
+                m_useAsAssetPostprocessor = value;
+                SetGraphDirty();
+            }
         }
 
-		//
-		// Save/Load to disk
-		//
+        public DateTime LastModified
+        {
+            get
+            {
+                long utcFileTime = long.Parse(m_lastModified);
+                DateTime d = DateTime.FromFileTimeUtc(utcFileTime);
 
-		public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections) {
+                return d;
+            }
+        }
 
-			List<NodeData> n = nodes.Select(v => v.Data).ToList();
-			List<ConnectionData> c = connections.Select(v => v.Data).ToList();
+        public string Descrption
+        {
+            get { return m_graphDescription; }
+            set
+            {
+                m_graphDescription = value;
+                SetGraphDirty();
+            }
+        }
 
-			if( !Enumerable.SequenceEqual(n.OrderBy(v => v.Id), m_allNodes.OrderBy(v => v.Id)) ||
-				!Enumerable.SequenceEqual(c.OrderBy(v => v.Id), m_allConnections.OrderBy(v => v.Id)) ) 
-			{
-				LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
+        public int Version
+        {
+            get { return m_version; }
+        }
 
-				m_version = ABG_FILE_VERSION;
-				m_lastModified = GetFileTimeUtcString();
-				m_allNodes = n;
-				m_allConnections = c;
-				Save();
-			} else {
-				LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
-			}
-		}
+        public int ExecuteOrderPriority
+        {
+            get { return m_graphExecOrderPriority; }
+            set { m_graphExecOrderPriority = value; }
+        }
 
-		public static ConfigGraph CreateNewGraph(string pathToSave) {
-			var data = ScriptableObject.CreateInstance<ConfigGraph>();
-			AssetDatabase.CreateAsset(data, pathToSave);
-			return data;
-		}
+        public List<NodeData> Nodes
+        {
+            get { return m_allNodes; }
+        }
 
-		public static ConfigGraph CreateNewGraphFromImport(string pathToLoad) {
+        public List<ConnectionData> Connections
+        {
+            get { return m_allConnections; }
+        }
 
-			// try load from v1.
-			try {
-				var loadedData = AssetBundleGraph.SaveData.LoadSaveData(pathToLoad);
-				var newGraph = CreateNewGraph(Settings.Path.ASSETS_PATH + "importedGraph.asset");
-				newGraph.Import(loadedData);
+        public List<NodeData> CollectAllLeafNodes()
+        {
+            var nodesWithChild = new List<NodeData>();
+            foreach (var c in m_allConnections)
+            {
+                NodeData n = m_allNodes.Find(v => v.Id == c.FromNodeId);
+                if (n != null)
+                {
+                    nodesWithChild.Add(n);
+                }
+            }
 
-				return newGraph;
+            return m_allNodes.Except(nodesWithChild).ToList();
+        }
 
-			} catch (Exception e) {
-				LogUtility.Logger.LogError(LogUtility.kTag, "Failed to import graph from previous version." + e );
-			}
+        public void Save()
+        {
+            m_allNodes.ForEach(n => n.Operation.Save());
+            SetGraphDirty();
+        }
 
-			return null;
-		}
+        public void SetGraphDirty()
+        {
+            EditorUtility.SetDirty(this);
+        }
 
-		/*
-		 * Checks deserialized SaveData, and make some changes if necessary
-		 * return false if any changes are perfomed.
-		 */
-		private bool Validate () {
-			var changed = false;
+        public string GetGraphName()
+        {
+            var path = AssetDatabase.GetAssetOrScenePath(this);
+            return Path.GetFileNameWithoutExtension(path);
+        }
 
-			if(m_allNodes != null) {
-				List<NodeData> removingNodes = new List<NodeData>();
-				foreach (var n in m_allNodes) {
-					if(!n.Validate()) {
-						removingNodes.Add(n);
-						changed = true;
-					}
-				}
-				m_allNodes.RemoveAll(n => removingNodes.Contains(n));
-			}
+        public string GetGraphGuid()
+        {
+            return AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(this));
+        }
 
-			if(m_allConnections != null) {
-				List<ConnectionData> removingConnections = new List<ConnectionData>();
-				foreach (var c in m_allConnections) {
-					if(!c.Validate(m_allNodes, m_allConnections)) {
-						removingConnections.Add(c);
-						changed = true;
-					}
-				}
-				m_allConnections.RemoveAll(c => removingConnections.Contains(c));
-			}
+        //
+        // Save/Load to disk
+        //
 
-			if(changed) {
-				m_lastModified = GetFileTimeUtcString();
-			}
+        public void ApplyGraph(List<NodeGUI> nodes, List<ConnectionGUI> connections)
+        {
+            List<NodeData> n = nodes.Select(v => v.Data).ToList();
+            List<ConnectionData> c = connections.Select(v => v.Data).ToList();
 
-			return !changed;
-		}
-	}
+            if (!Enumerable.SequenceEqual(n.OrderBy(v => v.Id), m_allNodes.OrderBy(v => v.Id)) ||
+                !Enumerable.SequenceEqual(c.OrderBy(v => v.Id), m_allConnections.OrderBy(v => v.Id)))
+            {
+                LogUtility.Logger.Log("[ApplyGraph] SaveData updated.");
+
+                m_version = ABG_FILE_VERSION;
+                m_lastModified = GetFileTimeUtcString();
+                m_allNodes = n;
+                m_allConnections = c;
+                Save();
+            }
+            else
+            {
+                LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
+            }
+        }
+
+        public static ConfigGraph CreateNewGraph(string pathToSave)
+        {
+            var data = ScriptableObject.CreateInstance<ConfigGraph>();
+            AssetDatabase.CreateAsset(data, pathToSave);
+            return data;
+        }
+
+        public static ConfigGraph CreateNewGraphFromImport(string pathToLoad)
+        {
+            // try load from v1.
+            try
+            {
+                var loadedData = AssetBundleGraph.SaveData.LoadSaveData(pathToLoad);
+                var newGraph = CreateNewGraph(Settings.Path.ASSETS_PATH + "importedGraph.asset");
+                newGraph.Import(loadedData);
+
+                return newGraph;
+            }
+            catch (Exception e)
+            {
+                LogUtility.Logger.LogError(LogUtility.kTag, "Failed to import graph from previous version." + e);
+            }
+
+            return null;
+        }
+
+        /*
+         * Checks deserialized SaveData, and make some changes if necessary
+         * return false if any changes are perfomed.
+         */
+        private bool Validate()
+        {
+            var changed = false;
+
+            if (m_allNodes != null)
+            {
+                List<NodeData> removingNodes = new List<NodeData>();
+                foreach (var n in m_allNodes)
+                {
+                    if (!n.Validate())
+                    {
+                        removingNodes.Add(n);
+                        changed = true;
+                        LogUtility.Logger.LogFormat(LogType.Error,
+                            "Validation failed for node \"{0}\". Class \"{1}\" not found or failed to instantiate.", n.Name,
+                            n.Operation.ClassName);
+                    }
+                }
+
+                m_allNodes.RemoveAll(n => removingNodes.Contains(n));
+            }
+
+            if (m_allConnections != null)
+            {
+                List<ConnectionData> removingConnections = new List<ConnectionData>();
+                foreach (var c in m_allConnections)
+                {
+                    if (!c.Validate(m_allNodes, m_allConnections))
+                    {
+                        removingConnections.Add(c);
+                        changed = true;
+
+                        LogUtility.Logger.LogFormat(LogType.Error,
+                            "Validation failed for connection \"{0}\". One of connecting node not found.", c.Label);
+                    }
+                }
+
+                m_allConnections.RemoveAll(c => removingConnections.Contains(c));
+            }
+
+            if (changed)
+            {
+                m_lastModified = GetFileTimeUtcString();
+            }
+
+            return !changed;
+        }
+    }
 }
