@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public class AssetReferenceDatabase : ScriptableObject {
 
 		private const int DB_VERSION = 2;
@@ -29,7 +29,7 @@ namespace UnityEngine.AssetGraph {
                     s_database.m_dictionary = new Dictionary<string, AssetReference> ();
 					s_database.m_version = DB_VERSION;
 
-                    var DBDir = AssetGraphBasePath.TemporalSettingFilePath;
+                    var DBDir = DataModel.Version2.Settings.Path.TemporalSettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);

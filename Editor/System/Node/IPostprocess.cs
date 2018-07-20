@@ -3,9 +3,9 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
     /// <summary>
     /// Postprocess interface for ABGT.
     /// </summary>

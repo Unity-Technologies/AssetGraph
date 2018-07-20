@@ -14,9 +14,9 @@ using UnityEngine.Playables;
 using UnityEngine.Timeline;
 #endif
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public static class TypeUtility {
 
 		private static readonly List<Type> IgnoreTypes = new List<Type> {
@@ -32,7 +32,7 @@ namespace UnityEngine.AssetGraph {
 		};
 
         public static bool IsLoadingAsset (string assetPath) {
-            if (assetPath.Contains (AssetGraphBasePath.BasePath)) {
+            if (assetPath.Contains (Model.Settings.Path.BasePath)) {
                 return false;
             }
             Type t = GetMainAssetTypeAtPath (assetPath);

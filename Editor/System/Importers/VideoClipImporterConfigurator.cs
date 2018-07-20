@@ -5,11 +5,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model = UnityEngine.AssetGraph.DataModel.Version2;
+using Model = Unity.AssetGraph.DataModel.Version2;
 
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
 
-namespace UnityEngine.AssetGraph
+namespace Unity.AssetGraph
 {
     [Serializable] 
     [CustomAssetImporterConfigurator(typeof(VideoClipImporter), "Video", "setting.m4v")]

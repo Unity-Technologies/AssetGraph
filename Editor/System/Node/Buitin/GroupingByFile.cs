@@ -7,9 +7,9 @@ using UnityEngine;
 using UnityEditor;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph
+namespace Unity.AssetGraph
 {
 	[CustomNode("Group Assets/Group By File", 42)]
 	public class GroupingByFile : Node {

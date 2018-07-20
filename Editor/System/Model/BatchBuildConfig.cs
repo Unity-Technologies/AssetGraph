@@ -6,9 +6,9 @@ using System;
 using System.IO;
 using System.Linq;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public class BatchBuildConfig : ScriptableObject {
 
 		private const int VERSION = 1;
@@ -139,7 +139,7 @@ namespace UnityEngine.AssetGraph {
 		private static BatchBuildConfig s_config;
 
         private static string OldBatchBuildConfigPath   
-        { get { return System.IO.Path.Combine(AssetGraphBasePath.SettingFilePath, "BatchBuildConfig.asset"); } }
+        { get { return System.IO.Path.Combine(DataModel.Version2.Settings.Path.SettingFilePath, "BatchBuildConfig.asset"); } }
 
 		public static BatchBuildConfig GetConfig() {
 			if(s_config == null) {

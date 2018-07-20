@@ -7,9 +7,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     /// <summary>
     /// IAssetGenerator is an interface to generate new asset from incoming asset.

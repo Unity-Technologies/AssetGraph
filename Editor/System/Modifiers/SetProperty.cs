@@ -7,7 +7,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using UnityEngine.AssetGraph;
+using Unity.AssetGraph;
 
 [CustomModifier ("Set Field Variables", typeof(GameObject))]
 public class SetProperty : IModifier

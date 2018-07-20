@@ -6,9 +6,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
     [System.Serializable]
     [CustomAssetGenerator("Texture Scaler", "v1.0", 1)]
     public class TextureScaler : IAssetGenerator {
@@ -109,7 +109,7 @@ namespace UnityEngine.AssetGraph {
             string fullPath = FileUtility.PathCombine (Directory.GetParent(Application.dataPath).ToString(), generateAssetPath);
             File.WriteAllBytes(fullPath, bytes);
 
-            Object.DestroyImmediate(output);
+            UnityEngine.Object.DestroyImmediate(output);
 
             return true;
         }

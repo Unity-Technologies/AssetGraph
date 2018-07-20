@@ -5,8 +5,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.AssetGraph;
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
 [System.Serializable]
 [CustomAssetGenerator("Duplicate Reference Asset", "v1.0", 1)]

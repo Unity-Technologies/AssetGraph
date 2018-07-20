@@ -1,19 +1,12 @@
 ﻿#if UNITY_5_6_OR_NEWER
+using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEditor.IMGUI.Controls;
 
-using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
-
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
 	public class AssetProcessEventLogViewController {
 

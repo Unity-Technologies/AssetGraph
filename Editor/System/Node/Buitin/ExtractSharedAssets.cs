@@ -11,10 +11,10 @@ using System.Text.RegularExpressions;
 using UnityEngine.Profiling;
 #endif
 
-using UnityEngine.AssetGraph;
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
     [CustomNode("Configure Bundle/Extract Shared Assets", 71)]
     public class ExtractSharedAssets : Node {
 

@@ -5,9 +5,9 @@ using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
 using System.IO;
-using UnityEngine.AssetGraph;
+using Unity.AssetGraph;
 
-using UnityEngine.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph.DataModel.Version2;
 
 public class ImporterTest {
 

@@ -5,12 +5,11 @@ using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 using V1=AssetBundleGraph;
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	
 	[CustomNode("Modify Assets/Overwrite Import Settings", 60)]
 	public class ImportSetting : Node, Model.NodeDataImporter {
@@ -23,7 +22,7 @@ namespace UnityEngine.AssetGraph {
         [SerializeField] private string m_referenceAssetGuid;
         [SerializeField] public SerializableMultiTargetInstance m_configuratorInstance;
 
-        private Object m_customSettingAssetObject;
+        private UnityEngine.Object m_customSettingAssetObject;
         private Editor m_importerEditor;
 
 		public override string ActiveStyle {
@@ -44,7 +43,7 @@ namespace UnityEngine.AssetGraph {
 			}
 		}
 
-        private Object CustomSettingAsset {
+        private UnityEngine.Object CustomSettingAsset {
             get {
                 if (m_customSettingAssetObject == null) {
                     if (!string.IsNullOrEmpty (m_customSettingAssetGuid)) {
@@ -415,7 +414,7 @@ namespace UnityEngine.AssetGraph {
 			var referenceImporter = GetReferenceAssetImporter(node, true);
 
             var configurator = m_configuratorInstance.Get<IAssetImporterConfigurator> (target);
-            Assertions.Assert.IsNotNull (configurator);
+            UnityEngine.Assertions.Assert.IsNotNull (configurator);
 
 			foreach(var ag in incoming) {
 				foreach(var groupKey in ag.assetGroups.Keys) {

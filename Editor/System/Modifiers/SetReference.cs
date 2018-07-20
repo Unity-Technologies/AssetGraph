@@ -7,7 +7,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using UnityEngine.AssetGraph;
+using Unity.AssetGraph;
 
 [CustomModifier ("Set Reference Variable", typeof(GameObject))]
 public class SetReference : IModifier

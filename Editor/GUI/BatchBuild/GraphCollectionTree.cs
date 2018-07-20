@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     internal class GraphCollectionTreeItem : TreeViewItem
     {
@@ -52,7 +52,7 @@ namespace UnityEngine.AssetGraph {
     internal class GraphCollectionTree : TreeView
     { 
         GraphCollectionManageTab m_controller;
-        List<UnityEngine.Object> m_EmptyObjectList = new List<Object>();
+        List<UnityEngine.Object> m_EmptyObjectList = new List<UnityEngine.Object>();
         bool m_ctxMenuClickOnItem;
 
         public GraphCollectionTree(TreeViewState state, GraphCollectionManageTab ctrl) : base(state)

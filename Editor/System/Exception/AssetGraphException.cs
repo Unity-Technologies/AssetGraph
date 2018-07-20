@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
 	public class AssetGraphException : Exception {
 		public AssetGraphException(string message) : base(message) {

@@ -1,18 +1,14 @@
-﻿using UnityEditor;
-using UnityEditorInternal;
+﻿using UnityEngine;
+using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     [Serializable]
     public class GroupViewContext {

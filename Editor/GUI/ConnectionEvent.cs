@@ -1,4 +1,4 @@
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public class ConnectionEvent {
 		public enum EventType : int {
 			EVENT_NONE,

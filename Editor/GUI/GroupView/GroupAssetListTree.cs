@@ -1,18 +1,16 @@
 ﻿#if UNITY_5_6_OR_NEWER
+using UnityEngine;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEditor.IMGUI.Controls;
 
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     public class AssetReferenceTreeItem : TreeViewItem
     {
@@ -202,7 +200,7 @@ namespace UnityEngine.AssetGraph {
             var assetItem = FindItem(id, rootItem) as AssetReferenceTreeItem;
             if (assetItem != null)
             {
-                Object o = AssetDatabase.LoadAssetAtPath<Object>(assetItem.asset.importFrom);
+                var o = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetItem.asset.importFrom);
                 EditorGUIUtility.PingObject(o);
             }
         }

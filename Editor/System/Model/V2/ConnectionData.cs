@@ -8,10 +8,10 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using UnityEngine.AssetGraph;
+using Unity.AssetGraph;
 using V1=AssetBundleGraph;
 
-namespace UnityEngine.AssetGraph.DataModel.Version2 {
+namespace Unity.AssetGraph.DataModel.Version2 {
 
     /// <summary>
     /// Node output semantics.

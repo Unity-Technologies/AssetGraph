@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.IO;
@@ -9,7 +8,10 @@ using System.Linq;
 using UnityEditor;
 #endif
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
+	/// <summary>
+	/// AssetBundleBuildMap is look-up data to find asset vs assetbundle relationship. 
+	/// </summary>
 	public class AssetBundleBuildMap : ScriptableObject {
 
 		[SerializeField] private List<AssetBundleEntry> m_assetBundles;
@@ -19,12 +21,15 @@ namespace UnityEngine.AssetGraph {
         #endif
 
 		private static AssetBundleBuildMap s_map;
+		
+		//TODO: configure this from Project Setting
+		private const string s_settingfilePath = "Assets/";		
 
         #if UNITY_EDITOR
         public class Config {
             public static string BuildMapPath { 
                 get { 
-                    return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetBundleBuildMap.asset"); 
+                    return System.IO.Path.Combine(s_settingfilePath, "AssetBundleBuildMap.asset"); 
                 } 
             }
         }
@@ -39,10 +44,8 @@ namespace UnityEngine.AssetGraph {
                     #if UNITY_EDITOR
 					s_map.m_version = VERSION;
 
-                    var DBDir = AssetGraphBasePath.TemporalSettingFilePath;
-
-					if (!Directory.Exists(DBDir)) {
-						Directory.CreateDirectory(DBDir);
+					if (!Directory.Exists(s_settingfilePath)) {
+						Directory.CreateDirectory(s_settingfilePath);
 					}
 
                     AssetDatabase.CreateAsset(s_map, Config.BuildMapPath);

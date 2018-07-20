@@ -3,9 +3,9 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     /**
      * ObjectReferenceBase is a base template container for UnityEngine.Object.

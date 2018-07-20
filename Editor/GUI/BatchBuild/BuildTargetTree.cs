@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     internal class BuildTargetTreeItem : TreeViewItem
     {
@@ -48,7 +48,7 @@ namespace UnityEngine.AssetGraph {
     internal class BuildTargetTree : TreeView
     { 
         private bool m_ctxMenuClickOnItem;
-        List<UnityEngine.Object> m_EmptyObjectList = new List<Object>();
+        List<UnityEngine.Object> m_EmptyObjectList = new List<UnityEngine.Object>();
 
         public BuildTargetTree(TreeViewState state) : base(state)
         {

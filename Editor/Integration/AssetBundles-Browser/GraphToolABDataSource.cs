@@ -10,12 +10,12 @@
 #if ASSETBUNDLE_BROWSER_GRAPH_INTEGRARION
 
 using UnityEditor;
-using Model = UnityEngine.AssetGraph.DataModel.Version2;
+using Model = Unity.AssetGraph.DataModel.Version2;
 using System;
 using System.IO;
 using System.Collections.Generic;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     public class GraphToolABDataSource : AssetBundleBrowser.AssetBundleDataSource.ABDataSource
     {

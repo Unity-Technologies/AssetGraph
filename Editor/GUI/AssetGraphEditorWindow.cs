@@ -4,13 +4,11 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
+using AssetBundleGraph;
+using Model = Unity.AssetGraph.DataModel.Version2;
 
-using Model = UnityEngine.AssetGraph.DataModel.Version2;
-
-namespace UnityEngine.AssetGraph
+namespace Unity.AssetGraph
 {
     public class AssetGraphEditorWindow : EditorWindow
     {
@@ -141,13 +139,13 @@ namespace UnityEngine.AssetGraph
         private class UndoUtility
         {
             private UnityEngine.Object[] m_cachedUndoObjects;
-            private List<Object> m_objects;
+            private List<UnityEngine.Object> m_objects;
             private int m_nNodes;
             private int m_nConnections;
 
             public UndoUtility ()
             {
-                m_objects = new List<Object> ();
+                m_objects = new List<UnityEngine.Object> ();
                 m_nNodes = 0;
                 m_nConnections = 0;
             }
@@ -413,7 +411,7 @@ namespace UnityEngine.AssetGraph
         [MenuItem (Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)]
         public static void DeleteCache ()
         {
-            FileUtility.RemakeDirectory (AssetGraph.AssetGraphBasePath.CachePath);
+            FileUtility.RemakeDirectory (Settings.Path.CachePath);
 
             AssetDatabase.Refresh ();
         }
@@ -825,7 +823,7 @@ namespace UnityEngine.AssetGraph
 
         private void SaveGraph ()
         {
-            Assertions.Assert.IsNotNull (m_controller);
+            UnityEngine.Assertions.Assert.IsNotNull (m_controller);
             m_controller.TargetGraph.ApplyGraph (m_nodes, m_connections);
         }
 
@@ -1389,7 +1387,7 @@ namespace UnityEngine.AssetGraph
                 if (!dragdropArea.Contains (evt.mousePosition))
                     return;
 
-                foreach (Object obj in DragAndDrop.objectReferences) {
+                foreach (var obj in DragAndDrop.objectReferences) {
                     var path = AssetDatabase.GetAssetPath (obj);
                     if (!string.IsNullOrEmpty (path)) {
                         FileAttributes attr = File.GetAttributes (path);
@@ -1407,7 +1405,7 @@ namespace UnityEngine.AssetGraph
                 if (evt.type == EventType.DragPerform) {
                     DragAndDrop.AcceptDrag ();
 
-                    foreach (Object obj in DragAndDrop.objectReferences) {
+                    foreach (var obj in DragAndDrop.objectReferences) {
                         var path = AssetDatabase.GetAssetPath (obj);
                         FileAttributes attr = File.GetAttributes (path);
 

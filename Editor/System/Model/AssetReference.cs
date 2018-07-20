@@ -10,9 +10,9 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
     /// <summary>
     /// Asset reference.
     /// </summary>
@@ -26,7 +26,7 @@ namespace UnityEngine.AssetGraph {
 		[SerializeField] private string m_variantName;
 
 		private UnityEngine.Object[] m_data;
-		private SceneManagement.Scene m_scene;
+		private UnityEngine.SceneManagement.Scene m_scene;
         private Type m_assetType;
         private Type m_filterType;
         private Type m_importerType;
@@ -245,7 +245,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="T:UnityEngine.AssetGraph.AssetReference"/> is referencing a scene asset.
+		/// Gets a value indicating whether this <see cref="T:Unity.AssetGraph.AssetReference"/> is referencing a scene asset.
 		/// </summary>
 		/// <value><c>true</c> if is scene asset; otherwise, <c>false</c>.</value>
 		public bool isSceneAsset {
@@ -258,7 +258,7 @@ namespace UnityEngine.AssetGraph {
 		/// Gets the scene.
 		/// </summary>
 		/// <value>The loaded Scene object.</value>
-		public SceneManagement.Scene scene {
+		public UnityEngine.SceneManagement.Scene scene {
 			get {
 				return m_scene;
 			}
@@ -415,7 +415,7 @@ namespace UnityEngine.AssetGraph {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UnityEngine.AssetGraph.AssetReference"/> class.
+        /// Initializes a new instance of the <see cref="Unity.AssetGraph.AssetReference"/> class.
         /// </summary>
         /// <param name="guid">GUID.</param>
         /// <param name="assetDatabaseId">Asset database identifier.</param>

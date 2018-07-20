@@ -6,9 +6,9 @@ using System;
 using System.IO;
 using System.Linq;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public class AssetProcessEventRecord : ScriptableObject {
 
         private const int VERSION = 1;
@@ -72,7 +72,7 @@ namespace UnityEngine.AssetGraph {
                     s_record = ScriptableObject.CreateInstance<AssetProcessEventRecord>();
                     s_record.Init ();
 
-                    var DBDir = AssetGraphBasePath.TemporalSettingFilePath;
+                    var DBDir = DataModel.Version2.Settings.Path.TemporalSettingFilePath;
 
 					if (!Directory.Exists(DBDir)) {
 						Directory.CreateDirectory(DBDir);

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	[CustomEditor(typeof(ConnectionGUI))]
 	public class ConnectionGUIEditor : Editor {
 		

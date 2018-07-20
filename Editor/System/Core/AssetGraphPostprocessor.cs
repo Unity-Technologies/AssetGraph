@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
 	class AssetGraphPostprocessor : AssetPostprocessor 
 	{
@@ -100,8 +100,8 @@ namespace UnityEngine.AssetGraph {
             string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
         {
             foreach (string movedFrom in movedFromAssetPaths) {
-                if (movedFrom == AssetGraphBasePath.BasePath) {
-                    AssetGraphBasePath.ResetBasePath ();
+                if (movedFrom == DataModel.Version2.Settings.Path.BasePath) {
+                    DataModel.Version2.Settings.Path.ResetBasePath ();
                 }
             }
 

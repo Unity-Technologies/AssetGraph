@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     public class ComponentMenuUtility {
         private static List<Type> s_componentTypes;

@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     public static class VersionCompatibilityUtility {
 
@@ -14,7 +14,7 @@ namespace UnityEngine.AssetGraph {
             }
             
             // v1.3 -> v1.4
-            return className.Replace("UnityEngine.AssetBundles.GraphTool.", "UnityEngine.AssetGraph.");
+            return className.Replace("UnityEngine.AssetBundles.GraphTool.", "Unity.AssetGraph.");
         }
     }
 }

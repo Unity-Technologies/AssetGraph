@@ -6,10 +6,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEngine.AssetGraph;
+using Unity.AssetGraph;
 using V1=AssetBundleGraph;
 
-namespace UnityEngine.AssetGraph.DataModel.Version2 {
+namespace Unity.AssetGraph.DataModel.Version2 {
 
 	/*
 	 * Save data which holds all AssetBundleGraph settings and configurations.

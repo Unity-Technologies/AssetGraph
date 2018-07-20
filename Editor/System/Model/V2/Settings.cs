@@ -1,11 +1,8 @@
-using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor;
-using System.IO;
 
-using UnityEngine.AssetGraph;
-
-namespace UnityEngine.AssetGraph.DataModel.Version2 {
+namespace Unity.AssetGraph.DataModel.Version2 {
 	public class Settings {
 		/*
 			if true, ignore .meta files inside AssetBundleGraph.
@@ -32,7 +29,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
 		
         public const string GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS = GUI_TEXT_MENU_BASE + "/Clean Up SavedSettings";
 
-		public const string GRAPH_SEARCH_CONDITION = "t:UnityEngine.AssetGraph.DataModel.Version2.ConfigGraph";
+		public const string GRAPH_SEARCH_CONDITION = "t:Unity.AssetGraph.DataModel.Version2.ConfigGraph";
         public const string SETTING_TEMPLATE_DIR_SEARCH_CONDITION = "SettingTemplate";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";
@@ -58,7 +55,7 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
                 get {
                     var cacheDir = EditorUserSettings.GetConfigValue (PREFKEY_AB_BUILD_CACHE_DIR);
                     if (string.IsNullOrEmpty (cacheDir)) {
-                        return System.IO.Path.Combine(AssetGraph.AssetGraphBasePath.CachePath, "AssetBundles");
+                        return System.IO.Path.Combine(Path.CachePath, "AssetBundles");
                     }
                     return cacheDir;
                 }
@@ -97,29 +94,48 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             }
         }
 
-        public class Path {
+        public class Path {	        
+	        private static string s_basePath;
+
+	        public static string BasePath {
+		        get {
+			        if (string.IsNullOrEmpty (s_basePath)) {
+				        s_basePath = System.IO.Path.Combine("Assets", ToolDirName);
+			        }
+			        return s_basePath;
+		        }
+	        }
+
+	        public static void ResetBasePath() {
+		        s_basePath = string.Empty;
+	        }
+
+	        /// <summary>
+	        /// Name of the base directory containing the asset graph tool files.
+	        /// Customize this to match your project's setup if you need to change.
+	        /// </summary>
+	        /// <value>The name of the base directory.</value>
+	        public static string ToolDirName            { get { return "Unity.AssetGraph"; } }
+
             public const string ASSETS_PATH = "Assets/";
 
-            /// <summary>
-            /// Name of the base directory containing the asset graph tool files.
-            /// Customize this to match your project's setup if you need to change.
-            /// </summary>
-            /// <value>The name of the base directory.</value>
-            public static string ToolDirName            { get { return "UnityEngine.AssetGraph"; } }
-
-            public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/ScriptTemplate"); } }
-            public static string UserSpacePath          { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Generated/Editor"); } }
-            public static string CUISpacePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Generated/CUI"); } }
-            public static string SavedSettingsPath      { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "SavedSettings"); } }
+	        public static string CachePath                  { get { return System.IO.Path.Combine(BasePath, "Cache");; } }
+	        public static string SettingFilePath            { get { return System.IO.Path.Combine(BasePath, "SettingFiles"); } }
+	        public static string TemporalSettingFilePath    { get { return System.IO.Path.Combine(CachePath, "TemporalSettingFiles"); } }
+	        
+            public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(BasePath, "Editor/ScriptTemplate"); } }
+            public static string UserSpacePath          { get { return System.IO.Path.Combine(BasePath, "Generated/Editor"); } }
+            public static string CUISpacePath           { get { return System.IO.Path.Combine(BasePath, "Generated/CUI"); } }
+            public static string SavedSettingsPath      { get { return System.IO.Path.Combine(BasePath, "SavedSettings"); } }
 
             public static string BundleBuilderCachePath { get { return UserSettings.AssetBundleBuildCacheDir; } }
 
-            public static string DatabasePath           { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetReferenceDB.asset"); } }
-            public static string EventRecordPath        { get { return System.IO.Path.Combine(AssetGraphBasePath.TemporalSettingFilePath, "AssetProcessEventRecord.asset"); } }
+            public static string DatabasePath           { get { return System.IO.Path.Combine(TemporalSettingFilePath, "AssetReferenceDB.asset"); } }
+            public static string EventRecordPath        { get { return System.IO.Path.Combine(TemporalSettingFilePath, "AssetProcessEventRecord.asset"); } }
 
             public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(SavedSettingsPath, "BatchBuildConfig/BatchBuildConfig.asset"); } }
 
-            public static string GUIResourceBasePath { get { return System.IO.Path.Combine(AssetGraphBasePath.BasePath, "Editor/GUI/GraphicResources"); } }
+            public static string GUIResourceBasePath { get { return System.IO.Path.Combine(BasePath, "Editor/GUI/GraphicResources"); } }
         }
 
 		public struct BuildAssetBundleOption {

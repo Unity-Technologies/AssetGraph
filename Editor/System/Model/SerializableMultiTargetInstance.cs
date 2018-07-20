@@ -3,9 +3,9 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
 	[Serializable] 
 	public class SerializableMultiTargetInstance : ISerializationCallbackReceiver {
@@ -129,7 +129,7 @@ namespace UnityEngine.AssetGraph {
 					LogUtility.Logger.LogFormat(LogType.Warning, "Could not retrieve Type info from classname:{0}", m_className);
 					return default(T);
 				}
-				Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
+				UnityEngine.Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
 
                 if (m_values [i].instance == null) {
                     m_values [i].instance = JsonUtility.FromJson (CustomScriptUtility.DecodeString (m_values [i].value), t);
@@ -203,7 +203,7 @@ namespace UnityEngine.AssetGraph {
 					LogUtility.Logger.LogFormat(LogType.Warning, "Could not retrieve Type info from classname:{0}", m_className);
 					return default(T);
 				}
-				Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
+				UnityEngine.Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
 				return (T) JsonUtility.FromJson(CustomScriptUtility.DecodeString(m_values[i].value), t);
 			} else {
 				return default(T);

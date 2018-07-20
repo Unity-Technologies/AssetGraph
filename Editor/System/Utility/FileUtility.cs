@@ -6,9 +6,9 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public class FileUtility {
 		public static void RemakeDirectory (string localFolderPath) {
 			if (Directory.Exists(localFolderPath)) {
@@ -158,7 +158,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
         public static string EnsureCacheDirExists(BuildTarget t, Model.NodeData node, string name) {
-            var cacheDir = FileUtility.PathCombine(AssetGraph.AssetGraphBasePath.CachePath, name, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
+            var cacheDir = FileUtility.PathCombine(Model.Settings.Path.CachePath, name, node.Id, SystemDataUtility.GetPathSafeTargetName(t));
 
             if (!Directory.Exists(cacheDir)) {
                 Directory.CreateDirectory(cacheDir);

@@ -17,9 +17,9 @@ using UnityEngine.Timeline;
 using UnityEngine.Tilemaps;
 #endif
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
 	public static class FilterTypeUtility {
         
@@ -111,7 +111,7 @@ namespace UnityEngine.AssetGraph {
 
         public static string FindGUINameFromType(Type t) {
 
-            Assertions.Assert.IsNotNull (t);
+            UnityEngine.Assertions.Assert.IsNotNull (t);
 
             var typemap = ImporterConfiguratorUtility.GetImporterConfiguratorGuiNameTypeMap ();
 

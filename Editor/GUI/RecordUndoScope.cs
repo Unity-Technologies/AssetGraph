@@ -2,9 +2,9 @@
 using UnityEditor;
 using System.Collections;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 	public class RecordUndoScope : GUI.Scope {
 
 		private string message;

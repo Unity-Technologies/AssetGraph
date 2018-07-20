@@ -5,9 +5,9 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model = UnityEngine.AssetGraph.DataModel.Version2;
+using Model = Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph
+namespace Unity.AssetGraph
 {
     [Serializable] 
     [CustomAssetImporterConfigurator(typeof(AudioImporter), "Audio", "setting.wav")]

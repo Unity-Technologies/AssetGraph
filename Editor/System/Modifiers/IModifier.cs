@@ -7,10 +7,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-using UnityEngine.AssetGraph;
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     /// <summary>
     /// IModifier is an interface which modifies incoming assets.

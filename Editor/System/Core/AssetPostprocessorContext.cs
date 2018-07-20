@@ -2,9 +2,9 @@
 using UnityEditor;
 using System.Collections.Generic;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
 
     public class AssetPostprocessorContext {
         private List<AssetReference> m_importedAssets;

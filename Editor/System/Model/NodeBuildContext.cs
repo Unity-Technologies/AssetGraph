@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
-using Model=UnityEngine.AssetGraph.DataModel.Version2;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-namespace UnityEngine.AssetGraph {
+namespace Unity.AssetGraph {
     /// <summary>
     /// Node build context.
     /// </summary>
