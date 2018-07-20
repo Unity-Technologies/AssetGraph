@@ -16,11 +16,17 @@ namespace Unity.AssetGraph {
         private string[] m_graphGuids;
         private string[] m_graphNames;
 
+	    private string m_buildmapPath;
+	    private string m_buildmapMoveErrorMsg;
+
         public AssetBundlesSettingsTab() {
             Refresh();
         }
 
-        public void Refresh() {
+        public void Refresh()
+        {
+            m_buildmapPath = AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath;
+            m_buildmapMoveErrorMsg = string.Empty;
             m_graphGuids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
             m_graphNames = new string[m_graphGuids.Length];
             for (int i = 0; i < m_graphGuids.Length; ++i) {
@@ -126,9 +132,50 @@ namespace Unity.AssetGraph {
                 MessageType.Info);
         }
 
+	    private void DrawABBuildMapPath()
+	    {
+	        using (new EditorGUILayout.HorizontalScope())
+	        {
+	            m_buildmapPath = EditorGUILayout.TextField("AssetBundle Build Map File", m_buildmapPath);
+
+	            using (new EditorGUI.DisabledScope(m_buildmapPath == AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath))
+	            {
+	                if (GUILayout.Button("Set", GUILayout.Width(50)))
+	                {
+	                    var oldPath = AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath;
+	                    m_buildmapMoveErrorMsg = string.Empty;
+	                    if (File.Exists(oldPath))
+	                    {
+	                        m_buildmapMoveErrorMsg = AssetDatabase.MoveAsset(oldPath, m_buildmapPath);
+	                    }
+
+	                    if (string.IsNullOrEmpty(m_buildmapMoveErrorMsg))
+	                    {
+	                        AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath = m_buildmapPath;
+	                    }
+	                }
+	            }
+	        }
+
+	        if (!string.IsNullOrEmpty(m_buildmapMoveErrorMsg))
+	        {
+	            EditorGUILayout.HelpBox (
+	                m_buildmapMoveErrorMsg, 
+	                MessageType.Error);
+	        }
+	        
+	        EditorGUILayout.HelpBox (
+	            "AssetBundle build map file is an asset used to store assets to assetbundles relationship. ", 
+	            MessageType.Info);
+	    }
+
 		public void OnGUI () {
             DrawCacheDirGUI ();
 
+		    GUILayout.Space (20f);
+
+		    DrawABBuildMapPath();
+		    
             GUILayout.Space (20f);
 
             DrawABGraphList ();
