@@ -3,226 +3,285 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Linq;
-
 #if UNITY_EDITOR
 using UnityEditor;
+
 #endif
 
-namespace Unity.AssetGraph {
-	/// <summary>
-	/// AssetBundleBuildMap is look-up data to find asset vs assetbundle relationship. 
-	/// </summary>
-	public class AssetBundleBuildMap : ScriptableObject {
+namespace Unity.AssetGraph
+{
+    /// <summary>
+    /// AssetBundleBuildMap is look-up data to find asset vs assetbundle relationship. 
+    /// </summary>
+    public class AssetBundleBuildMap : ScriptableObject
+    {
+        [SerializeField] private List<AssetBundleEntry> m_assetBundles;
+#if UNITY_EDITOR
+        [SerializeField] private int m_version;
+        private const int VERSION = 1;
+#endif
 
-		[SerializeField] private List<AssetBundleEntry> m_assetBundles;
-        #if UNITY_EDITOR
-		[SerializeField] private int m_version;
-		private const int VERSION = 1;
-        #endif
+        private static AssetBundleBuildMap s_map;
 
-		private static AssetBundleBuildMap s_map;
-		
-		//TODO: configure this from Project Setting
-		private const string s_settingfilePath = "Assets/";		
+#if UNITY_EDITOR
+        public static class UserSettings
+        {
+            private const string PREFKEY_AB_BUILDMAP_PATH = "Unity.AssetGraph.BuildMapPath";
 
-        #if UNITY_EDITOR
-        public class Config {
-            public static string BuildMapPath { 
-                get { 
-                    return System.IO.Path.Combine(s_settingfilePath, "AssetBundleBuildMap.asset"); 
-                } 
+            public static string AssetBundleBuildMapPath
+            {
+                get
+                {
+                    var path = EditorUserSettings.GetConfigValue(PREFKEY_AB_BUILDMAP_PATH);
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        return Path.Combine("Assets/AssetGraph/Cache/", "AssetBundleBuildMap.asset");
+                    }
+
+                    return path;
+                }
+
+                set { EditorUserSettings.SetConfigValue(PREFKEY_AB_BUILDMAP_PATH, value); }
             }
         }
-        #endif
+#endif
 
-		public static AssetBundleBuildMap GetBuildMap() {
-			if(s_map == null) {
-				if(!Load()) {
-					// Create vanilla db
-					s_map = ScriptableObject.CreateInstance<AssetBundleBuildMap>();
-					s_map.m_assetBundles = new List<AssetBundleEntry>();
-                    #if UNITY_EDITOR
-					s_map.m_version = VERSION;
+        public static AssetBundleBuildMap GetBuildMap()
+        {
+            if (s_map == null)
+            {
+                if (!Load())
+                {
+                    // Create vanilla db
+                    s_map = ScriptableObject.CreateInstance<AssetBundleBuildMap>();
+                    s_map.m_assetBundles = new List<AssetBundleEntry>();
+#if UNITY_EDITOR
+                    s_map.m_version = VERSION;
 
-					if (!Directory.Exists(s_settingfilePath)) {
-						Directory.CreateDirectory(s_settingfilePath);
-					}
+                    var filePath = UserSettings.AssetBundleBuildMapPath;
+                    var dirPath = Path.GetDirectoryName(filePath);
 
-                    AssetDatabase.CreateAsset(s_map, Config.BuildMapPath);
-					#endif
-				}
-			}
+                    if (!Directory.Exists(dirPath))
+                    {
+                        Directory.CreateDirectory(dirPath);
+                    }
 
-			return s_map;
-		}
+                    AssetDatabase.CreateAsset(s_map, filePath);
+#endif
+                }
+            }
 
-		private static bool Load() {
-			bool loaded = false;
+            return s_map;
+        }
 
-			#if UNITY_EDITOR
-			try {
-                var dbPath = Config.BuildMapPath;
+        private static bool Load()
+        {
+            bool loaded = false;
 
-				if(File.Exists(dbPath)) 
-				{
-					AssetBundleBuildMap m = AssetDatabase.LoadAssetAtPath<AssetBundleBuildMap>(dbPath);
+#if UNITY_EDITOR
+            try
+            {
+                var filePath = UserSettings.AssetBundleBuildMapPath;
 
-					if(m != null && m.m_version == VERSION) {
-						s_map = m;
-						loaded = true;
-					}
-				}
-			} catch(Exception e) {
-				Debug.LogException (e);
-			}
-			#endif
+                if (File.Exists(filePath))
+                {
+                    AssetBundleBuildMap m = AssetDatabase.LoadAssetAtPath<AssetBundleBuildMap>(filePath);
 
-			return loaded;
-		}
+                    if (m != null && m.m_version == VERSION)
+                    {
+                        s_map = m;
+                        loaded = true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+#endif
 
-		public static void SetMapDirty() {
-			#if UNITY_EDITOR
-			EditorUtility.SetDirty(s_map);
-			#endif
-		}
+            return loaded;
+        }
 
-		internal static string MakeFullName(string assetBundleName, string variantName) {
-			if (string.IsNullOrEmpty (assetBundleName)) {
-				return "";
-			}
-			if (string.IsNullOrEmpty (variantName)) {
-				return assetBundleName.ToLower();
-			}
-			return string.Format("{0}.{1}", assetBundleName.ToLower(), variantName.ToLower());
-		}
+        public static void SetMapDirty()
+        {
+#if UNITY_EDITOR
+            EditorUtility.SetDirty(s_map);
+#endif
+        }
 
-		internal static string[] FullNameToNameAndVariant(string assetBundleFullName) {
-			assetBundleFullName = assetBundleFullName.ToLower ();
-			var vIndex = assetBundleFullName.LastIndexOf ('.');
-			if (vIndex > 0 && vIndex+1 < assetBundleFullName.Length) {
-				var bundleName = assetBundleFullName.Substring (0, vIndex);
-				var bundleVariant = assetBundleFullName.Substring (vIndex+1);
-				return new string[] { bundleName, bundleVariant };
-			}
-			return new string[] { assetBundleFullName, "" };
-		}
+        internal static string MakeFullName(string assetBundleName, string variantName)
+        {
+            if (string.IsNullOrEmpty(assetBundleName))
+            {
+                return "";
+            }
 
-		[Serializable]
-		public class AssetBundleEntry {
+            if (string.IsNullOrEmpty(variantName))
+            {
+                return assetBundleName.ToLower();
+            }
 
-			[Serializable]
-			internal struct AssetPathString {
-				[SerializeField] public string original;
-				[SerializeField] public string lower;
+            return string.Format("{0}.{1}", assetBundleName.ToLower(), variantName.ToLower());
+        }
 
-				internal AssetPathString(string s) {
-					original = s;
-					if(!string.IsNullOrEmpty(s)) {
-						lower = s.ToLower();
-					} else {
-						lower = s;
-					}
-				}
-			}
+        internal static string[] FullNameToNameAndVariant(string assetBundleFullName)
+        {
+            assetBundleFullName = assetBundleFullName.ToLower();
+            var vIndex = assetBundleFullName.LastIndexOf('.');
+            if (vIndex > 0 && vIndex + 1 < assetBundleFullName.Length)
+            {
+                var bundleName = assetBundleFullName.Substring(0, vIndex);
+                var bundleVariant = assetBundleFullName.Substring(vIndex + 1);
+                return new string[] {bundleName, bundleVariant};
+            }
 
-			[SerializeField] internal string m_assetBundleName;
-			[SerializeField] internal string m_assetBundleVariantName;
-			[SerializeField] internal string m_fullName;
-			[SerializeField] internal List<AssetPathString> m_assets;
-			[SerializeField] public string m_registererId;
+            return new string[] {assetBundleFullName, ""};
+        }
 
-			public string Name {
-				get { return m_assetBundleName; }
-			}
+        [Serializable]
+        public class AssetBundleEntry
+        {
+            [Serializable]
+            internal struct AssetPathString
+            {
+                [SerializeField] public string original;
+                [SerializeField] public string lower;
 
-			public string Variant {
-				get { return m_assetBundleVariantName; }
-			}
+                internal AssetPathString(string s)
+                {
+                    original = s;
+                    if (!string.IsNullOrEmpty(s))
+                    {
+                        lower = s.ToLower();
+                    }
+                    else
+                    {
+                        lower = s;
+                    }
+                }
+            }
 
-			public string FullName {
-				get {
-					return m_fullName;
-				}
-			}
+            [SerializeField] internal string m_assetBundleName;
+            [SerializeField] internal string m_assetBundleVariantName;
+            [SerializeField] internal string m_fullName;
+            [SerializeField] internal List<AssetPathString> m_assets;
+            [SerializeField] public string m_registererId;
 
-			public AssetBundleEntry(string registererId, string assetBundleName, string variantName) {
-				m_registererId = registererId;
-				m_assetBundleName = assetBundleName.ToLower();
-				m_assetBundleVariantName = variantName.ToLower();
-				m_fullName = AssetBundleBuildMap.MakeFullName(assetBundleName, variantName);
-				m_assets = new List<AssetPathString>();
-			}
+            public string Name
+            {
+                get { return m_assetBundleName; }
+            }
 
-			public void Clear() {
-				m_assets.Clear ();
-				AssetBundleBuildMap.SetMapDirty ();
-			}
+            public string Variant
+            {
+                get { return m_assetBundleVariantName; }
+            }
+
+            public string FullName
+            {
+                get { return m_fullName; }
+            }
+
+            public AssetBundleEntry(string registererId, string assetBundleName, string variantName)
+            {
+                m_registererId = registererId;
+                m_assetBundleName = assetBundleName.ToLower();
+                m_assetBundleVariantName = variantName.ToLower();
+                m_fullName = AssetBundleBuildMap.MakeFullName(assetBundleName, variantName);
+                m_assets = new List<AssetPathString>();
+            }
+
+            public void Clear()
+            {
+                m_assets.Clear();
+                AssetBundleBuildMap.SetMapDirty();
+            }
 
 
-			public void AddAssets(string id, IEnumerable<string> assets) {
-				foreach (var a in assets) {
-					m_assets.Add (new AssetPathString(a));
-				}
-				AssetBundleBuildMap.SetMapDirty ();
-			}
+            public void AddAssets(string id, IEnumerable<string> assets)
+            {
+                foreach (var a in assets)
+                {
+                    m_assets.Add(new AssetPathString(a));
+                }
 
-			public IEnumerable<string> GetAssetFromAssetName(string assetName) {
-				assetName = assetName.ToLower ();
-				return m_assets.Where (a => Path.GetFileNameWithoutExtension(a.lower) == assetName).Select(s => s.original);
-			}
-		}
+                AssetBundleBuildMap.SetMapDirty();
+            }
 
-		public AssetBundleEntry GetAssetBundle(string registererId, string assetBundleFullName) {
-			var entry = m_assetBundles.Find (v => v.m_fullName == assetBundleFullName);
-			if (entry == null) {
-				string[] names = AssetBundleBuildMap.FullNameToNameAndVariant (assetBundleFullName);
-				entry = new AssetBundleEntry (registererId, names[0], names[1]);
-				m_assetBundles.Add (entry);
-				SetMapDirty ();
-			}
-			return entry;
-		}
+            public IEnumerable<string> GetAssetFromAssetName(string assetName)
+            {
+                assetName = assetName.ToLower();
+                return m_assets.Where(a => Path.GetFileNameWithoutExtension(a.lower) == assetName)
+                    .Select(s => s.original);
+            }
+        }
 
-		public void Clear() {
-			m_assetBundles.Clear ();
-			SetMapDirty ();
-		}
+        public AssetBundleEntry GetAssetBundle(string registererId, string assetBundleFullName)
+        {
+            var entry = m_assetBundles.Find(v => v.m_fullName == assetBundleFullName);
+            if (entry == null)
+            {
+                string[] names = AssetBundleBuildMap.FullNameToNameAndVariant(assetBundleFullName);
+                entry = new AssetBundleEntry(registererId, names[0], names[1]);
+                m_assetBundles.Add(entry);
+                SetMapDirty();
+            }
 
-		public void ClearFromId(string id) {
-			m_assetBundles.RemoveAll (e => e.m_registererId == id);
-		}
+            return entry;
+        }
 
-		public AssetBundleEntry GetAssetBundleWithNameAndVariant(string registererId, string assetBundleName, string variantName) {
-			return GetAssetBundle(registererId, AssetBundleBuildMap.MakeFullName(assetBundleName, variantName));
-		}
+        public void Clear()
+        {
+            m_assetBundles.Clear();
+            SetMapDirty();
+        }
 
-		public string[] GetAssetPathsFromAssetBundleAndAssetName(string assetbundleName, string assetName) {
-			assetName = assetName.ToLower ();
-			return m_assetBundles.Where (ab => ab.m_fullName == assetbundleName)
-				.SelectMany (ab => ab.GetAssetFromAssetName (assetName))
-				.ToArray();
-		}
+        public void ClearFromId(string id)
+        {
+            m_assetBundles.RemoveAll(e => e.m_registererId == id);
+        }
 
-		public string[] GetAssetPathsFromAssetBundle (string assetBundleName) {
-			assetBundleName = assetBundleName.ToLower ();
-			return m_assetBundles.Where(e => e.m_fullName == assetBundleName).SelectMany(e => e.m_assets).Select(s => s.original).ToArray();
-		}
+        public AssetBundleEntry GetAssetBundleWithNameAndVariant(string registererId, string assetBundleName,
+            string variantName)
+        {
+            return GetAssetBundle(registererId, AssetBundleBuildMap.MakeFullName(assetBundleName, variantName));
+        }
 
-		public string GetAssetBundleName(string assetPath) {
-			var entry = m_assetBundles.Find(e => e.m_assets.Contains(new AssetBundleEntry.AssetPathString(assetPath)));
-			if (entry != null) {
-				return entry.m_fullName;
-			}
-			return string.Empty;
-		}
+        public string[] GetAssetPathsFromAssetBundleAndAssetName(string assetbundleName, string assetName)
+        {
+            assetName = assetName.ToLower();
+            return m_assetBundles.Where(ab => ab.m_fullName == assetbundleName)
+                .SelectMany(ab => ab.GetAssetFromAssetName(assetName))
+                .ToArray();
+        }
 
-		public string GetImplicitAssetBundleName(string assetPath) {
-			return GetAssetBundleName (assetPath);
-		}
+        public string[] GetAssetPathsFromAssetBundle(string assetBundleName)
+        {
+            assetBundleName = assetBundleName.ToLower();
+            return m_assetBundles.Where(e => e.m_fullName == assetBundleName).SelectMany(e => e.m_assets)
+                .Select(s => s.original).ToArray();
+        }
 
-		public string[] GetAllAssetBundleNames() {
-			return m_assetBundles.Select (e => e.m_fullName).ToArray ();
-		}
-	}
+        public string GetAssetBundleName(string assetPath)
+        {
+            var entry = m_assetBundles.Find(e => e.m_assets.Contains(new AssetBundleEntry.AssetPathString(assetPath)));
+            if (entry != null)
+            {
+                return entry.m_fullName;
+            }
+
+            return string.Empty;
+        }
+
+        public string GetImplicitAssetBundleName(string assetPath)
+        {
+            return GetAssetBundleName(assetPath);
+        }
+
+        public string[] GetAllAssetBundleNames()
+        {
+            return m_assetBundles.Select(e => e.m_fullName).ToArray();
+        }
+    }
 }
-
