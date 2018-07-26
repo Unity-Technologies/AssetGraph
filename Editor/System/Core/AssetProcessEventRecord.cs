@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Linq;
-
+using UnityEngine.Assertions;
 using Model=Unity.AssetGraph.DataModel.Version2;
 
 namespace Unity.AssetGraph {
@@ -34,6 +34,8 @@ namespace Unity.AssetGraph {
 
         private int m_filteredErrorEventCount;
         private int m_filteredInfoEventCount;
+
+	    private bool m_enabled;
 
         public List<AssetProcessEvent> Events {
             get {
@@ -65,7 +67,13 @@ namespace Unity.AssetGraph {
             }
         }
 
-        public static AssetProcessEventRecord GetRecord() {
+	    public bool EnabledRecording
+	    {
+	        get { return m_enabled; }
+	        set { m_enabled = value; }
+	    }
+
+	    public static AssetProcessEventRecord GetRecord() {
 			if(s_record == null) {
 				if(!Load()) {
 					// Create vanilla db
@@ -87,7 +95,7 @@ namespace Unity.AssetGraph {
 
 		private static bool Load() {
 
-			bool loaded = false;
+			var loaded = false;
 
 			try {
                 var path = Model.Settings.Path.EventRecordPath;
@@ -121,6 +129,7 @@ namespace Unity.AssetGraph {
             m_events = new List<AssetProcessEvent>();
             m_errorEventCount = 0;
             m_infoEventCount = 0;
+            m_enabled = true;
             m_version = VERSION;
             InitAfterDeserialize();
         }
@@ -133,6 +142,7 @@ namespace Unity.AssetGraph {
 	        m_filterKeyword = string.Empty;
 	        m_includeError = true;
 	        m_includeInfo = true;
+	        m_enabled = true;
 
 	        RebuildFilteredEvents();
 	    }
@@ -179,7 +189,7 @@ namespace Unity.AssetGraph {
         }
 
         private bool MeetFilterCondition(AssetProcessEvent e) {
-            bool meetKindFilter = 
+            var meetKindFilter = 
                 (m_includeError && e.Kind == AssetProcessEvent.EventKind.Error) ||
                 (m_includeInfo && e.Kind != AssetProcessEvent.EventKind.Error) ;
 
@@ -203,7 +213,12 @@ namespace Unity.AssetGraph {
         }
 
         public void LogModify(string assetGuid) {
-            AssetGraphController gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
+            if (!m_enabled)
+            {
+                return;
+            }
+
+            var gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
 
             if (gc == null) {
                 throw new AssetGraphException ("Modify event attempt to log but no graph is in stack.");
@@ -215,7 +230,12 @@ namespace Unity.AssetGraph {
         }
 
         public void LogError(NodeException e) {
-            AssetGraphController gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
+            if (!m_enabled)
+            {
+                return;
+            }
+
+            var gc = AssetGraphPostprocessor.Postprocessor.GetCurrentGraphController ();
 
             if (gc == null) {
                 throw new AssetGraphException ("Error event attempt to log but no graph is in stack.");
@@ -226,7 +246,10 @@ namespace Unity.AssetGraph {
             AddEvent (newEvent);
         }
 
-        private void AddEvent(AssetProcessEvent e) {
+        private void AddEvent(AssetProcessEvent e)
+        {
+            Assert.IsTrue(m_enabled);
+            
             m_events.Add (e);
 
             if (e.Kind == AssetProcessEvent.EventKind.Error) {
@@ -260,6 +283,9 @@ namespace Unity.AssetGraph {
                 graphGuids = m_events.Where (e => e.Kind == AssetProcessEvent.EventKind.Error).Select (e => e.GraphGuid).Distinct().ToList ();
             }
 
+            var graphGuidsWithoutHidden = graphGuids.Where(guid =>
+                !AssetDatabase.GUIDToAssetPath(guid).Contains(Model.Settings.HIDE_GRAPH_PREFIX)).ToList();
+
             m_events.Clear ();
             m_filteredEvents.Clear ();
             m_errorEventCount = 0;
@@ -268,7 +294,7 @@ namespace Unity.AssetGraph {
             m_filteredErrorEventCount = 0;
 
             if (executeGraphsWithError) {
-                AssetGraphUtility.ExecuteAllGraphs (graphGuids, true);
+                AssetGraphUtility.ExecuteAllGraphs (graphGuidsWithoutHidden, true);
             }
         }
 	}

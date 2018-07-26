@@ -109,8 +109,12 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 	
 	protected ExecuteGraphResult AssertGraphExecuteWithIssue()
 	{
-		var result = AssetGraphUtility.ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, LoadGraphForTest(2));		
-		Assert.True(result.IsAnyIssueFound);
+		ExecuteGraphResult result;
+		using (new DisableAssetProcessEventRecordScope())
+		{
+			result = AssetGraphUtility.ExecuteGraph(EditorUserBuildSettings.activeBuildTarget, LoadGraphForTest(2));		
+			Assert.True(result.IsAnyIssueFound);
+		}
 		return result;
 	}
 
