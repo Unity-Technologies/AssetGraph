@@ -186,10 +186,59 @@ namespace Unity.AssetGraph.DataModel.Version2
                 LogUtility.Logger.Log("[ApplyGraph] SaveData update skipped. graph is equivarent.");
             }
         }
+        
+        public NodeData AddNode(Type nodeType)
+        {
+            return AddNode(string.Empty, nodeType, 100, 100);
+        }
 
+        public NodeData AddNode(string name, Type nodeType, int x, int y)
+        {            
+            var nodeInstance = NodeUtility.CreateNodeInstance(nodeType.AssemblyQualifiedName);
+            var node = new NodeData(name, nodeInstance, x, y);
+            m_allNodes.Add(node);
+            return node;
+        }
+        
+        public ConnectionData Connect(string label, ConnectionPointData outputPort, ConnectionPointData inputPort)
+        {
+            if (!outputPort.IsOutput || !inputPort.IsInput)
+            {
+                return null;
+            }
+
+            var outputNode = m_allNodes.FirstOrDefault(n => n.Id == outputPort.NodeId);
+            var inputNode  = m_allNodes.FirstOrDefault(n => n.Id == inputPort.NodeId);
+
+            if (outputNode == null || inputNode == null)
+            {
+                return null;
+            }
+            
+            var existingConnections = m_allConnections
+                .Where (con => con.FromNodeConnectionPointId == outputPort.Id)
+                .Where(con => con.FromNodeConnectionPointId != inputPort.Id).ToList();
+
+            foreach (var c in existingConnections)
+            {
+                m_allConnections.Remove(c);
+            }
+
+            var newConnection = new ConnectionData(label, outputPort, inputPort);
+            m_allConnections.Add(newConnection);
+            
+            return newConnection;
+        }
+        
+
+        public static ConfigGraph CreateNewGraph()
+        {
+            return CreateInstance<ConfigGraph>();
+        }
+        
         public static ConfigGraph CreateNewGraph(string pathToSave)
         {
-            var data = ScriptableObject.CreateInstance<ConfigGraph>();
+            var data = CreateInstance<ConfigGraph>();
             AssetDatabase.CreateAsset(data, pathToSave);
             return data;
         }
