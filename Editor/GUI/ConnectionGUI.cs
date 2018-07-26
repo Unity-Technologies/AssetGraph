@@ -110,7 +110,7 @@ namespace Unity.AssetGraph {
 			UnityEngine.Assertions.Assert.IsTrue(output.IsOutput, "Given Output point is not output.");
 			UnityEngine.Assertions.Assert.IsTrue(input.IsInput,   "Given Input point is not input.");
 
-	        hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.HideAndDontSave;
+	        hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.DontSave;
 	        
 			m_data = data;
 			m_outputPoint = output;
