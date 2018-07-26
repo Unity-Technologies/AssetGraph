@@ -110,10 +110,12 @@ namespace Unity.AssetGraph {
 			UnityEngine.Assertions.Assert.IsTrue(output.IsOutput, "Given Output point is not output.");
 			UnityEngine.Assertions.Assert.IsTrue(input.IsInput,   "Given Input point is not input.");
 
+	        hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.HideAndDontSave;
+	        
 			m_data = data;
 			m_outputPoint = output;
 			m_inputPoint = input;
-            this.name = m_data.Label;
+            name = m_data.Label;
             m_groupViewContext = new GroupViewContext ();
             m_connectionButtonStyle = "sv_label_0";
 		}

@@ -115,6 +115,7 @@ namespace Unity.AssetGraph {
         }
 
         private void Init (AssetGraphController c, Model.NodeData data) {
+	        hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.HideAndDontSave;
 			m_nodeWindowId = 0;
             m_controller = c;
             m_graph = m_controller.TargetGraph;
