@@ -41,6 +41,8 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 
 		public const char KEYWORD_WILDCARD = '*';
 
+		public const string HIDE_GRAPH_PREFIX = "__hidden__";
+
         public const int GRAPHEXECPRIORITY_DEFAULT = 0;
 
 

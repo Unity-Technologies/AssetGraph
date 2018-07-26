@@ -122,7 +122,17 @@ namespace Unity.AssetGraph {
 			}
 		}
 
-        public Loader() {}
+		public string LoadPath
+		{
+			get { return m_loadPath[EditorUserBuildSettings.activeBuildTarget]; }
+			set
+			{
+				m_loadPath[EditorUserBuildSettings.activeBuildTarget] = value;
+				m_loadPathGuid[EditorUserBuildSettings.activeBuildTarget] = AssetDatabase.AssetPathToGUID(value);
+			}
+		}
+
+		public Loader() {}
         public Loader(string path) {
             var normalizedPath = NormalizeLoadPath (path);
             var loadPath = FileUtility.PathCombine (Model.Settings.Path.ASSETS_PATH, normalizedPath);
@@ -277,7 +287,7 @@ namespace Unity.AssetGraph {
 
 			GUILayout.Space(10f);
 
-            bool bRespondAP = EditorGUILayout.ToggleLeft ("Respond To Asset Change", m_respondToAssetChange);
+            var bRespondAP = EditorGUILayout.ToggleLeft ("Respond To Asset Change", m_respondToAssetChange);
             if (bRespondAP != m_respondToAssetChange) {
                 using (new RecordUndoScope ("Remove Target Load Path Settings", node, true)) {
                     m_respondToAssetChange = bRespondAP;

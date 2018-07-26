@@ -1005,6 +1005,12 @@ namespace Unity.AssetGraph
                         string path = AssetDatabase.GUIDToAssetPath (guid);
                         string name = Path.GetFileNameWithoutExtension (path);
 
+                        // exclude graphs with hidden prefix
+                        if (name.StartsWith(Model.Settings.HIDE_GRAPH_PREFIX))
+                        {
+                            continue;
+                        }
+                        
                         // GenericMenu can't have multiple menu item with the same name
                         // Avoid name overlap
                         string menuName = name;

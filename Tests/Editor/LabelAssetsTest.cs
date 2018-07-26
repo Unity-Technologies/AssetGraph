@@ -3,8 +3,9 @@ using UnityEditor;
 using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
+using Model=Unity.AssetGraph.DataModel.Version2;
 
-class EditorExampleTest {
+internal class LabelAssetsTest {
 
 	[Test]
 	public void EditorSampleTestSimplePasses() {
