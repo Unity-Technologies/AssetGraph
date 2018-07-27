@@ -40,7 +40,10 @@ namespace Unity.AssetGraph {
             }
 
             foreach (var assets in assetGroups.Values) {
-                count += assets.Count;
+	            if (assets != null)
+	            {
+		            count += assets.Count;
+	            }
             }
 
             var groupCount = assetGroups.Keys.Count;

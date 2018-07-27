@@ -1,23 +1,35 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
 
-internal class LoadBySearchFilterTest {
-
-	[Test]
-	public void EditorSampleTestSimplePasses() {
-		// Use the Assert class to test conditions.
+internal class LoadBySearchFilterTest : AssetGraphEditorBaseTest
+{
+	protected override void CreateResourcesForTests()
+	{
+		CreateTestPrefab("", "LoadBySearchFilterTestPrefab01", PrimitiveType.Cube);
+		CreateTestMaterial("", "LoadBySearchFilterTestMaterial01", "Hidden/AssetGraph/LineDraw");
 	}
 
-	// A UnityTest behaves like a coroutine in PlayMode
-	// and allows you to yield null to skip a frame in EditMode
-	[UnityTest]
-	public IEnumerator EditorSampleTestWithEnumeratorPasses() {
-		// Use the Assert class to test conditions.
-		// yield to skip a frame
-		yield return null;
+	[Test]
+	public void TestSearchFilterWithName()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+
+	[Test]
+	public void TestSearchFilterWithTypeAndName()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+
+	[Test]
+	public void TestEmptySearchCondition()
+	{
+		var result = AssertGraphExecuteWithIssue();
+		
+		foreach (var e in result.Issues)
+		{
+			Assert.AreEqual(e.Node.Operation.ClassName, typeof(LoaderBySearch).AssemblyQualifiedName);
+		}
 	}
 }

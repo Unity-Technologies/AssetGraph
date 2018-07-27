@@ -1,23 +1,39 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
 
-internal class SplitByFilterTest {
-
-	[Test]
-	public void EditorSampleTestSimplePasses() {
-		// Use the Assert class to test conditions.
+internal class SplitByFilterTest : AssetGraphEditorBaseTest
+{
+	protected override void CreateResourcesForTests()
+	{
+		CreateTestPrefab("SubFolder/", "prefab01", PrimitiveType.Cube);
+		CreateTestPrefab("SubFolder/", "foovar", PrimitiveType.Cylinder);
+		CreateTestPrefab("", "prefab02", PrimitiveType.Cube);		
+		CreateTestMaterial("", "mat01", "Hidden/AssetGraph/LineDraw");
+		CreateTestTexture("OtherSub/", "tex01", 128, 128, TextureFormat.ARGB32, true, false);
 	}
 
-	// A UnityTest behaves like a coroutine in PlayMode
-	// and allows you to yield null to skip a frame in EditMode
-	[UnityTest]
-	public IEnumerator EditorSampleTestWithEnumeratorPasses() {
-		// Use the Assert class to test conditions.
-		// yield to skip a frame
-		yield return null;
+	[Test]
+	public void TestRegexFilter()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+	
+	[Test]
+	public void TestCombinedFilter()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+
+	[Test]
+	public void TestFilterByType()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+
+	[Test]
+	public void TestFilterByName()
+	{
+		AssertGraphExecuteWithNoIssue();
 	}
 }

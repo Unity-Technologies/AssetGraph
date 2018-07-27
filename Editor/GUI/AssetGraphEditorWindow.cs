@@ -1062,6 +1062,11 @@ namespace Unity.AssetGraph
 
                     menu.DropDown (new Rect (4f, 8f, 0f, 0f));
                 }
+                
+                if(GUILayout.Button(new GUIContent ("Edit", "Edit Graph Description"), EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT)))
+                {
+                    Selection.activeObject = m_controller.TargetGraph;
+                }
 
                 GUILayout.Space (4);
 
@@ -1074,11 +1079,13 @@ namespace Unity.AssetGraph
                 m_showDescription = GUILayout.Toggle (m_showDescription, new GUIContent (m_miniInfoIcon, "Show graph description"), EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT));
                 m_showVerboseLog = GUILayout.Toggle (m_showVerboseLog, new GUIContent ("Verbose Log", "Increse console log messages"), EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT));
                 LogUtility.ShowVerboseLog (m_showVerboseLog);
-
+                
                 GUILayout.Space (4);
 
                 m_controller.TargetGraph.UseAsAssetPostprocessor = GUILayout.Toggle (m_controller.TargetGraph.UseAsAssetPostprocessor, new GUIContent ("Use As Postprocessor", "Graph will be used as asset postprocessor if enabled"), EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT));
 
+                GUILayout.Space (4);
+                
                 GUILayout.FlexibleSpace ();
 
                 GUIStyle tbLabel = new GUIStyle (EditorStyles.toolbar);

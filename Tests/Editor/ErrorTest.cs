@@ -1,23 +1,28 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
 
-internal class ErrorTest {
-
-	[Test]
-	public void EditorSampleTestSimplePasses() {
-		// Use the Assert class to test conditions.
+internal class ErrorTest : AssetGraphEditorBaseTest
+{
+	protected override void CreateResourcesForTests()
+	{
+		CreateTestPrefab("", "prefab01", PrimitiveType.Cube);
 	}
 
-	// A UnityTest behaves like a coroutine in PlayMode
-	// and allows you to yield null to skip a frame in EditMode
-	[UnityTest]
-	public IEnumerator EditorSampleTestWithEnumeratorPasses() {
-		// Use the Assert class to test conditions.
-		// yield to skip a frame
-		yield return null;
+	[Test]
+	public void TestNoError()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+
+	[Test]
+	public void TestError()
+	{
+		var result = AssertGraphExecuteWithIssue();
+		
+		foreach (var e in result.Issues)
+		{
+			Assert.AreEqual(e.Node.Operation.ClassName, typeof(Error).AssemblyQualifiedName);
+		}
 	}
 }

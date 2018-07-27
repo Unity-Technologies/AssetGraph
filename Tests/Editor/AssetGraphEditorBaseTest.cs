@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
@@ -67,16 +66,23 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 		return sf.GetMethod().Name;
 	}
 
-	protected Model.ConfigGraph LoadGraphForTest(int stackoffset=1)
+	protected Model.ConfigGraph LoadGraphForTest(int stackoffset=1, bool fixLoadPath = true)
 	{
 		var graph = LoadGraphByName("__hidden__" + GetType().Name + "_" + GetCurrentMethodName(stackoffset));
-		SetLoaderPathToRootDirectory(graph);
+		if (fixLoadPath)
+		{
+			SetLoaderPathToRootDirectory(graph);
+		}
 		return graph;
 	}
 
 	protected static Model.ConfigGraph LoadGraphByName(string name)
 	{
 		var guids = AssetDatabase.FindAssets (Model.Settings.GRAPH_SEARCH_CONDITION + " " + name);
+		
+		Assert.IsFalse(guids.Length == 0, "Graph for test not found.");
+		Assert.AreEqual(1, guids.Length, "Multiple graphs for test found.");
+		
 		var path = AssetDatabase.GUIDToAssetPath (guids[0]);
 
 		return AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(path);
@@ -84,7 +90,7 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 
 	protected void SetLoaderPathToRootDirectory(Model.ConfigGraph graph)
 	{
-		foreach (var n in graph.Nodes.Where(n => n.Operation.ClassName.StartsWith(typeof(Unity.AssetGraph.Loader).FullName)))
+		foreach (var n in graph.Nodes.Where(n => n.Operation.ClassName.StartsWith(typeof(Unity.AssetGraph.Loader).FullName + ",")))
 		{
 			var loader = n.Operation.Object as Unity.AssetGraph.Loader;
 			loader.LoadPath = RootFolder;
@@ -141,6 +147,7 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 		File.WriteAllBytes(fullPath, bytes);
 
 		Object.DestroyImmediate(t);
+		AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 	}
 
 	internal void CreateTestMaterial(string assetPrefix, string objectName, string shaderName)
@@ -152,6 +159,5 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 		var m = new Material(shader);
 
 		AssetDatabase.CreateAsset(m, assetPath);
-		Object.DestroyImmediate(m);
 	}
 }

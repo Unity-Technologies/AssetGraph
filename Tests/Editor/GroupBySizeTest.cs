@@ -1,23 +1,33 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
 
-internal class GroupBySizeTest {
+internal class GroupBySizeTest : AssetGraphEditorBaseTest
+{
+	protected override void CreateResourcesForTests()
+	{
+		CreateTestPrefab("Good/", "prefab01", PrimitiveType.Cube);
+		CreateTestPrefab("Good/", "prefab02", PrimitiveType.Cube);
+		CreateTestPrefab("Bad/", "prefab03", PrimitiveType.Cube);
+		CreateTestPrefab("Bad/", "prefab04", PrimitiveType.Cube);
+	}
 
 	[Test]
-	public void EditorSampleTestSimplePasses() {
-		// Use the Assert class to test conditions.
+	public void SampleTest()
+	{
+		var result = AssertGraphExecuteWithIssue();
+		
+		foreach (var e in result.Issues)
+		{
+			Assert.AreEqual(e.Node.Operation.ClassName, typeof(AssertUnwantedAssetsInBundle).AssemblyQualifiedName);
+			Assert.True(e.Reason.Contains("/Bad/"));
+		}
+	}
+	
+	[Test]
+	public void SampleTestNoIssue()
+	{
+		AssertGraphExecuteWithNoIssue();
 	}
 
-	// A UnityTest behaves like a coroutine in PlayMode
-	// and allows you to yield null to skip a frame in EditMode
-	[UnityTest]
-	public IEnumerator EditorSampleTestWithEnumeratorPasses() {
-		// Use the Assert class to test conditions.
-		// yield to skip a frame
-		yield return null;
-	}
 }

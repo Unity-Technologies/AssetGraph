@@ -1,12 +1,6 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
-using System.Linq;
-using AssetBundleGraph;
 using Unity.AssetGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
 
 internal class AssertUnwantedAssetsInBundleTest : AssetGraphEditorBaseTest
 {

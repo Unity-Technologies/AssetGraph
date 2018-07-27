@@ -1,23 +1,45 @@
 ﻿using UnityEngine;
-using UnityEditor;
-using UnityEngine.TestTools;
 using NUnit.Framework;
-using System.Collections;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Unity.AssetGraph;
 
-internal class LoadFromDirectoryTest {
+internal class LoadFromDirectoryTest : AssetGraphEditorBaseTest {
 
-	[Test]
-	public void EditorSampleTestSimplePasses() {
-		// Use the Assert class to test conditions.
+	protected override void CreateResourcesForTests()
+	{
+		CreateTestPrefab("", "prefab01", PrimitiveType.Cube);
+		CreateTestPrefab("", "prefab02", PrimitiveType.Cube);
+		CreateTestPrefab("", "prefab03", PrimitiveType.Cube);
+		CreateTestPrefab("", "prefab04", PrimitiveType.Cube);
+		CreateTestPrefab("Ignore/", "prefab05", PrimitiveType.Cube);
+		CreateTestPrefab("Ignore/", "prefab06", PrimitiveType.Cube);
 	}
 
-	// A UnityTest behaves like a coroutine in PlayMode
-	// and allows you to yield null to skip a frame in EditMode
-	[UnityTest]
-	public IEnumerator EditorSampleTestWithEnumeratorPasses() {
-		// Use the Assert class to test conditions.
-		// yield to skip a frame
-		yield return null;
+	[Test]
+	public void TestLoadAsset()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+
+	[Test]
+	public void TestIgnoreSettings()
+	{
+		AssertGraphExecuteWithNoIssue();
+	}
+	
+	[Test]
+	public void TestDirectoryNotExist()
+	{
+		ExecuteGraphResult result;
+		using (new DisableAssetProcessEventRecordScope())
+		{
+			result = AssetGraphUtility.ExecuteGraph(UnityEditor.EditorUserBuildSettings.activeBuildTarget, LoadGraphForTest(1, false));		
+		}
+				
+		Assert.True(result.IsAnyIssueFound);
+		
+		foreach (var e in result.Issues)
+		{
+			Assert.AreEqual(e.Node.Operation.ClassName, typeof(Loader).AssemblyQualifiedName);
+		}
 	}
 }

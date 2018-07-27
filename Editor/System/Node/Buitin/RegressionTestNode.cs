@@ -192,7 +192,7 @@ public class RegressionTestNode : Node {
 				var group = new AssetGroupStructures.Group(key);
 				s.groups.Add(group);
 				foreach (var a in g.assetGroups[key])
-				{
+				{					
 					group.entires.Add(new AssetGroupStructures.Entry(a.importFrom, 
 						a.assetType == null ? string.Empty: a.assetType.FullName, 
 						a.importerType == null ? string.Empty: a.importerType.FullName));
