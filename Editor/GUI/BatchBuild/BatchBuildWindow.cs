@@ -97,7 +97,7 @@ namespace Unity.AssetGraph {
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             float toolbarWidth = position.width - (20f*2f);
-            string[] labels = new string[] { "Edit", "Build" };
+            string[] labels = new string[] { "Edit", "Execute" };
             m_mode = (Mode)GUILayout.Toolbar((int)m_mode, labels, "LargeButton", GUILayout.Width(toolbarWidth) );
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();

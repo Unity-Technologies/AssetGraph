@@ -110,8 +110,8 @@ namespace Unity.AssetGraph {
 
         private void DrawBuildDropdown(Rect region) {
 
-            Rect popupRgn  = new Rect (region.x+20f, region.y, region.width - 120f, region.height);
-            Rect buttonRgn = new Rect (popupRgn.xMax+8f, popupRgn.y, 80f, popupRgn.height);
+            var popupRgn  = new Rect (region.x+20f, region.y, region.width - 120f, region.height);
+            var buttonRgn = new Rect (popupRgn.xMax+8f, popupRgn.y, 80f, popupRgn.height);
 
             using (new EditorGUI.DisabledGroupScope (BatchBuildConfig.GetConfig ().GraphCollections.Count == 0)) {
 
@@ -123,7 +123,7 @@ namespace Unity.AssetGraph {
                 }
 
                 using (new EditorGUI.DisabledGroupScope (m_currentCollection == null || BatchBuildConfig.GetConfig ().BuildTargets.Count == 0)) {
-                    if (GUI.Button (buttonRgn, "Build")) {
+                    if (GUI.Button (buttonRgn, "Execute")) {
                         Build ();
                     }
                 }
@@ -276,7 +276,7 @@ namespace Unity.AssetGraph {
         }
 
         private int GetTotalNodeCount(BatchBuildConfig.GraphCollection collection) {
-            int c = 0;
+            var c = 0;
 
             foreach(var guid in collection.GraphGUIDs) {
                 var path = AssetDatabase.GUIDToAssetPath (guid);
@@ -292,8 +292,8 @@ namespace Unity.AssetGraph {
         public void Build() {
             m_result.Clear ();
 
-            float currentCount = 0f;
-            float totalCount = (float)GetTotalNodeCount (m_currentCollection) * BatchBuildConfig.GetConfig ().BuildTargets.Count;
+            var currentCount = 0f;
+            var totalCount = (float)GetTotalNodeCount (m_currentCollection) * BatchBuildConfig.GetConfig ().BuildTargets.Count;
             Model.NodeData lastNode = null;
 
             foreach (var t in BatchBuildConfig.GetConfig ().BuildTargets) {
@@ -309,11 +309,11 @@ namespace Unity.AssetGraph {
                         lastNode = node;
                     }
 
-                    float currentNodeProgress = progress * (1.0f / totalCount);
-                    float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
+                    var currentNodeProgress = progress * (1.0f / totalCount);
+                    var currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
 
-                    string title = string.Format("{2} - Processing Asset Graphs[{0}/{1}]", currentCount, totalCount, BuildTargetUtility.TargetToHumaneString(t));
-                    string info  = string.Format("{0}:{1}", node.Name, message);
+                    var title = string.Format("{2} - Processing Asset Graphs[{0}/{1}]", currentCount, totalCount, BuildTargetUtility.TargetToHumaneString(t));
+                    var info  = string.Format("{0}:{1}", node.Name, message);
 
                     EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
                 };

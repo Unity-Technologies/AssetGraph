@@ -1109,7 +1109,7 @@ namespace Unity.AssetGraph
                 }
 
                 using (new EditorGUI.DisabledScope (m_controller.IsAnyIssueFound)) {
-                    if (GUILayout.Button ("Build", EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT))) {
+                    if (GUILayout.Button ("Execute", EditorStyles.toolbarButton, GUILayout.Height (Model.Settings.GUI.TOOLBAR_HEIGHT))) {
                         EditorApplication.delayCall += BuildFromMenu;
                     }
                 }
