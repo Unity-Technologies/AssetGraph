@@ -202,7 +202,14 @@ namespace Unity.AssetGraph
 					break;
 				case GroupingPatternType.RegularExpression:
 					{
-						regex = new Regex(m_groupingKeyword[target]);
+						try
+						{
+							regex = new Regex(m_groupingKeyword[target]);
+						}
+						catch (ArgumentException e)
+						{
+							throw new NodeException(string.Format("Bad Grouping Keyword:{0}", e.Message), "Fix grouping keyword from Inspector.", node);							
+						}
 					}
 					break;
 				}
