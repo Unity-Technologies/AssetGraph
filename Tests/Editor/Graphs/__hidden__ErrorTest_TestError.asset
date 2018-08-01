@@ -19,7 +19,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: Unity.AssetGraph.Loader, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJFcnJvclRlc3RfQXNzZXRzVG9EZWxldGUifV19LCJtX2xvYWRQYXRoR3VpZCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoiZGU0YThjMTFjNGZkMTRlOTliYzY5ZDdjM2JjODJlOTgifV19LCJtX2lnbm9yZVBhdHRlcm5zIjpbXSwibV9yZXNwb25kVG9Bc3NldENoYW5nZSI6ZmFsc2V9
+      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJFcnJvclRlc3RfQXNzZXRzVG9EZWxldGUifSx7InRhcmdldEdyb3VwIjoxLCJ2YWx1ZSI6IkVycm9yVGVzdF9Bc3NldHNUb0RlbGV0ZSJ9XX0sIm1fbG9hZFBhdGhHdWlkIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJkZTRhOGMxMWM0ZmQxNGU5OWJjNjlkN2MzYmM4MmU5OCJ9LHsidGFyZ2V0R3JvdXAiOjEsInZhbHVlIjoiZGU0YThjMTFjNGZkMTRlOTliYzY5ZDdjM2JjODJlOTgifV19LCJtX2lnbm9yZVBhdHRlcm5zIjpbXSwibV9yZXNwb25kVG9Bc3NldENoYW5nZSI6ZmFsc2V9
     m_inputPoints: []
     m_outputPoints:
     - id: 0c0ed461-1ab6-4ca3-93fe-ea3a765a6d13
@@ -83,12 +83,6 @@ MonoBehaviour:
         height: 29
     m_outputPoints: []
   m_allConnections:
-  - m_id: 4129f35b-88c6-4b05-bc4b-06aaa772ed79
-    m_fromNodeId: 6be266e7-b758-4b94-8773-a1c98d59ecd9
-    m_fromNodeConnectionPointId: 6203a71c-2bdf-4ed8-9fc4-7afdcafd2670
-    m_toNodeId: eebf8977-5f3c-411e-b98d-a6bc5be6a3e0
-    m_toNodeConnectionPoiontId: 9a4f93c9-d9ae-44c7-8f13-591f4ecc8170
-    m_label: +
   - m_id: 69a5fa90-f2bf-43ac-a175-0271ec455e28
     m_fromNodeId: 6609e138-c174-46e2-ad4d-aa17220385d3
     m_fromNodeConnectionPointId: 0c0ed461-1ab6-4ca3-93fe-ea3a765a6d13
@@ -101,7 +95,7 @@ MonoBehaviour:
     m_toNodeId: a596077c-cf57-4286-99c2-7cbb9bd9ffb5
     m_toNodeConnectionPoiontId: 2b8da87b-b74a-4b8a-95d0-c5f4dd02c10a
     m_label: 
-  m_lastModified: 131771589933782030
+  m_lastModified: 131771591115944860
   m_version: 2
   m_graphDescription: '<size=16>Test: </size>
 

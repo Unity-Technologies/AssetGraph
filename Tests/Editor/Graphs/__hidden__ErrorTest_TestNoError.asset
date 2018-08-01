@@ -19,7 +19,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: Unity.AssetGraph.Loader, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJFcnJvclRlc3RfQXNzZXRzVG9EZWxldGUifV19LCJtX2xvYWRQYXRoR3VpZCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoiZGU0YThjMTFjNGZkMTRlOTliYzY5ZDdjM2JjODJlOTgifV19LCJtX2lnbm9yZVBhdHRlcm5zIjpbXSwibV9yZXNwb25kVG9Bc3NldENoYW5nZSI6ZmFsc2V9
+      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJFcnJvclRlc3RfQXNzZXRzVG9EZWxldGUifSx7InRhcmdldEdyb3VwIjoxLCJ2YWx1ZSI6IkVycm9yVGVzdF9Bc3NldHNUb0RlbGV0ZSJ9XX0sIm1fbG9hZFBhdGhHdWlkIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJkZTRhOGMxMWM0ZmQxNGU5OWJjNjlkN2MzYmM4MmU5OCJ9LHsidGFyZ2V0R3JvdXAiOjEsInZhbHVlIjoiZGU0YThjMTFjNGZkMTRlOTliYzY5ZDdjM2JjODJlOTgifV19LCJtX2lnbm9yZVBhdHRlcm5zIjpbXSwibV9yZXNwb25kVG9Bc3NldENoYW5nZSI6ZmFsc2V9
     m_inputPoints: []
     m_outputPoints:
     - id: 034dd691-0ef1-4788-9c4f-af865232be6c
