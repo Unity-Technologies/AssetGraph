@@ -387,9 +387,13 @@ namespace UnityEngine.AssetGraph
 			return (BuildTarget)Enum.Parse(typeof(BuildTarget), val);
 		}
 
-		public static bool IsBuildTargetSupported(BuildTarget t) {
+		public static bool IsBuildTargetSupported(BuildTarget t)
+		{
+#if UNITY_2018_1_OR_NEWER
+            return BuildPipeline.IsBuildTargetSupported(TargetToGroup(t), t);
+#else
 
-			var objType = typeof(UnityEditor.BuildPipeline);
+            var objType = typeof(UnityEditor.BuildPipeline);
 			var method =  objType.GetMethod("IsBuildTargetSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 
 #if UNITY_5_6 || UNITY_5_6_OR_NEWER
@@ -403,6 +407,7 @@ namespace UnityEngine.AssetGraph
 			var retval = method.Invoke(null, new object[]{System.Enum.ToObject(typeof(BuildTarget), t)});
 #endif
 			return Convert.ToBoolean(retval);
+#endif
 		}
 	}
 }

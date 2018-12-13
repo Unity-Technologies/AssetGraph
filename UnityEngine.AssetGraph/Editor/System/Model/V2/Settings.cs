@@ -173,8 +173,10 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             new BuildPlayerOption("Force Enable Assertions", BuildOptions.ForceEnableAssertions),
             #if !UNITY_2017_1_OR_NEWER
             new BuildPlayerOption("Force Optimize Script Compilation", BuildOptions.ForceOptimizeScriptCompilation),
-            #endif
+#endif
+#if !UNITY_2018_1_OR_NEWER
             new BuildPlayerOption("Use IL2CPP", BuildOptions.Il2CPP),
+#endif
             new BuildPlayerOption("Install In Build Folder", BuildOptions.InstallInBuildFolder),
             new BuildPlayerOption("Show Built Player", BuildOptions.ShowBuiltPlayer),
             new BuildPlayerOption("Strict Mode", BuildOptions.StrictMode),

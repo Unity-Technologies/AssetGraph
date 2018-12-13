@@ -6,7 +6,10 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
-using V1 = AssetBundleGraph;
+#if UNITY_2018_1_OR_NEWER
+using UnityEditor.Build.Reporting;
+#endif
+
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph
@@ -75,13 +78,14 @@ namespace UnityEngine.AssetGraph
 
         public override Node Clone(Model.NodeData newData)
         {
-            var newNode = new PlayerBuilder();
-
-            newNode.m_buildOptions = new SerializableMultiTargetInt(m_buildOptions);
-            newNode.m_buildLocations = new SerializableMultiTargetString(m_buildLocations);
-            newNode.m_playerName = new SerializableMultiTargetString(m_playerName);
-            newNode.m_scenes = new SerializableMultiTargetString(m_scenes);
-            newNode.m_scroll = m_scroll;
+            var newNode = new PlayerBuilder
+            {
+                m_buildOptions = new SerializableMultiTargetInt(m_buildOptions),
+                m_buildLocations = new SerializableMultiTargetString(m_buildLocations),
+                m_playerName = new SerializableMultiTargetString(m_playerName),
+                m_scenes = new SerializableMultiTargetString(m_scenes),
+                m_scroll = m_scroll
+            };
 
             newData.AddDefaultInputPoint();
 
@@ -295,14 +299,17 @@ namespace UnityEngine.AssetGraph
                 }
             }
 
-            BuildPlayerOptions opt;
-            opt.options = (BuildOptions)m_buildOptions[target];
-            opt.locationPathName = m_buildLocations[target] + "/" + m_playerName[target];
-            opt.assetBundleManifestPath = manifestPath;
-            opt.scenes = sceneGUIDs.Select(guid => AssetDatabase.GUIDToAssetPath(guid)).Where(path => !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray();
-            opt.target = target;
+            var opt = new BuildPlayerOptions
+            {
+                options = (BuildOptions) m_buildOptions[target],
+                locationPathName = m_buildLocations[target] + "/" + m_playerName[target],
+                assetBundleManifestPath = manifestPath,
+                scenes = sceneGUIDs.Select(AssetDatabase.GUIDToAssetPath).Where(path =>
+                    !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray(),
+                target = target,
+                targetGroup = BuildTargetUtility.TargetToGroup(target)
+            };
 #if UNITY_5_6_OR_NEWER
-            opt.targetGroup = BuildTargetUtility.TargetToGroup(target);
 #endif
             var errorMsg = BuildPipeline.BuildPlayer(opt);
 #else
@@ -312,10 +319,18 @@ namespace UnityEngine.AssetGraph
 
             var errorMsg = BuildPipeline.BuildPlayer(levels, locationPathName, target, opt);
 #endif
+
+#if !UNITY_2018_1_OR_NEWER
             if (!string.IsNullOrEmpty(errorMsg))
             {
                 throw new NodeException("Player build failed:" + errorMsg, "See description for detail.", node);
             }
+#else
+            if (errorMsg.summary.result == BuildResult.Failed)
+            {
+                throw new NodeException("Player build failed!", "See description for detail.", node);
+            }
+#endif
         }
     }
 }
