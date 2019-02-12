@@ -17,7 +17,7 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 	private const bool kDebugGraph = true;
 
 	// Root folder of each tests to use assets. 
-	private string RootFolder { get { return string.Format("Assets/{0}_AssetsToDelete", GetType().Name); } }
+	protected string RootFolder { get { return string.Format("Assets/{0}_AssetsToDelete", GetType().Name); } }
 
 	public void Setup()
 	{

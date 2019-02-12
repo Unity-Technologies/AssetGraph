@@ -107,6 +107,12 @@ MonoBehaviour:
     m_label: +
   m_lastModified: 131772059068798110
   m_version: 2
-  m_graphDescription: 
+  m_graphDescription: '<size=16>Test: </size>
+
+
+    Test: node get input and produce groups using Wildcard matching rule, compare
+    with pre-generated result.
+
+    Final State: Graph should produce no error.'
   m_useAsAssetPostprocessor: 0
   m_graphExecOrderPriority: 0

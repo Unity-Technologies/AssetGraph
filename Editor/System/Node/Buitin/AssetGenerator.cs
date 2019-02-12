@@ -33,6 +33,11 @@ namespace Unity.AssetGraph {
                 m_id = point.Id;
                 m_instance = new SerializableMultiTargetInstance(i);
             }
+            
+            public IAssetGenerator GetGenerator(BuildTarget target)
+            {
+                return m_instance.Get<IAssetGenerator>(target);
+            }
         }
             
         public enum OutputOption : int {
@@ -68,6 +73,11 @@ namespace Unity.AssetGraph {
 				return "Create";
 			}
 		}
+
+	    public IEnumerable<GeneratorEntry> Generators
+	    {
+	        get { return m_entries; }
+	    }
 
 		public override void Initialize(Model.NodeData data) {
             m_entries = new List<GeneratorEntry>();

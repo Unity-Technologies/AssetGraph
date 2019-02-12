@@ -74,8 +74,8 @@ MonoBehaviour:
   m_graphDescription: '<size=16>Test: </size>
 
 
-    Test: Try to load asset from directory
+    Test: node to load assets with empty condition.
 
-    Test is successful if graph produces no issue.'
+    Final State: Graph should produce error by LoadBySearchFilter.'
   m_useAsAssetPostprocessor: 0
   m_graphExecOrderPriority: 0

@@ -11,12 +11,17 @@ using Unity.AssetGraph;
 public class ReplaceGameObjectByName : IPrefabBuilder {
 
     [Serializable]
-    private class ReplaceEntry {
+    public class ReplaceEntry {
         [SerializeField] public string      name;
         [SerializeField] public GameObjectReference  dstObject;
     }
 
     [SerializeField] List<ReplaceEntry> m_replaceEntries;
+
+    public List<ReplaceEntry> ReplaceEntries
+    {
+        get { return m_replaceEntries; }
+    }
 
     private string GetPrefabName(string srcGameObjectName, string groupKeyName) {
         return string.Format("{0}_{1}",srcGameObjectName, groupKeyName);

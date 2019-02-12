@@ -86,6 +86,11 @@ namespace Unity.AssetGraph {
 			return newNode;
 		}
 
+		public IPrefabBuilder GetPrefabBuilder(BuildTarget target)
+		{
+			return m_instance.Get<IPrefabBuilder>(target);
+		}
+
 		public override void OnInspectorGUI(NodeGUI node, AssetReferenceStreamManager streamManager, NodeGUIEditor editor, Action onValueChanged) {
 
 			EditorGUILayout.HelpBox("Create Prefab From Group: Create prefab from incoming group of assets, using assigned script.", MessageType.Info);
@@ -254,7 +259,14 @@ namespace Unity.AssetGraph {
 								}
 							};
 
-							builder.OnInspectorGUI(onChangedAction);
+							try
+							{
+								builder.OnInspectorGUI(onChangedAction);
+							}
+							catch (Exception e)
+							{
+								throw new NodeException(e.Message, "See reason for detail.", node.Data);
+							}
 						}
 					}
 				}
@@ -336,7 +348,17 @@ namespace Unity.AssetGraph {
                 GameObject previousPrefab = null; //TODO
 
 				List<UnityEngine.Object> allAssets = LoadAllAssets(assets);
-                var prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
+				string prefabFileName;
+				
+				try
+				{
+					prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
+				}
+				catch (Exception e)
+				{
+					throw new NodeException(e.Message, "See reason for detail.", node);
+				}
+				
 				if(output != null && prefabFileName != null) {
 					output[key] = new List<AssetReference> () {
 						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
@@ -403,16 +425,36 @@ namespace Unity.AssetGraph {
 
 				var allAssets = LoadAllAssets(assets);
                 GameObject previousPrefab = null; //TODO
+				string prefabFileName;
+				
+				try
+				{
+					prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
+				}
+				catch (Exception e)
+				{
+					throw new NodeException(e.Message, "See reason for detail.", node);
+				}
 
-                var prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
 				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
 
 				if (!Directory.Exists(Path.GetDirectoryName(prefabSavePath))) {
 					Directory.CreateDirectory(Path.GetDirectoryName(prefabSavePath));
 				}
 
-                if(!File.Exists(prefabSavePath) || PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets)) {
-                    UnityEngine.GameObject obj = builder.CreatePrefab(key, allAssets, previousPrefab);
+                if(!File.Exists(prefabSavePath) || PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets))
+                {
+	                GameObject obj;
+	                
+	                try
+	                {
+		                obj = builder.CreatePrefab(key, allAssets, previousPrefab);
+	                }
+	                catch (Exception e)
+	                {
+		                throw new NodeException(e.Message, "See reason for detail.", node);
+	                }
+	                
 					if(obj == null) {
 						throw new AssetGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
 							node.Name, builder.GetType().FullName, key));
@@ -471,8 +513,15 @@ namespace Unity.AssetGraph {
 			if(null == builder ) {
 				failedToCreateBuilder();
 			}
-
-            builder.OnValidate ();
+			
+			try
+			{
+				builder.OnValidate ();
+			}
+			catch (Exception e)
+			{
+				throw new NodeException(e.Message, "See reason for detail.", node);
+			}
 
 			if(null != builder && null != incoming) {
 				foreach(var ag in incoming) {
@@ -491,10 +540,19 @@ namespace Unity.AssetGraph {
 
 								// do not call LoadAllAssets() unless all assets have importFrom
 								var al = ag.assetGroups[key];
-								List<UnityEngine.Object> allAssets = LoadAllAssets(al);
-                                if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets, previousPrefab))) {
-									canNotCreatePrefab(key);
+								var allAssets = LoadAllAssets(al);			
+								
+								try
+								{
+									if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets, previousPrefab))) {
+										canNotCreatePrefab(key);
+									}
 								}
+								catch (Exception e)
+								{
+									throw new NodeException(e.Message, "See reason for detail.", node);
+								}
+								
 								UnloadAllAssets(al);
 							}
 						}

@@ -10,7 +10,14 @@ using Unity.AssetGraph;
 [CustomPrefabBuilder("[Experimental]Replace With Incoming GameObject", "v1.0", 50)]
 public class ReplaceWithIncomingGameObject : IPrefabBuilder {
 
-    [SerializeField] GameObjectReference m_replacingObject;
+    [SerializeField] 
+    private GameObjectReference m_replacingObject;
+
+    public GameObject ReplacingObject
+    {
+        get { return m_replacingObject.Object; }
+        set { m_replacingObject.Object = value; }
+    }
 
     public void OnValidate () {
         if (m_replacingObject == null || m_replacingObject.Empty) {

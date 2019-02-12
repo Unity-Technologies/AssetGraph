@@ -35,6 +35,11 @@ namespace Unity.AssetGraph {
 				return "Modify";
 			}
 		}
+		
+		public IModifier GetModifier(BuildTarget target)
+		{
+			return m_instance.Get<IModifier>(target);
+		}
 
 		public override void Initialize(Model.NodeData data) {
 			m_instance = new SerializableMultiTargetInstance();

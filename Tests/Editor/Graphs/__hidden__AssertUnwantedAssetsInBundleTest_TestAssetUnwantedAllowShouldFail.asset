@@ -199,9 +199,13 @@ MonoBehaviour:
     m_label: +
   m_lastModified: 131770538898195340
   m_version: 2
-  m_graphDescription: '<size=16>Graph Description: </size>
+  m_graphDescription: '<size=16>Test: </size>
 
 
-    Graph for AssertUnwantedAssetsInBundleTest tests'
+    Test: AssertUnwantedAssetsInBundle node "allow mode test" get input and graph
+    should fail.
+
+    Test is successful if graph produces an issue from AssertUnwantedAssetsInBundle
+    node.'
   m_useAsAssetPostprocessor: 0
   m_graphExecOrderPriority: 0

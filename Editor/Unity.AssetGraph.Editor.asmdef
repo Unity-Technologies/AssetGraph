@@ -1,11 +1,13 @@
 {
     "name": "Unity.AssetGraph.Editor",
     "references": [
-      "Unity.AssetGraph",
-      "Unity.AssetBundleBrowser.Editor"
+        "Unity.AssetGraph",
+        "Unity.AssetBundleBrowser.Editor"
     ],
+    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
 }

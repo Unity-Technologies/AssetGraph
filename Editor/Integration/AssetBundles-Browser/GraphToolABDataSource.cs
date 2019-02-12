@@ -7,8 +7,6 @@
  * https://github.com/Unity-Technologies/AssetBundles-Browser
  */
  
-#if ASSETBUNDLE_BROWSER_GRAPH_INTEGRARION
-
 using UnityEditor;
 using Model = Unity.AssetGraph.DataModel.Version2;
 using System;
@@ -142,5 +140,3 @@ namespace Unity.AssetGraph {
 		}
     }
 }
-
-#endif
