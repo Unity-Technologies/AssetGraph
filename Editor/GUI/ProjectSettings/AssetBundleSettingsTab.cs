@@ -34,42 +34,61 @@ namespace Unity.AssetGraph {
             }
         }
 
-        private string DrawFolderSelector(string label, 
-            string dialogTitle, 
-            string currentDirPath, 
-            string directoryOpenPath, 
-            Func<string, string> onValidFolderSelected = null) 
-        {
-            string newDirPath;
-            using(new EditorGUILayout.HorizontalScope()) {
-                if (string.IsNullOrEmpty (label)) {
-                    newDirPath = EditorGUILayout.TextField(currentDirPath);
-                } else {
-                    newDirPath = EditorGUILayout.TextField(label, currentDirPath);
+        private void DrawConfigBaseDirGUI() {
+            using (new EditorGUILayout.VerticalScope()) {
+
+                string baseDir = Model.Settings.UserSettings.ConfigBaseDir;
+
+                using (new EditorGUILayout.HorizontalScope ()) {                    
+                    var newBaseDir = GUIHelper.DrawFolderSelector ("Config Directory", "Select Config Folder", 
+                        baseDir,
+                        Application.dataPath + "/../",
+                        (string folderSelected) => {
+                            var projectPath = Directory.GetParent(Application.dataPath).ToString();
+
+                            if(projectPath == folderSelected) {
+                                folderSelected = string.Empty;
+                            } else {
+                                var index = folderSelected.IndexOf(projectPath);
+                                if(index >= 0 ) {
+                                    folderSelected = folderSelected.Substring(projectPath.Length + index);
+                                    if(folderSelected.IndexOf('/') == 0) {
+                                        folderSelected = folderSelected.Substring(1);
+                                    }
+                                }
+                            }
+                            return folderSelected;
+                        }
+                    );
+                    if (newBaseDir != baseDir) {
+                        Model.Settings.UserSettings.ConfigBaseDir = newBaseDir;
+                    }
                 }
 
-                if(GUILayout.Button("Select", GUILayout.Width(50f))) {
-                    var folderSelected = 
-                        EditorUtility.OpenFolderPanel(dialogTitle, directoryOpenPath, "");
-                    if(!string.IsNullOrEmpty(folderSelected)) {
-                        if (onValidFolderSelected != null) {
-                            newDirPath = onValidFolderSelected (folderSelected);
-                        } else {
-                            newDirPath = folderSelected;
+                using (new EditorGUI.DisabledScope (!Directory.Exists (baseDir))) 
+                {
+                    using (new EditorGUILayout.HorizontalScope ()) {
+                        GUILayout.FlexibleSpace ();
+                        if (GUILayout.Button (GUIHelper.RevealInFinderLabel)) {
+                            EditorUtility.RevealInFinder (baseDir);
                         }
                     }
                 }
             }
-            return newDirPath;
-        }
 
+            EditorGUILayout.HelpBox (
+                "Bundle Cache Directory is the default place to save AssetBundles when 'Build Asset Bundles' node performs build. " +
+                "This can be set outside of the project with relative path.", 
+                MessageType.Info);
+        }        
+        
         private void DrawCacheDirGUI() {
             using (new EditorGUILayout.VerticalScope()) {
 
                 string cacheDir = Model.Settings.UserSettings.AssetBundleBuildCacheDir;
 
                 using (new EditorGUILayout.HorizontalScope ()) {                    
-                    var newCacheDir = DrawFolderSelector ("Bundle Cache Directory", "Select Cache Folder", 
+                    var newCacheDir = GUIHelper.DrawFolderSelector ("Bundle Cache Directory", "Select Cache Folder", 
                         cacheDir,
                         Application.dataPath + "/../",
                         (string folderSelected) => {
@@ -98,12 +117,7 @@ namespace Unity.AssetGraph {
                 {
                     using (new EditorGUILayout.HorizontalScope ()) {
                         GUILayout.FlexibleSpace ();
-                        #if UNITY_EDITOR_OSX
-                        string buttonName = "Reveal in Finder";
-                        #else
-                        string buttonName = "Show in Explorer";
-                        #endif
-                        if (GUILayout.Button (buttonName)) {
+                        if (GUILayout.Button (GUIHelper.RevealInFinderLabel)) {
                             EditorUtility.RevealInFinder (cacheDir);
                         }
                     }

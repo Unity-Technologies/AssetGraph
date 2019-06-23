@@ -13,7 +13,7 @@ namespace Unity.AssetGraph.DataModel.Version2 {
         public const string GUI_TEXT_MENU_OPEN = GUI_TEXT_MENU_BASE + "/Open Graph Editor";
         public const string GUI_TEXT_MENU_BATCHWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Batch Build Window";
         public const string GUI_TEXT_MENU_ASSETLOGWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Asset Log Window";
-        public const string GUI_TEXT_MENU_PROJECTWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Project Window";
+        public const string GUI_TEXT_MENU_PROJECTWINDOW_OPEN = GUI_TEXT_MENU_BASE + "/Open Project Settings";
         public const string GUI_TEXT_MENU_BUILD = GUI_TEXT_MENU_BASE + "/Build Graph for Current Platform";
         public const string GUI_TEXT_MENU_GENERATE = GUI_TEXT_MENU_BASE + "/Create Node Script";
 		public const string GUI_TEXT_MENU_GENERATE_MODIFIER = GUI_TEXT_MENU_GENERATE + "/Modifier Script";
@@ -51,7 +51,23 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 	        private const string PREFKEY_AB_BUILD_GRAPH_GUID = "AssetBundles.GraphTool.GraphGuid";
 
 	        private const string PREFKEY_BATCHBUILD_LASTSELECTEDCOLLECTION = "AssetBundles.GraphTool.LastSelectedCollection";
-	        private const string PREFKEY_BATCHBUILD__USECOLLECTIONSTATE = "AssetBundles.GraphTool.UseCollection";
+	        private const string PREFKEY_BATCHBUILD_USECOLLECTIONSTATE = "AssetBundles.GraphTool.UseCollection";
+
+	        private const string PREFKEY_CONFIG_BASE_DIR = "AssetBundles.GraphTool.ConfigBaseDir";
+
+	        public static string ConfigBaseDir {
+		        get {
+			        var baseDir = EditorUserSettings.GetConfigValue (PREFKEY_CONFIG_BASE_DIR);
+			        if (string.IsNullOrEmpty (baseDir)) {
+				        return System.IO.Path.Combine(Path.DefaultBasePath, "AssetBundles");
+			        }
+			        return baseDir;
+		        }
+
+		        set {
+			        EditorUserSettings.SetConfigValue (PREFKEY_CONFIG_BASE_DIR, value);
+		        }
+	        }
 
 	        public static string AssetBundleBuildCacheDir {
                 get {
@@ -88,45 +104,22 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 
             public static bool BatchBuildUseCollectionState {
                 get {
-                    return EditorUserSettings.GetConfigValue (PREFKEY_BATCHBUILD__USECOLLECTIONSTATE) == "True";
+                    return EditorUserSettings.GetConfigValue (PREFKEY_BATCHBUILD_USECOLLECTIONSTATE) == "True";
                 }
                 set {
-                    EditorUserSettings.SetConfigValue (PREFKEY_BATCHBUILD__USECOLLECTIONSTATE, value.ToString());
+                    EditorUserSettings.SetConfigValue (PREFKEY_BATCHBUILD_USECOLLECTIONSTATE, value.ToString());
                 }
             }
         }
 
         public static class Path {
-	        private static string s_basePath;
+	        public static string DefaultBasePath => "Assets/AssetGraph";
 
-	        public static string BasePath {
-		        get {
-			        if (string.IsNullOrEmpty (s_basePath)) {
-				        var obj = CreateInstance<Settings> ();
-				        var s = MonoScript.FromScriptableObject (obj);
-				        var configGuiPath = AssetDatabase.GetAssetPath( s );
-				        DestroyImmediate (obj);
+	        public static string BasePath => UserSettings.ConfigBaseDir;
 
-				        var fileInfo = new System.IO.FileInfo(configGuiPath);
-				        var baseDir = fileInfo.Directory.Parent.Parent.Parent.Parent;
-
-				        UnityEngine.Assertions.Assert.AreEqual (ToolDirName, baseDir.Name);
-
-				        string baseDirPath = baseDir.ToString ().Replace( '\\', '/');
-
-				        int index = baseDirPath.LastIndexOf (ASSETS_PATH);
-				        UnityEngine.Assertions.Assert.IsTrue ( index >= 0 );
-
-				        baseDirPath = baseDirPath.Substring (index);
-
-				        s_basePath = baseDirPath;
-			        }
-			        return s_basePath;
-		        }
-	        }
-
-	        public static void ResetBasePath() {
-		        s_basePath = string.Empty;
+	        public static void ResetBasePath(string newPath)
+	        {
+		        UserSettings.ConfigBaseDir = newPath;
 	        }
 
 	        /// <summary>
@@ -134,9 +127,9 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 	        /// Customize this to match your project's setup if you need to change.
 	        /// </summary>
 	        /// <value>The name of the base directory.</value>
-	        public static string ToolDirName            { get { return "AssetGraph"; } }
+	        public static string ToolDirName => "AssetGraph";
 
-            public const string ASSETS_PATH = "Assets/";
+	        public const string ASSETS_PATH = "Assets/";
 
 	        public static string CachePath                  { get { return System.IO.Path.Combine(BasePath, "Cache");; } }
 	        public static string SettingFilePath            { get { return System.IO.Path.Combine(BasePath, "SettingFiles"); } }

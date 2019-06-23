@@ -99,11 +99,12 @@ namespace Unity.AssetGraph {
         private void HandleAllAssets(string[] importedAssets, 
             string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) 
         {
-            foreach (string movedFrom in movedFromAssetPaths) {
-                if (movedFrom == DataModel.Version2.Settings.Path.BasePath) {
-                    DataModel.Version2.Settings.Path.ResetBasePath ();
+            for (int i=0; i<movedFromAssetPaths.Length; i++)
+            {
+                if (movedFromAssetPaths[i] == DataModel.Version2.Settings.Path.BasePath) {
+                    DataModel.Version2.Settings.Path.ResetBasePath (movedAssets[i]);
                 }
-            }
+            }            
 
             foreach (string str in importedAssets) {
                 AssetReferenceDatabase.GetReference (str).InvalidateTypeCache();

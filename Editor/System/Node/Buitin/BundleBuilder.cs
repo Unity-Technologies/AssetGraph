@@ -213,12 +213,7 @@ namespace Unity.AssetGraph {
                         {
                             using (new EditorGUILayout.HorizontalScope ()) {
                                 GUILayout.FlexibleSpace ();
-                                #if UNITY_EDITOR_OSX
-                                string buttonName = "Reveal in Finder";
-                                #else
-                                string buttonName = "Show in Explorer";
-                                #endif
-                                if (GUILayout.Button (buttonName)) {
+                                if (GUILayout.Button (GUIHelper.RevealInFinderLabel)) {
                                     EditorUtility.RevealInFinder (outputDir);
                                 }
                             }

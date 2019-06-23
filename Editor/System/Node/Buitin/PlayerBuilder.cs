@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEditor;
-
-#if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
-#endif
 
 using System;
 using System.IO;
@@ -27,45 +24,15 @@ namespace Unity.AssetGraph
 
         [SerializeField] private Vector2 m_scroll;
 
-        public override string ActiveStyle
-        {
-            get
-            {
-                return "node 5 on";
-            }
-        }
+        public override string ActiveStyle => "node 5 on";
 
-        public override string InactiveStyle
-        {
-            get
-            {
-                return "node 5";
-            }
-        }
+        public override string InactiveStyle => "node 5";
 
-        public override string Category
-        {
-            get
-            {
-                return "Build";
-            }
-        }
+        public override string Category => "Build";
 
-        public override Model.NodeOutputSemantics NodeInputType
-        {
-            get
-            {
-                return Model.NodeOutputSemantics.AssetBundles;
-            }
-        }
+        public override Model.NodeOutputSemantics NodeInputType => Model.NodeOutputSemantics.AssetBundles;
 
-        public override Model.NodeOutputSemantics NodeOutputType
-        {
-            get
-            {
-                return Model.NodeOutputSemantics.None;
-            }
-        }
+        public override Model.NodeOutputSemantics NodeOutputType => Model.NodeOutputSemantics.None;
 
         public override void Initialize(Model.NodeData data)
         {
@@ -298,37 +265,32 @@ namespace Unity.AssetGraph
                 }
             }
 
-            BuildPlayerOptions opt;
-            opt.options = (BuildOptions)m_buildOptions[target];
-            opt.locationPathName = m_buildLocations[target] + "/" + m_playerName[target];
-            opt.assetBundleManifestPath = manifestPath;
-            opt.scenes = sceneGUIDs.Select(guid => AssetDatabase.GUIDToAssetPath(guid)).Where(path => !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray();
-            opt.target = target;
-            opt.targetGroup = BuildTargetUtility.TargetToGroup(target);
-#if UNITY_2018_1_OR_NEWER
+            BuildPlayerOptions opt = new BuildPlayerOptions
+            {
+               options = (BuildOptions)m_buildOptions[target],
+                locationPathName = m_buildLocations[target] + "/" + m_playerName[target],
+                assetBundleManifestPath = manifestPath,
+                scenes = sceneGUIDs.Select(AssetDatabase.GUIDToAssetPath).Where(path => !string.IsNullOrEmpty(path) && !path.Contains("__DELETED_GUID_Trash")).ToArray(),
+                target = target,
+                targetGroup = BuildTargetUtility.TargetToGroup(target)
+            };
+
             var report = BuildPipeline.BuildPlayer(opt);
             var summary = report.summary;
 
             switch(summary.result) {
             case BuildResult.Failed:
                 throw new NodeException(
-                    string.Format("Player build failed. ({0} errors)", summary.totalErrors), 
+                    $"Player build failed. ({summary.totalErrors} errors)", 
                     summary.ToString(), node);
             case BuildResult.Cancelled:
                 LogUtility.Logger.Log(LogUtility.kTag, "Player build cancelled.");
                 break;
             case BuildResult.Unknown:
                 throw new NodeException(
-                    string.Format("Player build ended with Unknown state."), 
+                    "Player build ended with Unknown state.", 
                     summary.ToString(), node);
             }
-#else
-            var errorMsg = BuildPipeline.BuildPlayer(opt);
-            if (!string.IsNullOrEmpty(errorMsg))
-            {
-            throw new NodeException("Player build failed:" + errorMsg, "See description for detail.", node);
-            }
-#endif
         }
     }
 }
