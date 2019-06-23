@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 
@@ -112,7 +114,11 @@ namespace Unity.AssetGraph.DataModel.Version2 {
             }
         }
 
-        public static class Path {
+        public static class Path
+        {
+
+	        public static string PackagePath => "Packages/com.unity.assetgraph";
+	        
 	        public static string DefaultBasePath => "Assets/AssetGraph";
 
 	        public static string BasePath => UserSettings.ConfigBaseDir;
@@ -135,7 +141,6 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 	        public static string SettingFilePath            { get { return System.IO.Path.Combine(BasePath, "SettingFiles"); } }
 	        public static string TemporalSettingFilePath    { get { return System.IO.Path.Combine(CachePath, "TemporalSettingFiles"); } }
 	        
-            public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(BasePath, "Editor/ScriptTemplate"); } }
             public static string UserSpacePath          { get { return System.IO.Path.Combine(BasePath, "Generated/Editor"); } }
             public static string CUISpacePath           { get { return System.IO.Path.Combine(BasePath, "Generated/CUI"); } }
             public static string SavedSettingsPath      { get { return System.IO.Path.Combine(BasePath, "SavedSettings"); } }
@@ -144,10 +149,10 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 
             public static string DatabasePath           { get { return System.IO.Path.Combine(TemporalSettingFilePath, "AssetReferenceDB.asset"); } }
             public static string EventRecordPath        { get { return System.IO.Path.Combine(TemporalSettingFilePath, "AssetProcessEventRecord.asset"); } }
-
             public static string BatchBuildConfigPath   { get { return System.IO.Path.Combine(SavedSettingsPath, "BatchBuildConfig/BatchBuildConfig.asset"); } }
 
-            public static string GUIResourceBasePath { get { return System.IO.Path.Combine(BasePath, "Editor/GUI/GraphicResources"); } }
+            public static string ScriptTemplatePath     { get { return System.IO.Path.Combine(PackagePath, "Editor/ScriptTemplate"); } }            
+            public static string GUIResourceBasePath { get { return System.IO.Path.Combine(PackagePath, "Editor/GUI/GraphicResources"); } }
         }
 
 		public struct BuildAssetBundleOption {
