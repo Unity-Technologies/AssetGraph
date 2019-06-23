@@ -16,14 +16,12 @@ namespace Unity.AssetGraph
     public class AssetBundleBuildMap : ScriptableObject
     {
         [SerializeField] private List<AssetBundleEntry> m_assetBundles;
+        
 #if UNITY_EDITOR
         [SerializeField] private int m_version;
         private const int VERSION = 1;
-#endif
-
         private static AssetBundleBuildMap s_map;
 
-#if UNITY_EDITOR
         public static class UserSettings
         {
             private const string PREFKEY_AB_BUILDMAP_PATH = "Unity.AssetGraph.BuildMapPath";
@@ -44,7 +42,6 @@ namespace Unity.AssetGraph
                 set { EditorUserSettings.SetConfigValue(PREFKEY_AB_BUILDMAP_PATH, value); }
             }
         }
-#endif
 
         public static AssetBundleBuildMap GetBuildMap()
         {
@@ -55,7 +52,6 @@ namespace Unity.AssetGraph
                     // Create vanilla db
                     s_map = ScriptableObject.CreateInstance<AssetBundleBuildMap>();
                     s_map.m_assetBundles = new List<AssetBundleEntry>();
-#if UNITY_EDITOR
                     s_map.m_version = VERSION;
 
                     var filePath = UserSettings.AssetBundleBuildMapPath;
@@ -67,7 +63,6 @@ namespace Unity.AssetGraph
                     }
 
                     AssetDatabase.CreateAsset(s_map, filePath);
-#endif
                 }
             }
 
@@ -78,7 +73,6 @@ namespace Unity.AssetGraph
         {
             bool loaded = false;
 
-#if UNITY_EDITOR
             try
             {
                 var filePath = UserSettings.AssetBundleBuildMapPath;
@@ -98,16 +92,12 @@ namespace Unity.AssetGraph
             {
                 Debug.LogException(e);
             }
-#endif
-
             return loaded;
         }
 
         public static void SetMapDirty()
         {
-#if UNITY_EDITOR
             EditorUtility.SetDirty(s_map);
-#endif
         }
 
         internal static string MakeFullName(string assetBundleName, string variantName)
@@ -138,6 +128,18 @@ namespace Unity.AssetGraph
 
             return new string[] {assetBundleFullName, ""};
         }
+        
+        public void Clear()
+        {
+            m_assetBundles.Clear();
+            SetMapDirty();
+        }
+
+        public void ClearFromId(string id)
+        {
+            m_assetBundles.RemoveAll(e => e.m_registererId == id);
+        }  
+#endif
 
         [Serializable]
         public class AssetBundleEntry
@@ -231,16 +233,6 @@ namespace Unity.AssetGraph
             return entry;
         }
 
-        public void Clear()
-        {
-            m_assetBundles.Clear();
-            SetMapDirty();
-        }
-
-        public void ClearFromId(string id)
-        {
-            m_assetBundles.RemoveAll(e => e.m_registererId == id);
-        }
 
         public AssetBundleEntry GetAssetBundleWithNameAndVariant(string registererId, string assetBundleName,
             string variantName)
