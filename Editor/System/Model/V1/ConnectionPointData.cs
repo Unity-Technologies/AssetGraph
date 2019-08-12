@@ -39,6 +39,7 @@ namespace AssetBundleGraph {
 			this.label = label;
 			this.parentId = parent.Id;
 			this.isInput = isInput;
+			this.buttonRect = new Rect();
 					//			this.orderPriority = orderPriority;
 //			this.showLabel = showLabel;
 		}
@@ -48,6 +49,7 @@ namespace AssetBundleGraph {
 			this.label = label;
 			this.parentId = parent.Id;
 			this.isInput = isInput;
+			this.buttonRect = new Rect();
 //			this.orderPriority = pointGui.orderPriority;
 //			this.showLabel = pointGui.showLabel;
 		}
@@ -58,7 +60,7 @@ namespace AssetBundleGraph {
 			this.label = dic[LABEL] as string;
 			this.parentId = parent.Id;
 			this.isInput = isInput;
-
+			this.buttonRect = new Rect();
 			//			this.orderPriority = pointGui.orderPriority;
 			//			this.showLabel = pointGui.showLabel;
 		}

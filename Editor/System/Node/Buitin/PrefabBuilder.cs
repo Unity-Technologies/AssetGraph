@@ -7,7 +7,7 @@ using System.Linq;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
-
+using UnityEngine.Assertions;
 using V1=AssetBundleGraph;
 using Model=Unity.AssetGraph.DataModel.Version2;
 
@@ -22,17 +22,12 @@ namespace Unity.AssetGraph {
         }
 
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
-		[SerializeField] private UnityEditor.ReplacePrefabOptions m_replacePrefabOptions = UnityEditor.ReplacePrefabOptions.Default;
         [SerializeField] private SerializableMultiTargetString m_outputDir;
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
 
+        private PrefabCreateDescription m_createDescription;
+        
         public static readonly string kCacheDirName = "Prefabs";
-
-		public UnityEditor.ReplacePrefabOptions Options {
-			get {
-				return m_replacePrefabOptions;
-			}
-		}
 
 		public SerializableMultiTargetInstance Builder {
 			get {
@@ -69,7 +64,6 @@ namespace Unity.AssetGraph {
 
 		public void Import(V1.NodeData v1, Model.NodeData v2) {
 			m_instance = new SerializableMultiTargetInstance(v1.ScriptClassName, v1.InstanceData);
-			m_replacePrefabOptions = v1.ReplacePrefabOptions;
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
 		}
@@ -77,7 +71,6 @@ namespace Unity.AssetGraph {
 		public override Node Clone(Model.NodeData newData) {
 			var newNode = new PrefabBuilder();
 			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
-			newNode.m_replacePrefabOptions = m_replacePrefabOptions;
             newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
             newNode.m_outputOption = new SerializableMultiTargetInt(m_outputOption);
 
@@ -129,14 +122,6 @@ namespace Unity.AssetGraph {
 								AssetDatabase.OpenAsset(s, 0);
 							}
 						}
-					}
-					ReplacePrefabOptions opt = (ReplacePrefabOptions)EditorGUILayout.EnumPopup("Prefab Replace Option", m_replacePrefabOptions, GUILayout.MinWidth(150f));
-					if(m_replacePrefabOptions != opt) {
-						using(new RecordUndoScope("Change Prefab Replace Option", node, true)) {
-							m_replacePrefabOptions = opt;
-							onValueChanged();
-						}
-                        opt = m_replacePrefabOptions;
 					}
 				} else {
 					if(!string.IsNullOrEmpty(m_instance.ClassName)) {
@@ -345,23 +330,27 @@ namespace Unity.AssetGraph {
                         string.Format("Limit number of assets in a group to {4}", threshold), node);
 				}
 
-                GameObject previousPrefab = null; //TODO
-
 				List<UnityEngine.Object> allAssets = LoadAllAssets(assets);
-				string prefabFileName;
+				bool canCreatePrefab;
+
+				if (m_createDescription == null)
+				{
+					m_createDescription = new PrefabCreateDescription();
+				}
 				
 				try
 				{
-					prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
+					m_createDescription.Reset();
+					canCreatePrefab = builder.CanCreatePrefab(key, allAssets, ref m_createDescription);
 				}
 				catch (Exception e)
 				{
 					throw new NodeException(e.Message, "See reason for detail.", node);
 				}
 				
-				if(output != null && prefabFileName != null) {
+				if(output != null && canCreatePrefab) {
 					output[key] = new List<AssetReference> () {
-						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab"))
+						AssetReferenceDatabase.GetPrefabReference(FileUtility.PathCombine(prefabOutputDir, m_createDescription.prefabName + ".prefab"))
 					};
 				}
 				UnloadAllAssets(assets);
@@ -424,19 +413,19 @@ namespace Unity.AssetGraph {
 				var assets = aggregatedGroups[key];
 
 				var allAssets = LoadAllAssets(assets);
-                GameObject previousPrefab = null; //TODO
-				string prefabFileName;
-				
+
 				try
 				{
-					prefabFileName = builder.CanCreatePrefab(key, allAssets, previousPrefab);
+					m_createDescription.Reset();
+					var canCreatePrefab = builder.CanCreatePrefab(key, allAssets, ref m_createDescription);					
+					Assert.IsTrue(canCreatePrefab, "CanCreatePrefab() should not fail at Build phase.");
 				}
 				catch (Exception e)
 				{
 					throw new NodeException(e.Message, "See reason for detail.", node);
 				}
 
-				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, prefabFileName + ".prefab");
+				var prefabSavePath = FileUtility.PathCombine(prefabOutputDir, m_createDescription.prefabName + ".prefab");
 
 				if (!Directory.Exists(Path.GetDirectoryName(prefabSavePath))) {
 					Directory.CreateDirectory(Path.GetDirectoryName(prefabSavePath));
@@ -445,10 +434,16 @@ namespace Unity.AssetGraph {
                 if(!File.Exists(prefabSavePath) || PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets))
                 {
 	                GameObject obj;
+	                GameObject previous = null;
 	                
 	                try
 	                {
-		                obj = builder.CreatePrefab(key, allAssets, previousPrefab);
+		                if (File.Exists(prefabSavePath))
+		                {
+			                previous = PrefabUtility.LoadPrefabContents(prefabSavePath);
+		                }
+		                
+		                obj = builder.CreatePrefab(key, allAssets, previous);
 	                }
 	                catch (Exception e)
 	                {
@@ -460,13 +455,22 @@ namespace Unity.AssetGraph {
 							node.Name, builder.GetType().FullName, key));
 					}
 
-					LogUtility.Logger.LogFormat(LogType.Log, "{0} is (re)creating Prefab:{1} with {2}({3})", node.Name, prefabFileName,
+					LogUtility.Logger.LogFormat(LogType.Log, "{0} is (re)creating Prefab:{1} with {2}({3})", node.Name, m_createDescription.prefabName,
 						PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName),
 						PrefabBuilderUtility.GetPrefabBuilderVersion(m_instance.ClassName));
 
-					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", prefabFileName), 0.5f);
+					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", m_createDescription.prefabName), 0.5f);
 
-                    PrefabUtility.CreatePrefab(prefabSavePath, obj, m_replacePrefabOptions);
+					if (obj == previous && previous != null)
+					{
+						PrefabUtility.SavePrefabAsset(obj);
+					}
+					else
+					{
+						PrefabUtility.SaveAsPrefabAsset(obj, prefabSavePath);						
+					}
+                    
+                    
                     PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets);
 					GameObject.DestroyImmediate(obj);
                     anyPrefabCreated = true;
@@ -536,15 +540,14 @@ namespace Unity.AssetGraph {
 								}
 							}
 							if(isAllGoodAssets) {
-                                GameObject previousPrefab = null; //TODO
-
 								// do not call LoadAllAssets() unless all assets have importFrom
 								var al = ag.assetGroups[key];
 								var allAssets = LoadAllAssets(al);			
 								
 								try
 								{
-									if(string.IsNullOrEmpty(builder.CanCreatePrefab(key, allAssets, previousPrefab))) {
+									m_createDescription.Reset();
+									if(!builder.CanCreatePrefab(key, allAssets, ref m_createDescription)) {
 										canNotCreatePrefab(key);
 									}
 								}

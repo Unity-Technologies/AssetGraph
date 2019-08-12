@@ -26,7 +26,7 @@ namespace Unity.AssetGraph {
         private SearchField m_search;
         private string m_searchKeywords;
 
-        [MenuItem(Model.Settings.GUI_TEXT_MENU_ASSETLOGWINDOW_OPEN, false, 2)]
+        [MenuItem(Model.Settings.GUI_TEXT_MENU_ASSETLOGWINDOW_OPEN, priority = 14000 + 2)]
 		public static void Open () {
             GetWindow<AssetProcessEventLogWindow>();
 		}

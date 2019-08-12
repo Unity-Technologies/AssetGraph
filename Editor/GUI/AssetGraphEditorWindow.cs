@@ -360,55 +360,55 @@ namespace Unity.AssetGraph
         /*
 			menu items
 		*/
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_FILTER)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_FILTER, priority = 14500)]
         public static void GenerateCustomFilter ()
         {
             GenerateScript (ScriptType.SCRIPT_FILTER);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_MODIFIER, priority = 14500)]
         public static void GenerateModifier ()
         {
             GenerateScript (ScriptType.SCRIPT_MODIFIER);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER, priority = 14500)]
         public static void GeneratePrefabBuilder ()
         {
             GenerateScript (ScriptType.SCRIPT_PREFABBUILDER);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_POSTPROCESS)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_POSTPROCESS, priority = 14500)]
         public static void GeneratePostprocess ()
         {
             GenerateScript (ScriptType.SCRIPT_POSTPROCESS);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_NODE)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_NODE, priority = 14500)]
         public static void GenerateCustomNode ()
         {
             GenerateScript (ScriptType.SCRIPT_NODE);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_ASSETGENERATOR)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_ASSETGENERATOR, priority = 14500)]
         public static void GenerateAssetGenerator ()
         {
             GenerateScript (ScriptType.SCRIPT_ASSETGENERATOR);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_IMPORTSETTINGSCONFIGURATOR)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_GENERATE_IMPORTSETTINGSCONFIGURATOR, priority = 14500)]
         public static void GenerateImportSettingsConfigurator ()
         {
             GenerateScript (ScriptType.SCRIPT_IMPORTSETTINGSCONFIGURATOR);
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_OPEN, false, 1)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_OPEN, priority = 14000)]
         public static void Open ()
         {
             GetWindow<AssetGraphEditorWindow> ();
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_DELETE_CACHE)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_DELETE_CACHE, priority = 14500)]
         public static void DeleteCache ()
         {
             FileUtility.RemakeDirectory (Model.Settings.Path.CachePath);
@@ -416,7 +416,7 @@ namespace Unity.AssetGraph
             AssetDatabase.Refresh ();
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS, priority = 14500)]
         public static void CleanupSavedSettings ()
         {
 
@@ -450,7 +450,7 @@ namespace Unity.AssetGraph
             AssetDatabase.Refresh ();
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_BUILD, true, 1 + 101)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_BUILD, true, priority = 14000 + 101)]
         public static bool BuildFromMenuValidator ()
         {
             // Calling GetWindow<>() will force open window
@@ -463,7 +463,7 @@ namespace Unity.AssetGraph
             return !w.IsAnyIssueFound;
         }
 
-        [MenuItem (Model.Settings.GUI_TEXT_MENU_BUILD, false, 1 + 101)]
+        [MenuItem (Model.Settings.GUI_TEXT_MENU_BUILD, priority = 14000 + 101)]
         public static void BuildFromMenu ()
         {
             var window = GetWindow<AssetGraphEditorWindow> ();

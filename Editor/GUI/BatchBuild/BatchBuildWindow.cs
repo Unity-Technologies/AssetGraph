@@ -26,7 +26,7 @@ namespace Unity.AssetGraph {
 
 		private static BatchBuildWindow s_window;
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHWINDOW_OPEN, false, 2)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_BATCHWINDOW_OPEN, priority = 14000 + 2)]
 		public static void Open () {
 			GetWindow<BatchBuildWindow>();
 		}

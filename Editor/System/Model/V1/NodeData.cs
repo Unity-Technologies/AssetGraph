@@ -42,6 +42,7 @@ namespace AssetBundleGraph {
 		public FilterEntry(string keyword, string keytype, ConnectionPointData point) {
 			m_filterKeyword = keyword;
 			m_filterKeytype = keytype;
+			m_point = null;
 			m_pointId = point.Id;
 		}
 
@@ -84,6 +85,7 @@ namespace AssetBundleGraph {
 
 		public Variant(string name, ConnectionPointData point) {
 			m_name = name;
+			m_point = null;
 			m_pointId = point.Id;
 		}
 
@@ -172,7 +174,7 @@ namespace AssetBundleGraph {
 		[SerializeField] private bool m_bundleConfigUseGroupAsVariants;
 		[SerializeField] private SerializableMultiTargetInt m_bundleBuilderEnabledBundleOptions;
 		[SerializeField] private SerializableMultiTargetInt m_exporterExportOption;
-		[SerializeField] private int m_prefabBuilderReplacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
+		[SerializeField] private int m_prefabBuilderReplacePrefabOptions;
 
 		private bool m_nodeNeedsRevisit;
 
@@ -334,18 +336,18 @@ namespace AssetBundleGraph {
 			}
 		}
 
-		public UnityEditor.ReplacePrefabOptions ReplacePrefabOptions {
+		public int ReplacePrefabOptions {
 			get {
 				ValidateAccess(
 					NodeKind.PREFABBUILDER_GUI 
 				);
-				return (UnityEditor.ReplacePrefabOptions)m_prefabBuilderReplacePrefabOptions;
+				return m_prefabBuilderReplacePrefabOptions;
 			}
 			set {
 				ValidateAccess(
 					NodeKind.PREFABBUILDER_GUI 
 				);
-				m_prefabBuilderReplacePrefabOptions = (int)value;
+				m_prefabBuilderReplacePrefabOptions = value;
 			}
 		}
 
@@ -526,7 +528,7 @@ namespace AssetBundleGraph {
 
 			switch(m_kind) {
 			case NodeKind.PREFABBUILDER_GUI:
-				m_prefabBuilderReplacePrefabOptions = (int)UnityEditor.ReplacePrefabOptions.Default;
+				m_prefabBuilderReplacePrefabOptions = 0;
 				m_scriptInstanceData = new SerializableMultiTargetString();
 				break;
 

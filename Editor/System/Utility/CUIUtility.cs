@@ -19,7 +19,7 @@ namespace Unity.AssetGraph {
 		private static readonly string kCommandName = 
 			"buildassetbundle.{0}";
 
-		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_CUITOOL)]
+		[MenuItem(Model.Settings.GUI_TEXT_MENU_GENERATE_CUITOOL, priority = 14000 + 3)]
 		private static void CreateCUITool() {
 
 			var appPath = EditorApplication.applicationPath.Replace(Model.Settings.UNITY_FOLDER_SEPARATOR, Path.DirectorySeparatorChar);

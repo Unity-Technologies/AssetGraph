@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Unity.AssetGraph;
+using Object = UnityEngine.Object;
 
 [CustomPrefabBuilder("[Experimental]Replace GameObject By Name", "v1.0", 1)]
 public class ReplaceGameObjectByName : IPrefabBuilder {
@@ -43,22 +44,22 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.
 		 */
-    public string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, GameObject previous) {
+    public bool CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, ref PrefabCreateDescription description) {
 
         var go = objects.Find(o => o.GetType() == typeof(UnityEngine.GameObject) &&
             ((GameObject)o).transform.parent == null );
 
 		if(go != null) {
-            return GetPrefabName (go.name, groupKey);
+            description.prefabName = GetPrefabName (go.name, groupKey);
 		}
 
-		return null;
+		return go != null;
 	}
 
 	/**
 	 * Create Prefab.
 	 */ 
-    public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects, GameObject previous) {
+    public GameObject CreatePrefab(string groupKey, List<Object> objects, GameObject previous) {
 
         GameObject src = (GameObject)objects.Find(o => o.GetType() == typeof(UnityEngine.GameObject) &&
             ((GameObject)o).transform.parent == null );

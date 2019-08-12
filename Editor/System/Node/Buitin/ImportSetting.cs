@@ -278,7 +278,7 @@ namespace Unity.AssetGraph {
                     var newObject = EditorGUILayout.ObjectField ("Asset", CustomSettingAsset, assetType, false);
                     if (importerType == typeof(ModelImporter) && newObject != null) {
                         // disallow selecting non-model prefab
-                        if (PrefabUtility.GetPrefabType (newObject) != PrefabType.ModelPrefab) {
+                        if (PrefabUtility.GetPrefabAssetType(newObject) != PrefabAssetType.Model) {
                             newObject = CustomSettingAsset;
                         }
                     }

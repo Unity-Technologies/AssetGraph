@@ -19,21 +19,21 @@ public class MyPrefabBuilder : IPrefabBuilder {
 		 * Test if prefab can be created with incoming assets.
 		 * @result Name of prefab file if prefab can be created. null if not.
 		 */
-	public string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, UnityEngine.GameObject previous) {
+	public bool CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, ref PrefabCreateDescription description) {
 
 		var tex = objects.Find(o => o.GetType() == typeof(UnityEngine.Texture2D));
 
 		if(tex != null) {
-			return string.Format("MyPrefab{0}", groupKey);
+			description.prefabName = string.Format("MyPrefab{0}", groupKey);
 		}
 
-		return null;
+		return tex != null;
 	}
 
 	/**
 	 * Create Prefab.
 	 */ 
-	public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects, UnityEngine.GameObject previous) {
+	public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
 
 		GameObject go = new GameObject(string.Format("MyPrefab{0}", groupKey));
 

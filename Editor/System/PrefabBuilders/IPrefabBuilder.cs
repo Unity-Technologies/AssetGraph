@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using Model=Unity.AssetGraph.DataModel.Version2;
+using Object = UnityEngine.Object;
 
 namespace Unity.AssetGraph {
 
@@ -32,8 +33,9 @@ namespace Unity.AssetGraph {
         /// </summary>
         /// <returns><c>true</c> if this instance can create prefab the specified groupKey objects; otherwise, <c>false</c>.</returns>
         /// <param name="groupKey">Group key.</param>
-        /// <param name="objects">Objects.</param>
-        string CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, UnityEngine.GameObject previous);
+        /// <param name="objects">list of Objects passed from node to create a prefab.</param>
+        /// <param name="description">Prefab descriptions to create with this IPrefabBuilder. if the method is returning true, valid descriptions should be set.</param>
+        bool CanCreatePrefab (string groupKey, List<Object> objects, ref PrefabCreateDescription description);
 
         /// <summary>
         /// Creates the prefab.
@@ -41,7 +43,8 @@ namespace Unity.AssetGraph {
         /// <returns>The prefab.</returns>
         /// <param name="groupKey">Group key.</param>
         /// <param name="objects">Objects.</param>
-        UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects, UnityEngine.GameObject previous);
+        /// <param name="previous">Previous prefab.</param>
+        GameObject CreatePrefab(string groupKey, List<Object> objects, GameObject previous);
 
         /// <summary>
         /// Draw Inspector GUI for this PrefabBuilder.
