@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Animations;
 
@@ -46,7 +46,6 @@ namespace Unity.AssetGraph {
 
             {"Text or Binary", typeof(TextAsset)},
             {"Scene", typeof(UnityEditor.SceneAsset)},
-            {"Prefab", typeof(GameObject)},
             {"Animation", typeof(AnimationClip)},
             {"Animator Controller", typeof(AnimatorController)},
             {"Animator Override Controller", typeof(AnimatorOverrideController)},
@@ -57,24 +56,18 @@ namespace Unity.AssetGraph {
             {"Shader", typeof(Shader)},
             {"Material", typeof(Material)},
             {"Render Texture", typeof(RenderTexture)},
-            #if UNITY_2017_1_OR_NEWER
             {"Custom Render Texture", typeof(CustomRenderTexture)},
-            #endif
             {"Lightmap Parameter", typeof(LightmapParameters)},
             {"Lens Flare", typeof(Flare)},
-//            {"Audio Mixer", typeof(AudioMixer)}, //AudioMixerController
-            #if UNITY_2017_1_OR_NEWER
             {"Timeline", typeof(TimelineAsset)},
-            #endif
-            #if UNITY_2017_1_OR_NEWER
             {"Sprite Atlas", typeof(UnityEngine.U2D.SpriteAtlas)},
-            #endif
-            #if UNITY_2017_2_OR_NEWER
             {"Tilemap", typeof(UnityEngine.Tilemaps.Tile)},
-            #endif
             {"GUI Skin", typeof(GUISkin)},
             {"Legacy/Cubemap", typeof(Cubemap)},
         };
+
+        private const string kPREFAB_KEY_NAME = "Prefab";
+        private const string kPREFAB_IMPORTER_CLASS = "UnityEditor.PrefabImporter";
 
         private static List<string> s_filterKeyTypeList;
 
@@ -85,6 +78,7 @@ namespace Unity.AssetGraph {
                 var keyList = new List<string> ();
 
                 keyList.Add (Model.Settings.DEFAULT_FILTER_KEYTYPE);
+                keyList.Add(kPREFAB_KEY_NAME);
                 keyList.AddRange (typemap.Keys);
                 keyList.AddRange (s_defaultAssetFilterGUITypeMap.Keys);
 
@@ -96,6 +90,12 @@ namespace Unity.AssetGraph {
         public static Type FindFilterTypeFromGUIName(string guiName) {
             if (guiName == Model.Settings.DEFAULT_FILTER_KEYTYPE) {
                 return null; // or UnityEngine.Object ?
+            }
+
+            // since PrefabImporter is internal class and can't access
+            if (guiName == kPREFAB_KEY_NAME)
+            {
+                return Assembly.Load("UnityEditor").GetType(kPREFAB_IMPORTER_CLASS);
             }
 
             var typemap = ImporterConfiguratorUtility.GetImporterConfiguratorGuiNameTypeMap ();
@@ -113,6 +113,12 @@ namespace Unity.AssetGraph {
 
             UnityEngine.Assertions.Assert.IsNotNull (t);
 
+            // since PrefabImporter is internal class and can't access
+            if (t.FullName == kPREFAB_IMPORTER_CLASS)
+            {
+                return kPREFAB_KEY_NAME;
+            }
+            
             var typemap = ImporterConfiguratorUtility.GetImporterConfiguratorGuiNameTypeMap ();
 
             var elements = typemap.Where (v => v.Value == t);
