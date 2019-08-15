@@ -20,19 +20,19 @@ namespace Unity.AssetGraph {
 		public string prefabName;
 		
 		/// <summary>
-		/// Additional objects to take into account other than given objects from node, such as objects assigned via inspector.
+		/// Paths to additional assets to take into account other than given objects from node, such as objects assigned via inspector.
 		/// </summary>
-		public List<UnityEngine.Object> additionalObjects;
+		public List<string> additionalAssetPaths;
 
 		public PrefabCreateDescription()
 		{
-			additionalObjects = new List<UnityEngine.Object>(32);
+			additionalAssetPaths = new List<string>(32);
 		}
 
 		public void Reset()
 		{
 			prefabName = string.Empty;
-			additionalObjects.Clear();
+			additionalAssetPaths.Clear();
 		}
 	}
 }
