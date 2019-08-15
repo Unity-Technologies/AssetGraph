@@ -10,6 +10,7 @@ using System.Reflection;
 using UnityEngine.Assertions;
 using V1=AssetBundleGraph;
 using Model=Unity.AssetGraph.DataModel.Version2;
+using Object = UnityEngine.Object;
 
 namespace Unity.AssetGraph {
 
@@ -24,6 +25,7 @@ namespace Unity.AssetGraph {
 		[SerializeField] private SerializableMultiTargetInstance m_instance;
         [SerializeField] private SerializableMultiTargetString m_outputDir;
         [SerializeField] private SerializableMultiTargetInt m_outputOption;
+        [SerializeField] private bool m_loadPreviousPrefab;
 
         private PrefabCreateDescription m_createDescription;
         
@@ -57,6 +59,7 @@ namespace Unity.AssetGraph {
 			m_instance = new SerializableMultiTargetInstance();
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
+            m_loadPreviousPrefab = false;
 
 			data.AddDefaultInputPoint();
 			data.AddDefaultOutputPoint();
@@ -66,6 +69,7 @@ namespace Unity.AssetGraph {
 			m_instance = new SerializableMultiTargetInstance(v1.ScriptClassName, v1.InstanceData);
             m_outputDir = new SerializableMultiTargetString();
             m_outputOption = new SerializableMultiTargetInt((int)OutputOption.CreateInCacheDirectory);
+            m_loadPreviousPrefab = false;
 		}
 
 		public override Node Clone(Model.NodeData newData) {
@@ -73,6 +77,7 @@ namespace Unity.AssetGraph {
 			newNode.m_instance = new SerializableMultiTargetInstance(m_instance);
             newNode.m_outputDir = new SerializableMultiTargetString(m_outputDir);
             newNode.m_outputOption = new SerializableMultiTargetInt(m_outputOption);
+            newNode.m_loadPreviousPrefab = m_loadPreviousPrefab;
 
 			newData.AddDefaultInputPoint();
 			newData.AddDefaultOutputPoint();
@@ -155,7 +160,15 @@ namespace Unity.AssetGraph {
 						onValueChanged();
 					});
 
-					using (disabledScope) {
+					using (disabledScope)
+					{
+						var newLoadPrevPrefab = EditorGUILayout.ToggleLeft("Load previously created prefab", m_loadPreviousPrefab);
+						if (newLoadPrevPrefab != m_loadPreviousPrefab)
+						{
+							m_loadPreviousPrefab = newLoadPrevPrefab;
+							onValueChanged();
+						}
+						
                         OutputOption opt = (OutputOption)m_outputOption[editor.CurrentEditingGroup];
                         var newOption = (OutputOption)EditorGUILayout.EnumPopup("Output Option", opt);
                         if(newOption != opt) {
@@ -278,22 +291,13 @@ namespace Unity.AssetGraph {
 			PerformGraph.Output Output) 
 		{
 			ValidatePrefabBuilder(node, target, incoming,
-                () => {
-                    throw new NodeException ("Output directory not found.", "Create output directory or set a valid directory path.", node);
-                },
-				() => {
-                    throw new NodeException("PrefabBuilder is not configured.", "Configure PrefabBuilder from inspector.", node);
-				},
-				() => {
-                    throw new NodeException("Failed to create PrefabBuilder from settings.", "Fix settings from inspector.", node);
-				},
-				(string groupKey) => {
-					throw new NodeException(string.Format("Can not create prefab with incoming assets for group {0}.", groupKey), "Fix group input assets for selected PrefabBuilder.",node);
-				},
-				(AssetReference badAsset) => {
-					throw new NodeException(string.Format("Can not import incoming asset {0}.", badAsset.fileNameAndExtension), "", node);
-				}
-			);
+                () => throw new NodeException ("Output directory not found.", "Create output directory or set a valid directory path.", node),
+				() => throw new NodeException("PrefabBuilder is not configured.", "Configure PrefabBuilder from inspector.", node),
+				() => throw new NodeException("Failed to create PrefabBuilder from settings.", "Fix settings from inspector.", node),
+				(string groupKey) => throw new NodeException(
+					$"Can not create prefab with incoming assets for group {groupKey}.", "Fix group input assets for selected PrefabBuilder.",node),
+				(AssetReference badAsset) => throw new NodeException(
+					$"Can not import incoming asset {badAsset.fileNameAndExtension}.", "", node));
 
 			if(incoming == null) {
 				return;
@@ -388,7 +392,7 @@ namespace Unity.AssetGraph {
 			}
 
 			var builder = m_instance.Get<IPrefabBuilder>(target);
-			UnityEngine.Assertions.Assert.IsNotNull(builder);
+			Assert.IsNotNull(builder);
 
             var prefabOutputDir = PrepareOutputDirectory(target, node);
 			Dictionary<string, List<AssetReference>> output = null;
@@ -431,14 +435,14 @@ namespace Unity.AssetGraph {
 					Directory.CreateDirectory(Path.GetDirectoryName(prefabSavePath));
 				}
 
-                if(!File.Exists(prefabSavePath) || PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets))
+                if(!File.Exists(prefabSavePath) || PrefabBuildInfo.DoesPrefabNeedRebuilding(prefabOutputDir, this, node, target, key, assets, m_createDescription))
                 {
 	                GameObject obj;
 	                GameObject previous = null;
 	                
 	                try
 	                {
-		                if (File.Exists(prefabSavePath))
+		                if (m_loadPreviousPrefab && File.Exists(prefabSavePath))
 		                {
 			                previous = PrefabUtility.LoadPrefabContents(prefabSavePath);
 		                }
@@ -451,28 +455,35 @@ namespace Unity.AssetGraph {
 	                }
 	                
 					if(obj == null) {
-						throw new AssetGraphException(string.Format("{0} :PrefabBuilder {1} returned null in CreatePrefab() [groupKey:{2}]", 
-							node.Name, builder.GetType().FullName, key));
+						throw new AssetGraphException(
+							$"{node.Name} :PrefabBuilder {builder.GetType().FullName} returned null in CreatePrefab() [groupKey:{key}]");
 					}
 
 					LogUtility.Logger.LogFormat(LogType.Log, "{0} is (re)creating Prefab:{1} with {2}({3})", node.Name, m_createDescription.prefabName,
 						PrefabBuilderUtility.GetPrefabBuilderGUIName(m_instance.ClassName),
 						PrefabBuilderUtility.GetPrefabBuilderVersion(m_instance.ClassName));
 
-					if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", m_createDescription.prefabName), 0.5f);
+					progressFunc?.Invoke(node, $"Creating {m_createDescription.prefabName}", 0.5f);
 
-					if (obj == previous && previous != null)
+					var isPartOfAsset = PrefabUtility.IsPartOfPrefabAsset(obj);
+					
+					PrefabUtility.SaveAsPrefabAsset(obj, prefabSavePath);
+					
+					if (previous != obj && isPartOfAsset)
 					{
-						PrefabUtility.SavePrefabAsset(obj);
+						PrefabUtility.UnloadPrefabContents(obj);
 					}
 					else
 					{
-						PrefabUtility.SaveAsPrefabAsset(obj, prefabSavePath);						
+						Object.DestroyImmediate(obj);
 					}
+					
+					if (previous)
+					{
+						PrefabUtility.UnloadPrefabContents(previous);
+					}                    
                     
-                    
-                    PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets);
-					GameObject.DestroyImmediate(obj);
+                    PrefabBuildInfo.SavePrefabBuildInfo(prefabOutputDir, this, node, target, key, assets, m_createDescription);
                     anyPrefabCreated = true;
                     AssetProcessEventRecord.GetRecord ().LogModify (AssetDatabase.AssetPathToGUID(prefabSavePath));
 				}
@@ -516,6 +527,11 @@ namespace Unity.AssetGraph {
 
 			if(null == builder ) {
 				failedToCreateBuilder();
+			}
+
+			if (m_createDescription == null)
+			{
+				m_createDescription = new PrefabCreateDescription();
 			}
 			
 			try
