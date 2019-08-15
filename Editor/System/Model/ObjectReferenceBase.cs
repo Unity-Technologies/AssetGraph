@@ -39,6 +39,19 @@ namespace Unity.AssetGraph {
             }
         }
 
+        public string AssetPath
+        {
+            get
+            {
+                var path = string.Empty;
+                if (!string.IsNullOrEmpty (m_guid)) {
+                    path = AssetDatabase.GUIDToAssetPath (m_guid);
+                }
+
+                return path;
+            }
+        }
+
         public bool Empty {
             get {
                 return m_guid == null;
