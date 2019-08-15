@@ -3,8 +3,9 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -19,7 +20,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: RegressionTestNode, Unity.AssetGraph.Editor, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
-      m_instanceData: B64|eyJtX3Jlc3VsdCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoie1wiaW5jb21pbmdcIjpbe1wiY29ubmVjdGlvbklkXCI6XCJmNzFkMjc2NC1iOTg0LTQxZDMtYmRmOS0wNGU2YTI2MmFmYmVcIixcImdyb3Vwc1wiOlt7XCJuYW1lXCI6XCIwXCIsXCJlbnRpcmVzXCI6W3tcImltcG9ydEZyb21cIjpcIkFzc2V0cy9Mb2FkRnJvbURpcmVjdG9yeVRlc3RfQXNzZXRzVG9EZWxldGUvcHJlZmFiMDEucHJlZmFiXCIsXCJhc3NldFR5cGVcIjpcIlVuaXR5RW5naW5lLkdhbWVPYmplY3RcIixcImltcG9ydGVyVHlwZVwiOlwiXCJ9LHtcImltcG9ydEZyb21cIjpcIkFzc2V0cy9Mb2FkRnJvbURpcmVjdG9yeVRlc3RfQXNzZXRzVG9EZWxldGUvcHJlZmFiMDIucHJlZmFiXCIsXCJhc3NldFR5cGVcIjpcIlVuaXR5RW5naW5lLkdhbWVPYmplY3RcIixcImltcG9ydGVyVHlwZVwiOlwiXCJ9LHtcImltcG9ydEZyb21cIjpcIkFzc2V0cy9Mb2FkRnJvbURpcmVjdG9yeVRlc3RfQXNzZXRzVG9EZWxldGUvcHJlZmFiMDQucHJlZmFiXCIsXCJhc3NldFR5cGVcIjpcIlVuaXR5RW5naW5lLkdhbWVPYmplY3RcIixcImltcG9ydGVyVHlwZVwiOlwiXCJ9XX1dfV19In1dfX0=
+      m_instanceData: B64|eyJtX3Jlc3VsdCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoie1wiaW5jb21pbmdcIjpbe1wiY29ubmVjdGlvbklkXCI6XCJmNzFkMjc2NC1iOTg0LTQxZDMtYmRmOS0wNGU2YTI2MmFmYmVcIixcImdyb3Vwc1wiOlt7XCJuYW1lXCI6XCIwXCIsXCJlbnRpcmVzXCI6W3tcImltcG9ydEZyb21cIjpcIkFzc2V0cy9Mb2FkRnJvbURpcmVjdG9yeVRlc3RfQXNzZXRzVG9EZWxldGUvcHJlZmFiMDEucHJlZmFiXCIsXCJhc3NldFR5cGVcIjpcIlVuaXR5RW5naW5lLkdhbWVPYmplY3RcIixcImltcG9ydGVyVHlwZVwiOlwiVW5pdHlFZGl0b3IuUHJlZmFiSW1wb3J0ZXJcIn0se1wiaW1wb3J0RnJvbVwiOlwiQXNzZXRzL0xvYWRGcm9tRGlyZWN0b3J5VGVzdF9Bc3NldHNUb0RlbGV0ZS9wcmVmYWIwMi5wcmVmYWJcIixcImFzc2V0VHlwZVwiOlwiVW5pdHlFbmdpbmUuR2FtZU9iamVjdFwiLFwiaW1wb3J0ZXJUeXBlXCI6XCJVbml0eUVkaXRvci5QcmVmYWJJbXBvcnRlclwifSx7XCJpbXBvcnRGcm9tXCI6XCJBc3NldHMvTG9hZEZyb21EaXJlY3RvcnlUZXN0X0Fzc2V0c1RvRGVsZXRlL3ByZWZhYjA0LnByZWZhYlwiLFwiYXNzZXRUeXBlXCI6XCJVbml0eUVuZ2luZS5HYW1lT2JqZWN0XCIsXCJpbXBvcnRlclR5cGVcIjpcIlVuaXR5RWRpdG9yLlByZWZhYkltcG9ydGVyXCJ9XX1dfV19In1dfX0=
     m_inputPoints:
     - id: ce760b13-5460-4472-aba4-6ca8ebb58ae0
       label: '-'
@@ -49,7 +50,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: Unity.AssetGraph.Loader, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJMb2FkRnJvbURpcmVjdG9yeVRlc3RfQXNzZXRzVG9EZWxldGUifSx7InRhcmdldEdyb3VwIjoxLCJ2YWx1ZSI6IkxvYWRGcm9tRGlyZWN0b3J5VGVzdF9Bc3NldHNUb0RlbGV0ZSJ9XX0sIm1fbG9hZFBhdGhHdWlkIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJjZDFjY2RjNTYxNzYxNDAwYjg1ODgxYzdiYmI3NzZjYSJ9LHsidGFyZ2V0R3JvdXAiOjEsInZhbHVlIjoiY2QxY2NkYzU2MTc2MTQwMGI4NTg4MWM3YmJiNzc2Y2EifV19LCJtX2lnbm9yZVBhdHRlcm5zIjpbeyJtX2ZpbGVUeXBlTWFzayI6MSwibV9pZ25vcmVQYXR0ZXJuIjoicHJlZmFiMDMifSx7Im1fZmlsZVR5cGVNYXNrIjoyLCJtX2lnbm9yZVBhdHRlcm4iOiJJZ25vcmUifV0sIm1fcmVzcG9uZFRvQXNzZXRDaGFuZ2UiOmZhbHNlfQ==
+      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJMb2FkRnJvbURpcmVjdG9yeVRlc3RfQXNzZXRzVG9EZWxldGUifSx7InRhcmdldEdyb3VwIjoxLCJ2YWx1ZSI6IkxvYWRGcm9tRGlyZWN0b3J5VGVzdF9Bc3NldHNUb0RlbGV0ZSJ9XX0sIm1fbG9hZFBhdGhHdWlkIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJjZDFjY2RjNTYxNzYxNDAwYjg1ODgxYzdiYmI3NzZjYSJ9LHsidGFyZ2V0R3JvdXAiOjEsInZhbHVlIjoiMjcwNjk2MzA2MjUzNTRkMWI5NjBiZWVjMTViMWEyZGYifV19LCJtX2lnbm9yZVBhdHRlcm5zIjpbeyJtX2ZpbGVUeXBlTWFzayI6MSwibV9pZ25vcmVQYXR0ZXJuIjoicHJlZmFiMDMifSx7Im1fZmlsZVR5cGVNYXNrIjoyLCJtX2lnbm9yZVBhdHRlcm4iOiJJZ25vcmUifV0sIm1fcmVzcG9uZFRvQXNzZXRDaGFuZ2UiOmZhbHNlfQ==
     m_inputPoints: []
     m_outputPoints:
     - id: 451f3d84-89e5-41e7-9bc6-26a88040a4f7
@@ -58,7 +59,7 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 153
+        x: 152.5
         y: 32.5
         width: 10
         height: 23

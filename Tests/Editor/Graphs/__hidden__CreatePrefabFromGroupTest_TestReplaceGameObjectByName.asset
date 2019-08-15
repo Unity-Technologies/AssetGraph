@@ -3,8 +3,9 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
@@ -19,7 +20,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: Unity.AssetGraph.PrefabBuilder, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_instanceData: B64|eyJtX2luc3RhbmNlIjp7Im1fY2xhc3NOYW1lIjoiUmVwbGFjZUdhbWVPYmplY3RCeU5hbWUsIFVuaXR5LkFzc2V0R3JhcGguRWRpdG9yLCBWZXJzaW9uPTAuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbCIsIm1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJCNjR8ZXlKdFgzSmxjR3hoWTJWRmJuUnlhV1Z6SWpwYmV5SnVZVzFsSWpvaVkyaHBiR1F4SWl3aVpITjBUMkpxWldOMElqcDdJbTFmWjNWcFpDSTZJbUV6TWpNNU9XTmxOemMwWkRNME56WXhPR0ZtWVRBMlpEUXpOREE0TVRaa0luMTlYWDA9In1dfSwibV9yZXBsYWNlUHJlZmFiT3B0aW9ucyI6MCwibV9vdXRwdXREaXIiOnsibV92YWx1ZXMiOlt7InRhcmdldEdyb3VwIjowLCJ2YWx1ZSI6IkNyZWF0ZVByZWZhYkZyb21Hcm91cFRlc3RfQXNzZXRzVG9EZWxldGUifV19LCJtX291dHB1dE9wdGlvbiI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoxfV19fQ==
+      m_instanceData: B64|eyJtX2luc3RhbmNlIjp7Im1fY2xhc3NOYW1lIjoiUmVwbGFjZUdhbWVPYmplY3RCeU5hbWUsIFVuaXR5LkFzc2V0R3JhcGguRWRpdG9yLCBWZXJzaW9uPTAuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbCIsIm1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJCNjR8ZXlKdFgzSmxjR3hoWTJWRmJuUnlhV1Z6SWpwYmV5SnVZVzFsSWpvaVkyaHBiR1F4SWl3aVpITjBUMkpxWldOMElqcDdJbTFmWjNWcFpDSTZJbUV6TWpNNU9XTmxOemMwWkRNME56WXhPR0ZtWVRBMlpEUXpOREE0TVRaa0luMTlYWDA9In1dfSwibV9vdXRwdXREaXIiOnsibV92YWx1ZXMiOlt7InRhcmdldEdyb3VwIjowLCJ2YWx1ZSI6IkNyZWF0ZVByZWZhYkZyb21Hcm91cFRlc3RfQXNzZXRzVG9EZWxldGUifV19LCJtX291dHB1dE9wdGlvbiI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoxfV19LCJtX2xvYWRQcmV2aW91c1ByZWZhYiI6ZmFsc2V9
     m_inputPoints:
     - id: 63a8aa47-3b17-49b5-a06f-4e6e51e58631
       label: '-'
@@ -38,7 +39,7 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 152
+        x: 153.5
         y: 32.5
         width: 10
         height: 23
@@ -49,7 +50,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: Unity.AssetGraph.Loader, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJDcmVhdGVQcmVmYWJGcm9tR3JvdXBUZXN0X0Fzc2V0c1RvRGVsZXRlIn0seyJ0YXJnZXRHcm91cCI6MSwidmFsdWUiOiJDcmVhdGVQcmVmYWJGcm9tR3JvdXBUZXN0X0Fzc2V0c1RvRGVsZXRlIn1dfSwibV9sb2FkUGF0aEd1aWQiOnsibV92YWx1ZXMiOlt7InRhcmdldEdyb3VwIjowLCJ2YWx1ZSI6IjMzZjI5Y2NhZjBlYjU0NjRlODViZDg0YjI0NDBjNjIxIn0seyJ0YXJnZXRHcm91cCI6MSwidmFsdWUiOiIzM2YyOWNjYWYwZWI1NDY0ZTg1YmQ4NGIyNDQwYzYyMSJ9XX0sIm1faWdub3JlUGF0dGVybnMiOltdLCJtX3Jlc3BvbmRUb0Fzc2V0Q2hhbmdlIjpmYWxzZX0=
+      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJDcmVhdGVQcmVmYWJGcm9tR3JvdXBUZXN0X0Fzc2V0c1RvRGVsZXRlIn0seyJ0YXJnZXRHcm91cCI6MSwidmFsdWUiOiJDcmVhdGVQcmVmYWJGcm9tR3JvdXBUZXN0X0Fzc2V0c1RvRGVsZXRlIn1dfSwibV9sb2FkUGF0aEd1aWQiOnsibV92YWx1ZXMiOlt7InRhcmdldEdyb3VwIjowLCJ2YWx1ZSI6IjMzZjI5Y2NhZjBlYjU0NjRlODViZDg0YjI0NDBjNjIxIn0seyJ0YXJnZXRHcm91cCI6MSwidmFsdWUiOiIzNWE1MmExNDc1NWMwNDQ1MjliOGVkNjRjM2E3OTk2ZSJ9XX0sIm1faWdub3JlUGF0dGVybnMiOltdLCJtX3Jlc3BvbmRUb0Fzc2V0Q2hhbmdlIjpmYWxzZX0=
     m_inputPoints: []
     m_outputPoints:
     - id: 8d1b9403-51dd-4cc6-a7ef-bb0dafff97a9
@@ -88,7 +89,7 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 150
+        x: 149.5
         y: 32.5
         width: 10
         height: 23
