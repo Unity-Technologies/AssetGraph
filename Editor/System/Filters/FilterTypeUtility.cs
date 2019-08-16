@@ -8,14 +8,10 @@ using UnityEditor.Animations;
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if UNITY_2017_1_OR_NEWER
 using UnityEngine.U2D;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
-#endif
-#if UNITY_2017_2_OR_NEWER
 using UnityEngine.Tilemaps;
-#endif
 
 using Model=Unity.AssetGraph.DataModel.Version2;
 
@@ -35,11 +31,7 @@ namespace Unity.AssetGraph {
             ".boo",
 			".zip",
 			".tar",
-			".tgz",
-			#if UNITY_5_6 || UNITY_5_6_OR_NEWER
-			#else
-			".m4v",
-			#endif
+			".tgz"
 		};
 
         private static readonly Dictionary<string, Type> s_defaultAssetFilterGUITypeMap = new Dictionary<string, Type> {

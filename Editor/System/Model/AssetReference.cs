@@ -1,10 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-
-#if UNITY_5_5_OR_NEWER
 using UnityEngine.Profiling;
-#endif
 
 using System;
 using System.IO;

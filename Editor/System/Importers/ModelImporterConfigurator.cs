@@ -247,14 +247,11 @@ namespace Unity.AssetGraph
             if (target.importTangents != reference.importTangents)
                 return false;
 
-            #if UNITY_5_6 || UNITY_5_6_OR_NEWER
             if (target.keepQuads != reference.keepQuads)
                 return false;
             if (target.weldVertices != reference.weldVertices)
                 return false;
-            #endif
 
-            #if UNITY_2017_1_OR_NEWER
             if (target.importCameras != reference.importCameras)
                 return false;
             if (target.importLights != reference.importLights)
@@ -273,21 +270,13 @@ namespace Unity.AssetGraph
                     return false;
             }
 
-            #else
-            if (target.fileScale != reference.fileScale) return false;
-            #endif
-
-            #if UNITY_2017_2_OR_NEWER
             if (target.importAnimatedCustomProperties != reference.importAnimatedCustomProperties) {
                 return false;
             }
-            #endif
 
-            #if UNITY_2018_1_OR_NEWER
             if (target.importConstraints != reference.importConstraints) {
                 return false;
             }
-            #endif
 
             return true;
         }
@@ -334,27 +323,17 @@ namespace Unity.AssetGraph
 
             target.importTangents = reference.importTangents;
 
-            #if UNITY_5_6 || UNITY_5_6_OR_NEWER
             target.keepQuads = reference.keepQuads;
             target.weldVertices = reference.weldVertices;
-            #endif
 
-            #if UNITY_2017_1_OR_NEWER
             target.importCameras = reference.importCameras;
             target.importLights = reference.importLights;
             target.importVisibility = reference.importVisibility;
             target.normalCalculationMode = reference.normalCalculationMode;
             target.extraUserProperties = reference.extraUserProperties;
             target.useFileScale = reference.useFileScale;
-            #endif
-
-            #if UNITY_2017_2_OR_NEWER
             target.importAnimatedCustomProperties = reference.importAnimatedCustomProperties;
-            #endif
-
-            #if UNITY_2018_1_OR_NEWER
             target.importConstraints = reference.importConstraints;
-            #endif
 
             /* 
              read only properties.

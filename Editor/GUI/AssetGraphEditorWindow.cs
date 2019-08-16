@@ -558,13 +558,9 @@ namespace Unity.AssetGraph
             LogUtility.ShowVerboseLog (m_showVerboseLog);
 
             Undo.undoRedoPerformed += OnUndoRedoPerformed;
-#if UNITY_2017_2_OR_NEWER
             EditorApplication.playModeStateChanged += (PlayModeStateChange s) => {
                 OnPlaymodeChanged (s);
             };
-#else
-			EditorApplication.playmodeStateChanged += OnPlaymodeChanged;
-#endif
 
             m_modifyMode = ModifyMode.NONE;
             NodeGUIUtility.NodeEventHandler = HandleNodeEvent;
@@ -580,7 +576,6 @@ namespace Unity.AssetGraph
             }
         }
 
-        #if UNITY_2017_2_OR_NEWER
         private void OnPlaymodeChanged (PlayModeStateChange s)
         {
             if (m_controller != null && m_controller.TargetGraph != null) {
@@ -592,18 +587,6 @@ namespace Unity.AssetGraph
                 Repaint ();
             }
         }
-        #else
-		private void OnPlaymodeChanged() {
-            if (m_controller != null && m_controller.TargetGraph != null) {
-                SaveGraph();
-            }
-            if (!EditorApplication.isPlayingOrWillChangePlaymode) {
-                CloseGraph ();
-                Init ();
-                Repaint ();
-            }
-        }
-#endif
 
         private void OnUndoRedoPerformed ()
         {

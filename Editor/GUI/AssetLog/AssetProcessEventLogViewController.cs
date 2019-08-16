@@ -1,5 +1,4 @@
-﻿#if UNITY_5_6_OR_NEWER
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 
@@ -191,4 +190,3 @@ namespace Unity.AssetGraph {
         }
     }
 }
-#endif

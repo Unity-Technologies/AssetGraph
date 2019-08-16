@@ -3,13 +3,8 @@ using UnityEditor;
 
 using System;
 using System.Linq;
-using System.IO;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-#if UNITY_5_5_OR_NEWER
 using UnityEngine.Profiling;
-#endif
 
 using Unity.AssetGraph;
 using Model=Unity.AssetGraph.DataModel.Version2;
@@ -290,11 +285,7 @@ namespace Unity.AssetGraph {
             if (t == GroupingType.ByRuntimeMemorySize) {
                 var objects = a.allData;
                 foreach (var o in objects) {
-                    #if UNITY_5_6_OR_NEWER
                     size += Profiler.GetRuntimeMemorySizeLong (o);
-                    #else
-                    size += Profiler.GetRuntimeMemorySize(o);
-                    #endif
                 }
 
                 a.ReleaseData ();

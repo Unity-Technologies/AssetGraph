@@ -224,36 +224,6 @@ namespace Unity.AssetGraph
             /* read only properties */
             // target.qualifiesForSpritePacking
 
-            #if !UNITY_5_5_OR_NEWER
-            // obsolete features
-            if (target.normalmap != reference.normalmap) return false;
-            if (target.linearTexture != reference.linearTexture) return false;
-            if (target.lightmap != reference.lightmap) return false;
-            if (target.grayscaleToAlpha != reference.grayscaleToAlpha) return false;
-            if (target.generateMipsInLinearSpace != reference.generateMipsInLinearSpace) return false;
-            if (target.textureFormat != reference.textureFormat) return false;
-
-            foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
-            {
-            var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
-
-            int srcMaxTextureSize;
-            TextureImporterFormat srcFormat;
-            int srcCompressionQuality;
-
-            int dstMaxTextureSize;
-            TextureImporterFormat dstFormat;
-            int dstCompressionQuality;
-
-            var srcHasSetting = target.GetPlatformTextureSettings(platformName, out srcMaxTextureSize, out srcFormat, out srcCompressionQuality);
-            var dstHasSetting = reference.GetPlatformTextureSettings(platformName, out dstMaxTextureSize, out dstFormat, out dstCompressionQuality);
-
-            if (srcHasSetting != dstHasSetting) return false;
-            if (srcMaxTextureSize != dstMaxTextureSize) return false;
-            if (srcFormat != dstFormat) return false;
-            if (srcCompressionQuality != dstCompressionQuality) return false;
-            }
-            #else
             if (target.allowAlphaSplitting != reference.allowAlphaSplitting)
                 return false;
             if (target.alphaIsTransparency != reference.alphaIsTransparency)
@@ -283,9 +253,7 @@ namespace Unity.AssetGraph
                 if (!CompareImporterPlatformSettings (impSet, targetImpSet))
                     return false;
             }
-            #endif
 
-            #if UNITY_2017_1_OR_NEWER
             if (target.alphaTestReferenceValue != reference.alphaTestReferenceValue)
                 return false;
             if (target.mipMapsPreserveCoverage != reference.mipMapsPreserveCoverage)
@@ -296,7 +264,7 @@ namespace Unity.AssetGraph
                 return false;
             if (target.wrapModeW != reference.wrapModeW)
                 return false;
-            #endif
+
             return true;
         }
 
@@ -363,30 +331,6 @@ namespace Unity.AssetGraph
             /* read only */
             // importer.qualifiesForSpritePacking
 
-#if !UNITY_5_5_OR_NEWER
-            // obsolete features
-            importer.generateMipsInLinearSpace = reference.generateMipsInLinearSpace;
-            importer.grayscaleToAlpha = reference.grayscaleToAlpha;
-            importer.lightmap = reference.lightmap;
-            importer.linearTexture = reference.linearTexture;
-            importer.normalmap = reference.normalmap;
-            importer.textureFormat = reference.textureFormat;
-
-            foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups)
-            {
-                var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName(g, BuildTargetUtility.PlatformNameType.TextureImporter);
-
-                int maxTextureSize;
-                TextureImporterFormat format;
-                int compressionQuality;
-
-                if(reference.GetPlatformTextureSettings(platformName, out maxTextureSize, out format, out compressionQuality)) {
-                    importer.SetPlatformTextureSettings(platformName, maxTextureSize, format, compressionQuality, false);
-                } else {
-                    importer.ClearPlatformTextureSettings(platformName);
-                }
-            }
-#else
             target.allowAlphaSplitting = reference.allowAlphaSplitting;
             target.alphaIsTransparency = reference.alphaIsTransparency;
             target.textureShape = reference.textureShape;
@@ -404,19 +348,14 @@ namespace Unity.AssetGraph
                 var impSet = reference.GetPlatformTextureSettings (platformName);
                 target.SetPlatformTextureSettings (impSet);
             }
-#endif
 
-#if UNITY_2017_1_OR_NEWER
             target.alphaTestReferenceValue = reference.alphaTestReferenceValue;
             target.mipMapsPreserveCoverage = reference.mipMapsPreserveCoverage;
             target.wrapModeU = reference.wrapModeU;
             target.wrapModeV = reference.wrapModeV;
             target.wrapModeW = reference.wrapModeW;
-#endif
         }
 
-
-        #if UNITY_5_5_OR_NEWER
         bool CompareImporterPlatformSettings (TextureImporterPlatformSettings c1, TextureImporterPlatformSettings c2)
         {
             if (c1.allowsAlphaSplitting != c2.allowsAlphaSplitting)
@@ -435,13 +374,10 @@ namespace Unity.AssetGraph
                 return false;
             if (c1.textureCompression != c2.textureCompression)
                 return false;
-            #if UNITY_2017_2_OR_NEWER
             if (c1.resizeAlgorithm != c2.resizeAlgorithm)
                 return false;
-            #endif
 
             return true;
         }
-        #endif
     }
 }

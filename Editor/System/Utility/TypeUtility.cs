@@ -8,11 +8,9 @@ using UnityEditor.Animations;
 
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if UNITY_2017_1_OR_NEWER
 using UnityEngine.U2D;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
-#endif
 
 using Model=Unity.AssetGraph.DataModel.Version2;
 

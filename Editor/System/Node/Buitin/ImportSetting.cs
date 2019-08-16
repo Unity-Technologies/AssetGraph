@@ -234,12 +234,10 @@ namespace Unity.AssetGraph {
                     GUILayout.Label (string.Format("Import Setting ({0})", importerType.Name));
                     GUI.changed = false;
                     m_importerEditor.OnInspectorGUI ();
-                    #if UNITY_2018_1_OR_NEWER
                     if (GUI.changed)
                     {
                         referenceImporter.SaveAndReimport();
                     }
-                    #endif
                 }
 
                 GUILayout.Space (40f);

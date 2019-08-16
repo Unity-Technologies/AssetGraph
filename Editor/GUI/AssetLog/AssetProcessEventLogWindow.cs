@@ -1,4 +1,3 @@
-#if UNITY_5_6_OR_NEWER
 using UnityEngine;
 using UnityEditor;
 
@@ -125,5 +124,4 @@ namespace Unity.AssetGraph {
         }
 	}
 }
-#endif
 

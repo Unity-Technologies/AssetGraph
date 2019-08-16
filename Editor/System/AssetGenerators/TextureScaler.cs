@@ -17,9 +17,7 @@ namespace Unity.AssetGraph {
         {
             PNG,
             JPG,
-            #if UNITY_5_6_OR_NEWER
             EXR,
-            #endif
         }
 
         public enum TextureFilterType
@@ -33,9 +31,7 @@ namespace Unity.AssetGraph {
         [SerializeField] private TextureFilterType m_filterType;
         [SerializeField] private float m_scale = 1.0f;
         [SerializeField] private int m_jpgQuality = 100;
-        #if UNITY_5_6_OR_NEWER
         [SerializeField] private Texture2D.EXRFlags m_exrFlags = Texture2D.EXRFlags.CompressZIP;
-        #endif
 
         public void OnValidate () {
         }
@@ -46,10 +42,8 @@ namespace Unity.AssetGraph {
                 return ".png";
             case TextureOutputType.JPG:
                 return ".jpg";
-                #if UNITY_5_6_OR_NEWER
             case TextureOutputType.EXR:
                 return ".exr";
-                #endif
             }
             return "";
         }
@@ -99,11 +93,9 @@ namespace Unity.AssetGraph {
             case TextureOutputType.PNG:
                 bytes = output.EncodeToPNG();
                 break;
-            #if UNITY_5_6_OR_NEWER
             case TextureOutputType.EXR:
                 bytes = output.EncodeToEXR(m_exrFlags);
                 break;
-            #endif
             }
 
             string fullPath = FileUtility.PathCombine (Directory.GetParent(Application.dataPath).ToString(), generateAssetPath);
@@ -117,15 +109,11 @@ namespace Unity.AssetGraph {
         private Texture2D CreateDstTexture(Texture2D src) {
             int width  = (int)(src.width * m_scale);
             int height = (int)(src.height * m_scale);
-            #if UNITY_5_6_OR_NEWER
             if (m_outputType == TextureOutputType.EXR) {
                 return new Texture2D (width, height, TextureFormat.RGBAHalf, false);
             } else {
                 return new Texture2D (width, height);
             }
-            #else 
-            return new Texture2D (width, height);
-            #endif
         }
 
         private Texture2D CreateScaledTexturePT(Texture2D src){
@@ -184,7 +172,6 @@ namespace Unity.AssetGraph {
                 }
             }
 
-            #if UNITY_5_6_OR_NEWER
             if (m_outputType == TextureOutputType.EXR) {
                 var exrOpt = (Texture2D.EXRFlags)EditorGUILayout.EnumPopup ("EXR Option", m_exrFlags);
                 if (exrOpt != m_exrFlags) {
@@ -192,7 +179,6 @@ namespace Unity.AssetGraph {
                     onValueChanged ();
                 }
             }
-            #endif
 
             var newScaleType = (TextureFilterType)EditorGUILayout.EnumPopup ("Filter Mode", m_filterType);
             if (newScaleType != m_filterType) {

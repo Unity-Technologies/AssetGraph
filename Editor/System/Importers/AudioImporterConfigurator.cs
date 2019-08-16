@@ -63,10 +63,7 @@ namespace Unity.AssetGraph
             }
 
             target.loadInBackground = reference.loadInBackground;
-
-#if UNITY_2017_1_OR_NEWER
             target.ambisonic = reference.ambisonic;
-#endif
         }
 
         private bool IsEqual (AudioImporter target, AudioImporter reference)
@@ -98,11 +95,8 @@ namespace Unity.AssetGraph
                 return false;
             if (target.loadInBackground != reference.loadInBackground)
                 return false;
-
-#if UNITY_2017_1_OR_NEWER
             if (target.ambisonic != reference.ambisonic)
                 return false;
-#endif
             if (target.preloadAudioData != reference.preloadAudioData)
                 return false;
 

@@ -63,11 +63,7 @@ namespace Unity.AssetGraph {
 					}
 
 					if(newTarget != target) {
-						#if UNITY_5_6 || UNITY_5_6_OR_NEWER
 						EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetUtility.TargetToGroup(newTarget), newTarget);
-						#else
-						EditorUserBuildSettings.SwitchActiveBuildTarget(newTarget);
-						#endif
 						target = newTarget;
 					}
 				}

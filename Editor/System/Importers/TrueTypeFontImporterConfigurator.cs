@@ -54,10 +54,7 @@ namespace Unity.AssetGraph
             target.fontTextureCase = reference.fontTextureCase;
 //            target.fontTTFName = reference.fontTTFName;
             target.includeFontData = reference.includeFontData;
-
-            #if UNITY_2018_1_OR_NEWER
             target.shouldRoundAdvanceValue = reference.shouldRoundAdvanceValue;
-            #endif
         }
 
         private bool IsEqual (TrueTypeFontImporter target, TrueTypeFontImporter reference)
@@ -110,15 +107,9 @@ namespace Unity.AssetGraph
                 return false;
             }
 
-//            if (target.fontTTFName != reference.fontTTFName) {
-//                return false;
-//            }
-
-            #if UNITY_2018_1_OR_NEWER
             if (target.shouldRoundAdvanceValue != reference.shouldRoundAdvanceValue) {
                 return false;
             }
-            #endif
 
             return true;
         }

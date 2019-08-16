@@ -180,11 +180,7 @@ public class AddGameObject : IModifier {
             }
         }
 
-        #if UNITY_2017_3_OR_NEWER
         var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumFlagsField ("Attach Policy", m_attachPolicy);
-        #else
-        var newAttachPolicy = (AttachPolicy)EditorGUILayout.EnumMaskField ("Add Policy", m_attachPolicy);
-        #endif
         if(newAttachPolicy != m_attachPolicy) {
             m_attachPolicy = newAttachPolicy;
             onValueChanged();

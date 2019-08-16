@@ -7,8 +7,6 @@ using System.Collections.Generic;
 
 using Model = Unity.AssetGraph.DataModel.Version2;
 
-#if UNITY_5_6 || UNITY_5_6_OR_NEWER
-
 namespace Unity.AssetGraph
 {
     [Serializable] 
@@ -76,10 +74,8 @@ namespace Unity.AssetGraph
             if (target.useLegacyImporter != reference.useLegacyImporter)
                 return false;
 
-            #if UNITY_2017_2_OR_NEWER
             if (target.pixelAspectRatioDenominator != reference.pixelAspectRatioDenominator) return false;
             if (target.pixelAspectRatioNumerator != reference.pixelAspectRatioNumerator) return false;
-            #endif
 
             foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups) {
                 var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName (g, 
@@ -204,5 +200,3 @@ namespace Unity.AssetGraph
         }
     }
 }
-
-#endif
