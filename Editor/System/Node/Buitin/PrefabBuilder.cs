@@ -131,15 +131,11 @@ namespace Unity.AssetGraph {
 				} else {
 					if(!string.IsNullOrEmpty(m_instance.ClassName)) {
 						EditorGUILayout.HelpBox(
-							string.Format(
-								"Your PrefabBuilder script {0} is missing from assembly. Did you delete script?", m_instance.ClassName), MessageType.Info);
+							$"Your PrefabBuilder script {m_instance.ClassName} is missing from assembly. Did you delete script?", MessageType.Info);
 					} else {
 						string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_PREFABBUILDER.Split('/');
 						EditorGUILayout.HelpBox(
-							string.Format(
-								"You need to create at least one PrefabBuilder script to use this node. To start, select {0}>{1}>{2} menu and create new script from template.",
-								menuNames[1],menuNames[2], menuNames[3]
-							), MessageType.Info);
+							$"You need to create at least one PrefabBuilder script to use this node. To start, select {menuNames[1]}>{menuNames[2]}>{menuNames[3]} menu and create new script from template.", MessageType.Info);
 					}
 				}
 

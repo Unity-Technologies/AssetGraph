@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
+using UnityEditor.AddressableAssets;
 
 using System;
 using System.Collections.Generic;
@@ -130,6 +131,20 @@ namespace Unity.AssetGraph {
 
             using(new EditorGUILayout.HorizontalScope()) {
                 EditorGUILayout.HelpBox(selectedAsset, MessageType.None);
+            }
+
+            if (m_selectedAsset != null) {
+                var aaSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
+                if (aaSettings != null) {
+                    var entry = aaSettings.FindAssetEntry(m_selectedAsset.assetDatabaseId);
+                    if (entry != null) {
+                        GUILayout.Space (4f);
+                        GUILayout.Label ("Asset Address");
+                        using(new EditorGUILayout.HorizontalScope()) {
+                            EditorGUILayout.HelpBox(entry.address, MessageType.None);
+                        }
+                    }
+                }
             }
 		}
 
