@@ -13,6 +13,26 @@ using Model=Unity.AssetGraph.DataModel.Version2;
 namespace Unity.AssetGraph {
 	public class AssetBundlesSettingsTab {
 
+        internal class Styles
+        {
+            public static readonly GUIContent defaultAssetBundleGraph = EditorGUIUtility.TrTextContent("Default AssetBundle Graph");
+            public static readonly GUIContent assetBundleBuildMapFile = EditorGUIUtility.TrTextContent("AssetBundle Build Map File");
+            public static readonly GUIContent setButton = EditorGUIUtility.TrTextContent("Set");
+            public static readonly GUIContent bundleCacheDirectoryLabel = EditorGUIUtility.TrTextContent("Bundle Cache Directory");
+            public static readonly GUIContent configDirectoryLabel = EditorGUIUtility.TrTextContent("Config Directory");
+
+            public static readonly GUIContent help_bundleCacheDirectory = EditorGUIUtility.TrTextContent(
+                "Bundle Cache Directory is the default place to save AssetBundles when 'Build Asset Bundles' node performs build. This can be set outside of the project with relative path."
+            );
+            
+            public static readonly GUIContent help_defaultAssetGraph = EditorGUIUtility.TrTextContent(
+                "Default AssetBundle Graph is the default graph to build AssetBundles for this project. This graph will be automatically called in AssetBundle Browser integration."
+            );
+            public static readonly GUIContent help_assetBundleBuildMap = EditorGUIUtility.TrTextContent(
+                "AssetBundle build map file is an asset used to store assets to asset bundles relationship. "
+            );
+        }
+        
         private string[] m_graphGuids;
         private string[] m_graphNames;
 
@@ -40,7 +60,7 @@ namespace Unity.AssetGraph {
                 string baseDir = Model.Settings.UserSettings.ConfigBaseDir;
 
                 using (new EditorGUILayout.HorizontalScope ()) {                    
-                    var newBaseDir = GUIHelper.DrawFolderSelector ("Config Directory", "Select Config Folder", 
+                    var newBaseDir = GUIHelper.DrawFolderSelector (Styles.configDirectoryLabel.text, "Select Config Folder", 
                         baseDir,
                         Application.dataPath + "/../",
                         (string folderSelected) => {
@@ -76,10 +96,7 @@ namespace Unity.AssetGraph {
                 }
             }
 
-            EditorGUILayout.HelpBox (
-                "Bundle Cache Directory is the default place to save AssetBundles when 'Build Asset Bundles' node performs build. " +
-                "This can be set outside of the project with relative path.", 
-                MessageType.Info);
+            EditorGUILayout.HelpBox (Styles.help_bundleCacheDirectory.text, MessageType.Info);
         }        
         
         private void DrawCacheDirGUI() {
@@ -88,7 +105,7 @@ namespace Unity.AssetGraph {
                 string cacheDir = Model.Settings.UserSettings.AssetBundleBuildCacheDir;
 
                 using (new EditorGUILayout.HorizontalScope ()) {                    
-                    var newCacheDir = GUIHelper.DrawFolderSelector ("Bundle Cache Directory", "Select Cache Folder", 
+                    var newCacheDir = GUIHelper.DrawFolderSelector (Styles.bundleCacheDirectoryLabel.text, "Select Cache Folder", 
                         cacheDir,
                         Application.dataPath + "/../",
                         (string folderSelected) => {
@@ -124,37 +141,31 @@ namespace Unity.AssetGraph {
                 }
             }
 
-            EditorGUILayout.HelpBox (
-                "Bundle Cache Directory is the default place to save AssetBundles when 'Build Asset Bundles' node performs build. " +
-                "This can be set outside of the project with relative path.", 
-                MessageType.Info);
+            EditorGUILayout.HelpBox ( Styles.help_bundleCacheDirectory.text, MessageType.Info);
         }
 
         private void DrawABGraphList() {
             string abGraphGuid = Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid;
 
             int index = ArrayUtility.IndexOf(m_graphGuids, abGraphGuid);
-            var selected = EditorGUILayout.Popup ("Default AssetBundle Graph", index, m_graphNames);
+            var selected = EditorGUILayout.Popup (Styles.defaultAssetBundleGraph, index, m_graphNames);
 
             if (index != selected) {
                 Model.Settings.UserSettings.DefaultAssetBundleBuildGraphGuid = m_graphGuids [selected];
             }
 
-            EditorGUILayout.HelpBox (
-                "Default AssetBundle Graph is the default graph to build AssetBundles for this project. " +
-                "This graph will be automatically called in AssetBundle Browser integration.", 
-                MessageType.Info);
+            EditorGUILayout.HelpBox (Styles.help_defaultAssetGraph.text, MessageType.Info);
         }
 
 	    private void DrawABBuildMapPath()
 	    {
 	        using (new EditorGUILayout.HorizontalScope())
 	        {
-	            m_buildmapPath = EditorGUILayout.TextField("AssetBundle Build Map File", m_buildmapPath);
+	            m_buildmapPath = EditorGUILayout.TextField(Styles.assetBundleBuildMapFile, m_buildmapPath);
 
 	            using (new EditorGUI.DisabledScope(m_buildmapPath == AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath))
 	            {
-	                if (GUILayout.Button("Set", GUILayout.Width(50)))
+	                if (GUILayout.Button(Styles.setButton, GUILayout.Width(50)))
 	                {
 	                    var oldPath = AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath;
 	                    m_buildmapMoveErrorMsg = string.Empty;
@@ -179,8 +190,7 @@ namespace Unity.AssetGraph {
 	        }
 	        
 	        EditorGUILayout.HelpBox (
-	            "AssetBundle build map file is an asset used to store assets to assetbundles relationship. ", 
-	            MessageType.Info);
+                Styles.help_assetBundleBuildMap.text, MessageType.Info);
 	    }
 
 		public void OnGUI () {

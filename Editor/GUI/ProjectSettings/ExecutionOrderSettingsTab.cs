@@ -13,6 +13,12 @@ namespace Unity.AssetGraph {
 
         static readonly int kOrderPriorityLevel = 100;
 
+        internal class Styles
+        {
+            public static readonly GUIContent defaultExecutionOrder = EditorGUIUtility.TrTextContent("Default Execution Order");
+            public static readonly GUIContent executionOrderLabel = EditorGUIUtility.TrTextContent("AssetPostprocessor Graph Execution Order");
+        }
+        
         private class GraphExecOrder {
 
             private string m_graphGuid;
@@ -32,7 +38,7 @@ namespace Unity.AssetGraph {
             public string Name {
                 get {
                     if (IsDefault) {
-                        return "Default Execution Order";
+                        return Styles.defaultExecutionOrder.text;
                     }
                     return m_graphName;
                 }
@@ -113,7 +119,7 @@ namespace Unity.AssetGraph {
         }
 
 		public void OnGUI () {
-            EditorGUILayout.LabelField ("AssetPostprocessor Graph Execution Order");
+            EditorGUILayout.LabelField (Styles.executionOrderLabel);
             m_execOrderList.DoLayoutList();
 		}
 
