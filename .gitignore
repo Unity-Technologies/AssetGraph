@@ -12,6 +12,7 @@ node_modules/**
 .npmrc
 !Documentation~
 !.Documentation
+!Doxyfile~
 npm-debug.log
 build.sh.meta
 build.bat.meta
