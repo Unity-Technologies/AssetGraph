@@ -150,7 +150,6 @@ namespace Unity.AssetGraph
 		private void ConfigureAddress (IEnumerable<PerformGraph.AssetGroups> incoming) 
 		{
             var aaSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
-            AddressableAssetEntry entry = null;            
 
             Regex match = null;
 
@@ -167,7 +166,7 @@ namespace Unity.AssetGraph
                             var guid = a.assetDatabaseId;
 
                             if (m_isAddressable) {
-                                entry = aaSettings.FindAssetEntry(guid);
+                                var entry = aaSettings.FindAssetEntry(guid);
                                 if (entry == null) {
                                     entry = aaSettings.CreateOrMoveEntry (guid, aaSettings.DefaultGroup);
                                 }
