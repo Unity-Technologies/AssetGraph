@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using Model=Unity.AssetGraph.DataModel.Version2;
 
 namespace Unity.AssetGraph {
-
-	public class UserPreference : MonoBehaviour {
+	class UserPreference : SettingsProvider
+	{
 
         static readonly string kKEY_USERPREF_GRID = "Unity.AssetGraph.UserPref.GridSize";
         static readonly string kKEY_USERPREF_DEFAULTVERBOSELOG = "Unity.AssetGraph.UserPref.DefaultVerboseLog";
@@ -24,6 +24,13 @@ namespace Unity.AssetGraph {
         private static bool s_defaultVerboseLog;
         private static bool s_clearAssetLogOnBuild;
 
+        internal class Styles
+        {
+	        public static readonly GUIContent graphEditorGridSize = EditorGUIUtility.TrTextContent("Graph editor grid size");
+	        public static readonly GUIContent defaultShowVerboseLog = EditorGUIUtility.TrTextContent("Default show verbose log");
+        }
+        
+        
 		public static float EditorWindowGridSize {
 			get {
 				LoadAllPreferenceValues();
@@ -74,17 +81,35 @@ namespace Unity.AssetGraph {
             EditorPrefs.SetBool(kKEY_USERPREF_DEFAULTVERBOSELOG, s_defaultVerboseLog);
             EditorPrefs.SetBool(kKEY_USERPREF_DEFAULTASSETLOG, s_clearAssetLogOnBuild);
 		}
+		
+		public UserPreference(string path, SettingsScope scope = SettingsScope.User)
+			: base(path, scope)
+		{
+			LoadAllPreferenceValues ();
+		}		
 
-		[PreferenceItem("AssetGraph")]
-		public static void PreferencesGUI() {
-			LoadAllPreferenceValues();
-
+		public override void OnGUI(string searchContext)
+		{
 			s_editorWindowGridSize = EditorGUILayout.FloatField("Graph editor grid size", s_editorWindowGridSize);
-            s_defaultVerboseLog = EditorGUILayout.ToggleLeft ("Default show verbose log", s_defaultVerboseLog);
+			s_defaultVerboseLog = EditorGUILayout.ToggleLeft ("Default show verbose log", s_defaultVerboseLog);
 
 			if (GUI.changed) {
 				SaveAllPreferenceValues();
 			}
 		}
+		
+		// Register the SettingsProvider
+		[SettingsProvider]
+		public static SettingsProvider CreateAssetGraphUserPreference()
+		{
+			var provider = new UserPreference("Preferences/Asset Graph")
+			{
+				keywords = GetSearchKeywordsFromGUIContentProperties<Styles>()
+			};			
+
+			// Automatically extract all keywords from the Styles.
+			return provider;
+		}
 	}
+	
 }
