@@ -29,12 +29,14 @@ namespace UnityEngine.AssetGraph
 				return "iOS";
 			case BuildTarget.PS4:
 				return "PlayStation 4";
+#if !UNITY_2019_2_OR_NEWER
 			case BuildTarget.StandaloneLinux:
 				return "Linux Standalone";
-			case BuildTarget.StandaloneLinux64:
-				return "Linux Standalone(64-bit)";
 			case BuildTarget.StandaloneLinuxUniversal:
 				return "Linux Standalone(Universal)";
+#endif
+			case BuildTarget.StandaloneLinux64:
+				return "Linux Standalone(64-bit)";
 			case BuildTarget.StandaloneOSX:
 				return "OSX Standalone(Universal)";
 			case BuildTarget.StandaloneWindows:
@@ -84,9 +86,11 @@ namespace UnityEngine.AssetGraph
 				return "iOS";
 			case BuildTarget.PS4:
 				return "PS4";
+#if !UNITY_2019_2_OR_NEWER
 			case BuildTarget.StandaloneLinux:
-			case BuildTarget.StandaloneLinux64:
 			case BuildTarget.StandaloneLinuxUniversal:
+#endif
+			case BuildTarget.StandaloneLinux64:
 				return "Linux";
 			case BuildTarget.StandaloneOSX:
 				return "OSX";
@@ -172,9 +176,11 @@ namespace UnityEngine.AssetGraph
 				return BuildTargetGroup.iOS;
 			case BuildTarget.PS4:
 				return BuildTargetGroup.PS4;
+#if !UNITY_2019_2_OR_NEWER
 			case BuildTarget.StandaloneLinux:
-			case BuildTarget.StandaloneLinux64:
 			case BuildTarget.StandaloneLinuxUniversal:
+#endif
+			case BuildTarget.StandaloneLinux64:
 			case BuildTarget.StandaloneOSX:
 			case BuildTarget.StandaloneWindows:
 			case BuildTarget.StandaloneWindows64:

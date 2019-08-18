@@ -233,10 +233,32 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.materialSearch != reference.materialSearch)
                 return false;
+            
+#if UNITY_2019_2_OR_NEWER
+            if (target.maxBonesPerVertex != reference.maxBonesPerVertex)
+                return false;
+            if (target.meshOptimizationFlags != reference.meshOptimizationFlags)
+                return false;
+            if (target.minBoneWeight != reference.minBoneWeight)
+                return false;
+            if (target.skinWeights != reference.skinWeights)
+                return false;
+            if (target.sortHierarchyByName != reference.sortHierarchyByName)
+                return false;
+#endif
+            
             if (target.normalSmoothingAngle != reference.normalSmoothingAngle)
                 return false;
+            
+            #if UNITY_2019_1_OR_NEWER
+            if (target.optimizeMeshPolygons != reference.optimizeMeshPolygons)
+                return false;
+            if (target.optimizeMeshVertices != reference.optimizeMeshVertices)
+                return false;
+            #else
             if (target.optimizeMesh != reference.optimizeMesh)
                 return false;
+            #endif
             
             if (target.indexFormat != reference.indexFormat)
                 return false;
@@ -341,14 +363,31 @@ namespace UnityEngine.AssetGraph
             target.materialLocation = reference.materialLocation;
             target.materialName = reference.materialName;
             target.materialSearch = reference.materialSearch;
+
+#if UNITY_2019_2_OR_NEWER
+            target.maxBonesPerVertex = reference.maxBonesPerVertex;
+#endif
+
             target.meshCompression = reference.meshCompression;
+
+#if UNITY_2019_2_OR_NEWER
+            target.meshOptimizationFlags = reference.meshOptimizationFlags;
+            target.minBoneWeight = reference.minBoneWeight;
+#endif            
             target.motionNodeName = reference.motionNodeName;
             
             target.normalCalculationMode = reference.normalCalculationMode;
             target.normalSmoothingAngle = reference.normalSmoothingAngle;
             target.normalSmoothingSource = reference.normalSmoothingSource;
             target.optimizeGameObjects = reference.optimizeGameObjects;
+#if UNITY_2019_1_OR_NEWER
+            target.optimizeMeshPolygons = reference.optimizeMeshPolygons;
+            target.optimizeMeshVertices = reference.optimizeMeshVertices;
+#else
             target.optimizeMesh = reference.optimizeMesh;
+#endif
+            
+            
             target.preserveHierarchy = reference.preserveHierarchy;
             target.resampleCurves = reference.resampleCurves;
             
@@ -356,6 +395,11 @@ namespace UnityEngine.AssetGraph
             target.secondaryUVAreaDistortion = reference.secondaryUVAreaDistortion;
             target.secondaryUVHardAngle = reference.secondaryUVHardAngle;
             target.secondaryUVPackMargin = reference.secondaryUVPackMargin;
+            
+#if UNITY_2019_2_OR_NEWER
+            target.skinWeights = reference.skinWeights;
+            target.sortHierarchyByName = reference.sortHierarchyByName;
+#endif
             
             target.sourceAvatar = reference.sourceAvatar;
             target.swapUVChannels = reference.swapUVChannels;
