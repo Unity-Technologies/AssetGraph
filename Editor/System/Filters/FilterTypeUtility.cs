@@ -7,11 +7,6 @@ using UnityEditor;
 using UnityEditor.Animations;
 
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.U2D;
-using UnityEngine.Playables;
-using UnityEngine.Timeline;
-using UnityEngine.Tilemaps;
 
 using Model=Unity.AssetGraph.DataModel.Version2;
 
@@ -51,7 +46,6 @@ namespace Unity.AssetGraph {
             {"Custom Render Texture", typeof(CustomRenderTexture)},
             {"Lightmap Parameter", typeof(LightmapParameters)},
             {"Lens Flare", typeof(Flare)},
-            {"Timeline", typeof(TimelineAsset)},
             {"Sprite Atlas", typeof(UnityEngine.U2D.SpriteAtlas)},
             {"Tilemap", typeof(UnityEngine.Tilemaps.Tile)},
             {"GUI Skin", typeof(GUISkin)},
