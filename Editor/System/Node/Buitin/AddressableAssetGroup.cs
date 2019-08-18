@@ -74,7 +74,8 @@ namespace Unity.AssetGraph
 			}
 			
 			var groupNames = settings.groups.Where(g => !g.ReadOnly).Select(g => g.Name).ToArray();
-			var selectedIndex = Array.IndexOf(groupNames, m_group.Name);				
+			
+			var selectedIndex = Array.IndexOf(groupNames, m_group == null ? string.Empty : m_group.Name);
 
             var newIndex = EditorGUILayout.Popup("Group", selectedIndex, groupNames);
             if (newIndex != selectedIndex)
