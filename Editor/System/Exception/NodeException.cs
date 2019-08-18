@@ -1,8 +1,8 @@
 using System;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	public class NodeException : Exception {
         public readonly string Reason;
         public readonly string HowToFix;

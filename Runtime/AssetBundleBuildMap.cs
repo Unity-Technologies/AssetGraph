@@ -8,7 +8,7 @@ using UnityEditor;
 
 #endif
 
-namespace Unity.AssetGraph
+namespace UnityEngine.AssetGraph
 {
     /// <summary>
     /// AssetBundleBuildMap is look-up data to find asset vs assetbundle relationship. 
@@ -24,7 +24,7 @@ namespace Unity.AssetGraph
 
         public static class UserSettings
         {
-            private const string PREFKEY_AB_BUILDMAP_PATH = "Unity.AssetGraph.BuildMapPath";
+            private const string PREFKEY_AB_BUILDMAP_PATH = "UnityEngine.AssetGraph.BuildMapPath";
 
             public static string AssetBundleBuildMapPath
             {

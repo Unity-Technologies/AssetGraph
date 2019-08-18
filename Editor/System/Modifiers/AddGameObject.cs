@@ -7,8 +7,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using Unity.AssetGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 [CustomModifier("Add GameObject", typeof(GameObject))]
 public class AddGameObject : IModifier {

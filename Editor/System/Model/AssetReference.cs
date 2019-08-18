@@ -7,9 +7,9 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
     /// <summary>
     /// Asset reference.
     /// </summary>
@@ -242,7 +242,7 @@ namespace Unity.AssetGraph {
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether this <see cref="T:Unity.AssetGraph.AssetReference"/> is referencing a scene asset.
+		/// Gets a value indicating whether this <see cref="T:UnityEngine.AssetGraph.AssetReference"/> is referencing a scene asset.
 		/// </summary>
 		/// <value><c>true</c> if is scene asset; otherwise, <c>false</c>.</value>
 		public bool isSceneAsset {
@@ -412,7 +412,7 @@ namespace Unity.AssetGraph {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Unity.AssetGraph.AssetReference"/> class.
+        /// Initializes a new instance of the <see cref="UnityEngine.AssetGraph.AssetReference"/> class.
         /// </summary>
         /// <param name="guid">GUID.</param>
         /// <param name="assetDatabaseId">Asset database identifier.</param>

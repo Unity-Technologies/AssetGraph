@@ -6,12 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	public class CUIUtility {
 
-		private static readonly string kCommandMethod = "Unity.AssetGraph.CUIUtility.BuildFromCommandline";
+		private static readonly string kCommandMethod = "UnityEngine.AssetGraph.CUIUtility.BuildFromCommandline";
 
 		private static readonly string kCommandStr = 
 			"\"{0}\" -batchmode -quit -projectPath \"{1}\" -logFile abbuild.log -executeMethod {2} {3}";

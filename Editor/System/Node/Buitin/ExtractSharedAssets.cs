@@ -6,10 +6,10 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.Profiling;
 
-using Unity.AssetGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
     [CustomNode("Configure Bundle/Extract Shared Assets", 71)]
     public class ExtractSharedAssets : Node {
 

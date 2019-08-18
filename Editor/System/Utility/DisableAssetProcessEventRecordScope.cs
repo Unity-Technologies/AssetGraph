@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	public sealed class DisableAssetProcessEventRecordScope : IDisposable
 	{
 		private bool m_Disposed;

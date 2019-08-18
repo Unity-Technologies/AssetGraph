@@ -5,9 +5,9 @@ using UnityEditor.IMGUI.Controls;
 using System.Linq;
 using System.Collections.Generic;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
     public class GroupTreeViewItem : TreeViewItem
     {

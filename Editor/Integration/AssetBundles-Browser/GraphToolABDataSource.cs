@@ -8,12 +8,12 @@
  */
  
 using UnityEditor;
-using Model = Unity.AssetGraph.DataModel.Version2;
+using Model = UnityEngine.AssetGraph.DataModel.Version2;
 using System;
 using System.IO;
 using System.Collections.Generic;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
     public class GraphToolABDataSource : AssetBundleBrowser.AssetBundleDataSource.ABDataSource
     {

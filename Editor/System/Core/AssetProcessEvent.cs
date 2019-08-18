@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
     [System.Serializable]
     public class AssetProcessEvent {
 

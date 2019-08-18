@@ -8,9 +8,9 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 
 using V1=AssetBundleGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Load Assets/Load From Directory", 10)]
 	public class Loader : Node, Model.NodeDataImporter {

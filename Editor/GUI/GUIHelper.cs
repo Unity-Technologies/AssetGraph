@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 
 
-namespace Unity.AssetGraph
+namespace UnityEngine.AssetGraph
 {
     public static class GUIHelper
     {

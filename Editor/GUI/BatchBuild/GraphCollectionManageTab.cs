@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
     [System.Serializable]
     internal class GraphCollectionManageTab 
     {

@@ -7,9 +7,9 @@ using System.IO;
 using System.Collections.Generic;
 
 using V1=AssetBundleGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	
 	[CustomNode("Modify Assets/Overwrite Import Settings", 60)]
 	public class ImportSetting : Node, Model.NodeDataImporter {

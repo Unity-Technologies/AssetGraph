@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.IO;
 
 using V1=AssetBundleGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Modify Assets/Modify Assets", 61)]
 	public class Modifier : Node, Model.NodeDataImporter {

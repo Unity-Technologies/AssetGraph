@@ -9,10 +9,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Assertions;
 using V1=AssetBundleGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 using Object = UnityEngine.Object;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Create Assets/Create Prefab From Group", 50)]
 	public class PrefabBuilder : Node, Model.NodeDataImporter {

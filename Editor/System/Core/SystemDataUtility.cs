@@ -8,9 +8,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	public class SystemDataUtility {
 
 		public static bool IsCached (AssetReference relatedAsset, List<string> alreadyCachedPath, string localAssetPath) {

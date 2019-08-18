@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using Unity.AssetGraph;
+using UnityEngine.AssetGraph;
 
 namespace AssetBundleGraph {
 

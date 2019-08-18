@@ -9,9 +9,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
 	public class AssetReferenceStreamManager {
 

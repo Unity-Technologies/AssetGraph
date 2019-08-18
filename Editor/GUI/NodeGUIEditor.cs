@@ -7,9 +7,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	[CustomEditor(typeof(NodeGUI))]
 	public class NodeGUIEditor : Editor {
 

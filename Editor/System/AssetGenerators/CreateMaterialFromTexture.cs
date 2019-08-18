@@ -4,8 +4,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.AssetGraph;
-using Model = Unity.AssetGraph.DataModel.Version2;
+using UnityEngine.AssetGraph;
+using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
 [System.Serializable]
 [CustomAssetGenerator("Create Material From Texture", "v1.0")]

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
     [Serializable]
 	public class SerializedComponent {

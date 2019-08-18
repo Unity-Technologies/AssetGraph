@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Experimental.PlayerLoop;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
     public static class VersionCompatibilityUtility {
 
@@ -13,11 +13,11 @@ namespace Unity.AssetGraph {
                 return className;
             }
             
-            if (!className.StartsWith("Unity.AssetGraph."))
+            if (!className.StartsWith("UnityEngine.AssetGraph."))
             {
                 className = className
-                    .Replace("UnityEngine.AssetBundles.GraphTool.", "Unity.AssetGraph.") // v1.3 -> 1.5
-                    .Replace("UnityEngine.AssetGraph.", "Unity.AssetGraph."); // v1.4 -> 1.5
+                    .Replace("UnityEngine.AssetBundles.GraphTool.", "UnityEngine.AssetGraph.") // v1.3 -> 1.5
+                    .Replace("Unity.AssetGraph.", "UnityEngine.AssetGraph."); // v1.4 -> 1.5
             }
 
             // test remapped type class.

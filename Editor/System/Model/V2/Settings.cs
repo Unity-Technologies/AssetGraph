@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 
-namespace Unity.AssetGraph.DataModel.Version2 {
+namespace UnityEngine.AssetGraph.DataModel.Version2 {
 	public class Settings : ScriptableObject {
 		/*
 			if true, ignore .meta files inside AssetBundleGraph.
@@ -31,7 +31,7 @@ namespace Unity.AssetGraph.DataModel.Version2 {
 		
         public const string GUI_TEXT_MENU_CLEANUP_SAVEDSETTINGS = GUI_TEXT_MENU_BASE + "/Clean Up SavedSettings";
 
-		public const string GRAPH_SEARCH_CONDITION = "t:Unity.AssetGraph.DataModel.Version2.ConfigGraph";
+		public const string GRAPH_SEARCH_CONDITION = "t:UnityEngine.AssetGraph.DataModel.Version2.ConfigGraph";
         public const string SETTING_TEMPLATE_DIR_SEARCH_CONDITION = "SettingTemplate";
 
 		public const string UNITY_METAFILE_EXTENSION = ".meta";

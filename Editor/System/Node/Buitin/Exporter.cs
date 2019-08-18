@@ -7,9 +7,9 @@ using System.Linq;
 using System.Collections.Generic;
 
 using V1=AssetBundleGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
 	[CustomNode("Export/Export To Directory", 100)]
 	public class Exporter : Node, Model.NodeDataImporter {

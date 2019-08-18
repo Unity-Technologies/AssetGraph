@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Unity.AssetGraph;
+using UnityEngine.AssetGraph;
 using Object = UnityEngine.Object;
 
 [CustomPrefabBuilder("[Experimental]Replace With Incoming GameObject", "v1.0", 50)]

@@ -8,9 +8,9 @@ using UnityEditor.Animations;
 
 using UnityEngine;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
 	public static class FilterTypeUtility {
         

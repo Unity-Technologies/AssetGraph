@@ -8,15 +8,15 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	class UserPreference : SettingsProvider
 	{
 
-        static readonly string kKEY_USERPREF_GRID = "Unity.AssetGraph.UserPref.GridSize";
-        static readonly string kKEY_USERPREF_DEFAULTVERBOSELOG = "Unity.AssetGraph.UserPref.DefaultVerboseLog";
-        static readonly string kKEY_USERPREF_DEFAULTASSETLOG = "Unity.AssetGraph.UserPref.DefaultAssetLog";
+        static readonly string kKEY_USERPREF_GRID = "UnityEngine.AssetGraph.UserPref.GridSize";
+        static readonly string kKEY_USERPREF_DEFAULTVERBOSELOG = "UnityEngine.AssetGraph.UserPref.DefaultVerboseLog";
+        static readonly string kKEY_USERPREF_DEFAULTASSETLOG = "UnityEngine.AssetGraph.UserPref.DefaultAssetLog";
 
 		private static bool s_prefsLoaded = false;
 

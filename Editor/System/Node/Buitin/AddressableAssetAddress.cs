@@ -8,9 +8,9 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using V1=AssetBundleGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph
+namespace UnityEngine.AssetGraph
 {
 	[CustomNode("Addressables/Set Asset Address", 100)]
 	public class AddressableAssetAddress : Node {

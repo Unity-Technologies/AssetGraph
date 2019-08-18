@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	[System.Serializable]
 	public class SerializedInstance<T> : ISerializationCallbackReceiver where T: class {
 

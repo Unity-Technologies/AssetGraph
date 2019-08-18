@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	public static class AssetReferenceUtility {
 
         public static AssetReference FindFirstIncomingAssetReference(List<AssetReference> assets) {

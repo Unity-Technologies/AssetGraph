@@ -6,9 +6,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
     [System.Serializable]
     [CustomAssetGenerator("Duplicate Asset", "v1.0", 1)]
     public class Duplicator : IAssetGenerator {

@@ -7,10 +7,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 using Object = UnityEngine.Object;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 
     /// <summary>
     /// IPrefabBuilder is an interface to create Prefab AssetReference from incoming asset group.

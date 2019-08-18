@@ -1,8 +1,8 @@
 using UnityEngine;
 
-using Model=Unity.AssetGraph.DataModel.Version2;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
-namespace Unity.AssetGraph {
+namespace UnityEngine.AssetGraph {
 	public class NodeEvent {
 		public enum EventType : int {
 			EVENT_NONE,

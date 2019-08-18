@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-using Unity.AssetGraph;
+using UnityEngine.AssetGraph;
 
 [CustomModifier("Set Sprites to Animation", typeof(AnimationClip))]
 public class SetSpritesToAnimation : IModifier {
