@@ -108,10 +108,7 @@ namespace UnityEngine.AssetGraph
                 }
             }
         }
-
-
-
-        private bool IsEqual (TextureImporter target, TextureImporter reference, string tagName)
+                private bool IsEqual (TextureImporter target, TextureImporter reference, string tagName)
         {
             // UnityEditor.TextureImporter.textureFormat' is obsolete: 
             // `textureFormat is not longer accessible at the TextureImporter level
@@ -184,8 +181,16 @@ namespace UnityEngine.AssetGraph
                 }
             }
 
-            if (target.wrapMode != reference.wrapMode)
+            if (target.allowAlphaSplitting != reference.allowAlphaSplitting)
                 return false;
+            if (target.alphaIsTransparency != reference.alphaIsTransparency)
+                return false;
+            if (target.alphaSource != reference.alphaSource)
+                return false;
+            if (target.alphaTestReferenceValue != reference.alphaTestReferenceValue)
+                return false;
+            if (target.androidETC2FallbackOverride != reference.androidETC2FallbackOverride)
+                return false;            
             if (target.anisoLevel != reference.anisoLevel)
                 return false;
             if (target.borderMipmap != reference.borderMipmap)
@@ -193,6 +198,8 @@ namespace UnityEngine.AssetGraph
             if (target.compressionQuality != reference.compressionQuality)
                 return false;
             if (target.convertToNormalmap != reference.convertToNormalmap)
+                return false;
+            if (target.crunchedCompression != reference.crunchedCompression)
                 return false;
             if (target.fadeout != reference.fadeout)
                 return false;
@@ -216,28 +223,30 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.mipmapFilter != reference.mipmapFilter)
                 return false;
+            if (target.mipMapsPreserveCoverage != reference.mipMapsPreserveCoverage)
+                return false;
             if (target.normalmapFilter != reference.normalmapFilter)
                 return false;
             if (target.npotScale != reference.npotScale)
                 return false;
 
-            /* read only properties */
-            // target.qualifiesForSpritePacking
-
-            if (target.allowAlphaSplitting != reference.allowAlphaSplitting)
-                return false;
-            if (target.alphaIsTransparency != reference.alphaIsTransparency)
-                return false;
-            if (target.textureShape != reference.textureShape)
-                return false;
-
-            if (target.alphaSource != reference.alphaSource)
-                return false;
             if (target.sRGBTexture != reference.sRGBTexture)
                 return false;
-            if (target.textureCompression != reference.textureCompression)
+            if (target.streamingMipmaps != reference.streamingMipmaps)
                 return false;
-            if (target.crunchedCompression != reference.crunchedCompression)
+            if (target.streamingMipmapsPriority != reference.streamingMipmapsPriority)
+                return false;
+            if (target.textureCompression != reference.textureCompression)
+                return false;                
+            if (target.textureShape != reference.textureShape)
+                return false;
+            if (target.wrapMode != reference.wrapMode)
+                return false;
+            if (target.wrapModeU != reference.wrapModeU)
+                return false;
+            if (target.wrapModeV != reference.wrapModeV)
+                return false;
+            if (target.wrapModeW != reference.wrapModeW)
                 return false;
 
             var refDefault = reference.GetDefaultPlatformTextureSettings ();
@@ -254,16 +263,6 @@ namespace UnityEngine.AssetGraph
                     return false;
             }
 
-            if (target.alphaTestReferenceValue != reference.alphaTestReferenceValue)
-                return false;
-            if (target.mipMapsPreserveCoverage != reference.mipMapsPreserveCoverage)
-                return false;
-            if (target.wrapModeU != reference.wrapModeU)
-                return false;
-            if (target.wrapModeV != reference.wrapModeV)
-                return false;
-            if (target.wrapModeW != reference.wrapModeW)
-                return false;
 
             return true;
         }
@@ -272,8 +271,8 @@ namespace UnityEngine.AssetGraph
         {
             target.textureType = reference.textureType;
 
-            TextureImporterSettings dstSettings = new TextureImporterSettings ();
-            TextureImporterSettings srcSettings = new TextureImporterSettings ();
+            var dstSettings = new TextureImporterSettings ();
+            var srcSettings = new TextureImporterSettings ();
 
             target.ReadTextureSettings (srcSettings);
             reference.ReadTextureSettings (dstSettings);
@@ -297,16 +296,20 @@ namespace UnityEngine.AssetGraph
 
             // some unity version do not properly copy properties via TextureSettings,
             // so also perform manual copy
-
+            target.allowAlphaSplitting = reference.allowAlphaSplitting;
+            target.alphaIsTransparency = reference.alphaIsTransparency;
+            target.alphaSource = reference.alphaSource;
+            target.alphaTestReferenceValue = reference.alphaTestReferenceValue;
+            target.androidETC2FallbackOverride = reference.androidETC2FallbackOverride;
             target.anisoLevel = reference.anisoLevel;
             target.borderMipmap = reference.borderMipmap;
             target.compressionQuality = reference.compressionQuality;
             target.convertToNormalmap = reference.convertToNormalmap;
+            target.crunchedCompression = reference.crunchedCompression;
             target.fadeout = reference.fadeout;
             target.filterMode = reference.filterMode;
             target.generateCubemap = reference.generateCubemap;
             target.heightmapScale = reference.heightmapScale;
-
             target.isReadable = reference.isReadable;
             target.maxTextureSize = reference.maxTextureSize;
             target.mipMapBias = reference.mipMapBias;
@@ -314,10 +317,19 @@ namespace UnityEngine.AssetGraph
             target.mipmapFadeDistanceEnd = reference.mipmapFadeDistanceEnd;
             target.mipmapFadeDistanceStart = reference.mipmapFadeDistanceStart;
             target.mipmapFilter = reference.mipmapFilter;
-
+            target.mipMapsPreserveCoverage = reference.mipMapsPreserveCoverage;
             target.normalmapFilter = reference.normalmapFilter;
             target.npotScale = reference.npotScale;
-
+            target.sRGBTexture = reference.sRGBTexture;
+            target.streamingMipmaps = reference.streamingMipmaps;
+            target.streamingMipmapsPriority = reference.streamingMipmapsPriority;
+            target.textureCompression = reference.textureCompression;
+            target.textureShape = reference.textureShape;
+            target.wrapMode = reference.wrapMode;
+            target.wrapModeU = reference.wrapModeU;
+            target.wrapModeV = reference.wrapModeV;
+            target.wrapModeW = reference.wrapModeW;
+            
             if (m_overwritePackingTag) {
                 if (!string.IsNullOrEmpty (tagName)) {
                     target.spritePackingTag = tagName;
@@ -325,20 +337,6 @@ namespace UnityEngine.AssetGraph
                     target.spritePackingTag = reference.spritePackingTag;
                 }
             }
-
-            target.wrapMode = reference.wrapMode;
-
-            /* read only */
-            // importer.qualifiesForSpritePacking
-
-            target.allowAlphaSplitting = reference.allowAlphaSplitting;
-            target.alphaIsTransparency = reference.alphaIsTransparency;
-            target.textureShape = reference.textureShape;
-
-            target.alphaSource = reference.alphaSource;
-            target.sRGBTexture = reference.sRGBTexture;
-            target.textureCompression = reference.textureCompression;
-            target.crunchedCompression = reference.crunchedCompression;
 
             var defaultPlatformSetting = reference.GetDefaultPlatformTextureSettings ();
             target.SetPlatformTextureSettings (defaultPlatformSetting);
@@ -348,17 +346,13 @@ namespace UnityEngine.AssetGraph
                 var impSet = reference.GetPlatformTextureSettings (platformName);
                 target.SetPlatformTextureSettings (impSet);
             }
-
-            target.alphaTestReferenceValue = reference.alphaTestReferenceValue;
-            target.mipMapsPreserveCoverage = reference.mipMapsPreserveCoverage;
-            target.wrapModeU = reference.wrapModeU;
-            target.wrapModeV = reference.wrapModeV;
-            target.wrapModeW = reference.wrapModeW;
         }
 
         bool CompareImporterPlatformSettings (TextureImporterPlatformSettings c1, TextureImporterPlatformSettings c2)
         {
             if (c1.allowsAlphaSplitting != c2.allowsAlphaSplitting)
+                return false;
+            if (c1.androidETC2FallbackOverride != c2.androidETC2FallbackOverride)
                 return false;
             if (c1.compressionQuality != c2.compressionQuality)
                 return false;
@@ -372,9 +366,9 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (c1.overridden != c2.overridden)
                 return false;
-            if (c1.textureCompression != c2.textureCompression)
-                return false;
             if (c1.resizeAlgorithm != c2.resizeAlgorithm)
+                return false;
+            if (c1.textureCompression != c2.textureCompression)
                 return false;
 
             return true;

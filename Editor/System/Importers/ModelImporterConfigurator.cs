@@ -165,6 +165,8 @@ namespace UnityEngine.AssetGraph
                     return false;
                 if (target.humanDescription.feetSpacing != reference.humanDescription.feetSpacing)
                     return false;
+                if (target.humanDescription.hasTranslationDoF != reference.humanDescription.hasTranslationDoF)
+                    return false;
 
                 // human
                 {
@@ -219,6 +221,10 @@ namespace UnityEngine.AssetGraph
                     return false;
             }
 
+            if (target.humanoidOversampling != reference.humanoidOversampling)
+                return false;
+            if (target.importBlendShapeNormals != reference.importBlendShapeNormals)
+                return false;
             if (target.importBlendShapes != reference.importBlendShapes)
                 return false;
             if (target.isReadable != reference.isReadable)
@@ -231,6 +237,20 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.optimizeMesh != reference.optimizeMesh)
                 return false;
+            
+            if (target.indexFormat != reference.indexFormat)
+                return false;
+            if (target.materialLocation != reference.materialLocation)
+                return false;
+            if (target.normalSmoothingSource != reference.normalSmoothingSource)
+                return false;
+            if (target.preserveHierarchy != reference.preserveHierarchy)
+                return false;
+            if (target.resampleCurves != reference.resampleCurves)
+                return false;
+            if (target.useSRGBMaterialColor != reference.useSRGBMaterialColor)
+                return false;
+            
 
             if (target.secondaryUVAngleDistortion != reference.secondaryUVAngleDistortion)
                 return false;
@@ -283,74 +303,66 @@ namespace UnityEngine.AssetGraph
 
         private void OverwriteImportSettings (ModelImporter target, ModelImporter reference)
         {
-            target.importMaterials = reference.importMaterials;
-            target.importAnimation = reference.importAnimation;
-            target.meshCompression = reference.meshCompression;
-            target.importNormals = reference.importNormals;
-            target.optimizeGameObjects = reference.optimizeGameObjects;
-            target.motionNodeName = reference.motionNodeName;
-            target.useFileUnits = reference.useFileUnits;
-
             target.addCollider = reference.addCollider;
             target.animationCompression = reference.animationCompression;
             target.animationPositionError = reference.animationPositionError;
             target.animationRotationError = reference.animationRotationError;
             target.animationScaleError = reference.animationScaleError;
+
             target.animationType = reference.animationType;
             target.animationWrapMode = reference.animationWrapMode;
             target.bakeIK = reference.bakeIK;
             target.clipAnimations = reference.clipAnimations;
-
             target.extraExposedTransformPaths = reference.extraExposedTransformPaths;
+            target.extraUserProperties = reference.extraUserProperties;
+
             target.generateAnimations = reference.generateAnimations;
             target.generateSecondaryUV = reference.generateSecondaryUV;
             target.globalScale = reference.globalScale;
             target.humanDescription = reference.humanDescription;
-            target.importBlendShapes = reference.importBlendShapes;
+            target.humanoidOversampling = reference.humanoidOversampling;
 
+            target.importAnimatedCustomProperties = reference.importAnimatedCustomProperties;
+            target.importAnimation = reference.importAnimation;
+            target.importBlendShapeNormals = reference.importBlendShapeNormals;
+            target.importBlendShapes = reference.importBlendShapes;
+            target.importCameras = reference.importCameras;
+            target.importConstraints = reference.importConstraints;
+
+            target.importLights = reference.importLights;
+            target.importMaterials = reference.importMaterials;
+            target.importNormals = reference.importNormals;
+            target.importTangents = reference.importTangents;
+            target.importVisibility = reference.importVisibility;
+            target.indexFormat = reference.indexFormat;
+            
             target.isReadable = reference.isReadable;
+            target.keepQuads = reference.keepQuads;
+            target.materialLocation = reference.materialLocation;
             target.materialName = reference.materialName;
             target.materialSearch = reference.materialSearch;
-
+            target.meshCompression = reference.meshCompression;
+            target.motionNodeName = reference.motionNodeName;
+            
+            target.normalCalculationMode = reference.normalCalculationMode;
             target.normalSmoothingAngle = reference.normalSmoothingAngle;
+            target.normalSmoothingSource = reference.normalSmoothingSource;
+            target.optimizeGameObjects = reference.optimizeGameObjects;
             target.optimizeMesh = reference.optimizeMesh;
+            target.preserveHierarchy = reference.preserveHierarchy;
+            target.resampleCurves = reference.resampleCurves;
+            
             target.secondaryUVAngleDistortion = reference.secondaryUVAngleDistortion;
             target.secondaryUVAreaDistortion = reference.secondaryUVAreaDistortion;
             target.secondaryUVHardAngle = reference.secondaryUVHardAngle;
             target.secondaryUVPackMargin = reference.secondaryUVPackMargin;
+            
             target.sourceAvatar = reference.sourceAvatar;
             target.swapUVChannels = reference.swapUVChannels;
-
-            target.importTangents = reference.importTangents;
-
-            target.keepQuads = reference.keepQuads;
-            target.weldVertices = reference.weldVertices;
-
-            target.importCameras = reference.importCameras;
-            target.importLights = reference.importLights;
-            target.importVisibility = reference.importVisibility;
-            target.normalCalculationMode = reference.normalCalculationMode;
-            target.extraUserProperties = reference.extraUserProperties;
             target.useFileScale = reference.useFileScale;
-            target.importAnimatedCustomProperties = reference.importAnimatedCustomProperties;
-            target.importConstraints = reference.importConstraints;
-
-            /* 
-             read only properties.
-
-            target.importedTakeInfos
-            target.defaultClipAnimations
-            target.isTangentImportSupported
-            target.referencedClips
-            target.fileScale
-            target.isUseFileUnitsSupported
-            target.motionNodeName
-            target.isBakeIKSupported
-            target.isFileScaleUsed
-            target.transformPaths
-            */
-
-            /* Obsolete */
+            target.useFileUnits = reference.useFileUnits;
+            target.useSRGBMaterialColor = reference.useSRGBMaterialColor;
+            target.weldVertices = reference.weldVertices;
         }
     }
 }
