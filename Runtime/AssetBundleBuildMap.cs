@@ -15,7 +15,7 @@ namespace UnityEngine.AssetGraph
     /// </summary>
     public class AssetBundleBuildMap : ScriptableObject
     {
-        [SerializeField] private List<AssetBundleEntry> m_assetBundles;
+        [SerializeField] private List<AssetBundleEntry> m_assetBundles = null;
         
 #if UNITY_EDITOR
         [SerializeField] private int m_version;
@@ -164,11 +164,11 @@ namespace UnityEngine.AssetGraph
                 }
             }
 
-            [SerializeField] internal string m_assetBundleName;
-            [SerializeField] internal string m_assetBundleVariantName;
-            [SerializeField] internal string m_fullName;
-            [SerializeField] internal List<AssetPathString> m_assets;
-            [SerializeField] public string m_registererId;
+            [SerializeField] internal string m_assetBundleName = string.Empty;
+            [SerializeField] internal string m_assetBundleVariantName = string.Empty;
+            [SerializeField] internal string m_fullName = string.Empty;
+            [SerializeField] internal List<AssetPathString> m_assets = null;
+            [SerializeField] public string m_registererId = string.Empty;
 
             public string Name
             {
@@ -185,6 +185,7 @@ namespace UnityEngine.AssetGraph
                 get { return m_fullName; }
             }
 
+#if UNITY_EDITOR
             public AssetBundleEntry(string registererId, string assetBundleName, string variantName)
             {
                 m_registererId = registererId;
@@ -210,7 +211,8 @@ namespace UnityEngine.AssetGraph
 
                 AssetBundleBuildMap.SetMapDirty();
             }
-
+#endif
+            
             public IEnumerable<string> GetAssetFromAssetName(string assetName)
             {
                 assetName = assetName.ToLower();
@@ -219,6 +221,7 @@ namespace UnityEngine.AssetGraph
             }
         }
 
+#if UNITY_EDITOR
         public AssetBundleEntry GetAssetBundle(string registererId, string assetBundleFullName)
         {
             var entry = m_assetBundles.Find(v => v.m_fullName == assetBundleFullName);
@@ -233,12 +236,12 @@ namespace UnityEngine.AssetGraph
             return entry;
         }
 
-
         public AssetBundleEntry GetAssetBundleWithNameAndVariant(string registererId, string assetBundleName,
             string variantName)
         {
             return GetAssetBundle(registererId, AssetBundleBuildMap.MakeFullName(assetBundleName, variantName));
         }
+#endif
 
         public string[] GetAssetPathsFromAssetBundleAndAssetName(string assetbundleName, string assetName)
         {
