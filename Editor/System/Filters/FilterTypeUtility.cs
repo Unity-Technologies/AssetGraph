@@ -56,6 +56,7 @@ namespace UnityEngine.AssetGraph {
         private const string kPREFAB_IMPORTER_CLASS = "UnityEditor.PrefabImporter";
 
         private static List<string> s_filterKeyTypeList;
+        private static Type s_prefabImporterClass;
 
         public static List<string> GetFilterGUINames() {
             if (s_filterKeyTypeList == null) {
@@ -81,13 +82,19 @@ namespace UnityEngine.AssetGraph {
             // since PrefabImporter is internal class and can't access
             if (guiName == kPREFAB_KEY_NAME)
             {
-                return Assembly.Load("UnityEditor").GetType(kPREFAB_IMPORTER_CLASS);
+                if (s_prefabImporterClass == null)
+                {
+                    s_prefabImporterClass = Assembly.Load("UnityEditor").GetType(kPREFAB_IMPORTER_CLASS);
+                }
+
+                return s_prefabImporterClass;
             }
 
             var typemap = ImporterConfiguratorUtility.GetImporterConfiguratorGuiNameTypeMap ();
             if (typemap.ContainsKey (guiName)) {
                 return typemap [guiName];
             }
+            
             if (s_defaultAssetFilterGUITypeMap.ContainsKey (guiName)) {
                 return s_defaultAssetFilterGUITypeMap [guiName];
             }
