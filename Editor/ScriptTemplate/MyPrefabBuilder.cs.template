@@ -8,10 +8,11 @@ using System.Linq;
 using UnityEngine.AssetGraph;
 
 [CustomPrefabBuilder("MyPrefabBuilder")]
-public class MyPrefabBuilder : IPrefabBuilder {
+public class MyPrefabBuilder : IPrefabBuilder
+{
 
-	[SerializeField] private Color color;
-
+	[SerializeField] private Vector3 m_size;
+	
     public void OnValidate () {
     }
 
@@ -21,28 +22,28 @@ public class MyPrefabBuilder : IPrefabBuilder {
 		 */
 	public bool CanCreatePrefab (string groupKey, List<UnityEngine.Object> objects, ref PrefabCreateDescription description) {
 
-		var tex = objects.Find(o => o.GetType() == typeof(UnityEngine.Texture2D));
+		var pMat = objects.Find(o => o.GetType() == typeof(PhysicMaterial));
 
-		if(tex != null) {
-			description.prefabName = string.Format("MyPrefab{0}", groupKey);
+		if(pMat != null) {
+			description.prefabName = $"MyPrefab{groupKey}";
 		}
 
-		return tex != null;
+		return pMat != null;
 	}
 
 	/**
 	 * Create Prefab.
 	 */ 
-	public UnityEngine.GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects) {
+	public GameObject CreatePrefab (string groupKey, List<UnityEngine.Object> objects, GameObject previous) {
 
-		GameObject go = new GameObject(string.Format("MyPrefab{0}", groupKey));
+		var pMat = (PhysicMaterial)objects.Find(o => o.GetType() == typeof(PhysicMaterial));
 
-		GUITexture t = go.AddComponent<GUITexture>();
+		var go = new GameObject($"MyPrefab{groupKey}");
 
-		Texture2D tex = (Texture2D)objects.Find(o => o.GetType() == typeof(UnityEngine.Texture2D));
+		var c = go.AddComponent<BoxCollider>();
 
-		t.texture = tex;
-		t.color = color;
+		c.size = m_size;
+		c.material = pMat;
 
 		return go;
 	}
@@ -54,9 +55,9 @@ public class MyPrefabBuilder : IPrefabBuilder {
 
 		EditorGUILayout.HelpBox("This is the inspector of your custom PrefabBuilder. You can customize by implementing OnInspectorGUI().", MessageType.Info);
 
-		var newValue = EditorGUILayout.ColorField("Example", color);
-		if(newValue != color) {
-			color = newValue;
+		var newValue = EditorGUILayout.Vector3Field("Size", m_size);
+		if(newValue != m_size) {
+			m_size = newValue;
 			onValueChanged();
 		}
 	}

@@ -2,8 +2,9 @@ using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.Linq;
+using System.IO;
 using System.Collections.Generic;
+using UnityEditor.Experimental.AssetImporters;
 
 using UnityEngine.AssetGraph;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
@@ -73,12 +74,6 @@ public class MyImportSettingsConfigurator : IAssetImporterConfigurator
 	XYZObject class must be placed in "XYZObject.cs" file to be properly serialized. 
 */
 
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor.Experimental.AssetImporters;
-
 public class XYZObject : ScriptableObject {
 
     [SerializeField] public List<List<string>> list;
@@ -123,6 +118,3 @@ public class XYZImporter : ScriptedImporter
         ctx.SetMainObject (xyzobj);
     }
 }
-
-
-*/

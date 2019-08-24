@@ -34,6 +34,12 @@ public class MyGenerator : IAssetGenerator {
 		return true;
 	}
 
+	public bool CanGenerateAsset(AssetReference asset)
+	{
+		var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(asset.importFrom);
+		return tex != null;
+	}
+	
 	/**
 	 * Generate asset.
 	 */ 
