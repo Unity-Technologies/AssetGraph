@@ -222,7 +222,9 @@ namespace UnityEngine.AssetGraph
 					{BuildTargetGroup.WebGL, 		"BuildSettings.WebGL.Small"},
 					{BuildTargetGroup.WSA, 			"BuildSettings.WP8.Small"},
 					{BuildTargetGroup.XboxOne, 		"BuildSettings.XboxOne.Small"},
+					#if !UNITY_2019_3_OR_NEWER
 					{BuildTargetGroup.Facebook, 	"BuildSettings.Facebook.Small"},
+					#endif
 					{BuildTargetGroup.Switch, 		"BuildSettings.Switch.Small"}
 				};
 

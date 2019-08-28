@@ -1,9 +1,5 @@
-using UnityEngine;
 using UnityEditor;
-
 using System;
-using System.Linq;
-using System.Collections.Generic;
 
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -13,6 +9,8 @@ namespace UnityEngine.AssetGraph
     [CustomAssetImporterConfigurator(typeof(ModelImporter), "Model", "setting.fbx")]
     public class ModelImportSettingsConfigurator : IAssetImporterConfigurator
     {
+        private const float kTOLERANCE = 0.0001f;
+        
         public void Initialize (ConfigurationOption option)
         {
         }
@@ -22,7 +20,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as ModelImporter;
             var t = importer as ModelImporter;
             if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             return !IsEqual (t, r);
         }
@@ -32,7 +30,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as ModelImporter;
             var t = importer as ModelImporter;
             if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             OverwriteImportSettings (t, r);
         }
@@ -48,10 +46,16 @@ namespace UnityEngine.AssetGraph
         /// </summary>
         /// <returns><c>true</c>, if both settings are the equal, <c>false</c> otherwise.</returns>
         /// <param name="target">Target importer to test equality.</param>
-        public bool IsEqual (ModelImporter target, ModelImporter reference)
+        /// <param name="reference">Reference importer to test equality.</param>
+        private static bool IsEqual (ModelImporter target, ModelImporter reference)
         {
+            #if UNITY_2019_3_OR_NEWER
+            if (target.materialImportMode != reference.materialImportMode)
+                return false;
+            #else
             if (target.importMaterials != reference.importMaterials)
                 return false;
+            #endif
             if (target.importAnimation != reference.importAnimation)
                 return false;
             if (target.meshCompression != reference.meshCompression)
@@ -69,16 +73,21 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.animationCompression != reference.animationCompression)
                 return false;
-            if (target.animationPositionError != reference.animationPositionError)
+            if (Math.Abs(target.animationPositionError - reference.animationPositionError) > kTOLERANCE)
                 return false;
-            if (target.animationRotationError != reference.animationRotationError)
+            if (Math.Abs(target.animationRotationError - reference.animationRotationError) > kTOLERANCE)
                 return false;
-            if (target.animationScaleError != reference.animationScaleError)
+            if (Math.Abs(target.animationScaleError - reference.animationScaleError) > kTOLERANCE)
                 return false;
             if (target.animationType != reference.animationType)
                 return false;
             if (target.animationWrapMode != reference.animationWrapMode)
                 return false;
+#if UNITY_2019_3_OR_NEWER
+            if (target.avatarSetup != reference.avatarSetup)
+                return false;
+#endif
+            
             if (target.bakeIK != reference.bakeIK)
                 return false;
 
@@ -87,21 +96,21 @@ namespace UnityEngine.AssetGraph
                 if (target.clipAnimations.Length != reference.clipAnimations.Length)
                     return false;
                 for (int i = 0; i < target.clipAnimations.Length; i++) {
-                    if (target.clipAnimations [i].additiveReferencePoseFrame != reference.clipAnimations [i].additiveReferencePoseFrame)
+                    if (Math.Abs(target.clipAnimations [i].additiveReferencePoseFrame - reference.clipAnimations [i].additiveReferencePoseFrame) > kTOLERANCE)
                         return false;
                     if (target.clipAnimations [i].curves != reference.clipAnimations [i].curves)
                         return false;
-                    if (target.clipAnimations [i].cycleOffset != reference.clipAnimations [i].cycleOffset)
+                    if (Math.Abs(target.clipAnimations [i].cycleOffset - reference.clipAnimations [i].cycleOffset) > kTOLERANCE)
                         return false;
                     if (target.clipAnimations [i].events != reference.clipAnimations [i].events)
                         return false;
-                    if (target.clipAnimations [i].firstFrame != reference.clipAnimations [i].firstFrame)
+                    if (Math.Abs(target.clipAnimations [i].firstFrame - reference.clipAnimations [i].firstFrame) > kTOLERANCE)
                         return false;
                     if (target.clipAnimations [i].hasAdditiveReferencePose != reference.clipAnimations [i].hasAdditiveReferencePose)
                         return false;
                     if (target.clipAnimations [i].heightFromFeet != reference.clipAnimations [i].heightFromFeet)
                         return false;
-                    if (target.clipAnimations [i].heightOffset != reference.clipAnimations [i].heightOffset)
+                    if (Math.Abs(target.clipAnimations [i].heightOffset - reference.clipAnimations [i].heightOffset) > kTOLERANCE)
                         return false;
                     if (target.clipAnimations [i].keepOriginalOrientation != reference.clipAnimations [i].keepOriginalOrientation)
                         return false;
@@ -109,7 +118,7 @@ namespace UnityEngine.AssetGraph
                         return false;
                     if (target.clipAnimations [i].keepOriginalPositionY != reference.clipAnimations [i].keepOriginalPositionY)
                         return false;
-                    if (target.clipAnimations [i].lastFrame != reference.clipAnimations [i].lastFrame)
+                    if (Math.Abs(target.clipAnimations [i].lastFrame - reference.clipAnimations [i].lastFrame) > kTOLERANCE)
                         return false;
                     if (target.clipAnimations [i].lockRootHeightY != reference.clipAnimations [i].lockRootHeightY)
                         return false;
@@ -133,7 +142,7 @@ namespace UnityEngine.AssetGraph
                         return false;
                     if (target.clipAnimations [i].name != reference.clipAnimations [i].name)
                         return false;
-                    if (target.clipAnimations [i].rotationOffset != reference.clipAnimations [i].rotationOffset)
+                    if (Math.Abs(target.clipAnimations [i].rotationOffset - reference.clipAnimations [i].rotationOffset) > kTOLERANCE)
                         return false;
                     if (target.clipAnimations [i].takeName != reference.clipAnimations [i].takeName)
                         return false;
@@ -156,14 +165,14 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.generateSecondaryUV != reference.generateSecondaryUV)
                 return false;
-            if (target.globalScale != reference.globalScale)
+            if (Math.Abs(target.globalScale - reference.globalScale) > kTOLERANCE)
                 return false;
 
             // humanDescription
             {
-                if (target.humanDescription.armStretch != reference.humanDescription.armStretch)
+                if (Math.Abs(target.humanDescription.armStretch - reference.humanDescription.armStretch) > kTOLERANCE)
                     return false;
-                if (target.humanDescription.feetSpacing != reference.humanDescription.feetSpacing)
+                if (Math.Abs(target.humanDescription.feetSpacing - reference.humanDescription.feetSpacing) > kTOLERANCE)
                     return false;
                 if (target.humanDescription.hasTranslationDoF != reference.humanDescription.hasTranslationDoF)
                     return false;
@@ -179,7 +188,7 @@ namespace UnityEngine.AssetGraph
                             return false;
 
                         // limit
-                        if (target.humanDescription.human [i].limit.axisLength != reference.humanDescription.human [i].limit.axisLength)
+                        if (Math.Abs(target.humanDescription.human [i].limit.axisLength - reference.humanDescription.human [i].limit.axisLength) > kTOLERANCE)
                             return false;
                         if (target.humanDescription.human [i].limit.center != reference.humanDescription.human [i].limit.center)
                             return false;
@@ -192,11 +201,11 @@ namespace UnityEngine.AssetGraph
                     }
                 }
 
-                if (target.humanDescription.legStretch != reference.humanDescription.legStretch)
+                if (Math.Abs(target.humanDescription.legStretch - reference.humanDescription.legStretch) > kTOLERANCE)
                     return false;
-                if (target.humanDescription.lowerArmTwist != reference.humanDescription.lowerArmTwist)
+                if (Math.Abs(target.humanDescription.lowerArmTwist - reference.humanDescription.lowerArmTwist) > kTOLERANCE)
                     return false;
-                if (target.humanDescription.lowerLegTwist != reference.humanDescription.lowerLegTwist)
+                if (Math.Abs(target.humanDescription.lowerLegTwist - reference.humanDescription.lowerLegTwist) > kTOLERANCE)
                     return false;
 
                 // skeleton
@@ -215,9 +224,9 @@ namespace UnityEngine.AssetGraph
                     }
                 }
 
-                if (target.humanDescription.upperArmTwist != reference.humanDescription.upperArmTwist)
+                if (Math.Abs(target.humanDescription.upperArmTwist - reference.humanDescription.upperArmTwist) > kTOLERANCE)
                     return false;
-                if (target.humanDescription.upperLegTwist != reference.humanDescription.upperLegTwist)
+                if (Math.Abs(target.humanDescription.upperLegTwist - reference.humanDescription.upperLegTwist) > kTOLERANCE)
                     return false;
             }
 
@@ -239,7 +248,7 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.meshOptimizationFlags != reference.meshOptimizationFlags)
                 return false;
-            if (target.minBoneWeight != reference.minBoneWeight)
+            if (Math.Abs(target.minBoneWeight - reference.minBoneWeight) > kTOLERANCE)
                 return false;
             if (target.skinWeights != reference.skinWeights)
                 return false;
@@ -247,7 +256,7 @@ namespace UnityEngine.AssetGraph
                 return false;
 #endif
             
-            if (target.normalSmoothingAngle != reference.normalSmoothingAngle)
+            if (Math.Abs(target.normalSmoothingAngle - reference.normalSmoothingAngle) > kTOLERANCE)
                 return false;
             
             #if UNITY_2019_1_OR_NEWER
@@ -274,13 +283,13 @@ namespace UnityEngine.AssetGraph
                 return false;
             
 
-            if (target.secondaryUVAngleDistortion != reference.secondaryUVAngleDistortion)
+            if (Math.Abs(target.secondaryUVAngleDistortion - reference.secondaryUVAngleDistortion) > kTOLERANCE)
                 return false;
-            if (target.secondaryUVAreaDistortion != reference.secondaryUVAreaDistortion)
+            if (Math.Abs(target.secondaryUVAreaDistortion - reference.secondaryUVAreaDistortion) > kTOLERANCE)
                 return false;
-            if (target.secondaryUVHardAngle != reference.secondaryUVHardAngle)
+            if (Math.Abs(target.secondaryUVHardAngle - reference.secondaryUVHardAngle) > kTOLERANCE)
                 return false;
-            if (target.secondaryUVPackMargin != reference.secondaryUVPackMargin)
+            if (Math.Abs(target.secondaryUVPackMargin - reference.secondaryUVPackMargin) > kTOLERANCE)
                 return false;
             if (target.sourceAvatar != reference.sourceAvatar)
                 return false;
@@ -323,7 +332,7 @@ namespace UnityEngine.AssetGraph
             return true;
         }
 
-        private void OverwriteImportSettings (ModelImporter target, ModelImporter reference)
+        private static void OverwriteImportSettings (ModelImporter target, ModelImporter reference)
         {
             target.addCollider = reference.addCollider;
             target.animationCompression = reference.animationCompression;
@@ -333,6 +342,10 @@ namespace UnityEngine.AssetGraph
 
             target.animationType = reference.animationType;
             target.animationWrapMode = reference.animationWrapMode;
+#if UNITY_2019_3_OR_NEWER
+            target.avatarSetup = reference.avatarSetup;
+#endif      
+            
             target.bakeIK = reference.bakeIK;
             target.clipAnimations = reference.clipAnimations;
             target.extraExposedTransformPaths = reference.extraExposedTransformPaths;
@@ -352,7 +365,11 @@ namespace UnityEngine.AssetGraph
             target.importConstraints = reference.importConstraints;
 
             target.importLights = reference.importLights;
+            #if UNITY_2019_3_OR_NEWER
+            target.materialImportMode = reference.materialImportMode;
+            #else
             target.importMaterials = reference.importMaterials;
+            #endif
             target.importNormals = reference.importNormals;
             target.importTangents = reference.importTangents;
             target.importVisibility = reference.importVisibility;

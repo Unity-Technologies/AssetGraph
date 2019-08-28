@@ -1,17 +1,11 @@
-using UnityEngine;
 using UnityEditor;
-
 using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
 
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph
 {
-	public class BuildTargetUtility
+	public static class BuildTargetUtility
 	{
 
 		public const BuildTargetGroup DefaultTarget = BuildTargetGroup.Unknown;
@@ -19,7 +13,7 @@ namespace UnityEngine.AssetGraph
 		/**
 		 *  from build target to human friendly string for display purpose.
 		 */
-		public static string TargetToHumaneString (UnityEditor.BuildTarget t)
+		public static string TargetToHumaneString (BuildTarget t)
 		{
 
 			switch (t) {
@@ -130,7 +124,7 @@ namespace UnityEngine.AssetGraph
 		/**
 		 *  from build target group to human friendly string for display purpose.
 		 */
-		public static string GroupToHumaneString (UnityEditor.BuildTargetGroup g)
+		public static string GroupToHumaneString (BuildTargetGroup g)
 		{
 
 			switch (g) {
@@ -152,8 +146,10 @@ namespace UnityEngine.AssetGraph
 				return "Xbox One";
 			case BuildTargetGroup.Unknown:
 				return "Unknown";
+			#if !UNITY_2019_3_OR_NEWER
 			case BuildTargetGroup.Facebook:
 				return "Facebook";
+			#endif
 			case BuildTargetGroup.Switch:
 				return "Nintendo Switch";
 			default:
@@ -162,7 +158,7 @@ namespace UnityEngine.AssetGraph
 		}
 
 
-		public static BuildTargetGroup TargetToGroup (UnityEditor.BuildTarget t)
+		public static BuildTargetGroup TargetToGroup (BuildTarget t)
 		{
 
 			if ((int)t == int.MaxValue) {
@@ -200,7 +196,7 @@ namespace UnityEngine.AssetGraph
 			}
 		}
 
-		public static BuildTarget GroupToTarget (UnityEditor.BuildTargetGroup g)
+		public static BuildTarget GroupToTarget (BuildTargetGroup g)
 		{
 
 			switch (g) {
@@ -222,8 +218,10 @@ namespace UnityEngine.AssetGraph
 				return BuildTarget.XboxOne;
 			case BuildTargetGroup.Switch:
 				return BuildTarget.Switch;
+			#if !UNITY_2019_3_OR_NEWER
 			case BuildTargetGroup.Facebook:
 				return BuildTarget.StandaloneWindows; // TODO: Facebook can be StandardWindows or WebGL
+			#endif
 			default:
 				// temporarily assigned for default value (BuildTargetGroup.Unknown)
 				return (BuildTarget)int.MaxValue;

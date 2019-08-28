@@ -1,9 +1,5 @@
-using UnityEngine;
 using UnityEditor;
-
 using System;
-using System.Linq;
-using System.Collections.Generic;
 
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -22,7 +18,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as VideoClipImporter;
             var t = importer as VideoClipImporter;
             if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             return !IsEqual (t, r);
         }
@@ -32,7 +28,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as VideoClipImporter;
             var t = importer as VideoClipImporter;
             if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             OverwriteImportSettings (t, r);
         }
@@ -41,7 +37,7 @@ namespace UnityEngine.AssetGraph
         {
         }
 
-        public bool IsEqual (VideoClipImporter target, VideoClipImporter reference)
+        private bool IsEqual (VideoClipImporter target, VideoClipImporter reference)
         {
             if (!CompareVideoImporterTargetSettings (target.defaultTargetSettings, reference.defaultTargetSettings))
                 return false;
@@ -67,12 +63,14 @@ namespace UnityEngine.AssetGraph
                 return false;
             if (target.keepAlpha != reference.keepAlpha)
                 return false;
+            #if !UNITY_2019_3_OR_NEWER
             if (target.linearColor != reference.linearColor)
                 return false;
             if (target.quality != reference.quality)
                 return false;
             if (target.useLegacyImporter != reference.useLegacyImporter)
                 return false;
+            #endif
 
             if (target.pixelAspectRatioDenominator != reference.pixelAspectRatioDenominator) return false;
             if (target.pixelAspectRatioNumerator != reference.pixelAspectRatioNumerator) return false;
@@ -101,43 +99,27 @@ namespace UnityEngine.AssetGraph
                 } catch (Exception e) {
                     LogUtility.Logger.LogError ("VideoClipImporter", 
                         string.Format ("Failed to test equality setting for {0}: file :{1} type:{3} reason:{2}", 
-                            platformName, target.assetPath, e.Message, e.GetType ().ToString ()));
+                            platformName, target.assetPath, e.Message, e.GetType ()));
                 }
             }
 
             return true;
         }
 
-        private void OverwriteImportSettings (VideoClipImporter target, VideoClipImporter reference)
+        private static void OverwriteImportSettings (VideoClipImporter target, VideoClipImporter reference)
         {
-            /*
-            defaultTargetSettings   Default values for the platform-specific import settings.
-            deinterlaceMode         Images are deinterlaced during transcode. This tells the importer how to interpret fields in the source, if any.
-            flipHorizontal          Apply a horizontal flip during import.
-            flipVertical            Apply a vertical flip during import.
-            frameCount              Number of frames in the clip.
-            frameRate               Frame rate of the clip.
-            importAudio             Import audio tracks from source file.
-            isPlayingPreview        Whether the preview is currently playing.
-            keepAlpha               Whether to keep the alpha from the source into the transcoded clip.
-            linearColor             Used in legacy import mode. Same as MovieImport.linearTexture.
-            outputFileSize          Size in bytes of the file once imported.
-            quality                 Used in legacy import mode. Same as MovieImport.quality.
-            sourceAudioTrackCount   Number of audio tracks in the source file.
-            sourceFileSize          Size in bytes of the file before importing.
-            sourceHasAlpha          True if the source file has a channel for per-pixel transparency.
-            useLegacyImporter       Whether to import a MovieTexture (legacy) or a VideoClip.
-            */
-
             target.defaultTargetSettings = reference.defaultTargetSettings;
             target.deinterlaceMode = reference.deinterlaceMode;
             target.flipHorizontal = reference.flipHorizontal;
             target.flipVertical = reference.flipVertical;
             target.importAudio = reference.importAudio;
             target.keepAlpha = reference.keepAlpha;
+            
+            #if !UNITY_2019_3_OR_NEWER
             target.linearColor = reference.linearColor;
             target.quality = reference.quality;
             target.useLegacyImporter = reference.useLegacyImporter;
+            #endif
 
             foreach (var g in NodeGUIUtility.SupportedBuildTargetGroups) {
                 var platformName = BuildTargetUtility.TargetToAssetBundlePlatformName (g, 
@@ -151,9 +133,8 @@ namespace UnityEngine.AssetGraph
                         target.ClearTargetSettings (platformName);
                     }
                 } catch (Exception e) {
-                    LogUtility.Logger.LogWarning ("VideoClipImporter", 
-                        string.Format ("Failed to set override setting for platform {0}: file :{1} \\nreason:{2}", 
-                            platformName, target.assetPath, e.Message));
+                    LogUtility.Logger.LogWarning ("VideoClipImporter",
+                        $"Failed to set override setting for platform {platformName}: file :{target.assetPath} \\nreason:{e.Message}");
                 }
             }
 
@@ -171,11 +152,11 @@ namespace UnityEngine.AssetGraph
             */
         }
 
-        public bool CompareVideoImporterTargetSettings (VideoImporterTargetSettings t, VideoImporterTargetSettings r)
+        private static bool CompareVideoImporterTargetSettings (VideoImporterTargetSettings t, VideoImporterTargetSettings r)
         {
 
             if (r == null) {
-                if (t != r) {
+                if (t != null) {
                     return false;
                 }
             }
