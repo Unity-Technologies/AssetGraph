@@ -153,7 +153,7 @@ namespace UnityEngine.AssetGraph {
 			var totalAssets = 0;
 			var totalGroups = 0;
 			if(assetGroups != null) {
-				totalAssets = assetGroups.Where(v => v.Value != null).Select(v => v.Value.Count).Sum();
+				totalAssets = assetGroups.Sum(v => v.Value == null ? 0 : v.Value.Count);
 				totalGroups = assetGroups.Keys.Count;
 			}
 

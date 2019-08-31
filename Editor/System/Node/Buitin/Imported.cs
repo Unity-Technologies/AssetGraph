@@ -98,6 +98,10 @@ namespace UnityEngine.AssetGraph {
 			if(connectionsToOutput == null || Output == null) {
 				return;
 			}
+			
+			if (m_lastImportedAssets == null) {
+				m_lastImportedAssets = new List<AssetReference> ();
+			}			
 
 			var output = new Dictionary<string, List<AssetReference>> {
                 {"0", m_lastImportedAssets}
