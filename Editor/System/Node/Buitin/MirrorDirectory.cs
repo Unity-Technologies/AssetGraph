@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
@@ -275,7 +274,7 @@ namespace UnityEngine.AssetGraph {
                         srcInfo.LastWriteTimeUtc > dstInfo.LastWriteTimeUtc) 
                     {
                         File.Copy (srcPath, dstPath, true);
-                        progressFunc (node, string.Format ("Copying {0}", Path.GetFileName (srcPath)), (float)(i++) / (float)targetFilePaths.Count);
+                        progressFunc (node, $"Copying {Path.GetFileName(srcPath)}", (float)(i++) / (float)targetFilePaths.Count);
                     }
                 }
 

@@ -1,11 +1,7 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -55,7 +51,8 @@ namespace UnityEngine.AssetGraph {
         public bool CanGenerateAsset (AssetReference asset) {
 
             if (asset.importerType != typeof(TextureImporter)) {
-                throw new NodeException ("Texture Scaler needs texture for source asset.", string.Format("Remove {0} from input.", asset.fileNameAndExtension));
+                throw new NodeException ("Texture Scaler needs texture for source asset.",
+                    $"Remove {asset.fileNameAndExtension} from input.");
             }
 
             var importer = AssetImporter.GetAtPath (asset.importFrom) as TextureImporter;

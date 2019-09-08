@@ -62,7 +62,7 @@ public class SetReference : IModifier
         }
 
         public override string ToString() {
-            return string.Format ("{0} ({1})", niceName, (kind == Kind.Field)? "Field" : "Property");
+            return $"{niceName} ({((kind == Kind.Field) ? "Field" : "Property")})";
         }
     }
 
@@ -387,7 +387,8 @@ public class SetReference : IModifier
 
         if (m_fieldValueType != null) {
             using (new EditorGUILayout.HorizontalScope ()) {
-                GUILayout.Label (string.Format ("Editing Field: {0} ({1})", m_nicifiedFieldName, ObjectNames.NicifyVariableName(m_fieldValueType.Name)), EditorStyles.boldLabel);
+                GUILayout.Label (
+                    $"Editing Field: {m_nicifiedFieldName} ({ObjectNames.NicifyVariableName(m_fieldValueType.Name)})", EditorStyles.boldLabel);
                 GUILayout.FlexibleSpace ();
                 if (GUILayout.Button ("Clear", GUILayout.Width (60))) {
                     if (EditorUtility.DisplayDialog ("Reset Property Setting", 
@@ -520,7 +521,7 @@ public class SetReference : IModifier
     {
         if (m_targetComponentType != null) {
             using (new EditorGUILayout.HorizontalScope ()) {
-                GUILayout.Label (string.Format ("Component: {0}", m_targetComponentType.Name), EditorStyles.boldLabel);
+                GUILayout.Label ($"Component: {m_targetComponentType.Name}", EditorStyles.boldLabel);
                 GUILayout.FlexibleSpace ();
                 if (GUILayout.Button ("Clear", GUILayout.Width (60))) {
                     if (EditorUtility.DisplayDialog ("Clear Properties Setting", 

@@ -1,12 +1,9 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
@@ -150,10 +147,8 @@ namespace UnityEngine.AssetGraph {
             // build result with exception
             else {
                 var graphName = Path.GetFileNameWithoutExtension (m_selectedResult.GraphAssetPath);
-                msg = string.Format ("{0}\n\nHow to fix:\n{1}\n\nWhere:'{2}' in {3}\nPlatform:{4}",
-                    m_selectedException.Reason, m_selectedException.HowToFix, m_selectedException.Node.Name, 
-                    graphName,
-                    BuildTargetUtility.TargetToHumaneString(m_selectedResult.Target));
+                msg =
+                    $"{m_selectedException.Reason}\n\nHow to fix:\n{m_selectedException.HowToFix}\n\nWhere:'{m_selectedException.Node.Name}' in {graphName}\nPlatform:{BuildTargetUtility.TargetToHumaneString(m_selectedResult.Target)}";
             }
 
             var msgStyle = GUI.skin.label;
@@ -313,7 +308,7 @@ namespace UnityEngine.AssetGraph {
                     var currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
 
                     var title = string.Format("{2} - Processing Asset Graphs[{0}/{1}]", currentCount, totalCount, BuildTargetUtility.TargetToHumaneString(t));
-                    var info  = string.Format("{0}:{1}", node.Name, message);
+                    var info  = $"{node.Name}:{message}";
 
                     EditorUtility.DisplayProgressBar(title, "Processing " + info, currentTotalProgress);
                 };

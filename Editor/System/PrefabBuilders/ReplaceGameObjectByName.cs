@@ -3,8 +3,6 @@ using UnityEditor;
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-
 using UnityEngine.AssetGraph;
 using Object = UnityEngine.Object;
 
@@ -25,7 +23,7 @@ public class ReplaceGameObjectByName : IPrefabBuilder {
     }
 
     private string GetPrefabName(string srcGameObjectName, string groupKeyName) {
-        return string.Format("{0}_{1}",srcGameObjectName, groupKeyName);
+        return $"{srcGameObjectName}_{groupKeyName}";
     }
 
     public void OnValidate () {

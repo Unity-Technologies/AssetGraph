@@ -1,9 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
@@ -101,7 +98,7 @@ namespace UnityEngine.AssetGraph {
 			var c = BatchBuildConfig.GetConfig().Find(collectionName);
 			if(c == null) {
 				throw new AssetGraphException(
-					string.Format("Failed to build with graph collection. Graph collection '{0}' not found. ", collectionName)
+					$"Failed to build with graph collection. Graph collection '{collectionName}' not found. "
 				);
 			}
 

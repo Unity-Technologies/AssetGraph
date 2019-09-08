@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;

@@ -1,10 +1,6 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.Linq;
-using System.Collections.Generic;
-
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph
@@ -22,7 +18,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as TrueTypeFontImporter;
             var t = importer as TrueTypeFontImporter;
             if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             return !IsEqual (t, r);
         }
@@ -32,7 +28,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as TrueTypeFontImporter;
             var t = importer as TrueTypeFontImporter;
             if (r == null || t == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             OverwriteImportSettings (t, r);
         }

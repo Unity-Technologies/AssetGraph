@@ -112,7 +112,7 @@ namespace UnityEngine.AssetGraph
                 return assetBundleName.ToLower();
             }
 
-            return string.Format("{0}.{1}", assetBundleName.ToLower(), variantName.ToLower());
+            return $"{assetBundleName.ToLower()}.{variantName.ToLower()}";
         }
 
         internal static string[] FullNameToNameAndVariant(string assetBundleFullName)

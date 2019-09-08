@@ -1,12 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.IMGUI.Controls;
-
-using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
@@ -102,7 +96,7 @@ namespace UnityEngine.AssetGraph {
 
             foreach(var t in NodeGUIUtility.SupportedBuildTargets) {
                 if (!currentTargets.Contains (t)) {
-                    menu.AddItem(new GUIContent( string.Format("Add {0}", BuildTargetUtility.TargetToHumaneString(t)) ), false, () => { MenuAction_AddTarget(t); });
+                    menu.AddItem(new GUIContent($"Add {BuildTargetUtility.TargetToHumaneString(t)}"), false, () => { MenuAction_AddTarget(t); });
                 }
             }
 

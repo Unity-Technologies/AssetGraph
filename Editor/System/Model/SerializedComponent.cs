@@ -1,8 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using System;
 using System.Linq;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace UnityEngine.AssetGraph {
@@ -137,7 +135,7 @@ namespace UnityEngine.AssetGraph {
                     GUILayout.FlexibleSpace ();
 
                     if (Help.HasHelpForObject (m_component)) {
-                        var tooltip = string.Format ("Open Reference for {0}.", m_componentType.Name);
+                        var tooltip = $"Open Reference for {m_componentType.Name}.";
                         if(GUILayout.Button(new GUIContent(s_helpIcon, tooltip), EditorStyles.miniLabel, GUILayout.Width(20f), GUILayout.Height(20f))) {
                             Help.ShowHelpForObject (m_component);
                         }

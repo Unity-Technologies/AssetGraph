@@ -1,9 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-using System;
-using System.Collections;
-
-namespace UnityEngine.AssetGraph {
+﻿namespace UnityEngine.AssetGraph {
 
 	public class LogUtility {
 

@@ -1,9 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.AssetGraph;
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -82,7 +80,7 @@ public class CreateMaterialFromTexture : IAssetGenerator
         if (asset.importerType != typeof(TextureImporter))
         {
             throw new NodeException("CreateMaterialFromTexture needs texture for source asset.",
-                string.Format("Remove {0} from input.", asset.fileNameAndExtension));
+                $"Remove {asset.fileNameAndExtension} from input.");
         }
 
         return true;

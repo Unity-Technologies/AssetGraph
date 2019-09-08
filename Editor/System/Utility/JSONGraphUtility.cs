@@ -1,11 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Collections.Generic;
-
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -15,7 +10,7 @@ namespace UnityEngine.AssetGraph {
 
             string path =
                 EditorUtility.SaveFilePanelInProject(
-                    string.Format("Export {0} to JSON file", graph.name), 
+                    $"Export {graph.name} to JSON file", 
                     graph.name, "json", 
                     "Export to:");
             if(string.IsNullOrEmpty(path)) {
@@ -43,7 +38,7 @@ namespace UnityEngine.AssetGraph {
                 string graphPath = AssetDatabase.GUIDToAssetPath(guid);
                 string graphName = Path.GetFileNameWithoutExtension(graphPath);
 
-                string jsonFilePath = Path.Combine (folderSelected, string.Format("{0}.json", graphName));
+                string jsonFilePath = Path.Combine (folderSelected, $"{graphName}.json");
 
                 var graph = AssetDatabase.LoadAssetAtPath<Model.ConfigGraph>(graphPath);
                 string jsonString = EditorJsonUtility.ToJson (graph, true);
@@ -72,7 +67,7 @@ namespace UnityEngine.AssetGraph {
                 graph = ScriptableObject.CreateInstance<Model.ConfigGraph>();
                 EditorJsonUtility.FromJsonOverwrite (jsonContent, graph);
                 var newAssetFolder = CreateFolderForImportedAssets ();
-                var graphPath = FileUtility.PathCombine(newAssetFolder, string.Format("{0}.asset", name));
+                var graphPath = FileUtility.PathCombine(newAssetFolder, $"{name}.asset");
                 AssetDatabase.CreateAsset (graph, graphPath);
             }
             return graph;
@@ -98,18 +93,19 @@ namespace UnityEngine.AssetGraph {
 
                 var graph = ScriptableObject.CreateInstance<Model.ConfigGraph>();
                 EditorJsonUtility.FromJsonOverwrite (jsonContent, graph);
-                var graphPath = FileUtility.PathCombine(newAssetFolder, string.Format("{0}.asset", name));
+                var graphPath = FileUtility.PathCombine(newAssetFolder, $"{name}.asset");
                 AssetDatabase.CreateAsset (graph, graphPath);
             }
         }
 
         private static string CreateFolderForImportedAssets() {
             var t = DateTime.Now;
-            var folderName = String.Format ("ImportedGraphs_{0:D4}-{1:D2}_{2:D2}_{3:D2}{4:D2}{5:D2}", t.Year, t.Month, t.Day, t.Hour, t.Minute, t.Second);
+            var folderName =
+                $"ImportedGraphs_{t.Year:D4}-{t.Month:D2}_{t.Day:D2}_{t.Hour:D2}{t.Minute:D2}{t.Second:D2}";
 
             AssetDatabase.CreateFolder ("Assets", folderName);
 
-            return String.Format("Assets/{0}", folderName);
+            return $"Assets/{folderName}";
         }
 	}
 }

@@ -1,9 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
@@ -24,7 +21,8 @@ namespace UnityEngine.AssetGraph {
 
 			var appPath = EditorApplication.applicationPath.Replace(Model.Settings.UNITY_FOLDER_SEPARATOR, Path.DirectorySeparatorChar);
 
-            var appCmd = string.Format("{0}{1}", appPath, (Application.platform == RuntimePlatform.WindowsEditor) ? "" : "/Contents/MacOS/Unity");
+            var appCmd =
+	            $"{appPath}{((Application.platform == RuntimePlatform.WindowsEditor) ? "" : "/Contents/MacOS/Unity")}";
 			var argPass = (Application.platform == RuntimePlatform.WindowsEditor)? "%1 %2 %3 %4 %5 %6 %7 %8 %9" : "$*";
 			var cmd = string.Format(kCommandStr, appCmd, FileUtility.ProjectPathWithSlash(), kCommandMethod, argPass);
 			var ext = (Application.platform == RuntimePlatform.WindowsEditor)? "bat" : "sh";

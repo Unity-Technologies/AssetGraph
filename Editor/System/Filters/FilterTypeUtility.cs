@@ -5,9 +5,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEditor.Animations;
-
-using UnityEngine;
-
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {

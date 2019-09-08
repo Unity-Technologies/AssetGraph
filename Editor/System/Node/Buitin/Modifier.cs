@@ -1,12 +1,9 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.IO;
-
 using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -146,11 +143,8 @@ namespace UnityEngine.AssetGraph {
 
                     if (targetType == null) {
 						EditorGUILayout.HelpBox(
-							string.Format(
-								"You need to create at least one Modifier script to select script for Modifier. " +
-								"To start, select {0}>{1}>{2} menu and create a new script.",
-								menuNames[1],menuNames[2], menuNames[3]
-							), MessageType.Info);
+							"You need to create at least one Modifier script to select script for Modifier. " +
+							$"To start, select {menuNames[1]}>{menuNames[2]}>{menuNames[3]} menu and create a new script.", MessageType.Info);
 					} else {
 						EditorGUILayout.HelpBox(
 							string.Format(
@@ -195,8 +189,8 @@ namespace UnityEngine.AssetGraph {
                     EditorGUILayout.LabelField ("Reset Modifier Setting");
 
                     if (GUILayout.Button ("Clear")) {
-                        if (EditorUtility.DisplayDialog ("Clear Modifier Setting", 
-                            string.Format ("Do you want to reset modifier for \"{0}\"?", node.Name), "OK", "Cancel")) 
+                        if (EditorUtility.DisplayDialog ("Clear Modifier Setting",
+	                        $"Do you want to reset modifier for \"{node.Name}\"?", "OK", "Cancel")) 
                         {
                             using (new RecordUndoScope ("Clear Modifier Setting", node)) {
                                 ResetConfig ();

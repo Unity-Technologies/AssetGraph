@@ -2,12 +2,8 @@ using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-
 using UnityEngine.AssetGraph;
 
 namespace AssetBundleGraph {
@@ -674,7 +670,8 @@ namespace AssetBundleGraph {
 
 			if( overlap != null && throwException ) {
 				var element = overlap.First();
-                throw new AssetGraphException(String.Format("Duplicated filter condition found for [Keyword:{0} Type:{1}]", element.FilterKeyword, element.FilterKeytype));
+                throw new AssetGraphException(
+	                $"Duplicated filter condition found for [Keyword:{element.FilterKeyword} Type:{element.FilterKeytype}]");
 			}
 			return overlap != null;
 		}
@@ -716,7 +713,7 @@ namespace AssetBundleGraph {
 			} else {
 				var pointIndex = f.FilterKeytype.LastIndexOf('.');
 				var keytypeName = (pointIndex > 0)? f.FilterKeytype.Substring(pointIndex+1):f.FilterKeytype;
-				p.Label = string.Format("{0}[{1}]", f.FilterKeyword, keytypeName);
+				p.Label = $"{f.FilterKeyword}[{keytypeName}]";
 			}
 		}
 

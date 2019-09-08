@@ -1,8 +1,6 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
@@ -29,7 +27,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as TextureImporter;
             var t = importer as TextureImporter;
             if (t == null || r == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             return !IsEqual (t, r, GetTagName(target, group));
         }
@@ -39,7 +37,7 @@ namespace UnityEngine.AssetGraph
             var r = referenceImporter as TextureImporter;
             var t = importer as TextureImporter;
             if (t == null || r == null) {
-                throw new AssetGraphException (string.Format ("Invalid AssetImporter assigned for {0}", importer.assetPath));
+                throw new AssetGraphException ($"Invalid AssetImporter assigned for {importer.assetPath}");
             }
             OverwriteImportSettings (t, r, GetTagName(target, group));
         }

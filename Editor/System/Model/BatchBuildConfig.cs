@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-using System.Collections;
+﻿using UnityEditor;
 using System.Collections.Generic;
 using System;
 using System.IO;
@@ -33,7 +31,7 @@ namespace UnityEngine.AssetGraph {
                         BatchBuildConfig.SetConfigDirty ();
                         return newCollection;
                     }
-                    nameCandidate = string.Format ("{0} {1}", suggestedName, ++i);
+                    nameCandidate = $"{suggestedName} {++i}";
                 }
             }
 

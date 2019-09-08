@@ -1,12 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reflection;
-
+﻿using UnityEditor;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -15,8 +7,8 @@ namespace UnityEngine.AssetGraph {
 	public class ConfigGraphEditor : Editor {
 
 		private class Styles {
-			public static readonly string kEDITBUTTON_LABEL		= "Open in Graph Editor";
-			public static readonly string kEDITBUTTON_DESCRIPTION	= "Opens graph in editor to modify the graph.";
+			public const string kEDITBUTTON_LABEL = "Open in Graph Editor";
+			public const string kEDITBUTTON_DESCRIPTION = "Opens graph in editor to modify the graph.";
 			public static readonly GUIContent kEDITBUTTON = new GUIContent(kEDITBUTTON_LABEL, kEDITBUTTON_DESCRIPTION);
 		}
 

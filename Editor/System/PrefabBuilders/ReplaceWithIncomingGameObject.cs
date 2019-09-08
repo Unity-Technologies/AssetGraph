@@ -27,7 +27,7 @@ public class ReplaceWithIncomingGameObject : IPrefabBuilder {
     }
 
     private string GetPrefabName(string srcGameObjectName, string groupKeyName) {
-        return string.Format("{0}_{1}",srcGameObjectName, groupKeyName);
+        return $"{srcGameObjectName}_{groupKeyName}";
     }
 
 	/**

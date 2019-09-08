@@ -1,13 +1,9 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
-using UnityEngine.AssetGraph;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {

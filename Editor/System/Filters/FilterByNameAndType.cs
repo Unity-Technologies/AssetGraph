@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
@@ -24,7 +23,7 @@ namespace UnityEngine.AssetGraph {
 				} else {
 					var pointIndex = m_filterKeytype.LastIndexOf('.');
 					var keytypeName = (pointIndex > 0)? m_filterKeytype.Substring(pointIndex+1):m_filterKeytype;
-					return string.Format("{0}[{1}]", m_filterKeyword, keytypeName);
+					return $"{m_filterKeyword}[{keytypeName}]";
 				}
 			}
 		}

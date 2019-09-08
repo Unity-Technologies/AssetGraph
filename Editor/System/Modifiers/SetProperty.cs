@@ -448,7 +448,7 @@ public class SetProperty : IModifier
     {
         if (m_type != null) {
             using (new EditorGUILayout.HorizontalScope ()) {
-                GUILayout.Label (string.Format ("{0}", m_type.Name), EditorStyles.boldLabel);
+                GUILayout.Label ($"{m_type.Name}", EditorStyles.boldLabel);
                 GUILayout.FlexibleSpace ();
                 if (GUILayout.Button ("Clear", GUILayout.Width (60))) {
                     if (EditorUtility.DisplayDialog ("Clear Properties Setting", 

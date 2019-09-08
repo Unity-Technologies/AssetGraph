@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
@@ -198,7 +197,7 @@ namespace UnityEngine.AssetGraph {
                         float currentTotalProgress = (currentCount/totalCount) + currentNodeProgress;
 
                         string title = string.Format("Building {2}[{0}/{1}]", currentCount, totalCount, graphName);
-                        string info  = string.Format("Processing {0}:{1}", node.Name, message);
+                        string info  = $"Processing {node.Name}:{message}";
 
                         EditorUtility.DisplayProgressBar(title, info, currentTotalProgress);
                     }

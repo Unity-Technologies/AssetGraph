@@ -1,12 +1,7 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.IMGUI.Controls;
-
-using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Collections;
 using System.Collections.Generic;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
@@ -29,7 +24,8 @@ namespace UnityEngine.AssetGraph {
         public ExecuteResultTreeItem(ExecuteGraphResult r) : base(s_id++, 0, string.Empty)
         {
             m_result = r;
-            displayName = string.Format ("{0}({1}):{2}", Path.GetFileNameWithoutExtension(r.GraphAssetPath), BuildTargetUtility.TargetToHumaneString(r.Target), (r.IsAnyIssueFound)?"Failed" : "Good");
+            displayName =
+                $"{Path.GetFileNameWithoutExtension(r.GraphAssetPath)}({BuildTargetUtility.TargetToHumaneString(r.Target)}):{((r.IsAnyIssueFound) ? "Failed" : "Good")}";
         }
     }
 
@@ -56,7 +52,7 @@ namespace UnityEngine.AssetGraph {
         {
             m_result = r;
             m_exception = e;
-            displayName = string.Format ("{0}:{1}", m_exception.Node.Name, m_exception.Reason);
+            displayName = $"{m_exception.Node.Name}:{m_exception.Reason}";
         }
     }
 

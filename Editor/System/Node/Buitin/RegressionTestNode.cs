@@ -3,9 +3,7 @@ using UnityEditor;
 
 using System;
 using System.Linq;
-using System.IO;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine.AssetGraph;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -245,7 +243,7 @@ public class RegressionTestNode : Node {
 		const string howtofix = "Check data and fix problem. Otherwise, reset reference data for regression.";
 		if (expected.CompareTo(actual) != 0)
 		{
-			throw new NodeException(string.Format("{0} - Expected:{1}, Actual:{2}", issue, expected, actual), howtofix, node);
+			throw new NodeException($"{issue} - Expected:{expected}, Actual:{actual}", howtofix, node);
 		}
 	}
 	

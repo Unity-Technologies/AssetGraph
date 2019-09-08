@@ -3,7 +3,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using UnityEngine;
 using UnityEditor;
 
 using V1=AssetBundleGraph;
@@ -177,8 +176,9 @@ namespace UnityEngine.AssetGraph
 					throw new NodeException("Grouping Keyword can not be empty.", "Set valid grouping keyword.",node);
 				},
 				() => {
-                    throw new NodeException(String.Format("Grouping Keyword must contain {0} for numbering: currently {1}", Model.Settings.KEYWORD_WILDCARD, m_groupingKeyword[target]),
-                        string.Format("Add {0} to the grouping keyword.", Model.Settings.KEYWORD_WILDCARD), node);
+                    throw new NodeException(
+	                    $"Grouping Keyword must contain {Model.Settings.KEYWORD_WILDCARD} for numbering: currently {m_groupingKeyword[target]}",
+	                    $"Add {Model.Settings.KEYWORD_WILDCARD} to the grouping keyword.", node);
 				}
 			);
 
@@ -208,7 +208,7 @@ namespace UnityEngine.AssetGraph
 						}
 						catch (ArgumentException e)
 						{
-							throw new NodeException(string.Format("Bad Grouping Keyword:{0}", e.Message), "Fix grouping keyword from Inspector.", node);							
+							throw new NodeException($"Bad Grouping Keyword:{e.Message}", "Fix grouping keyword from Inspector.", node);							
 						}
 					}
 					break;
@@ -231,8 +231,8 @@ namespace UnityEngine.AssetGraph
                                 }
 
 								if(!m_allowSlash && newGroupingKey.Contains("/")) {
-									throw new NodeException(String.Format("Grouping Keyword with directory separator('/') found: \"{0}\" from asset: {1}", 
-										newGroupingKey, targetPath), 
+									throw new NodeException(
+										$"Grouping Keyword with directory separator('/') found: \"{newGroupingKey}\" from asset: {targetPath}", 
                                         "Remove directory separator from grouping keyword, or enable 'Allow directory separator ('/') in group name' option.", node);
 								}
 

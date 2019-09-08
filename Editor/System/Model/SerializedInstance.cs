@@ -1,7 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-using System;
-using System.Collections;
+﻿using System;
 
 namespace UnityEngine.AssetGraph {
 	[System.Serializable]

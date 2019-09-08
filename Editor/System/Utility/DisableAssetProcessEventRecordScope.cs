@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 
 namespace UnityEngine.AssetGraph {
 	public sealed class DisableAssetProcessEventRecordScope : IDisposable

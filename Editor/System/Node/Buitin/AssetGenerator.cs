@@ -1,12 +1,9 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
-using System.Reflection;
-
 using V1=AssetBundleGraph;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
@@ -173,15 +170,11 @@ namespace UnityEngine.AssetGraph {
                 } else {
                     if(!string.IsNullOrEmpty(entry.m_instance.ClassName)) {
                         EditorGUILayout.HelpBox(
-                            string.Format(
-                                "Your AssetGenerator script {0} is missing from assembly. Did you delete script?", entry.m_instance.ClassName), MessageType.Info);
+                            $"Your AssetGenerator script {entry.m_instance.ClassName} is missing from assembly. Did you delete script?", MessageType.Info);
                     } else {
                         string[] menuNames = Model.Settings.GUI_TEXT_MENU_GENERATE_ASSETGENERATOR.Split('/');
                         EditorGUILayout.HelpBox(
-                            string.Format(
-                                "You need to create at least one AssetGenerator script to use this node. To start, select {0}>{1}>{2} menu and create new script from template.",
-                                menuNames[1],menuNames[2], menuNames[3]
-                            ), MessageType.Info);
+                            $"You need to create at least one AssetGenerator script to use this node. To start, select {menuNames[1]}>{menuNames[2]}>{menuNames[3]} menu and create new script from template.", MessageType.Info);
                     }
                 }
 
@@ -362,7 +355,7 @@ namespace UnityEngine.AssetGraph {
                 MonoScript script = TypeUtility.LoadMonoScript(s.m_instance.ClassName);
                 if(script != null) {
                     menu.AddItem(
-                        new GUIContent(string.Format("Edit Script({0})", script.name)),
+                        new GUIContent($"Edit Script({script.name})"),
                         false, 
                         () => {
                             AssetDatabase.OpenAsset(script, 0);
@@ -387,11 +380,11 @@ namespace UnityEngine.AssetGraph {
                     throw new NodeException("Failed to create AssetGenerator from settings.", "Fix AssetGenerator settings from inspector", node);
                 },
                 (AssetReference badAsset) => {
-                    throw new NodeException(string.Format("Generator not create asset from source : Source: {0}", badAsset.importFrom), 
+                    throw new NodeException($"Generator not create asset from source : Source: {badAsset.importFrom}", 
                         "Remove source asset from node input.", node);
                 },
                 (AssetReference badAsset) => {
-                    throw new NodeException(string.Format("Can not import incoming asset {0}.", badAsset.fileNameAndExtension), 
+                    throw new NodeException($"Can not import incoming asset {badAsset.fileNameAndExtension}.", 
                         "Remove source asset from node input.", node);
                 }
             );
@@ -476,12 +469,12 @@ namespace UnityEngine.AssetGraph {
                                 }
 
                                 if (!generator.GenerateAsset (a, assetSavePath)) {
-                                    throw new AssetGraphException(string.Format("{0} :Failed to generate asset for {1}", 
-                                        node.Name, entry.m_name));
+                                    throw new AssetGraphException(
+                                        $"{node.Name} :Failed to generate asset for {entry.m_name}");
                                 }
                                 if (!File.Exists (assetSavePath)) {
-                                    throw new AssetGraphException(string.Format("{0} :{1} returned success, but generated asset not found.", 
-                                        node.Name, entry.m_name));
+                                    throw new AssetGraphException(
+                                        $"{node.Name} :{entry.m_name} returned success, but generated asset not found.");
                                 }
 
                                 AssetProcessEventRecord.GetRecord ().LogModify (AssetDatabase.AssetPathToGUID(assetSavePath));
@@ -492,7 +485,7 @@ namespace UnityEngine.AssetGraph {
                                     AssetGeneratorUtility.GetGUIName(entry.m_instance.ClassName),
                                     AssetGeneratorUtility.GetVersion(entry.m_instance.ClassName));
 
-                                if(progressFunc != null) progressFunc(node, string.Format("Creating {0}", assetSavePath), 0.5f);
+                                if(progressFunc != null) progressFunc(node, $"Creating {assetSavePath}", 0.5f);
 
                                 AssetGenerateInfo.SaveAssetGenerateInfo(entry, node, target, a);
                             }

@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
@@ -196,9 +195,9 @@ namespace UnityEngine.AssetGraph {
 
 			string connectionLabel;
 			if(totalGroups > 1) {
-				connectionLabel = string.Format("{0}:{1}", totalAssets, totalGroups);
+				connectionLabel = $"{totalAssets}:{totalGroups}";
 			} else {
-				connectionLabel = string.Format("{0}", totalAssets);
+				connectionLabel = $"{totalAssets}";
 			}
 
 			var style = new GUIStyle(m_connectionButtonStyle);

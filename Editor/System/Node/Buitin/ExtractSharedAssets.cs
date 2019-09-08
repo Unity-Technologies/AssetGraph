@@ -1,12 +1,9 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.Profiling;
-
-using UnityEngine.AssetGraph;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -217,7 +214,7 @@ namespace UnityEngine.AssetGraph {
                                 int groupCount = 0;
                                 long szGroupCount = 0;
                                 foreach(var a in assets) {
-                                    var subGroupName = string.Format ("{0}_{1}", bundleName, groupCount);
+                                    var subGroupName = $"{bundleName}_{groupCount}";
                                     if (!sharedDependency.ContainsKey(subGroupName)) {
                                         sharedDependency[subGroupName] = new List<AssetReference>();
                                     }

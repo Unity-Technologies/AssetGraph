@@ -1,11 +1,9 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using AssetBundleGraph;
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph
@@ -628,7 +626,8 @@ namespace UnityEngine.AssetGraph
         {
             foreach (var node in m_nodes) {
                 node.ResetErrorStatus ();
-                var errorsForeachNode = m_controller.Issues.Where (e => e.NodeId == node.Id).Select (e => string.Format("{0}\n{1}", e.Reason, e.HowToFix)).ToList ();
+                var errorsForeachNode = m_controller.Issues.Where (e => e.NodeId == node.Id).Select (e =>
+                    $"{e.Reason}\n{e.HowToFix}").ToList ();
                 if (errorsForeachNode.Any ()) {
                     node.AppendErrorSources (errorsForeachNode);
                 }
@@ -903,8 +902,8 @@ namespace UnityEngine.AssetGraph
                     float currentNodeProgress = progress * (1.0f / totalCount);
                     float currentTotalProgress = (currentCount / totalCount) + currentNodeProgress;
 
-                    string title = string.Format ("Processing Asset Graph[{0}/{1}]", currentCount, totalCount);
-                    string info = string.Format ("{0}:{1}", node.Name, message);
+                    string title = $"Processing Asset Graph[{currentCount}/{totalCount}]";
+                    string info = $"{node.Name}:{message}";
 
                     EditorUtility.DisplayProgressBar (title, "Processing " + info, currentTotalProgress);
                 };
@@ -999,7 +998,7 @@ namespace UnityEngine.AssetGraph
                         string menuName = name;
                         int i = 1;
                         while (nameList.Contains (menuName)) {
-                            menuName = string.Format ("{0} ({1})", name, i++);
+                            menuName = $"{name} ({i++})";
                         }
 
                         menu.AddItem (new GUIContent (menuName), false, () => {
@@ -1134,7 +1133,7 @@ namespace UnityEngine.AssetGraph
             {
                 using (new EditorGUILayout.VerticalScope ()) {
                     foreach (NodeException e in m_controller.Issues) {
-                        EditorGUILayout.HelpBox (string.Format("{0}\n{1}", e.Reason, e.HowToFix), MessageType.Error);
+                        EditorGUILayout.HelpBox ($"{e.Reason}\n{e.HowToFix}", MessageType.Error);
                         if (GUILayout.Button ("Go to Node")) {
                             SelectNode (e.NodeId);
                         }
@@ -1392,8 +1391,8 @@ namespace UnityEngine.AssetGraph
                         FileAttributes attr = File.GetAttributes (path);
 
                         if ((attr & FileAttributes.Directory) == FileAttributes.Directory) {
-                            AddNodeFromGUI (new Loader (path), 
-                                string.Format ("Load from {0}", Path.GetFileName (path)), 
+                            AddNodeFromGUI (new Loader (path),
+                                $"Load from {Path.GetFileName(path)}", 
                                 evt.mousePosition.x, evt.mousePosition.y);
                             Setup ();
                             Repaint ();

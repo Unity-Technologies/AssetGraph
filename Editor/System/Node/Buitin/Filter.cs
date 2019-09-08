@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
@@ -206,7 +205,8 @@ namespace UnityEngine.AssetGraph {
             IFilter filter = cond.Instance.Object;
             if(filter == null) {
                 using (new GUILayout.VerticalScope()) {
-                    EditorGUILayout.HelpBox(string.Format("Failed to deserialize assigned filter({0}). Select a valid class.", cond.Instance.ClassName), MessageType.Error);
+                    EditorGUILayout.HelpBox(
+	                    $"Failed to deserialize assigned filter({cond.Instance.ClassName}). Select a valid class.", MessageType.Error);
                     if (GUILayout.Button(cond.Instance.ClassName, "Popup", GUILayout.MinWidth(150f))) {
                         var map = FilterUtility.GetAttributeAssemblyQualifiedNameMap();
                         NodeGUI.ShowTypeNamesMenu(cond.Instance.ClassName, map.Keys.ToList(), (string selectedGUIName) => 
@@ -320,7 +320,7 @@ namespace UnityEngine.AssetGraph {
 
 			foreach(var f in m_filter) {
 				if(f.Instance.Object == null) {
-                    throw new NodeException(String.Format("Could not deserialize filter with class {0}.", f.Instance.ClassName),"Fix filter setting from inspector.", n);
+                    throw new NodeException($"Could not deserialize filter with class {f.Instance.ClassName}.","Fix filter setting from inspector.", n);
 				}
 			}
 		}
@@ -332,7 +332,7 @@ namespace UnityEngine.AssetGraph {
 
 			if( overlap != null && throwException ) {
 				var element = overlap.First();
-				throw new NodeException(String.Format("Duplicated filter condition found [Label:{0}]", element.Instance.Object.Label),"Change filter condition and avoid collision.", n);
+				throw new NodeException($"Duplicated filter condition found [Label:{element.Instance.Object.Label}]","Change filter condition and avoid collision.", n);
 			}
 			return overlap != null;
 		}

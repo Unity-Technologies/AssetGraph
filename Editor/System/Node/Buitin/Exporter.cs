@@ -1,9 +1,7 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Collections.Generic;
 
 using V1=AssetBundleGraph;
@@ -300,7 +298,7 @@ namespace UnityEngine.AssetGraph {
 							continue;
 						}
 						try {
-							if(progressFunc != null) progressFunc(node, string.Format("Copying {0}", source.fileNameAndExtension), 0.5f);
+							if(progressFunc != null) progressFunc(node, $"Copying {source.fileNameAndExtension}", 0.5f);
 							File.Copy(source.importFrom, destination);
 							report.AddExportedEntry(source.importFrom, destination);
 						} catch(Exception e) {

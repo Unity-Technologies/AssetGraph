@@ -1,15 +1,6 @@
-using UnityEngine;
 using UnityEditor;
 
 using UnityEditor.IMGUI.Controls;
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Collections;
-using System.Collections.Generic;
-
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {

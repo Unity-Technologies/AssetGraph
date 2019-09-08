@@ -1,12 +1,7 @@
-using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine.Profiling;
-
 using System;
 using System.IO;
-using System.Security.Cryptography;
-
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {

@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 
 using System.IO;
@@ -162,14 +161,14 @@ namespace UnityEngine.AssetGraph {
                     }
                     DefaultGUI.Label(
                         new Rect(cellRect.x + iconRect.width + 4, cellRect.y, cellRect.width - iconRect.width, cellRect.height), 
-                        (!isAssetAvailable)? Path.GetFileName(assetPath) : string.Format("{0} (Removed)",item.Event.AssetName), 
+                        (!isAssetAvailable)? Path.GetFileName(assetPath) : $"{item.Event.AssetName} (Removed)", 
                         args.selected, 
                         args.focused);
                 }
                 break;
             case 2://Graph
                 if (hasGraph) {
-                    DefaultGUI.Label(cellRect, string.Format("{0}.{1}", Path.GetFileNameWithoutExtension(graphPath), item.Event.NodeName), args.selected, args.focused);
+                    DefaultGUI.Label(cellRect, $"{Path.GetFileNameWithoutExtension(graphPath)}.{item.Event.NodeName}", args.selected, args.focused);
                 }
                 break;
             }

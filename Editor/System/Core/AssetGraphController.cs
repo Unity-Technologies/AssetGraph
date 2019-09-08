@@ -1,14 +1,8 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Reflection;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -221,7 +215,7 @@ namespace UnityEngine.AssetGraph {
 			} 
 			// Minimize impact of errors happened during node operation
 			catch (Exception e) {
-                m_nodeExceptions.Add(new NodeException(string.Format("{0}:{1}", e.GetType().ToString(), e.Message), "See Console for detail.", currentNodeData));
+                m_nodeExceptions.Add(new NodeException($"{e.GetType().ToString()}:{e.Message}", "See Console for detail.", currentNodeData));
 				LogUtility.Logger.LogException(e);
 			}
             m_currentNode = null;

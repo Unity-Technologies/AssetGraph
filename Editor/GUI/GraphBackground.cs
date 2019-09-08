@@ -1,10 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
+﻿using UnityEditor;
 
 namespace UnityEngine.AssetGraph {
 	public class GraphBackground {
