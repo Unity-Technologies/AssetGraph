@@ -6,18 +6,18 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Unity.AssetGraph;
-using Model=Unity.AssetGraph.DataModel.Version2;
+using UnityEngine.AssetGraph;
+using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 {
 
 	// Set this to true when you need to debug graph and also create reference data for regression tests.
 	// Do not commit code with this switch set to true.
-	private const bool kDebugGraph = true;
+	private const bool kDebugGraph = false;
 
 	// Root folder of each tests to use assets. 
-	protected string RootFolder { get { return string.Format("Assets/{0}_AssetsToDelete", GetType().Name); } }
+	protected string RootFolder => $"Assets/{GetType().Name}_AssetsToDelete";
 
 	public void Setup()
 	{
@@ -90,9 +90,9 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 
 	protected void SetLoaderPathToRootDirectory(Model.ConfigGraph graph)
 	{
-		foreach (var n in graph.Nodes.Where(n => n.Operation.ClassName.StartsWith(typeof(Unity.AssetGraph.Loader).FullName + ",")))
+		foreach (var n in graph.Nodes.Where(n => n.Operation.ClassName.StartsWith(typeof(UnityEngine.AssetGraph.Loader).FullName + ",")))
 		{
-			var loader = n.Operation.Object as Unity.AssetGraph.Loader;
+			var loader = n.Operation.Object as UnityEngine.AssetGraph.Loader;
 			loader.LoadPath = RootFolder;
 		}
 	}
@@ -131,7 +131,7 @@ internal abstract class AssetGraphEditorBaseTest: IPrebuildSetup
 
 		var go = GameObject.CreatePrimitive(t);
 		go.name = objectName;
-		PrefabUtility.CreatePrefab(assetPath, go);
+		PrefabUtility.SaveAsPrefabAsset(go, assetPath);
 		Object.DestroyImmediate(go);
 	}
 	

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using NUnit.Framework;
-using Unity.AssetGraph;
+using UnityEngine.AssetGraph;
 
 internal class GroupByFilePathTest : AssetGraphEditorBaseTest
 {

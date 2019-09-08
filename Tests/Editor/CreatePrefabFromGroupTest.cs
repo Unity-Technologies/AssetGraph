@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using NUnit.Framework;
-using Unity.AssetGraph;
+using UnityEngine.AssetGraph;
 
 
 internal class CreatePrefabFromGroupTest : AssetGraphEditorBaseTest
@@ -23,7 +23,7 @@ internal class CreatePrefabFromGroupTest : AssetGraphEditorBaseTest
 			go.transform.parent = root.transform;
 		}
 		
-		PrefabUtility.CreatePrefab(assetPath, root);
+		PrefabUtility.SaveAsPrefabAsset(root, assetPath);
 		Object.DestroyImmediate(root);
 	}
 	

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using NUnit.Framework;
-using Unity.AssetGraph;
+using UnityEngine.AssetGraph;
 
 internal class AssertUnwantedAssetsInBundleTest : AssetGraphEditorBaseTest
 {
@@ -20,7 +20,7 @@ internal class AssertUnwantedAssetsInBundleTest : AssetGraphEditorBaseTest
 		foreach (var e in result.Issues)
 		{
 			Assert.AreEqual(e.Node.Operation.ClassName, typeof(AssertUnwantedAssetsInBundle).AssemblyQualifiedName);
-			Assert.True(e.Reason.Contains("/Bad/"));
+			Assert.True((bool?) e.Reason.Contains("/Bad/"));
 		}
 	}
 	
