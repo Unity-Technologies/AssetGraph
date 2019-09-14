@@ -1,4 +1,3 @@
-using UnityEngine;
 using UnityEditor;
 
 using System;
@@ -12,9 +11,14 @@ namespace UnityEngine.AssetGraph
 
     public struct ConfigurationOption
     {
+        //TextureImporterOptions
         public bool overwritePackingTag;
         public bool overwriteSpriteSheet;
         public SerializableMultiTargetString customPackingTagTemplate;
+        
+        //ModelImporterOptions
+        public bool overwriteAnimationClipSettings;
+        public bool overwriteHumanDescriptions;
     }
 
     /// <summary>
@@ -98,7 +102,8 @@ namespace UnityEngine.AssetGraph
                         if (!map.ContainsKey (attr.GUIName)) {
                             map [attr.GUIName] = attr.For;
                         } else {
-                            LogUtility.Logger.LogWarning (LogUtility.kTag, string.Format ("Multiple CustomImporterConfigurator for {0} found. Ignoring {1}", attr.For.Name, type.Name));
+                            LogUtility.Logger.LogWarning (LogUtility.kTag,
+                                $"Multiple CustomImporterConfigurator for {attr.For.Name} found. Ignoring {type.Name}");
                         }
                     }
                 }
@@ -130,7 +135,8 @@ namespace UnityEngine.AssetGraph
                         if (!map.ContainsKey (attr.For)) {
                             map [attr.For] = type;
                         } else {
-                            LogUtility.Logger.LogWarning (LogUtility.kTag, string.Format ("Multiple CustomImporterConfigurator for {0} found. Ignoring {1}.", attr.For.Name, type.Name));
+                            LogUtility.Logger.LogWarning (LogUtility.kTag,
+                                $"Multiple CustomImporterConfigurator for {attr.For.Name} found. Ignoring {type.Name}.");
                         }
                     }
                 }
