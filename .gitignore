@@ -17,3 +17,8 @@ npm-debug.log
 build.sh.meta
 build.bat.meta
 .idea/
+
+# Unity Library and Logs
+AssetGraph~/Logs/*
+AssetGraph~/Library/*
+AssetGraph~/Temp/*
