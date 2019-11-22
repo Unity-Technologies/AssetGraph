@@ -11,10 +11,10 @@ internal class LastImportedItemsTest : AssetGraphEditorBaseTest
 		CreateTestPrefab("", "prefab03", PrimitiveType.Cube);
 	}
 
-	[Test]
-	public void TestLastImportedItems()
-	{
-		AssertGraphExecuteWithNoIssue();
-	}
+	//[Test]
+	//public void TestLastImportedItems()
+	//{
+	//	AssertGraphExecuteWithNoIssue();
+	//}
 
 }
