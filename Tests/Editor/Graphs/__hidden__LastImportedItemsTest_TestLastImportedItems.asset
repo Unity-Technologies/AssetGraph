@@ -18,7 +18,7 @@ MonoBehaviour:
     m_x: 120
     m_y: 192
     m_nodeInstance:
-      m_className: Unity.AssetGraph.Imported, Unity.AssetGraph.Editor, Version=0.0.0.0,
+      m_className: UnityEngine.AssetGraph.Imported, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
       m_instanceData: B64|e30=
     m_inputPoints: []
@@ -29,8 +29,8 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 149.5
-        y: 32.5
+        x: 152
+        y: 31.5
         width: 10
         height: 23
   - m_name: Test Regression with Input
@@ -40,7 +40,7 @@ MonoBehaviour:
     m_nodeInstance:
       m_className: RegressionTestNode, Unity.AssetGraph.Editor, Version=0.0.0.0, Culture=neutral,
         PublicKeyToken=null
-      m_instanceData: B64|eyJtX3Jlc3VsdCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoiIn1dfX0=
+      m_instanceData: B64|eyJtX3Jlc3VsdCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoie1wiaW5jb21pbmdcIjpbe1wiY29ubmVjdGlvbklkXCI6XCIzODNmMmZmNS04ZWQwLTQ2YWUtOGJlYS0wODNhNDhmYTY3NzJcIixcImdyb3Vwc1wiOlt7XCJuYW1lXCI6XCIwXCIsXCJlbnRpcmVzXCI6W3tcImltcG9ydEZyb21cIjpcIkFzc2V0cy9MYXN0SW1wb3J0ZWRJdGVtc1Rlc3RfQXNzZXRzVG9EZWxldGUvcHJlZmFiMDEucHJlZmFiXCIsXCJhc3NldFR5cGVcIjpcIlVuaXR5RW5naW5lLkdhbWVPYmplY3RcIixcImltcG9ydGVyVHlwZVwiOlwiVW5pdHlFZGl0b3IuUHJlZmFiSW1wb3J0ZXJcIn0se1wiaW1wb3J0RnJvbVwiOlwiQXNzZXRzL0xhc3RJbXBvcnRlZEl0ZW1zVGVzdF9Bc3NldHNUb0RlbGV0ZS9wcmVmYWIwMi5wcmVmYWJcIixcImFzc2V0VHlwZVwiOlwiVW5pdHlFbmdpbmUuR2FtZU9iamVjdFwiLFwiaW1wb3J0ZXJUeXBlXCI6XCJVbml0eUVkaXRvci5QcmVmYWJJbXBvcnRlclwifSx7XCJpbXBvcnRGcm9tXCI6XCJBc3NldHMvTGFzdEltcG9ydGVkSXRlbXNUZXN0X0Fzc2V0c1RvRGVsZXRlL3ByZWZhYjAzLnByZWZhYlwiLFwiYXNzZXRUeXBlXCI6XCJVbml0eUVuZ2luZS5HYW1lT2JqZWN0XCIsXCJpbXBvcnRlclR5cGVcIjpcIlVuaXR5RWRpdG9yLlByZWZhYkltcG9ydGVyXCJ9XX1dfV19In1dfX0=
     m_inputPoints:
     - id: 50ea0eb1-c703-4164-9aac-8de595bd0237
       label: '-'
@@ -49,7 +49,7 @@ MonoBehaviour:
       buttonRect:
         serializedVersion: 2
         x: 0
-        y: 29.5
+        y: 28.5
         width: 21
         height: 29
     m_outputPoints:
@@ -59,8 +59,8 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 185
-        y: 32.5
+        x: 189
+        y: 31.5
         width: 10
         height: 23
   m_allConnections:
