@@ -178,7 +178,7 @@ namespace UnityEngine.AssetGraph {
     						var assets = ag.assetGroups[key];
 
     						foreach(var a in assets) {
-    							CollectDependencies(key, new string[] { a.importFrom }, ref dependencyCollector);
+    							CollectDependencies(key, a, ref dependencyCollector);
     						}
     					}
     				}
@@ -252,8 +252,13 @@ namespace UnityEngine.AssetGraph {
     		}
     	}
 
-    	private void CollectDependencies(string groupKey, string[] assetPaths, ref Dictionary<string, List<string>> collector) {
-    		var dependencies = AssetDatabase.GetDependencies(assetPaths);
+    	private void CollectDependencies(string groupKey, AssetReference asset, ref Dictionary<string, List<string>> collector) {
+    		var dependencies = AssetDatabase.GetDependencies(new []{ asset.importFrom });
+
+            var keyName = String.IsNullOrEmpty(asset.variantName)
+	            ? groupKey
+	            : $"{groupKey}.{asset.variantName}";
+            
     		foreach(var d in dependencies) {
                 // AssetBundle must not include script asset
                 if (TypeUtility.GetMainAssetTypeAtPath (d) == typeof(MonoScript)) {
@@ -263,8 +268,8 @@ namespace UnityEngine.AssetGraph {
     			if(!collector.ContainsKey(d)) {
     				collector[d] = new List<string>();
     			}
-    			if(!collector[d].Contains(groupKey)) {
-    				collector[d].Add(groupKey);
+    			if(!collector[d].Contains(keyName)) {
+    				collector[d].Add(keyName);
     				collector[d].Sort();
     			}
     		}
