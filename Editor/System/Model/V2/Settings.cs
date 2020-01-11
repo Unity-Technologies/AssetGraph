@@ -152,54 +152,53 @@ namespace UnityEngine.AssetGraph.DataModel.Version2 {
             public static string GUIResourceBasePath { get { return System.IO.Path.Combine(PackagePath, "Editor/GUI/GraphicResources"); } }
         }
 
-		public struct BuildAssetBundleOption {
-			public readonly BuildAssetBundleOptions option;
+        public struct ToggleOption <T> {
+			public readonly T option;
 			public readonly string description;
-			public BuildAssetBundleOption(string desc, BuildAssetBundleOptions opt) {
+			public ToggleOption(string desc, T opt) {
 				option = opt;
 				description = desc;
 			}
 		}
 
-        public struct BuildPlayerOption {
-            public readonly BuildOptions option;
-            public readonly string description;
-            public BuildPlayerOption(string desc, BuildOptions opt) {
-                option = opt;
-                description = desc;
-            }
-        }
-
-        public static List<BuildAssetBundleOption> BundleOptionSettings = new List<BuildAssetBundleOption> {
-            new BuildAssetBundleOption("Uncompressed AssetBundle", BuildAssetBundleOptions.UncompressedAssetBundle),
-            new BuildAssetBundleOption("Disable Write TypeTree", BuildAssetBundleOptions.DisableWriteTypeTree),
-            new BuildAssetBundleOption("Deterministic AssetBundle", BuildAssetBundleOptions.DeterministicAssetBundle),
-            new BuildAssetBundleOption("Force Rebuild AssetBundle", BuildAssetBundleOptions.ForceRebuildAssetBundle),
-            new BuildAssetBundleOption("Ignore TypeTree Changes", BuildAssetBundleOptions.IgnoreTypeTreeChanges),
-            new BuildAssetBundleOption("Append Hash To AssetBundle Name", BuildAssetBundleOptions.AppendHashToAssetBundleName),
-            new BuildAssetBundleOption("ChunkBased Compression", BuildAssetBundleOptions.ChunkBasedCompression),
-            new BuildAssetBundleOption("Strict Mode", BuildAssetBundleOptions.StrictMode)
+        public static List<ToggleOption<BuildAssetBundleOptions>> BundleOptionSettings = new List<ToggleOption<BuildAssetBundleOptions>> {
+            new ToggleOption<BuildAssetBundleOptions>("Uncompressed AssetBundle", BuildAssetBundleOptions.UncompressedAssetBundle),
+            new ToggleOption<BuildAssetBundleOptions>("Disable Write TypeTree", BuildAssetBundleOptions.DisableWriteTypeTree),
+            new ToggleOption<BuildAssetBundleOptions>("Deterministic AssetBundle", BuildAssetBundleOptions.DeterministicAssetBundle),
+            new ToggleOption<BuildAssetBundleOptions>("Force Rebuild AssetBundle", BuildAssetBundleOptions.ForceRebuildAssetBundle),
+            new ToggleOption<BuildAssetBundleOptions>("Ignore TypeTree Changes", BuildAssetBundleOptions.IgnoreTypeTreeChanges),
+            new ToggleOption<BuildAssetBundleOptions>("Append Hash To AssetBundle Name", BuildAssetBundleOptions.AppendHashToAssetBundleName),
+            new ToggleOption<BuildAssetBundleOptions>("ChunkBased Compression", BuildAssetBundleOptions.ChunkBasedCompression),
+            new ToggleOption<BuildAssetBundleOptions>("Strict Mode", BuildAssetBundleOptions.StrictMode)
         };
 
-        public static List<BuildPlayerOption> BuildPlayerOptionsSettings = new List<BuildPlayerOption> {
-            new BuildPlayerOption("Accept External Modification To Player", BuildOptions.AcceptExternalModificationsToPlayer),
-            new BuildPlayerOption("Allow Debugging", BuildOptions.AllowDebugging),
-            new BuildPlayerOption("Auto Run Player", BuildOptions.AutoRunPlayer),
-            new BuildPlayerOption("Build Additional Streamed Scenes", BuildOptions.BuildAdditionalStreamedScenes),
-            new BuildPlayerOption("Build Scripts Only", BuildOptions.BuildScriptsOnly),
-            new BuildPlayerOption("Compress With LZ4", BuildOptions.CompressWithLz4),
-            new BuildPlayerOption("Compute CRC", BuildOptions.ComputeCRC),
-            new BuildPlayerOption("Connect To Host", BuildOptions.ConnectToHost),
-            new BuildPlayerOption("Connect With Profiler", BuildOptions.ConnectWithProfiler),
-            new BuildPlayerOption("Development Build", BuildOptions.Development),
-            new BuildPlayerOption("Enable Headless Mode", BuildOptions.EnableHeadlessMode),
-            new BuildPlayerOption("Force Enable Assertions", BuildOptions.ForceEnableAssertions),
-            new BuildPlayerOption("Install In Build Folder", BuildOptions.InstallInBuildFolder),
-            new BuildPlayerOption("Show Built Player", BuildOptions.ShowBuiltPlayer),
-            new BuildPlayerOption("Strict Mode", BuildOptions.StrictMode),
-            new BuildPlayerOption("Symlink Libraries", BuildOptions.SymlinkLibraries),
-            new BuildPlayerOption("Uncompressed AssetBundle", BuildOptions.UncompressedAssetBundle)
+        public static List<ToggleOption<BuildOptions>> BuildPlayerOptionsSettings = new List<ToggleOption<BuildOptions>> {
+            new ToggleOption<BuildOptions>("Accept External Modification To Player", BuildOptions.AcceptExternalModificationsToPlayer),
+            new ToggleOption<BuildOptions>("Allow Debugging", BuildOptions.AllowDebugging),
+            new ToggleOption<BuildOptions>("Auto Run Player", BuildOptions.AutoRunPlayer),
+            new ToggleOption<BuildOptions>("Build Additional Streamed Scenes", BuildOptions.BuildAdditionalStreamedScenes),
+            new ToggleOption<BuildOptions>("Build Scripts Only", BuildOptions.BuildScriptsOnly),
+            new ToggleOption<BuildOptions>("Compress With LZ4", BuildOptions.CompressWithLz4),
+            new ToggleOption<BuildOptions>("Compute CRC", BuildOptions.ComputeCRC),
+            new ToggleOption<BuildOptions>("Connect To Host", BuildOptions.ConnectToHost),
+            new ToggleOption<BuildOptions>("Connect With Profiler", BuildOptions.ConnectWithProfiler),
+            new ToggleOption<BuildOptions>("Development Build", BuildOptions.Development),
+            new ToggleOption<BuildOptions>("Enable Headless Mode", BuildOptions.EnableHeadlessMode),
+            new ToggleOption<BuildOptions>("Force Enable Assertions", BuildOptions.ForceEnableAssertions),
+            new ToggleOption<BuildOptions>("Install In Build Folder", BuildOptions.InstallInBuildFolder),
+            new ToggleOption<BuildOptions>("Show Built Player", BuildOptions.ShowBuiltPlayer),
+            new ToggleOption<BuildOptions>("Strict Mode", BuildOptions.StrictMode),
+            new ToggleOption<BuildOptions>("Symlink Libraries", BuildOptions.SymlinkLibraries),
+            new ToggleOption<BuildOptions>("Uncompressed AssetBundle", BuildOptions.UncompressedAssetBundle)
 		};
+        
+        public static List<ToggleOption<ExportPackageOptions>> ExportPackageOptions = new List<ToggleOption<ExportPackageOptions>> {
+	        new ToggleOption<ExportPackageOptions>("Interactive", UnityEditor.ExportPackageOptions.Interactive),
+	        new ToggleOption<ExportPackageOptions>("Recurse", UnityEditor.ExportPackageOptions.Recurse),
+	        new ToggleOption<ExportPackageOptions>("Include Dependencies", UnityEditor.ExportPackageOptions.IncludeDependencies),
+	        new ToggleOption<ExportPackageOptions>("Include Library Assets", UnityEditor.ExportPackageOptions.IncludeLibraryAssets)
+        };
+        
 
 		public const float WINDOW_SPAN = 20f;
 

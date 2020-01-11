@@ -239,12 +239,15 @@ namespace UnityEngine.AssetGraph {
 		/// <summary>
 		/// Gets a value indicating whether this <see cref="T:UnityEngine.AssetGraph.AssetReference"/> is referencing a scene asset.
 		/// </summary>
-		/// <value><c>true</c> if is scene asset; otherwise, <c>false</c>.</value>
-		public bool isSceneAsset {
-			get {
-                return assetType == typeof (UnityEditor.SceneAsset);
-			}
-		}
+		/// <value><c>true</c> if is a scene asset; otherwise, <c>false</c>.</value>
+		public bool isSceneAsset => assetType == typeof (UnityEditor.SceneAsset);
+
+		/// <summary>
+		/// Gets a value indicating whether this <see cref="T:UnityEngine.AssetGraph.AssetReference"/> is a reference of asset in this Project.
+		/// Asset outside of project means this file is outside of Assets/ directory.
+		/// </summary>
+		/// <value><c>true</c> if is a project asset; otherwise, <c>false</c>.</value>
+		public bool isProjectAsset => !string.IsNullOrEmpty(m_assetDatabaseId);
 
 		/// <summary>
 		/// Gets the scene.
@@ -405,6 +408,21 @@ namespace UnityEngine.AssetGraph {
                 assetType:typeof(AssetBundleManifestReference)
             );
         }
+        
+        /// <summary>
+        /// Creates the unity package reference.
+        /// </summary>
+        /// <returns>The unity package reference.</returns>
+        /// <param name="path">Path.</param>
+        public static AssetReference CreateUnityPackageReference (string path) {
+	        return new AssetReference(
+		        guid: Guid.NewGuid(),
+		        assetDatabaseId:string.Empty,
+		        importFrom:path,
+		        assetType:typeof(UnityPackageReference)
+	        );
+        }
+        
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnityEngine.AssetGraph.AssetReference"/> class.
@@ -432,9 +450,12 @@ namespace UnityEngine.AssetGraph {
 			this.m_exportTo = exportTo;
 			this.m_assetDatabaseId = assetDatabaseId;
 			this.m_variantName = variantName;
-		}
+			this.m_assetType = assetType;
+        }
 	}
 
     public class AssetBundleReference {}
     public class AssetBundleManifestReference {}
+
+    public class UnityPackageReference { }
 }

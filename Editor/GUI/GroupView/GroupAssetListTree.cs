@@ -150,7 +150,7 @@ namespace UnityEngine.AssetGraph {
             {
             case 0:
                 {
-                    var icon = AssetDatabase.GetCachedIcon (item.asset.importFrom);
+                    var icon = item.asset.isProjectAsset ? AssetDatabase.GetCachedIcon (item.asset.importFrom) : null;
                     if (icon == null) {
                         icon = AssetPreview.GetMiniTypeThumbnail (item.asset.assetType);
                     } else {
@@ -196,7 +196,7 @@ namespace UnityEngine.AssetGraph {
         protected override void DoubleClickedItem(int id)
         {
             var assetItem = FindItem(id, rootItem) as AssetReferenceTreeItem;
-            if (assetItem != null)
+            if (assetItem != null && assetItem.asset.isProjectAsset)
             {
                 var o = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetItem.asset.importFrom);
                 EditorGUIUtility.PingObject(o);
