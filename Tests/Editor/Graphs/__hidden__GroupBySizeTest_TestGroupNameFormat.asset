@@ -18,9 +18,9 @@ MonoBehaviour:
     m_x: 72
     m_y: 180
     m_nodeInstance:
-      m_className: Unity.AssetGraph.Loader, Unity.AssetGraph.Editor, Version=0.0.0.0,
+      m_className: UnityEngine.AssetGraph.Loader, Unity.AssetGraph.Editor, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJHcm91cEJ5RmlsZVBhdGhUZXN0X0Fzc2V0c1RvRGVsZXRlIn0seyJ0YXJnZXRHcm91cCI6MSwidmFsdWUiOiJHcm91cEJ5U2l6ZVRlc3RfQXNzZXRzVG9EZWxldGUifV19LCJtX2xvYWRQYXRoR3VpZCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoiNDYyNDBlZmY3YzA4NjQxZDViMjYxNDJkMjAyZGU3MzAifSx7InRhcmdldEdyb3VwIjoxLCJ2YWx1ZSI6Ijk3NmZhOGUyNzhkM2I0MWViYTY3MjQxNWVkODA0ZWY5In1dfSwibV9pZ25vcmVQYXR0ZXJucyI6W10sIm1fcmVzcG9uZFRvQXNzZXRDaGFuZ2UiOmZhbHNlfQ==
+      m_instanceData: B64|eyJtX2xvYWRQYXRoIjp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJHcm91cEJ5RmlsZVBhdGhUZXN0X0Fzc2V0c1RvRGVsZXRlIn0seyJ0YXJnZXRHcm91cCI6MSwidmFsdWUiOiJHcm91cEJ5U2l6ZVRlc3RfQXNzZXRzVG9EZWxldGUifV19LCJtX2xvYWRQYXRoR3VpZCI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjoiNDYyNDBlZmY3YzA4NjQxZDViMjYxNDJkMjAyZGU3MzAifSx7InRhcmdldEdyb3VwIjoxLCJ2YWx1ZSI6ImJjYTQwMDJmODRkMDc0NjVlYTgyYWFmNWY5MWZhZDFkIn1dfSwibV9pZ25vcmVQYXR0ZXJucyI6W10sIm1fcmVzcG9uZFRvQXNzZXRDaGFuZ2UiOmZhbHNlfQ==
     m_inputPoints: []
     m_outputPoints:
     - id: 769f100f-f161-4918-96dd-b7a52257feb5
@@ -30,7 +30,7 @@ MonoBehaviour:
       buttonRect:
         serializedVersion: 2
         x: 111
-        y: 32.5
+        y: 31.5
         width: 10
         height: 23
   - m_name: Test Regression with Input
@@ -49,7 +49,7 @@ MonoBehaviour:
       buttonRect:
         serializedVersion: 2
         x: 0
-        y: 29.5
+        y: 28.5
         width: 21
         height: 29
     m_outputPoints:
@@ -59,8 +59,8 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 185
-        y: 32.5
+        x: 189
+        y: 31.5
         width: 10
         height: 23
   - m_name: Group Name Format
@@ -68,8 +68,8 @@ MonoBehaviour:
     m_x: 300
     m_y: 180
     m_nodeInstance:
-      m_className: Unity.AssetGraph.GroupingBySize, Unity.AssetGraph.Editor, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
+      m_className: UnityEngine.AssetGraph.GroupingBySize, Unity.AssetGraph.Editor,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       m_instanceData: B64|eyJtX2dyb3VwU2l6ZUJ5dGUiOnsibV92YWx1ZXMiOlt7InRhcmdldEdyb3VwIjowLCJ2YWx1ZSI6MTUwfV19LCJtX2dyb3VwaW5nVHlwZSI6eyJtX3ZhbHVlcyI6W3sidGFyZ2V0R3JvdXAiOjAsInZhbHVlIjowfV19LCJtX2dyb3VwVmlld0NvbnRleHQiOnsiZ3JvdXBMaXN0VHJlZVN0YXRlIjp7InNjcm9sbFBvcyI6eyJ4IjowLjAsInkiOjAuMH0sIm1fU2VsZWN0ZWRJRHMiOls5ODUwMDY5MF0sIm1fTGFzdENsaWNrZWRJRCI6OTg1MDA2OTAsIm1fRXhwYW5kZWRJRHMiOltdLCJtX1JlbmFtZU92ZXJsYXkiOnsibV9Vc2VyQWNjZXB0ZWRSZW5hbWUiOmZhbHNlLCJtX05hbWUiOiIiLCJtX09yaWdpbmFsTmFtZSI6IiIsIm1fRWRpdEZpZWxkUmVjdCI6eyJzZXJpYWxpemVkVmVyc2lvbiI6IjIiLCJ4IjowLjAsInkiOjAuMCwid2lkdGgiOjAuMCwiaGVpZ2h0IjowLjB9LCJtX1VzZXJEYXRhIjowLCJtX0lzV2FpdGluZ0ZvckRlbGF5IjpmYWxzZSwibV9Jc1JlbmFtaW5nIjpmYWxzZSwibV9PcmlnaW5hbEV2ZW50VHlwZSI6MTEsIm1fSXNSZW5hbWluZ0ZpbGVuYW1lIjpmYWxzZSwibV9DbGllbnRHVUlWaWV3Ijp7Imluc3RhbmNlSUQiOjB9fSwibV9TZWFyY2hTdHJpbmciOiIifSwiYXNzZXRMaXN0VHJlZVN0YXRlIjp7InNjcm9sbFBvcyI6eyJ4IjowLjAsInkiOjAuMH0sIm1fU2VsZWN0ZWRJRHMiOltdLCJtX0xhc3RDbGlja2VkSUQiOjAsIm1fRXhwYW5kZWRJRHMiOltdLCJtX1JlbmFtZU92ZXJsYXkiOnsibV9Vc2VyQWNjZXB0ZWRSZW5hbWUiOmZhbHNlLCJtX05hbWUiOiIiLCJtX09yaWdpbmFsTmFtZSI6IiIsIm1fRWRpdEZpZWxkUmVjdCI6eyJzZXJpYWxpemVkVmVyc2lvbiI6IjIiLCJ4IjowLjAsInkiOjAuMCwid2lkdGgiOjAuMCwiaGVpZ2h0IjowLjB9LCJtX1VzZXJEYXRhIjowLCJtX0lzV2FpdGluZ0ZvckRlbGF5IjpmYWxzZSwibV9Jc1JlbmFtaW5nIjpmYWxzZSwibV9PcmlnaW5hbEV2ZW50VHlwZSI6MTEsIm1fSXNSZW5hbWluZ0ZpbGVuYW1lIjpmYWxzZSwibV9DbGllbnRHVUlWaWV3Ijp7Imluc3RhbmNlSUQiOjB9fSwibV9TZWFyY2hTdHJpbmciOiIifSwiYXNzZXRMaXN0SGVhZGVyU3RhdGUiOnsibV9Db2x1bW5zIjpbeyJ3aWR0aCI6MjA4LjAsInNvcnRlZEFzY2VuZGluZyI6ZmFsc2V9LHsid2lkdGgiOjEwNC4wLCJzb3J0ZWRBc2NlbmRpbmciOmZhbHNlfSx7IndpZHRoIjo3OC4wLCJzb3J0ZWRBc2NlbmRpbmciOmZhbHNlfV0sIm1fVmlzaWJsZUNvbHVtbnMiOlswLDEsMl0sIm1fU29ydGVkQ29sdW1ucyI6W119LCJncm91cExpc3RIZWFkZXJTdGF0ZSI6eyJtX0NvbHVtbnMiOlt7IndpZHRoIjoxMDUuMCwic29ydGVkQXNjZW5kaW5nIjp0cnVlfSx7IndpZHRoIjoxMDUuMCwic29ydGVkQXNjZW5kaW5nIjp0cnVlfSx7IndpZHRoIjoxMDUuMCwic29ydGVkQXNjZW5kaW5nIjpmYWxzZX1dLCJtX1Zpc2libGVDb2x1bW5zIjpbMCwxLDJdLCJtX1NvcnRlZENvbHVtbnMiOlswLDFdfSwiZ3JvdXBMaXN0VHJlZVJlY3QiOnsic2VyaWFsaXplZFZlcnNpb24iOiIyIiwieCI6MC4wLCJ5IjowLjAsIndpZHRoIjozMDAuMCwiaGVpZ2h0IjoxMDAuMH0sImFzc2V0TGlzdFRyZWVSZWN0Ijp7InNlcmlhbGl6ZWRWZXJzaW9uIjoiMiIsIngiOjAuMCwieSI6MC4wLCJ3aWR0aCI6MzAwLjAsImhlaWdodCI6MTIwLjB9LCJmaWx0ZXJDb25kaXRpb24iOiIifSwibV9mcmVlemVHcm91cHMiOmZhbHNlLCJtX3NhdmVkR3JvdXBzIjp7Im1fZ3JvdXBzIjpbXX0sIm1fZ3JvdXBOYW1lRm9ybWF0Ijp7Im1fdmFsdWVzIjpbeyJ0YXJnZXRHcm91cCI6MCwidmFsdWUiOiJnbmZfe05ld0dyb3VwfSJ9XX19
     m_inputPoints:
     - id: a67fe39f-50bd-46cc-8e7b-dbab88d8c6cd
@@ -79,7 +79,7 @@ MonoBehaviour:
       buttonRect:
         serializedVersion: 2
         x: 0
-        y: 29.5
+        y: 28.5
         width: 21
         height: 29
     m_outputPoints:
@@ -89,8 +89,8 @@ MonoBehaviour:
       isInput: 0
       buttonRect:
         serializedVersion: 2
-        x: 152
-        y: 32.5
+        x: 154.5
+        y: 31.5
         width: 10
         height: 23
   m_allConnections:
