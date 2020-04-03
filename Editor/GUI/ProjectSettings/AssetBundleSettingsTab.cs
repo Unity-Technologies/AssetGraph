@@ -1,5 +1,6 @@
 using UnityEditor;
 using System.IO;
+using System.Linq;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -35,13 +36,15 @@ namespace UnityEngine.AssetGraph {
             Refresh();
         }
 
-        public void Refresh()
+        private void Refresh()
         {
             m_buildmapPath = AssetBundleBuildMap.UserSettings.AssetBundleBuildMapPath;
             m_buildmapMoveErrorMsg = string.Empty;
-            m_graphGuids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+            m_graphGuids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION)
+                    .Where(guid => !AssetDatabase.GUIDToAssetPath(guid).Contains(Model.Settings.HIDE_GRAPH_PREFIX))
+                    .ToArray();
             m_graphNames = new string[m_graphGuids.Length];
-            for (int i = 0; i < m_graphGuids.Length; ++i) {
+            for (var i = 0; i < m_graphGuids.Length; ++i) {
                 m_graphNames[i] = Path.GetFileNameWithoutExtension (AssetDatabase.GUIDToAssetPath (m_graphGuids[i]));
             }
         }
