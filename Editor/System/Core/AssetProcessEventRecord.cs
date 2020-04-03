@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEngine.Assertions;
+using UnityEngine.UIElements;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {
@@ -119,7 +120,7 @@ namespace UnityEngine.AssetGraph {
 			return loaded;
 		}
 
-		private static void SetRecordDirty() {
+        private static void SetRecordDirty() {
 			EditorUtility.SetDirty(s_record);
 		}
 
@@ -133,7 +134,14 @@ namespace UnityEngine.AssetGraph {
         }
 
 	    private void InitAfterDeserialize()
-	    {
+        {
+            // Validate events: remove all events where graph or asset is missing.
+            m_events.RemoveAll(e =>
+                e.GraphGuid == null ||
+                e.AssetGuid == null ||
+                string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(e.GraphGuid)) ||
+                string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(e.AssetGuid)));
+            
 	        m_filteredEvents = new List<AssetProcessEvent>();
 	        m_filteredInfoEventCount = 0;
 	        m_filteredErrorEventCount = 0;
@@ -281,9 +289,6 @@ namespace UnityEngine.AssetGraph {
                 graphGuids = m_events.Where (e => e.Kind == AssetProcessEvent.EventKind.Error).Select (e => e.GraphGuid).Distinct().ToList ();
             }
 
-            var graphGuidsWithoutHidden = graphGuids.Where(guid =>
-                !AssetDatabase.GUIDToAssetPath(guid).Contains(Model.Settings.HIDE_GRAPH_PREFIX)).ToList();
-
             m_events.Clear ();
             m_filteredEvents.Clear ();
             m_errorEventCount = 0;
@@ -292,7 +297,13 @@ namespace UnityEngine.AssetGraph {
             m_filteredErrorEventCount = 0;
 
             if (executeGraphsWithError) {
-                AssetGraphUtility.ExecuteAllGraphs (graphGuidsWithoutHidden, true);
+                var graphGuidWithoutHidden = 
+                    graphGuids.Select(AssetDatabase.GUIDToAssetPath)
+                        .Where(string.IsNullOrEmpty)
+                        .Where(path => path.Contains(Model.Settings.HIDE_GRAPH_PREFIX))
+                        .ToList();
+                
+                AssetGraphUtility.ExecuteAllGraphs (graphGuidWithoutHidden, true);
             }
         }
 	}
