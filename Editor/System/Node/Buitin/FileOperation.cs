@@ -289,7 +289,7 @@ namespace UnityEngine.AssetGraph {
 								} 
 							}
 						}
-						catch (Exception e)
+						catch (Exception )
 						{
 							// ignored
 						}
