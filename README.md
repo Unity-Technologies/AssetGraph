@@ -6,6 +6,6 @@ AssetGraph is a tool that aims to reduce the workload of all the effort needed t
 
 #Getting Started
 - User Manual: [English(1.5)](https://docs.google.com/document/d/1L4OEowzz2lRMf-o5lTCkqbbdzXffcquH1tlbv9P-oHo/) |  [Japanese(1.5)](https://docs.google.com/document/d/1PwDNJcdzIzwlIoaUjL5kiJkyFYg4doIZ8i3q8MA7_sU/)
-- [Quick Q&A](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Home)
+- [Quick Q&A](https://github.com/Unity-Technologies/AssetGraph/wiki/Q&A)
 - [Release Notes](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/wiki/Release%20Notes) for the latest version info.
 - If you find any bugs/issues or feature request, please create new Issue from [Issue Section](https://bitbucket.org/Unity-Technologies/assetbundlegraphtool/issues?status=new&status=open).
