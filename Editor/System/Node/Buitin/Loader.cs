@@ -285,6 +285,7 @@ namespace UnityEngine.AssetGraph {
             if (bRespondAP != m_respondToAssetChange) {
                 using (new RecordUndoScope ("Remove Target Load Path Settings", node, true)) {
                     m_respondToAssetChange = bRespondAP;
+                    onValueChanged();
                 }
             }
 
