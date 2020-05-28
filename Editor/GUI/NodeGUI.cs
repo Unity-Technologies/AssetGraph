@@ -247,10 +247,10 @@ namespace UnityEngine.AssetGraph {
 				menu.ShowAsContext();
 				Event.current.Use();
 			}
-			
-			if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Delete) {
+
+			if (Event.current.type == EventType.Layout && Event.current.keyCode == KeyCode.Delete) {
 				NodeGUIUtility.NodeEventHandler(new NodeEvent(NodeEvent.EventType.EVENT_NODE_DELETE, this, Vector2.zero, null));
-				Event.current.Use();
+				HandleUtility.Repaint();
 			}
 		}
 
