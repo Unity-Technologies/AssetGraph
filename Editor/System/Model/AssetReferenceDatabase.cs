@@ -133,7 +133,9 @@ namespace UnityEngine.AssetGraph {
 					db.m_dictionary.Add(relativePath, r);
 					AssetReferenceDatabase.SetDBDirty();
 					return r;
-				} catch(AssetReferenceException ) {
+				} catch(AssetReferenceException e) {
+					LogUtility.Logger.LogWarning (LogUtility.kTag,
+						$"AssetReference could not be created: Asset:{e.importFrom} Message:{e.Message}");
 					// if give asset is invalid, return null
 					return null;
 				}

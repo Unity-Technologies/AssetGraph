@@ -105,8 +105,9 @@ namespace UnityEngine.AssetGraph {
                 }
             }            
 
-            foreach (string str in importedAssets) {
-                AssetReferenceDatabase.GetReference (str).InvalidateTypeCache();
+            foreach (string str in importedAssets)
+            {
+                AssetReferenceDatabase.GetReference(str)?.InvalidateTypeCache();
             }
 
             foreach (string str in deletedAssets) 
