@@ -1,8 +1,7 @@
 # Changelog
 All notable changes to this package will be documented in this file.
 
-The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
-and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [1.7.1] - 2020-06-25
 ### Changed
@@ -10,7 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Relaxed minimum version required with Addressables from 1.7.5 to 1.6.0.
 
 ### Fixed
-- Fixed issue that AddressableBuilder can not select BuilderScript when there is only one.
+- Fixed issue that AddressableBuilder cannot select BuilderScript when there is only one.
+- Fixed issue that documentation images are shown in wrong order.
 
 
 ## [1.7.0] - 2020-04-03
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Upgraded Addressables version (1.2.3 -> 1.7.5)
 
 ### Fixed
-- Fixed issue that graph is unable to execute when broken event is recorded. (#142)
+- Fixed issue that graph is unable to execute when a broken event is recorded. (#142)
 - Fixed Extract Shared Assets does not correctly find shared assets among variants.
 
 ## [1.6.0] - 2019-09-14
@@ -41,8 +41,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Software License now changed to Unity Companion License from MIT License.
 - API namespace changed from UnityEngine.AssetGraph to Unity.AssetGraph.
-- Default AssetBundleBuildMap path changed. It can be configured from Project Settings window per project.
-- Stopped to try importing old data automatically. Instead, menu for importing Old version (v1.1) data is now always visible from AssetGraph Window.
+- Default AssetBundleBuildMap path changed. It can be configured from the Project Settings window per project.
+- Stopped to try importing old data automatically. Instead, the menu for importing Old version (v1.1) data is now always visible from AssetGraph Window.
 - Added 2018.3 support.
 - Added 2019.2 support.
 
