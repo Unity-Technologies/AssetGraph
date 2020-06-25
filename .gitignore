@@ -10,6 +10,7 @@ build/**
 node_modules/**
 .DS_Store
 .npmrc
+!DocTools~
 !Documentation~
 !.Documentation
 !Doxyfile~
