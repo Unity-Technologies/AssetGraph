@@ -131,7 +131,7 @@ namespace UnityEngine.AssetGraph {
 					int isRecursive = m_isRecursive[currentEditingGroup];
 					var newIsRecursive = EditorGUILayout.ToggleLeft("Import packages in subfolders", isRecursive == 1) ? 1:0;
 					if(newIsRecursive != isRecursive) {
-						using(new RecordUndoScope("Change Interactive", node, true)){
+						using(new RecordUndoScope("Change Recursive", node, true)){
 							m_isRecursive[currentEditingGroup] = newIsRecursive;
 							onValueChanged();
 						}
