@@ -3,10 +3,11 @@
  * 
  * This code will setup the output of the graph tool to be viewable in the browser.
  * 
- * AssetBundles-Browser Available at:
- * https://github.com/Unity-Technologies/AssetBundles-Browser
+ * AssetBundles-Browser is available from Unity Package Manager.
  */
- 
+
+#if ASSETBUNDLEBROWSER_1_7_OR_NEWER
+
 using UnityEditor;
 using Model = UnityEngine.AssetGraph.DataModel.Version2;
 using System;
@@ -140,3 +141,5 @@ namespace UnityEngine.AssetGraph {
 		}
     }
 }
+
+#endif
