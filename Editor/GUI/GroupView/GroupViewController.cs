@@ -1,12 +1,14 @@
 ﻿using UnityEditor;
 using UnityEditor.IMGUI.Controls;
-using UnityEditor.AddressableAssets;
-
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
+
+#if ADDRESSABLES_1_6_OR_NEWER
+using UnityEditor.AddressableAssets;
+#endif
 
 namespace UnityEngine.AssetGraph {
 
@@ -132,6 +134,7 @@ namespace UnityEngine.AssetGraph {
                 EditorGUILayout.HelpBox(selectedAsset, MessageType.None);
             }
 
+#if ADDRESSABLES_1_6_OR_NEWER
             if (m_selectedAsset != null) {
                 var aaSettings = AddressableAssetSettingsDefaultObject.GetSettings(false);
                 if (aaSettings != null) {
@@ -145,6 +148,7 @@ namespace UnityEngine.AssetGraph {
                     }
                 }
             }
+#endif
 		}
 
         public void ReloadAndSelect() {

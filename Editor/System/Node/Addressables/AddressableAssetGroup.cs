@@ -1,3 +1,12 @@
+/**
+ * Addressable integration
+ * 
+ * This code will add features for Addressables System.
+ * 
+ * Addressables System is available from Unity Package Manager.
+ */
+
+#if ADDRESSABLES_1_6_OR_NEWER
 
 using System;
 using System.Linq;
@@ -170,3 +179,5 @@ namespace UnityEngine.AssetGraph
 		}
     }
 }
+
+#endif

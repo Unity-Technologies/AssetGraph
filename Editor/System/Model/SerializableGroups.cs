@@ -95,7 +95,7 @@ namespace UnityEngine.AssetGraph {
         public Dictionary<string, List<AssetReference>> ToGroupDictionary() {
             Dictionary<string, List<AssetReference>> dic = new Dictionary<string, List<AssetReference>>();
 			foreach(var g in m_groups) {
-                dic [g.name] = g.assets.Select(a => AssetReferenceDatabase.GetReference(a)).ToList();
+                dic [g.name] = g.assets.Select(AssetReferenceDatabase.GetReference).ToList();
 			}
 			return dic;
 		}

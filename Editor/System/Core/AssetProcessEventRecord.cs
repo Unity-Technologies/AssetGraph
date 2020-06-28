@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEngine.Assertions;
-using UnityEngine.UIElements;
 using Model=UnityEngine.AssetGraph.DataModel.Version2;
 
 namespace UnityEngine.AssetGraph {

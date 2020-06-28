@@ -1,3 +1,13 @@
+/**
+ * Addressable integration
+ * 
+ * This code will add features for Addressables System.
+ * 
+ * Addressables System is available from Unity Package Manager.
+ */
+
+#if ADDRESSABLES_1_6_OR_NEWER
+
 using UnityEditor;
 
 using System;
@@ -110,8 +120,8 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			var dataBuilders = Settings.DataBuilders.Where(builder => (builder as IDataBuilder).CanBuildData<AddressablesPlayerBuildResult>()).ToList();
-			
-			var builderIndex = m_currentDataBuilder == null ? 0 : dataBuilders.IndexOf(m_currentDataBuilder);
+
+			var builderIndex = m_currentDataBuilder == null ? -1 : dataBuilders.IndexOf(m_currentDataBuilder);
 			var builderNames = dataBuilders
 				.Select(builder => ((IDataBuilder) builder).Name).ToArray();
 			
@@ -279,3 +289,5 @@ namespace UnityEngine.AssetGraph {
 		}
 	}
 }
+
+#endif
