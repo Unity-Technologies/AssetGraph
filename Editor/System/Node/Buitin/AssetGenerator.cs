@@ -159,7 +159,7 @@ namespace UnityEngine.AssetGraph {
                             }
                         }
 
-                        MonoScript s = TypeUtility.LoadMonoScript(entry.m_instance.ClassName);
+                        MonoScript s = entry.m_instance.MonoScript;
 
                         using(new EditorGUI.DisabledScope(s == null)) {
                             if(GUILayout.Button("Edit", GUILayout.Width(50))) {

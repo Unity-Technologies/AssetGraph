@@ -32,6 +32,9 @@ namespace UnityEngine.AssetGraph {
 		[SerializeField] private string m_className;
 		[SerializeField] private List<Entry> m_values;
 
+		MonoScript m_Monoscript;
+		public MonoScript MonoScript => m_Monoscript ?? (m_Monoscript = TypeUtility.LoadMonoScript(ClassName));
+
 		public SerializableMultiTargetInstance(SerializableMultiTargetInstance rhs) {
 			m_className = rhs.m_className;
 			m_values = new List<Entry>(rhs.m_values.Count);
