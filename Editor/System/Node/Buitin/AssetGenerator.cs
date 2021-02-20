@@ -352,7 +352,7 @@ namespace UnityEngine.AssetGraph {
 
 		public override void OnContextMenuGUI(GenericMenu menu) {
             foreach (var s in m_entries) {
-                MonoScript script = TypeUtility.LoadMonoScript(s.m_instance.ClassName);
+                MonoScript script = s.m_instance.MonoScript;
                 if(script != null) {
                     menu.AddItem(
                         new GUIContent($"Edit Script({script.name})"),
