@@ -427,6 +427,9 @@ namespace UnityEngine.AssetGraph
 
             target.animationType = reference.animationType;
             target.animationWrapMode = reference.animationWrapMode;
+            //Fixing the sourceAvatar set to null results in the avatarSetup being forced to change to CreateFromThisModel,
+            //so the configured avatarSetup value cannot be applied correctly, which is a timing error.
+            target.sourceAvatar = reference.sourceAvatar;
 #if UNITY_2019_3_OR_NEWER
             target.avatarSetup = reference.avatarSetup;
 #endif
@@ -510,8 +513,6 @@ namespace UnityEngine.AssetGraph
             target.skinWeights = reference.skinWeights;
             target.sortHierarchyByName = reference.sortHierarchyByName;
 #endif
-
-            target.sourceAvatar = reference.sourceAvatar;
             target.swapUVChannels = reference.swapUVChannels;
             target.useFileScale = reference.useFileScale;
             target.useFileUnits = reference.useFileUnits;
