@@ -329,17 +329,18 @@ namespace UnityEngine.AssetGraph
                             if (modifier.IsModified(asset.allData, assets))
                             {
                                 modifier.Modify(asset.allData, assets);
-                                asset.SetDirty();
-                                AssetProcessEventRecord.GetRecord().LogModify(asset);
-
-                                isAnyAssetModified = true;
-
-                                // apply asset setting changes to AssetDatabase.
-                                if (asset.isSceneAsset)
+                                if (asset.isSceneAsset || AssetDatabase.LoadAllAssetsAtPath(asset.importFrom).Any(EditorUtility.IsDirty))
                                 {
-                                    if (!EditorSceneManager.SaveScene(asset.scene))
+                                    isAnyAssetModified = true;
+                                    asset.SetDirty();
+                                    AssetProcessEventRecord.GetRecord().LogModify(asset);
+
+                                    if (asset.isSceneAsset)
                                     {
-                                        throw new NodeException("Failed to save modified scene:" + asset.importFrom, "See console for details.", node);
+                                        if (!EditorSceneManager.SaveScene(asset.scene))
+                                        {
+                                            throw new NodeException("Failed to save modified scene:" + asset.importFrom, "See console for details.", node);
+                                        }
                                     }
                                 }
                             }
