@@ -144,7 +144,7 @@ namespace UnityEngine.AssetGraph {
 
         private void NotifyAssetPostprocessorGraphs(AssetPostprocessorContext ctx) 
 		{
-			var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION);
+			var guids = AssetDatabase.FindAssets(Model.Settings.GRAPH_SEARCH_CONDITION, new string[] { "Assets" });
 
             var executingGraphs = new List<Model.ConfigGraph> ();
 
