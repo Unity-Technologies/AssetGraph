@@ -344,10 +344,13 @@ namespace UnityEngine.AssetGraph
                                     }
                                 }
                             }
-                            asset.ReleaseData();
                         }
                     }
                 }
+            }
+            catch
+            {
+                throw;
             }
             finally
             {
@@ -359,6 +362,11 @@ namespace UnityEngine.AssetGraph
                 AssetDatabase.Refresh();
                 AssetDatabase.SaveAssets();
             }
+
+            foreach (var assets in aggregatedGroups.Values)
+                foreach (var asset in assets)
+                    if (asset.assetType == targetType)
+                        asset.ReleaseData();
 
             if (incoming != null && Output != null)
             {

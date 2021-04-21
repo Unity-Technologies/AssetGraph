@@ -514,16 +514,10 @@ namespace UnityEngine.AssetGraph
                         var importer = AssetImporter.GetAtPath(asset.importFrom);
                         if (configurator.IsModified(referenceImporter, importer, target, groupKey))
                         {
-                            using (var importerSO = new SerializedObject(importer))
-                            {
-                                configurator.Configure(referenceImporter, importer, target, groupKey);
-                                AssetProcessEventRecord.GetRecord().LogModify(asset);
-                                if (importerSO.UpdateIfRequiredOrScript())
-                                {
-                                    importer.SaveAndReimport();
-                                    asset.TouchImportAsset();
-                                }
-                            }
+                            configurator.Configure(referenceImporter, importer, target, groupKey);
+                            AssetProcessEventRecord.GetRecord().LogModify(asset);
+                            importer.SaveAndReimport();
+                            asset.TouchImportAsset();
                         }
                     }
                 }
