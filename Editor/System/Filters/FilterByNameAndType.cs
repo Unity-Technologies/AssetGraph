@@ -45,7 +45,7 @@ namespace UnityEngine.AssetGraph {
             CheckVersionAndUpgrade ();
 
 			bool keywordMatch = Regex.IsMatch(a.importFrom, m_filterKeyword, 
-				RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace);
+				RegexOptions.IgnorePatternWhitespace);
 	
 			bool match = keywordMatch;
 	

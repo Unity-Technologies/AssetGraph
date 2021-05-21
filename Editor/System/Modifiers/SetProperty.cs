@@ -329,7 +329,7 @@ public class SetProperty : IModifier
             m_properties = new List<FieldEditInfo> ();
         }
 
-        var infos = m_type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+        var infos = m_type.GetFields (BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         foreach (var info in infos) {
             if (!info.IsPublic) {
                 var attr = info.GetCustomAttributes (typeof(SerializeField), true);
@@ -347,7 +347,7 @@ public class SetProperty : IModifier
             }
         }
 
-        var props = m_type.GetProperties (BindingFlags.Instance);
+        var props = m_type.GetProperties (BindingFlags.Instance | BindingFlags.Public);
         foreach (var p in props) {
 
             if (!p.CanWrite) {

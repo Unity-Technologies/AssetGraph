@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEditor;
 
 namespace UnityEngine.AssetGraph {
 	[System.Serializable]
@@ -44,7 +45,7 @@ namespace UnityEngine.AssetGraph {
 			UnityEngine.Assertions.Assert.IsNotNull(obj);
 
             m_className = obj.GetType().AssemblyQualifiedName;
-            m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(obj));
+            m_instanceData = CustomScriptUtility.EncodeString(EditorJsonUtility.ToJson(obj));
 		}
 		
 		public void OnBeforeSerialize()
@@ -69,7 +70,9 @@ namespace UnityEngine.AssetGraph {
 
 			if(!string.IsNullOrEmpty(m_instanceData) && instanceType != null) {
 				string data = CustomScriptUtility.DecodeString(m_instanceData);
-				return (T)JsonUtility.FromJson(data, instanceType);
+				var instance = System.Activator.CreateInstance(instanceType) as T;
+				EditorJsonUtility.FromJsonOverwrite(data, instance);
+				return instance;
 			}
 
 			return default(T);
@@ -78,7 +81,7 @@ namespace UnityEngine.AssetGraph {
 		public void Save() {
 			if(m_object != null) {
                 m_className = m_object.GetType().AssemblyQualifiedName;
-                m_instanceData = CustomScriptUtility.EncodeString(JsonUtility.ToJson(m_object));
+                m_instanceData = CustomScriptUtility.EncodeString(EditorJsonUtility.ToJson(m_object));
 			}
 		}
 

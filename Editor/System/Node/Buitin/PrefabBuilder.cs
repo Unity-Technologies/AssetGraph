@@ -115,7 +115,7 @@ namespace UnityEngine.AssetGraph {
 							}
 						}
 
-                        MonoScript s = TypeUtility.LoadMonoScript(m_instance.ClassName);
+                        MonoScript s = m_instance.MonoScript;
 
 						using(new EditorGUI.DisabledScope(s == null)) {
 							if(GUILayout.Button("Edit", GUILayout.Width(50))) {
@@ -263,7 +263,7 @@ namespace UnityEngine.AssetGraph {
 		}
 
 		public override void OnContextMenuGUI(GenericMenu menu) {
-			MonoScript s = TypeUtility.LoadMonoScript(m_instance.ClassName);
+			MonoScript s = m_instance.MonoScript;
 			if(s != null) {
 				menu.AddItem(
 					new GUIContent("Edit Script"),

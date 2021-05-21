@@ -32,6 +32,9 @@ namespace UnityEngine.AssetGraph {
 		[SerializeField] private string m_className;
 		[SerializeField] private List<Entry> m_values;
 
+		MonoScript m_Monoscript;
+		public MonoScript MonoScript => m_Monoscript ?? (m_Monoscript = TypeUtility.LoadMonoScript(ClassName));
+
 		public SerializableMultiTargetInstance(SerializableMultiTargetInstance rhs) {
 			m_className = rhs.m_className;
 			m_values = new List<Entry>(rhs.m_values.Count);
@@ -156,7 +159,7 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			int i = m_values.FindIndex(v => v.targetGroup == g);
-			var json = CustomScriptUtility.EncodeString(JsonUtility.ToJson(value));
+			var json = CustomScriptUtility.EncodeString(EditorJsonUtility.ToJson(value));
 			if(i >= 0) {
 				m_values [i].value = json;
                 m_values [i].instance = value;
@@ -203,7 +206,9 @@ namespace UnityEngine.AssetGraph {
 					return default(T);
 				}
 				UnityEngine.Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
-				return (T) JsonUtility.FromJson(CustomScriptUtility.DecodeString(m_values[i].value), t);
+				var instanse = (T)Activator.CreateInstance(t);
+				EditorJsonUtility.FromJsonOverwrite(CustomScriptUtility.DecodeString(m_values[i].value), instanse);
+				return instanse;
 			} else {
 				return default(T);
 			}

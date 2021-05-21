@@ -158,8 +158,15 @@ namespace UnityEngine.AssetGraph
                     if (Math.Abs(target.clipAnimations[i].additiveReferencePoseFrame -
                                  reference.clipAnimations[i].additiveReferencePoseFrame) > kTOLERANCE)
                         return false;
-                    if (target.clipAnimations[i].curves != reference.clipAnimations[i].curves)
+                    if (target.clipAnimations[i].curves.Length != reference.clipAnimations[i].curves.Length)
                         return false;
+                    for (var j = 0; j < target.clipAnimations[i].curves.Length; ++j)
+                    {
+                        if (target.clipAnimations[i].curves[j].name != reference.clipAnimations[i].curves[j].name)
+                            return false;
+                        if (!target.clipAnimations[i].curves[j].curve.Equals(reference.clipAnimations[i].curves[j].curve))
+                            return false;
+                    }
                     if (Math.Abs(target.clipAnimations[i].cycleOffset - reference.clipAnimations[i].cycleOffset) >
                         kTOLERANCE)
                         return false;
@@ -326,11 +333,14 @@ namespace UnityEngine.AssetGraph
                 return false;
 
 #if UNITY_2019_2_OR_NEWER
-            if (target.maxBonesPerVertex != reference.maxBonesPerVertex)
-                return false;
+            if (reference.skinWeights == ModelImporterSkinWeights.Custom)
+            {
+                if (target.maxBonesPerVertex != reference.maxBonesPerVertex)
+                    return false;
+                if (Math.Abs(target.minBoneWeight - reference.minBoneWeight) > kTOLERANCE)
+                    return false;
+            }
             if (target.meshOptimizationFlags != reference.meshOptimizationFlags)
-                return false;
-            if (Math.Abs(target.minBoneWeight - reference.minBoneWeight) > kTOLERANCE)
                 return false;
             if (target.skinWeights != reference.skinWeights)
                 return false;
@@ -427,9 +437,6 @@ namespace UnityEngine.AssetGraph
 
             target.animationType = reference.animationType;
             target.animationWrapMode = reference.animationWrapMode;
-#if UNITY_2019_3_OR_NEWER
-            target.avatarSetup = reference.avatarSetup;
-#endif
 
             target.bakeIK = reference.bakeIK;
             if (reference.importAnimation && m_overwriteAnimationClipSettings)
@@ -475,14 +482,17 @@ namespace UnityEngine.AssetGraph
             target.materialSearch = reference.materialSearch;
 
 #if UNITY_2019_2_OR_NEWER
-            target.maxBonesPerVertex = reference.maxBonesPerVertex;
+            if (reference.skinWeights == ModelImporterSkinWeights.Custom)
+            {
+                target.maxBonesPerVertex = reference.maxBonesPerVertex;
+                target.minBoneWeight = reference.minBoneWeight;
+            }
 #endif
 
             target.meshCompression = reference.meshCompression;
 
 #if UNITY_2019_2_OR_NEWER
             target.meshOptimizationFlags = reference.meshOptimizationFlags;
-            target.minBoneWeight = reference.minBoneWeight;
 #endif
             target.motionNodeName = reference.motionNodeName;
 
@@ -517,6 +527,10 @@ namespace UnityEngine.AssetGraph
             target.useFileUnits = reference.useFileUnits;
             target.useSRGBMaterialColor = reference.useSRGBMaterialColor;
             target.weldVertices = reference.weldVertices;
+
+#if UNITY_2019_3_OR_NEWER
+            target.avatarSetup = reference.avatarSetup;
+#endif
         }
     }
 }

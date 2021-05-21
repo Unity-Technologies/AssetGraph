@@ -74,6 +74,8 @@ namespace UnityEngine.AssetGraph.DataModel.Version2
             get { return m_useAsAssetPostprocessor; }
             set
             {
+                if (m_useAsAssetPostprocessor == value)
+                    return;
                 m_useAsAssetPostprocessor = value;
                 SetGraphDirty();
             }
@@ -95,6 +97,8 @@ namespace UnityEngine.AssetGraph.DataModel.Version2
             get { return m_graphDescription; }
             set
             {
+                if (m_graphDescription == value)
+                    return;
                 m_graphDescription = value;
                 SetGraphDirty();
             }
