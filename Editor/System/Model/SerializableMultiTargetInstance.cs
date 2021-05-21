@@ -159,7 +159,7 @@ namespace UnityEngine.AssetGraph {
 			}
 
 			int i = m_values.FindIndex(v => v.targetGroup == g);
-			var json = CustomScriptUtility.EncodeString(JsonUtility.ToJson(value));
+			var json = CustomScriptUtility.EncodeString(EditorJsonUtility.ToJson(value));
 			if(i >= 0) {
 				m_values [i].value = json;
                 m_values [i].instance = value;
@@ -206,7 +206,9 @@ namespace UnityEngine.AssetGraph {
 					return default(T);
 				}
 				UnityEngine.Assertions.Assert.IsTrue( typeof(T).IsAssignableFrom(t) );
-				return (T) JsonUtility.FromJson(CustomScriptUtility.DecodeString(m_values[i].value), t);
+				var instanse = (T)Activator.CreateInstance(t);
+				EditorJsonUtility.FromJsonOverwrite(CustomScriptUtility.DecodeString(m_values[i].value), instanse);
+				return instanse;
 			} else {
 				return default(T);
 			}
